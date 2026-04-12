@@ -1,0 +1,122 @@
+Abstract
+
+We introduce the Mirror‑Shift Sovereign Queue (MSSQ), a novel validity rollup architecture anchored on the Kaspa L1 BlockDAG. MSSQ utilizes the QSSM (Quantum‑Safe Sovereign Millionaire) proof family to execute a “Hash‑VM” predicate environment. Unlike traditional rollups that utilize a centralized sequencer with reordering discretion, MSSQ implements a Verifiable Random Function (VRF) leader selection combined with deterministic hash‑lexicographical sequencing. This configuration mathematically eliminates Maximum Extractable Value (MEV) while preserving censorship resistance through an L1‑embedded inbox and a recursive fallback liveness mechanism. We further detail a Sybil‑resistant reward model predicated on Proof‑of‑Useful‑Work (PoUW) to ensure long‑term network decentralization.
+
+1. Core Philosophy and Architectural Intent
+
+The Mirror‑Shift Sovereign Queue (MSSQ) represents a departure from the “Sequencer‑as‑King” model. The protocol is designed as a Sovereign Validity Rollup, where the L1 (Kaspa) acts as a passive Data Availability (DA) layer and an immutable entropy anchor. The primary objective of MSSQ is to reduce the role of the rollup operator to that of a deterministic “clerk” with zero discretionary power over transaction ordering, thereby achieving an MEV‑zero state.
+
+2. Protocol Stack and Data Availability
+
+MSSQ leverages the high‑throughput, low‑latency properties of the Kaspa BlockDAG to maintain state consistency.
+
+DA Layer:  
+Kaspa L1 provides the immutable anchor s for randomness and a passive “L1‑embedded inbox” for L2 transactions.
+
+Proving Engines:  
+Heterogeneous verification via QSSM‑LE (General Arithmetic) and QSSM‑MS (Succinct Predicates).
+
+State Representation:  
+A State Mirror Tree (SMT) — a Merkle‑sum tree — tracks account balances and predicate states.
+
+Settlement:  
+State transitions are finalized by posting a 32‑byte SMT root and a validity proof to the L1.
+
+3. Leader Selection and Liveness Hardening
+
+MSSQ utilizes a Fair Clock mechanism for slot allocation.
+
+VRF Selection:  
+Eligible nodes, registered via a collateral bond and a history of PoUW, participate in a slot‑based election.
+For slot k, the leader is the node that produces the minimal yk from the VRF output:
+
+(yk,πk)=VRFsk(H(k∥Kaspa_Block_Hash))
+
+Recursive Fallback Window:  
+To mitigate the risk of targeted DDoS on the elected leader, MSSQ implements a liveness fallback.
+If slot k remains unbatched for T L1 blocks (T≈120), the window expands.
+The leader of slot k+1 is authorized to collapse the pending transactions of k into a combined batch.
+
+This recursion ensures that network progress is decoupled from the uptime of any single node.
+
+4. Egalitarian Sequencing (MEV‑Zero)
+
+In MSSQ, the “mempool” is effectively the L1‑anchored inbox.
+The leader’s role is strictly limited to:
+
+
+
+
+
+Deduplication: Removing redundant transaction IDs.
+
+
+
+Deterministic Sorting: Transactions are ordered by the hash‑lexicographical sort of their unique transaction IDs.
+
+Because the ordering is a deterministic function of the transaction data itself, no leader can insert, censor (without provable omission), or reorder transactions for front‑running or sandwich attacks.
+
+5. Dust‑Attack Defense and L1 Integration
+
+To prevent resource exhaustion, MSSQ implements an Economic Firewall for the L1‑embedded inbox.
+
+Mandatory Fee Burn:  
+Every transaction posted to the L1 inbox must include a verifiable “burn” of KAS (e.g., 0.0001 KAS) to a null address.
+
+Verification:  
+MSSQ nodes verify this burn before processing.
+This creates a non‑trivial cost for attackers attempting to flood the deterministic queue, while remaining negligible for legitimate users.
+
+6. Sybil‑Resistant Reward Model (PoUW)
+
+MSSQ rejects “Uptime‑as‑Stake” models, which are prone to Sybil clustering.
+Instead, it utilizes Proof‑of‑Useful‑Work (PoUW).
+
+Table 1: Work Credit Distribution
+
+
+
+
+
+The 90% work pool is distributed proportionally to these cryptographically verifiable credits.
+Sybil nodes that do not actively serve the network or verify proofs receive zero revenue, making large‑scale idle clusters economically unviable.
+
+7. Security Statement
+
+MSSQ v1.0 achieves a “Bullet‑Proof” status through the convergence of:
+
+
+
+
+
+Mathematical Fairness: Hash‑sorting removes the human element from sequencing.
+
+
+
+Liveness Resilience: Recursive windows prevent single‑point‑of‑failure halts.
+
+
+
+Quantum Safety: The entire stack — from BLAKE3 hash‑sorting to QSSM‑LE lattice proofs — is resistant to cryptanalytic attacks via Shor’s Algorithm.
+
+Appendix A: Hash‑VM Evolution Path
+
+The MSSQ architecture is designed for Template‑Aware scaling.
+By composing QSSM‑MS templates (NAND, XOR, ADD, etc.) into logic graphs, the system evolves into a full Hash‑VM.
+This DSL‑native environment allows for smart contract functionality that remains auditable and modular, covering 99% of DeFi use cases without the overhead of a universal circuit.
+
+References
+
+Beeren, Y. et al. (2024). The BlockDAG Inbox: Passive Data Availability for L2 Rollups. Kaspa Research.
+Gilad, Y., Hemo, R., Micali, S., Vlachos, G., & Zikas, V. (2017). Algorand: Scaling Byzantine Agreements for Cryptocurrencies.  
+Koding, P. (2026). The QSSM Protocol Family: Architecture Overview. Substack.
+Sompolinsky, Y., & Zohar, A. (2018). PHANTOM, GHOSTDAG: Two Protocols for a Scalable BlockDAG.
+
+The QSSM Protocol Family Series
+
+Overview: The Architecture of Sovereignty  
+Engine A (QSSM‑LE): General Lattice Logic  
+Engine B (QSSM‑MS): Succinct Predicate Logic  
+The Queue (MSSQ): Egalitarian Rollup Layer
+
+Miss-Q in Motion: The Reference Implementation

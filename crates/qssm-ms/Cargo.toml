@@ -1,0 +1,10 @@
+[package]
+name = "qssm-ms"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+description = "QSSM-MS (Mirror-Shift) succinct predicate proofs."
+
+[dependencies]
+qssm-utils = { path = "../qssm-utils" }
+thiserror.workspace = true

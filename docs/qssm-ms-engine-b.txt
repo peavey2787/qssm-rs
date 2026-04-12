@@ -1,0 +1,128 @@
+Abstract
+
+We propose QSSM‑MS (Mirror‑Shift), a highly succinct, hash‑native non‑interactive zero‑knowledge (NIZK) argument system specifically optimized for boolean predicates and inequality comparisons (vA>vB). By eschewing traditional algebraic circuits and polynomial commitments in favor of position‑aware “Ghost‑Mirror” commitments and ledger‑anchored rotations in the Z/264Z ring, we achieve a proof size of approximately 256 bytes. QSSM‑MS provides a specialized, post‑quantum “fast path” for sovereign verification, reducing the overhead of threshold and membership checks to a constant‑time Merkle‑path validation.
+
+1. Parameters and Environment
+
+QSSM‑MS operates within the Random Oracle Model (ROM), leveraging high‑performance cryptographic hashing for all primitives.
+
+Table 1: Protocol Parameters
+
+
+
+
+
+2. Primitive: Position‑Aware Ghost‑Mirror Commitments
+
+To prevent index‑substitution attacks—where a prover might attempt to represent a low‑order bit as a high‑order bit—QSSM‑MS utilizes Position‑Aware Hashing.
+
+For each bit position i∈{0…63}, Alice samples salts
+salti,0,salti,1←{0,1}256.
+The commitments are defined as:
+
+Gi,0A=H(i∥biA∥salti,0∥s)
+
+Gi,1A=H(i∥¬biA∥salti,1∥s)
+
+Alice constructs a Merkle Tree (MT) over the 128 resulting leaves, ordered by index i and bit parity.
+The commitment root=MT.root is posted to the ledger anchor.
+
+Including the index i inside the preimage strictly binds every leaf to its specific bit position in the 64‑bit word.
+
+3. The Mirror‑Shift Predicate
+
+Values are interpreted as coordinates on the modular circle Z/264Z.
+The ledger anchor s provides a globally transparent but locally unpredictable rotation r.
+
+The Rotation
+
+a′=(vA+(r⊕n))(mod264)
+
+b′=(vB+(r⊕n))(mod264)
+
+The Crossing Predicate
+
+A “crossing” occurs at bit k if the k-th bits of a′ and b′ straddle the hemisphere boundary (263).
+Specifically, k is the highest bit such that the revealed bit state confirms vA>vB under the shifted coordinate system.
+
+Correctness (Nonce‑Retry)
+
+If vA>vB, there exists at least one n∈[0,255] such that the rotation (r⊕n) produces a valid crossing at some bit k.
+The prover iteratively searches for n; the expected number of trials is ≤ 2.
+
+Knowledge Soundness
+
+If vA≤vB, the prover cannot satisfy the crossing predicate without breaking the collision resistance of H to forge a salt or bit‑state consistent with the committed root.
+
+4. NIZK Construction and Verification
+
+The proof π is an ultra‑succinct argument of ≈ 256 bytes, consisting of:
+
+
+
+
+
+Merkle root (32B)
+
+
+
+Nonce n (1B)
+
+
+
+Index k (1B)
+
+
+
+Preimage salt for the opened bit at position k (32B)
+
+
+
+Merkle path (192B for 6 hashes)
+
+Fiat‑Shamir Transcript
+
+c=H(”QSSM-MS-v1.0”∥root∥n∥k∥s∥Context∥ledger_state)
+
+The Context binds the proof to a specific threshold T (Unilateral) or Bob’s commitment root (Bilateral/Millionaire duel), preventing replay or cross‑instance reuse.
+
+5. Security and Zero‑Knowledge Analysis
+
+Statistical HVZK:  
+The verifier learns only the binary result of the predicate.
+Since the rotation r is uniformly random and derived from the ledger, and the nonce n is minimal, the revealed bit index k leaks no significant information regarding the absolute magnitude of vA beyond what is required by the predicate itself.
+
+Post‑Quantum Resilience:  
+As a pure hash‑based construction, QSSM‑MS is inherently resistant to Shor’s algorithm.
+Security is bounded by Grover’s algorithm, which reduces the effective security of the 256‑bit hash to 128 bits—well within acceptable margins for sovereign predicate verification.
+
+Appendix A: Comparison with Algebraic NIZKs
+
+Unlike QSSM‑LE (Engine A), which utilizes lattice polynomials to handle complex arithmetic, QSSM‑MS relies on Symmetric Logic Erasure.
+By rotating the coordinate system via the ledger anchor, we effectively “erase” the numerical distance between vA and vB, reducing the proof to a single bit‑flip verification.
+
+This allows for:
+
+
+
+
+
+Zero Algebra: No groups, no fields, no pairings.
+
+
+
+Constant‑Time Verification: Independent of value magnitude.
+
+References
+
+Bernstein, D. J. (2005). The Poly1305‑AES message‑authentication code.  
+Merkle, R. C. (1987). A Digital Signature Based on Conventional Encryption.  
+O’Connor, J., Aumasson, J. P., Neves, S., & Wilcox‑O’Hearn, Z. (2021). BLAKE3: One function, fast everywhere.  
+Fiat, A., & Shamir, A. (1986). How to prove yourself: Practical solutions to identification and signature problems.
+
+The QSSM Protocol Family Series
+
+Overview: The Architecture of Sovereignty  
+Engine A (QSSM‑LE): General Lattice Logic  
+Engine B (QSSM‑MS): Succinct Predicate Logic  
+The Queue (MSSQ): Egalitarian Rollup Layer 
