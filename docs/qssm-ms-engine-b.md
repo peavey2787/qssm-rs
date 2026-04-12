@@ -3,6 +3,7 @@
 * **Engine A (QSSM-LE):** [General Lattice Logic](./qssm-le-engine-a.md)
 * **Engine B (QSSM-MS):** [Succinct Predicate Logic](./qssm-ms-engine-b.md)
 * **The Queue (MSSQ):** [Egalitarian Rollup Layer](./mssq-rollup.md)
+* **Integration (B→A):** [BLAKE3–Lattice Gadget](./blake3-lattice-gadget-spec.md)
 
 ---
 
@@ -13,7 +14,7 @@
 
 ## Abstract
 
-We propose QSSM‑MS (Mirror‑Shift), a highly succinct, hash‑native non‑interactive zero‑knowledge (NIZK) argument system specifically optimized for boolean predicates and inequality comparisons \((v_A > v_B)\). By eschewing traditional algebraic circuits and polynomial commitments in favor of position‑aware “Ghost‑Mirror” commitments and ledger‑anchored rotations in the \(\mathbb{Z}/2^{64}\mathbb{Z}\) ring, we achieve a proof size of approximately **256 bytes**. QSSM‑MS provides a specialized, post‑quantum “fast path” for sovereign verification, reducing the overhead of threshold and membership checks to a constant‑time Merkle‑path validation.
+We propose QSSM‑MS (Mirror‑Shift), a highly succinct, hash‑native non‑interactive zero‑knowledge (NIZK) argument system specifically optimized for boolean predicates and inequality comparisons \((v_A > v_B)\). By eschewing traditional algebraic circuits and polynomial commitments in favor of position‑aware “Ghost‑Mirror” commitments and ledger‑anchored rotations in the \(\mathbb{Z}/2^{64}\mathbb{Z}\) ring, we achieve a proof body of approximately **291 bytes** (excluding the Merkle root; see §4). QSSM‑MS provides a specialized, post‑quantum “fast path” for sovereign verification, reducing the overhead of threshold and membership checks to a constant‑time Merkle‑path validation.
 
 ---
 
@@ -32,6 +33,7 @@ QSSM‑MS operates within the Random Oracle Model (ROM), leveraging high‑perfo
 | H         | BLAKE3       | Primary hash function H: {0,1}* → {0,1}²⁵⁶                    |
 | n         | [0, 255]     | 1‑byte nonce for rotation retry                               |
 
+**Rotation (normative reference).** The truncated word **\(r\)** is the first 8 bytes of **\(s\)** interpreted as a little‑endian **\(u64\)** (the implementation’s `ledger_rotation`). The **per‑nonce** tweak is **not** bitwise **\(r \oplus n\)**. Instead, the ledger anchor **\(s\)** and nonce **\(n\)** are hashed via **`rot_for_nonce`** (domain‑separated BLAKE3 over **`DOMAIN_MS`**, **`"rot_nonce"`**, **\(r\)**, **\(n\)**) to derive a 64‑bit rotation vector; that vector is applied to inputs with **`wrapping_add`**, i.e. arithmetic in **\(\mathbb{Z}/2^{64}\mathbb{Z}\)** with seamless wrap‑around.
 
 ---
 
@@ -96,25 +98,18 @@ Values are interpreted as coordinates on the modular circle:
 
 
 
-The ledger anchor \(s\) provides a globally transparent but locally unpredictable rotation \(r\).
+The ledger anchor \(s\) provides a globally transparent but locally unpredictable base word **\(r\)** (first 8 bytes of **\(s\)**, §1).
 
 ### The Rotation
 
-
-
-\[
-a' = (v_A + (r \oplus n)) \pmod{2^{64}},
-\]
-
-
-
-
+Let **\(\mathrm{rot}(r, n)\)** denote **`rot_for_nonce`** in the reference: a 64‑bit value derived by hashing **\(s\)**’s anchor material and **\(n\)** (see §1), **not** **\(r \oplus n\)**.
 
 \[
-b' = (v_B + (r \oplus n)) \pmod{2^{64}}.
+a' = v_A \mathbin{\texttt{+}_\text{wrap}} \mathrm{rot}(r, n),\quad
+b' = v_B \mathbin{\texttt{+}_\text{wrap}} \mathrm{rot}(r, n),
 \]
 
-
+where **\(\texttt{+}_\text{wrap}\)** is unsigned 64‑bit addition with wrap‑around, i.e. the group **\(\mathbb{Z}/2^{64}\mathbb{Z}\)**.
 
 ### The Crossing Predicate
 
@@ -123,8 +118,8 @@ Specifically, \(k\) is the highest bit such that the revealed bit state confirms
 
 ### Correctness (Nonce‑Retry)
 
-If \(v_A > v_B\), there exists at least one \(n \in [0, 255]\) such that the rotation \((r \oplus n)\) produces a valid crossing at some bit \(k\).  
-The prover iteratively searches for \(n\).
+If \(v_A > v_B\), there exists at least one \(n \in [0, 255]\) such that **\(\mathrm{rot}(r, n)\)** yields rotated values **\((a', b')\)** with a valid crossing at some bit \(k\).  
+The prover scans **\(n = 0 \ldots 255\)** in order and returns the **first** successful **\((n, k)\)**. If none is found, the reference returns **`NoValidRotation`** (no valid rotation within the nonce range).
 
 **Verification Metric:**  
 Automated adversarial testing within the *qssm‑rs* reference implementation confirms that the expected number of trials remains \(\le 2\). Even under worst‑case nonce scans designed to force collisions, the Mirror‑Shift logic consistently identifies a valid proof within predicted algebraic bounds.
@@ -137,13 +132,14 @@ If \(v_A \le v_B\), the prover cannot satisfy the crossing predicate without bre
 
 ## 4. NIZK Construction and Verification
 
-The proof \(\pi\) is an ultra‑succinct argument of approximately **256 bytes**, consisting of:
+The proof \(\pi\) is approximately **291 bytes**, **excluding the Merkle root** (the root is assumed known to the verifier as **\(32\)** bytes), consisting of:
 
-- Merkle root (32B)  
-- Nonce \(n\) (1B)  
-- Index \(k\) (1B)  
-- Preimage salt for the opened bit at position \(k\) (32B)  
-- Merkle path (192B for 6 hashes)
+- **Merkle path:** **224 bytes** — **7** sibling hashes (**\(32 \times 7\)**) for a **128‑leaf** tree (depth **\(7\)**).  
+- **Opened salt:** **32 bytes** — preimage salt for the opened leaf at **\((k, \text{bit})\)**.  
+- **Fiat–Shamir challenge:** **32 bytes**.  
+- **Metadata:** **3 bytes** — nonce **\(n\)**, bit index **\(k\)**, and bit state **`bit_at_k`**.
+
+The verifier supplies **\(\text{root}\)** separately when checking the transcript; **\(\pi\)** is the tuple above.
 
 ### Fiat‑Shamir Transcript
 
@@ -163,8 +159,7 @@ The **Context** binds the proof to a specific threshold \(T\) (Unilateral) or Bo
 
 ### Statistical HVZK
 
-The verifier learns only the binary result of the predicate.  
-Since the rotation \(r\) is uniformly random and derived from the ledger, and the nonce \(n\) is minimal, the revealed bit index \(k\) leaks no significant information regarding the absolute magnitude of \(v_A\) beyond what is required by the predicate itself.
+**Statistical HVZK:** The verifier learns the **binary result** of the predicate **and** the specific **bit index \(k\)** where the crossing is demonstrated, **and** the nonce **\(n\)** (and the opened salt / Merkle path material). While this is **not** minimal to a single bit of output, the **ledger‑anchored** rotation ensures that **\(k\)** (together with **\(n\)**) provides **no actionable** information regarding absolute value magnitudes beyond what the inequality predicate itself already reveals.
 
 ### Post‑Quantum Resilience
 

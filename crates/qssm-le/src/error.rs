@@ -10,4 +10,6 @@ pub enum LeError {
     RejectedSample,
     #[error("ring multiplication failed")]
     RingMul,
+    #[error("prover rejected too many times (Lyubashevsky aborts)")]
+    ProverAborted,
 }

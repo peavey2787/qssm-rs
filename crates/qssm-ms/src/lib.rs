@@ -75,6 +75,7 @@ fn highest_differing_bit(a: u64, b: u64) -> Option<u8> {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn fs_challenge(
     root: &[u8; 32],
     n: u8,
@@ -83,11 +84,12 @@ fn fs_challenge(
     value: u64,
     target: u64,
     context: &[u8],
+    rollup_context_digest: &[u8; 32],
 ) -> [u8; 32] {
     hash_domain(
         DOMAIN_MS,
         &[
-            b"fs",
+            b"fs_v2",
             root.as_slice(),
             &[n],
             &[k],
@@ -95,6 +97,7 @@ fn fs_challenge(
             &value.to_le_bytes(),
             &target.to_le_bytes(),
             context,
+            rollup_context_digest.as_slice(),
         ],
     )
 }
@@ -151,6 +154,7 @@ pub fn prove(
     salts: &Salts,
     ledger_entropy: [u8; 32],
     context: &[u8],
+    rollup_context_digest: &[u8; 32],
 ) -> Result<GhostMirrorProof, MsError> {
     if value <= target {
         return Err(MsError::NoValidRotation);
@@ -174,7 +178,16 @@ pub fn prove(
         let leaf_idx = 2 * (k as usize) + (bit_at_k as usize);
         let opened_salt = salts[leaf_idx];
         let path = tree.get_proof(leaf_idx)?;
-        let challenge = fs_challenge(&root, n, k, &ledger_entropy, value, target, context);
+        let challenge = fs_challenge(
+            &root,
+            n,
+            k,
+            &ledger_entropy,
+            value,
+            target,
+            context,
+            rollup_context_digest,
+        );
         return Ok(GhostMirrorProof {
             n,
             k,
@@ -195,6 +208,7 @@ pub fn verify(
     value: u64,
     target: u64,
     context: &[u8],
+    rollup_context_digest: &[u8; 32],
 ) -> bool {
     if proof.bit_at_k > 1 {
         return false;
@@ -218,6 +232,7 @@ pub fn verify(
         value,
         target,
         context,
+        rollup_context_digest,
     );
     if expect_c != proof.challenge {
         return false;

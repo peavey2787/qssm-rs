@@ -5,6 +5,7 @@ members = [
     "crates/qssm-le",
     "crates/qssm-ms",
     "crates/mssq-batcher",
+    "crates/qssm-kaspa",
     ".",
 ]
 resolver = "2"
@@ -15,6 +16,8 @@ license = "MIT OR Apache-2.0"
 
 [workspace.dependencies]
 blake3 = "1.5"
+ml-dsa = "0.1.0-rc.8"
+rand = "0.8"
 thiserror = "1.0"
 
 [package]
@@ -24,8 +27,13 @@ edition.workspace = true
 publish = false
 
 [dependencies]
+ml-dsa.workspace = true
 mssq-batcher = { path = "crates/mssq-batcher" }
 qssm-common = { path = "crates/qssm-common" }
+qssm-kaspa = { path = "crates/qssm-kaspa" }
 qssm-le = { path = "crates/qssm-le" }
 qssm-ms = { path = "crates/qssm-ms" }
 qssm-utils = { path = "crates/qssm-utils" }
+
+[dev-dependencies]
+ml-dsa.workspace = true

@@ -3,6 +3,7 @@
 * **Engine A (QSSM-LE):** [General Lattice Logic](./qssm-le-engine-a.md)
 * **Engine B (QSSM-MS):** [Succinct Predicate Logic](./qssm-ms-engine-b.md)
 * **The Queue (MSSQ):** [Egalitarian Rollup Layer](./mssq-rollup.md)
+* **Integration (B→A):** [BLAKE3–Lattice Gadget](./blake3-lattice-gadget-spec.md)
 
 ---
 
@@ -13,7 +14,7 @@
 
 ## Abstract
 
-We introduce the Mirror‑Shift Sovereign Queue (MSSQ), a novel validity rollup architecture anchored on the Kaspa L1 BlockDAG. MSSQ utilizes the QSSM (Quantum‑Safe Sovereign Millionaire) proof family to execute a “Hash‑VM” predicate environment. Unlike traditional rollups that utilize a centralized sequencer with reordering discretion, MSSQ implements a Verifiable Random Function (VRF) leader selection combined with deterministic hash‑lexicographical sequencing. This configuration mathematically eliminates Maximum Extractable Value (MEV) while preserving censorship resistance through an L1‑embedded inbox and a recursive fallback liveness mechanism. We further detail a Sybil‑resistant reward model predicated on Proof‑of‑Useful‑Work (PoUW) to ensure long‑term network decentralization.
+We introduce the Mirror‑Shift Sovereign Queue (MSSQ), a novel validity rollup architecture anchored on the Kaspa L1 BlockDAG. MSSQ utilizes the QSSM (Quantum‑Safe Sovereign Millionaire) proof family to execute a “Hash‑VM” predicate environment. Unlike traditional rollups that utilize a centralized sequencer with reordering discretion, MSSQ implements a **Seed\(_k\)** lottery for slot leaders, with each attestation **cryptographically bound** by an **ML‑DSA (FIPS 204)** signature over a canonical message that includes a **rollup context digest** (finalized L1 view, QRNG epoch, and related limbs). Transaction ordering is **deterministic hash‑lexicographical sequencing**. This configuration mathematically eliminates Maximum Extractable Value (MEV) while preserving censorship resistance through an L1‑embedded inbox and a recursive fallback liveness mechanism. State is carried in a **State Mirror Tree (SMT)**; batch application is **proof‑gated** via a verifier trait in the integration layer. We further detail a Sybil‑resistant reward model predicated on Proof‑of‑Useful‑Work (PoUW) to ensure long‑term network decentralization.
 
 ---
 
@@ -40,7 +41,16 @@ Heterogeneous verification via:
 A **State Mirror Tree (SMT)** — a Merkle‑sum tree — tracks account balances and predicate states.
 
 ### **Settlement**
-State transitions are finalized by posting a **32‑byte SMT root** and a validity proof to the L1.
+Rollup logic **settles on Kaspa‑finalized** L1 data (not the volatile DAG tip), so the **rollup context** and leader lottery resist tip reorgs. State transitions update an **SMT** root; per‑transaction proofs are verified before deltas apply (integration implements `TxProofVerifier`).
+
+### **Demo — Millionaire’s Duel (`qssm-ref`)**
+The workspace ships an end‑to‑end **Millionaire’s Duel** scenario: ML‑DSA leader attestations, a **Public‑Difference ZK Proof** from **QSSM‑LE** (Lyubashevsky‑style, `rollup_context_digest`‑bound), and an SMT **leaderboard leaf** keyed by `hash_domain("MSSQ-DUEL-LEADERBOARD-V1.0" ‖ "MSSQ_DUEL_LEADERBOARD_V1")`. **V1.0** makes the encoded difference scalar public (hiding witness and absolute balances on the LE wire, but revealing **distance** for winner logic); **V2.0** may hide the delta (witness‑hiding comparison). Run `cargo run -p qssm-ref --bin millionaires_duel` (use `--release` to exercise the sub‑10 ms `verify_lattice` bar in tests).
+
+**Miss‑Q in Motion: The Reference Implementation**
+
+The MSSQ logic is now live in the qssm‑rs workspace. By running the millionaires_duel binary, users can witness the Egalitarian Lottery and deterministic state update in real‑time.
+
+Live Benchmark (Asus TUF A16): verify_lattice: 0.026ms.
 
 ---
 
@@ -120,6 +130,6 @@ Instead, it utilizes **Proof‑of‑Useful‑Work (PoUW)**.
 ```markdown
 | Credit Type        | Verification Method                                         | Reward Weight |
 |--------------------|-------------------------------------------------------------|---------------|
-| Batch Verification | Signature inclusion in subsequent VRF headers               | High          |
+| Batch Verification | ML‑DSA leader attestation + context‑bound proofs            | High          |
 | State Serving      | User‑signed Merkle inclusion receipts                       | Medium        |
 | Relaying           | Inclusion of relayed tx in a finalized batch                | Low           |

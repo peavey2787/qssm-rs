@@ -16,4 +16,12 @@ pub enum BatcherError {
     LeaderNotInCandidateSet,
     #[error("claimed leader is not the min-score winner for this Seed_k")]
     NotWinningLeader,
+    #[error("ML-DSA public key encoding is invalid")]
+    InvalidSigningKey,
+    #[error("ML-DSA signature verification failed")]
+    InvalidSignature,
+    #[error("claimed_leader_id does not match hash of signing_public_key")]
+    LeaderKeyIdMismatch,
+    #[error("transaction proof did not verify for this rollup context")]
+    ProofVerificationFailed,
 }
