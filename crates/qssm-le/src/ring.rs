@@ -47,13 +47,64 @@ impl RqPoly {
         }
         Self(o)
     }
+
+    /// Coefficient-wise scalar multiply with signed \(c\) (lift coeff to centered \(\mathbb{Z}\), scale, reduce mod \(q\)).
+    pub fn scalar_mul_signed(&self, c: i32) -> Self {
+        let c64 = i64::from(c);
+        let q = i64::from(Q);
+        let mut o = [0u32; N];
+        for (i, slot) in o.iter_mut().enumerate() {
+            let x = center_u32_mod(self.0[i]);
+            let p = x * c64;
+            *slot = reduce_i64_mod_q(p, q);
+        }
+        Self(o)
+    }
+
+    /// \(\ell_\infty\) norm of centered representatives in \((-q/2,q/2]\).
+    #[must_use]
+    pub fn inf_norm_centered(&self) -> u32 {
+        let mut m = 0u32;
+        for &c in &self.0 {
+            let a = center_u32_mod(c).unsigned_abs();
+            m = m.max(a as u32);
+        }
+        m
+    }
 }
 
-/// Map signed short coefficients into \(\mathbb{Z}_q\) (centered lift not applied; use \(r_i \ge 0\) small).
-pub fn short_vec_to_rq(coeffs: &[i32; N]) -> Result<RqPoly, LeError> {
+#[inline]
+fn center_u32_mod(x: u32) -> i64 {
+    let x = i64::from(x);
+    let q = i64::from(Q);
+    if x > q / 2 {
+        x - q
+    } else {
+        x
+    }
+}
+
+#[inline]
+fn reduce_i64_mod_q(v: i64, q: i64) -> u32 {
+    let m = v.rem_euclid(q);
+    m as u32
+}
+
+/// Concatenate coefficients (LE u32) for Fiat–Shamir binding.
+#[must_use]
+pub fn encode_rq_coeffs_le(p: &RqPoly) -> [u8; N * 4] {
+    let mut out = [0u8; N * 4];
+    for (i, c) in p.0.iter().enumerate() {
+        out[i * 4..(i + 1) * 4].copy_from_slice(&c.to_le_bytes());
+    }
+    out
+}
+
+/// Map signed coefficients with \(\ell_\infty \le \texttt{bound}\) into \(R_q\).
+pub fn short_vec_to_rq_bound(coeffs: &[i32; N], bound: u32) -> Result<RqPoly, LeError> {
     let mut out = [0u32; N];
     for (i, &v) in coeffs.iter().enumerate() {
-        if v.unsigned_abs() > BETA {
+        if v.unsigned_abs() > bound {
             return Err(LeError::RejectedSample);
         }
         let u = if v >= 0 {
@@ -64,6 +115,11 @@ pub fn short_vec_to_rq(coeffs: &[i32; N]) -> Result<RqPoly, LeError> {
         out[i] = u % Q;
     }
     Ok(RqPoly(out))
+}
+
+/// Map signed short coefficients into \(\mathbb{Z}_q\) (witness bound \(\beta\)).
+pub fn short_vec_to_rq(coeffs: &[i32; N]) -> Result<RqPoly, LeError> {
+    short_vec_to_rq_bound(coeffs, BETA)
 }
 
 #[cfg(test)]

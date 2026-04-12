@@ -3,6 +3,7 @@
 * **Engine A (QSSM-LE):** [General Lattice Logic](./qssm-le-engine-a.md)
 * **Engine B (QSSM-MS):** [Succinct Predicate Logic](./qssm-ms-engine-b.md)
 * **The Queue (MSSQ):** [Egalitarian Rollup Layer](./mssq-rollup.md)
+* **Integration (B→A):** [BLAKE3–Lattice Gadget](./blake3-lattice-gadget-spec.md)
 
 ---
 
@@ -26,7 +27,7 @@ The QSSM Protocol Family — pronounced “Q‑sum” — is a formal protocol s
 The QSSM architecture is not a single “blockchain.” It is a layered sovereign environment that sits on top of existing high‑performance BlockDAGs like Kaspa.
 
 ### **Layer 1 — The Anchor**
-The Kaspa BlockDAG provides the “Source of Truth.” It provides the entropy (randomness) and the immutable storage needed to anchor our proofs.
+The Kaspa BlockDAG provides the “Source of Truth.” It provides the entropy (randomness) and the immutable storage needed to anchor our proofs. The rollup **binds challenges and leader messages to a `RollupContext` digest** derived from **finalized** L1 state (via an `L1Anchor` trait), not from volatile tip fields alone, so committed rollup state is not invalidated by ordinary tip reorgs.
 
 ### **Layer 2 — The Queue (MSSQ)**
 Pronounced “Miss‑Q,” the Mirror‑Shift Sovereign Queue is the egalitarian layer that ensures transactions are ordered fairly, using math instead of bribes.
@@ -40,19 +41,19 @@ These are the proving systems. They allow users to prove facts about their data 
 
 When you need to perform complex “heavy lifting”—such as a multi‑step financial contract or a general‑purpose smart contract—you use QSSM‑LE.
 
-This engine is based on Lattice‑Based Cryptography, specifically the LaBRADOR framework (Beullens, 2023). Instead of the “curves” used in traditional crypto, lattices use high‑dimensional grids of points. These grids are mathematically proven to be resistant to Shor’s Algorithm, making them post‑quantum secure.
+This engine is based on **module lattice** commitments over a cyclotomic ring \(R_q\), with a **Lyubashevsky‑style** Fiat–Shamir protocol: the proof publishes a masking commitment **\(t\)** and response **\(z\)** (no direct witness opening), with **rejection sampling** and a verifier check **\(\|z\|_\infty \le \gamma\)**. The Fiat–Shamir transcript includes a **rollup context digest** so proofs cannot be replayed across different finalized L1 views. The implementation **utilizes a direct Lyubashevsky‑style NIZK over \(R_q\)** (see `qssm-le`).
 
 ### **What it is**
-A fully general, 128‑bit PQ‑secure proving engine.
+A post‑quantum, witness‑hiding lattice proof layer for structured relations committed in \(R_q\) (NTT‑accelerated).
 
 ### **When to use it**
-For full arithmetic, range proofs, and any logic that requires multiple steps or complex “if/then” variables.
+For arithmetic and relations that map cleanly to the supported commitment and proof API (see `qssm-le` and `qssm-le-engine-a.md`).
 
 ### **Performance**
-Generates proofs between **47–58 KB**. Larger than a SNARK, but quantum‑safe — whereas standard SNARKs will eventually fail (Hoffstein et al., 2008).
+Proof size is **ring‑element dominated** (two polynomials in \(R_q\) plus a 32‑byte challenge); verification targets fast NTT paths on modest hardware.
 
 ### **Note**
-QSSM‑LE utilizes *lattice polynomials* as a high‑performance storage mechanism for complex math. It serves as the general‑purpose engine for when template‑specific hashes are insufficient.
+QSSM‑LE uses *lattice polynomials* as the algebraic carrier; parameter choices **\((\beta, \gamma, \eta, C_{\text{span}})\)** are security‑critical and documented beside the implementation.
 
 ---
 
@@ -69,13 +70,13 @@ For these tasks, using Engine A is like using a freight train to deliver a singl
 QSSM‑MS is the “Sovereign Scalpel.” It uses a proprietary Mirror‑Shift logic that replaces all algebra with simple integer rotations and hash‑chains.
 
 ### **What it is**
-A template‑specific, **256‑byte** NIZK argument.
+A template‑specific NIZK argument: proof body **~291 bytes** (excluding the **32‑byte** Merkle root); see [Engine B](./qssm-ms-engine-b.md) §4.
 
 ### **The Trick**
 It uses a “Boolean Ghost‑Mirror.” Instead of doing math, Alice and Bob interpret their values as points on a circle. A random rotation from the Kaspa ledger “shifts” the circle. Alice then proves her position using a tiny Merkle path.
 
 ### **Performance**
-256 bytes.  
+~291 bytes (proof body; root separate).  
 No polynomials.  
 No circuits.  
 Just pure, high‑speed hashing.
@@ -93,16 +94,16 @@ If the engines are the brains, MSSQ (“Miss‑Q”) is the skeleton. It is a va
 
 In MSSQ, there is no privileged sequencer. Instead:
 
-1. A leader is elected for each slot via a VRF.  
-2. The leader **cannot** choose the order of transactions.  
-3. They must sort transactions by **hash‑lexicographical order**.
+1. A leader is elected for each slot via a **Seed\(_k\)** lottery over registered candidate IDs.  
+2. The elected leader’s claim is **ML‑DSA–signed** over canonical bytes that include the same **rollup context digest** used by LE/MS.  
+3. The leader **cannot** choose the order of transactions; they must sort by **hash‑lexicographical order**.
 
 Your transaction order is determined by math, not bribes.  
 MEV becomes mathematically impossible.
 
 ### **L1‑Anchored Randomness**
 
-MSSQ uses the “Ledger Anchor”—entropy pulled directly from the Kaspa BlockDAG—to provide randomness for Mirror‑Shift proofs. This anchors L2 security directly into L1 Proof‑of‑Work (Beeren et al., 2024).
+MSSQ uses **finalized** L1 limbs (and QRNG epochs where applicable) to build **Mirror‑Shift** and **lattice** challenges, so proof soundness is tied to the same **RollupContext** as the batcher. Production integration can use a **`qssm-kaspa`** adapter (gRPC scaffold) that maps node RPCs to `L1Anchor`.
 
 ---
 
@@ -124,6 +125,5 @@ Use **MSSQ** (The Skeleton).
 ## References & Further Reading
 
 - Beeren, Y. et al. (2024). *BlockDAG Architectures and the Future of Proof‑of‑Work*. Kaspa Research.  
-- Beullens, W. (2023). *LaBRADOR: Compact Lattice‑Based R1CS Proofs*.  
 - Hoffstein, J., Pipher, J., & Silverman, J. H. (2008). *An Introduction to Mathematical Cryptography*. Springer.  
 - Nakamoto, S. (2008). *Bitcoin: A Peer‑to‑Peer Electronic Cash System*.

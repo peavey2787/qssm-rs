@@ -6,6 +6,7 @@ license.workspace = true
 description = "MSSQ rollup clerk: sequencing, PQ-friendly leader lottery, and state accumulator."
 
 [dependencies]
+ml-dsa.workspace = true
 qssm-common = { path = "../qssm-common" }
 qssm-utils = { path = "../qssm-utils" }
 thiserror.workspace = true

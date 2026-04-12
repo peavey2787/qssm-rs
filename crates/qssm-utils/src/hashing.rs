@@ -15,6 +15,16 @@ pub const DOMAIN_MOCK_KASPA_BLOCK: &str = "MOCK-KASPA-BLOCK-v2.0";
 pub const DOMAIN_MOCK_QRNG: &str = "MOCK-QRNG-v2.0";
 /// Parent-node hashing for binary Merkle trees (shared by engines / batcher).
 pub const DOMAIN_MERKLE_PARENT: &str = "QSSM-MERKLE-PARENT-v1.0";
+/// Binds LE/MS/leader to finalized Kaspa + QRNG (rollup context).
+pub const DOMAIN_MSSQ_ROLLUP_CONTEXT: &str = "MSSQ-ROLLUP-CONTEXT-v1.0";
+/// SMT key for Millionaire’s Duel leaderboard leaf (`hash_domain(DOMAIN ‖ "MSSQ_DUEL_LEADERBOARD_V1")`).
+pub const DOMAIN_MSSQ_DUEL_LEADERBOARD: &str = "MSSQ-DUEL-LEADERBOARD-V1.0";
+
+/// Cryptographic [`[u8; 32]`](https://doc.rust-lang.org/std/primitive.array.html) SMT slot for duel prestige state.
+#[must_use]
+pub fn duel_leaderboard_key() -> [u8; 32] {
+    hash_domain(DOMAIN_MSSQ_DUEL_LEADERBOARD, &[b"MSSQ_DUEL_LEADERBOARD_V1"])
+}
 
 #[inline]
 pub fn blake3_hash(data: &[u8]) -> [u8; 32] {

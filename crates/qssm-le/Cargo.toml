@@ -8,7 +8,9 @@ description = "QSSM-LE lattice engine facade (reference stub — not LaBRADOR)."
 [dependencies]
 blake3.workspace = true
 qssm-utils = { path = "../qssm-utils" }
+rand.workspace = true
 thiserror.workspace = true
 
 [dev-dependencies]
 qssm-ms = { path = "../qssm-ms" }
+rand.workspace = true

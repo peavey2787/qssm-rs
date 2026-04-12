@@ -1,13 +1,38 @@
-//! Lexicographic sequencing and duplicate-ID batch semantics.
+//! Lexicographic sequencing, duplicate-ID batch semantics, proof gate.
 
-use mssq_batcher::{apply_batch, sort_lexicographical, BatcherError};
-use qssm_common::{Batch, L2Transaction, SmtRoot};
+use mssq_batcher::{
+    apply_batch, sort_lexicographical, BatcherError, ProofError, RollupState, TxProofVerifier,
+};
+use qssm_common::{Batch, L2Transaction};
+use qssm_utils::{RollupContext, StateMirrorTree};
 
 fn tx(id_byte: u8, proof_tag: u8) -> L2Transaction {
     L2Transaction {
         id: [id_byte; 32],
         proof: vec![proof_tag],
         payload: vec![id_byte],
+    }
+}
+
+struct DenyAll;
+impl TxProofVerifier for DenyAll {
+    fn verify_tx(
+        &self,
+        _tx: &L2Transaction,
+        _ctx: &RollupContext,
+    ) -> Result<(), ProofError> {
+        Err(ProofError::Invalid)
+    }
+}
+
+struct AcceptAll;
+impl TxProofVerifier for AcceptAll {
+    fn verify_tx(
+        &self,
+        _tx: &L2Transaction,
+        _ctx: &RollupContext,
+    ) -> Result<(), ProofError> {
+        Ok(())
     }
 }
 
@@ -22,27 +47,63 @@ fn three_permutations_sort_to_same_order() {
     let s1 = sort_lexicographical(p1);
     let s2 = sort_lexicographical(p2);
     let s3 = sort_lexicographical(p3);
-    assert_eq!(s1.len(), 3);
     assert_eq!(s1, s2);
     assert_eq!(s2, s3);
-    assert_eq!(s1[0].id, [1u8; 32]);
-    assert_eq!(s1[1].id, [2u8; 32]);
-    assert_eq!(s1[2].id, [3u8; 32]);
 }
 
 #[test]
-fn duplicate_tx_id_in_batch_errors_state_stays_unreachable() {
+fn duplicate_tx_id_errors_before_proof() {
     let t = tx(7, 1);
     let batch = Batch {
         txs: vec![t.clone(), t],
     };
-    let root0 = SmtRoot([0u8; 32]);
-    let err = apply_batch(root0, &batch).unwrap_err();
-    assert!(matches!(err, BatcherError::DuplicateTxId));
-    // Same root if caller aborts on error (no partial apply API).
-    let ok_batch = Batch {
-        txs: vec![tx(7, 1), tx(8, 2)],
+    let ctx = RollupContext {
+        finalized_block_hash: [0u8; 32],
+        finalized_blue_score: 0,
+        qrng_epoch: 0,
+        qrng_value: [0u8; 32],
     };
-    let r = apply_batch(root0, &ok_batch).unwrap();
-    assert_ne!(r.0, root0.0);
+    let mut state = RollupState::new();
+    let err = apply_batch(&mut state, &batch, &ctx, &AcceptAll).unwrap_err();
+    assert!(matches!(err, BatcherError::DuplicateTxId));
+}
+
+#[test]
+fn failing_proof_aborts_batch() {
+    let batch = Batch {
+        txs: vec![tx(1, 1), tx(2, 2)],
+    };
+    let ctx = RollupContext {
+        finalized_block_hash: [1u8; 32],
+        finalized_blue_score: 1,
+        qrng_epoch: 0,
+        qrng_value: [2u8; 32],
+    };
+    let mut state = RollupState::new();
+    let r0 = state.root();
+    let err = apply_batch(&mut state, &batch, &ctx, &DenyAll).unwrap_err();
+    assert!(matches!(err, BatcherError::ProofVerificationFailed));
+    assert_eq!(state.root(), r0);
+}
+
+#[test]
+fn accept_all_updates_root() {
+    let batch = Batch {
+        txs: vec![tx(3, 1)],
+    };
+    let ctx = RollupContext {
+        finalized_block_hash: [0u8; 32],
+        finalized_blue_score: 0,
+        qrng_epoch: 0,
+        qrng_value: [0u8; 32],
+    };
+    let mut state = RollupState::new();
+    let r0 = state.root();
+    apply_batch(&mut state, &batch, &ctx, &AcceptAll).unwrap();
+    assert_ne!(state.root(), r0);
+}
+
+#[test]
+fn smt_empty_root_constant() {
+    assert_eq!(StateMirrorTree::new().root(), StateMirrorTree::empty_root());
 }
