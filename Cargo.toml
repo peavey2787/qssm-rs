@@ -1,0 +1,31 @@
+[workspace]
+members = [
+    "crates/qssm-common",
+    "crates/qssm-utils",
+    "crates/qssm-le",
+    "crates/qssm-ms",
+    "crates/mssq-batcher",
+    ".",
+]
+resolver = "2"
+
+[workspace.package]
+edition = "2021"
+license = "MIT OR Apache-2.0"
+
+[workspace.dependencies]
+blake3 = "1.5"
+thiserror = "1.0"
+
+[package]
+name = "qssm-ref"
+version = "0.1.0"
+edition.workspace = true
+publish = false
+
+[dependencies]
+mssq-batcher = { path = "crates/mssq-batcher" }
+qssm-common = { path = "crates/qssm-common" }
+qssm-le = { path = "crates/qssm-le" }
+qssm-ms = { path = "crates/qssm-ms" }
+qssm-utils = { path = "crates/qssm-utils" }

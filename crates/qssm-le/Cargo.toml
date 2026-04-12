@@ -1,0 +1,14 @@
+[package]
+name = "qssm-le"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+description = "QSSM-LE lattice engine facade (reference stub — not LaBRADOR)."
+
+[dependencies]
+blake3.workspace = true
+qssm-utils = { path = "../qssm-utils" }
+thiserror.workspace = true
+
+[dev-dependencies]
+qssm-ms = { path = "../qssm-ms" }
