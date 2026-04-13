@@ -1,3 +1,15 @@
+### Documentation map
+
+* [README](../README.md) — Project home
+* [Architecture overview](./architecture-overview.md)
+* [MSSQ — Egalitarian rollup](./mssq-rollup.md)
+* [QSSM-LE — Engine A](./qssm-le-engine-a.md)
+* [QSSM-MS — Engine B](./qssm-ms-engine-b.md)
+* [BLAKE3–lattice gadget spec](./blake3-lattice-gadget-spec.md)
+* [BLAKE3–lattice gadget — Rust plan](./blake3-lattice-gadget-rust-plan.md)
+
+---
+
 # Kaspa L2 core — deployment file manifest
 
 Copy the following from the **qssm-rs** workspace to bootstrap a new Kaspa-anchored L2 that reuses the **QSSM gadget** stack (Merkle parent BLAKE3 witness, Sovereign Digest limb, R1CS manifest, Engine A handoff).

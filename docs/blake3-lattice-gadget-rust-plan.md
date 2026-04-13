@@ -1,6 +1,12 @@
-### **The QSSM Protocol Family Series**
-* **Overview:** [The Architecture of Sovereignty](./architecture-overview.md)
-* **Integration (B→A):** [BLAKE3–Lattice Gadget](./blake3-lattice-gadget-spec.md)
+### Documentation map
+
+* [README](../README.md) — Project home
+* [Architecture overview](./architecture-overview.md)
+* [MSSQ — Egalitarian rollup](./mssq-rollup.md)
+* [QSSM-LE — Engine A](./qssm-le-engine-a.md)
+* [QSSM-MS — Engine B](./qssm-ms-engine-b.md)
+* [BLAKE3–lattice gadget spec](./blake3-lattice-gadget-spec.md)
+* [Kaspa L2 core deployment manifest](./l2-kaspa-core-deployment-manifest.md)
 
 ---
 
