@@ -89,16 +89,19 @@ This section replaces any notion of “take **`root % 2^{30}`**” or other **un
 2. **Phase 0** enforces **leaf_index** ↔ **LE bit path** ↔ **sibling orientation** before any **`merkle_parent`** chain.
 3. **Phase 1** (**`bits.rs`**) uses **degree‑2** XOR and **ripple** witnesses **from day one**—**always** with LE decomposition.
 4. **`SovereignDigest`** (§3, §5) is computed; **30‑bit** **`m`** follows **only** from that digest.
-5. Engine A lattice proof closes the statement.
+5. **Phase 4** (**`r1cs.rs`**) provides the **normative constraint IR** and **`MockProver`** baseline counts on top of the same witnesses (parallel to the B→A limb path).
+6. Engine A lattice proof closes the statement.
 
 ```mermaid
 flowchart LR
   MS[Engine B proof plus root]
   P0[Phase 0 bit path vs orientation]
   Bits[Phase 1 bits.rs witnesses]
+  R4[Phase 4 r1cs MockProver baseline]
   SD[Sovereign Digest then limb]
   LE[Engine A lattice proof]
   MS --> P0 --> Bits --> SD --> LE
+  Bits --> R4
 ```
 
 ---
@@ -111,7 +114,20 @@ flowchart LR
 | **1** | **`bits.rs`**: **`to_le_bits`**, **`constraint_xor` (\(x+y-2xy\))**, **`FullAdder`**, **`ripple_carry_adder`**, **`XorWitness`**, **`RippleCarryWitness`**, **`validate()`**—**one** phase, **day one**. | No `wrapping_add` on add witness API; LE byte tests. |
 | **2** | **`blake3_native.rs`**: BLAKE3 **G‑function** and quarter‑round **only** via **`XorWitness`**, **`RippleCarryWitness`**, **`bit_wire_rotate`**, and **witness chaining** (normative structure below). | Vectors vs **`blake3`** / **`hash_domain`**; Merkle‑parent preimage path. |
 | **3** | **`binding.rs`**: **Sovereign Digest** per **Phase 3** (input schema, **`DOMAIN_SOVEREIGN_LIMB_V1`**, LE limb via **bit decomposition**, **`SovereignWitness`**). | Golden vectors; **`PublicInstance::validate`**; witness **`validate()`** round‑trip. |
-| **4** | **R1CS IR / backend stub**; optional benches. | Feature‑gated. |
+| **4** | **`r1cs.rs`**: normative **constraint IR** — **`ConstraintSystem`**, **`Blake3Gadget::synthesize_g`**, **`MockProver`** baseline counter; real provers implement the same trait. | **`test_blake3_g_constraint_cost`** locks **G** cost; optional benches. |
+
+---
+
+## Phase 4 — Normative constraint IR & **`MockProver`** baseline (`r1cs.rs`)
+
+Phase 4 is **no longer** an unspecified “stub”: the **gadget constraint IR** is **normative** in code. It bridges Phase 1–2 **witness structs** (still defined only in **`bits.rs`** / **`blake3_native.rs`**) to a formal **`ConstraintSystem`** API without changing witness semantics.
+
+- **`ConstraintSystem`** (normative methods): **`allocate_variable`**, **`enforce_xor`** (boolean XOR with explicit AND wire, consistent with **`XorWitness`**), **`enforce_full_adder`**, **`enforce_equal`** (rotations / copies).
+- **`MockProver`**: reference implementation of **`ConstraintSystem`**; **`constraint_count()`** increments **once per `enforce_*`** — this is the **baseline cost metric** for regressions until a real backend lands.
+- **`Blake3Gadget::synthesize_g`**: walks **`GWitness`** in the **same order** as **`g_function`** (Phase 2) and emits constraints for XORs, ripple adds, and bit rotations.
+- **Exit test:** **`test_blake3_g_constraint_cost`** — build **`GWitness`** via **`g_function`**, run **`Blake3Gadget::synthesize_g`**, assert a **fixed** constraint total (documented in the test). **Optional benches** remain for future throughput work; they do not replace the **MockProver** baseline.
+
+Phase 3 **Sovereign Digest** / **`SovereignWitness`** ( **`binding.rs`** ) stays the normative **B→A message limb** path; future work may **emit** limb/digest wiring through the same **`ConstraintSystem`** pattern.
 
 ---
 
@@ -231,11 +247,12 @@ Let **`D = SovereignDigest`** be **`[u8; 32]`** (**256** bits).
 | File | Responsibility |
 |------|----------------|
 | [`crates/qssm-gadget/Cargo.toml`](crates/qssm-gadget/Cargo.toml) | Crate manifest; `qssm-utils`, `thiserror`; `blake3` dev for vectors. |
-| [`crates/qssm-gadget/src/lib.rs`](crates/qssm-gadget/src/lib.rs) | `bits`, `merkle`, `binding`, `error`; optional `blake3_native`. |
+| [`crates/qssm-gadget/src/lib.rs`](crates/qssm-gadget/src/lib.rs) | `bits`, `merkle`, `binding`, `blake3_native`, **`r1cs`**, `error`; re‑exports **`ConstraintSystem`**, **`MockProver`**, **`Blake3Gadget`**. |
 | [`crates/qssm-gadget/src/bits.rs`](crates/qssm-gadget/src/bits.rs) | Degree‑2 XOR, **`FullAdder`**, ripple + **`XorWitness` / `RippleCarryWitness`** from **day one**; LE only. |
 | [`crates/qssm-gadget/src/merkle.rs`](crates/qssm-gadget/src/merkle.rs) | **Phase 0** LE path ↔ orientation; **`recompute_root`**. |
 | [`crates/qssm-gadget/src/binding.rs`](crates/qssm-gadget/src/binding.rs) | **Phase 3**: **`hash_domain(DOMAIN_SOVEREIGN_LIMB_V1, [root‖rollup‖metadata])`**, LE **30‑bit** limb from **`to_le_bits`**, **`SovereignWitness`**. |
 | [`crates/qssm-gadget/src/blake3_native.rs`](crates/qssm-gadget/src/blake3_native.rs) | G‑function / quarter‑round: **`XorWitness`**, **`RippleCarryWitness`**, **`bit_wire_rotate`**, **`BitRotateWitness`**, chained **`QuarterRoundWitness`** (no native `u32` mix on witness path). |
+| [`crates/qssm-gadget/src/r1cs.rs`](crates/qssm-gadget/src/r1cs.rs) | **Phase 4**: normative **`ConstraintSystem`**, **`MockProver`** (baseline constraint counter), **`Blake3Gadget`** emission over **`GWitness`**. |
 | [`crates/qssm-gadget/src/error.rs`](crates/qssm-gadget/src/error.rs) | **`GadgetError`** variants. |
 | [`crates/qssm-gadget/tests/`](crates/qssm-gadget/tests/) | MS + digest golden tests. |
 
@@ -268,7 +285,7 @@ Let **`D = SovereignDigest`** be **`[u8; 32]`** (**256** bits).
    - Limb: **LE** first **30** bits via **`to_le_bits`** / padded **`[bool; 32]`** + **`from_le_bits`** (no mask‑only normative API; optimized code **must** match bit construction in tests).  
    - Add **`SovereignWitness`** + **`validate()`** (recompute **`hash_domain`**, rederive **`message_limb`**, check **`limb_bits`**).  
    - Golden tests: fixed **`root`/`rollup`/`metadata`** → **`digest`** → **`m`**; **`PublicInstance::validate`** smoke.  
-6. R1CS stub (Phase 4) + benches + spec cross‑links.
+6. **Phase 4 (done — normative):** **`r1cs.rs`** — **`ConstraintSystem`**, **`MockProver`** as **baseline** cost counter, **`Blake3Gadget::synthesize_g`**, **`test_blake3_g_constraint_cost`**; optional benches + spec cross‑links as follow‑ons.
 
 ---
 

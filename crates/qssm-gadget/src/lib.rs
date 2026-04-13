@@ -27,3 +27,4 @@ pub use error::GadgetError;
 pub use merkle::{
     assert_ms_leaf_index_matches_opening, MerklePathWitness, MERKLE_DEPTH_MS, MERKLE_WIDTH_MS,
 };
+pub use r1cs::{Blake3Gadget, ConstraintSystem, MockProver, VarId, VarKind};
