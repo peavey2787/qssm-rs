@@ -2,6 +2,7 @@
 members = [
     "crates/qssm-common",
     "crates/qssm-utils",
+    "crates/qssm-gadget",
     "crates/qssm-le",
     "crates/qssm-ms",
     "crates/mssq-batcher",
