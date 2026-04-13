@@ -12,6 +12,10 @@ pub mod merkle;
 pub mod r1cs;
 
 pub use binding::{sovereign_message_limb_v1, DOMAIN_SOVEREIGN_LIMB_V1};
+pub use blake3_native::{
+    bit_wire_rotate, g_function, Add32ChainedWitness, BitRotateWitness, GFunctionResult, GWitness,
+    QuarterRoundWitness,
+};
 pub use bits::{
     constraint_and, constraint_or, constraint_xor, from_le_bits, to_le_bits, FullAdder,
     RippleCarryWitness, XorWitness,
