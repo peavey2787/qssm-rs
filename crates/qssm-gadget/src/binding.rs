@@ -33,7 +33,11 @@ pub fn sovereign_digest(
 ) -> SovereignDigest {
     hash_domain(
         DOMAIN_SOVEREIGN_LIMB_V1,
-        &[root.as_slice(), rollup_context_digest.as_slice(), proof_metadata],
+        &[
+            root.as_slice(),
+            rollup_context_digest.as_slice(),
+            proof_metadata,
+        ],
     )
 }
 
@@ -70,11 +74,7 @@ pub struct SovereignWitness {
 impl SovereignWitness {
     /// Build from hashed inputs (computes **`digest`** and **normative** limb).
     #[must_use]
-    pub fn bind(
-        root: [u8; 32],
-        rollup_context_digest: [u8; 32],
-        proof_metadata: Vec<u8>,
-    ) -> Self {
+    pub fn bind(root: [u8; 32], rollup_context_digest: [u8; 32], proof_metadata: Vec<u8>) -> Self {
         let digest = sovereign_digest(&root, &rollup_context_digest, &proof_metadata);
         let (limb_bits, message_limb) = message_limb_from_sovereign_digest_normative(&digest);
         Self {
@@ -93,7 +93,11 @@ impl SovereignWitness {
         if self.domain_tag != DOMAIN_SOVEREIGN_LIMB_V1 {
             return false;
         }
-        let recomputed = sovereign_digest(&self.root, &self.rollup_context_digest, &self.proof_metadata);
+        let recomputed = sovereign_digest(
+            &self.root,
+            &self.rollup_context_digest,
+            &self.proof_metadata,
+        );
         if recomputed != self.digest {
             return false;
         }
@@ -150,6 +154,9 @@ mod tests {
         let w = SovereignWitness::bind(root, ctx, meta);
         let v: serde_json::Value = serde_json::from_str(&w.to_prover_json()).expect("parse");
         assert_eq!(v["kind"], "SovereignWitnessV1");
-        assert_eq!(v["public"]["message_limb_u30"], serde_json::json!(w.message_limb));
+        assert_eq!(
+            v["public"]["message_limb_u30"],
+            serde_json::json!(w.message_limb)
+        );
     }
 }

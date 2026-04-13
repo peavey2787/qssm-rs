@@ -5,8 +5,13 @@ edition.workspace = true
 license.workspace = true
 description = "BLAKE3–lattice gadgets: degree-2 bit witnesses and MS Merkle helpers (QSSM integration)."
 
+[features]
+default = []
+lattice-bridge = ["dep:qssm-le"]
+
 [dependencies]
 hex.workspace = true
+qssm-le = { path = "../qssm-le", optional = true }
 qssm-utils = { path = "../qssm-utils" }
 serde.workspace = true
 serde_json.workspace = true

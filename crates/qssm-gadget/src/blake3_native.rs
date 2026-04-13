@@ -193,7 +193,14 @@ mod tests {
 
     /// Portable **G** exactly as in the [BLAKE3 spec](https://github.com/BLAKE3-team/BLAKE3-specs) and the
     /// `blake3` crate’s compress kernel (same step order as `blake3` v1.5 portable code path).
-    fn blake3_reference_g(a: u32, b: u32, c: u32, d: u32, mx: u32, my: u32) -> (u32, u32, u32, u32) {
+    fn blake3_reference_g(
+        a: u32,
+        b: u32,
+        c: u32,
+        d: u32,
+        mx: u32,
+        my: u32,
+    ) -> (u32, u32, u32, u32) {
         let mut a = a;
         let mut b = b;
         let mut c = c;
@@ -211,14 +218,7 @@ mod tests {
 
     #[test]
     fn bit_wire_rotate_matches_u32_rotate_right() {
-        for v in [
-            0u32,
-            1,
-            0xFFFF_FFFF,
-            0x00FF_00FF,
-            0x1234_5678,
-            0xDEAD_BEEF,
-        ] {
+        for v in [0u32, 1, 0xFFFF_FFFF, 0x00FF_00FF, 0x1234_5678, 0xDEAD_BEEF] {
             for r in [0u8, 1, 7, 8, 12, 16, 31] {
                 let bits = crate::bits::to_le_bits(v);
                 let w = bit_wire_rotate(bits, r);
@@ -236,21 +236,80 @@ mod tests {
         let goldens: [(u32, u32, u32, u32, u32, u32); 12] = [
             (0, 0, 0, 0, 0, 0),
             (1, 2, 3, 4, 5, 6),
-            (0x1111_1111, 0x2222_2222, 0x3333_3333, 0x4444_4444, 0xAAAA_AAAA, 0xBBBB_BBBB),
-            (0xFFFF_FFFF, 0x0000_0001, 0x8000_0000, 0x7FFF_FFFF, 0x5555_5555, 0xAAAA_AAAA),
-            (0x0123_4567, 0x89AB_CDEF, 0xFEDC_BA98, 0x7654_3210, 0x0F0F_0F0F, 0xF0F0_F0F0),
+            (
+                0x1111_1111,
+                0x2222_2222,
+                0x3333_3333,
+                0x4444_4444,
+                0xAAAA_AAAA,
+                0xBBBB_BBBB,
+            ),
+            (
+                0xFFFF_FFFF,
+                0x0000_0001,
+                0x8000_0000,
+                0x7FFF_FFFF,
+                0x5555_5555,
+                0xAAAA_AAAA,
+            ),
+            (
+                0x0123_4567,
+                0x89AB_CDEF,
+                0xFEDC_BA98,
+                0x7654_3210,
+                0x0F0F_0F0F,
+                0xF0F0_F0F0,
+            ),
             (0x0000_0001, 0x0000_0000, 0x0000_0000, 0x0000_0000, 0, 0),
             (0, 0x8000_0000, 0, 0, 0xFFFF_FFFF, 0),
-            (0x9E37_79B9, 0x9E37_79B9, 0x9E37_79B9, 0x9E37_79B9, 0x243F_6A88, 0x85A3_08D3),
-            (0x6A09_E667, 0xBB67_AE85, 0x3C6E_F372, 0xA54F_F53A, 0x510E_527F, 0x9B05_688C),
-            (0x1000_0000, 0x2000_0000, 0x4000_0000, 0x8000_0000, 0x1111_1111, 0x2222_2222),
-            (0x0000_00FF, 0x0000_FF00, 0x00FF_0000, 0xFF00_0000, 0x00FF_00FF, 0xFF00_FF00),
-            (0xC2E1_2A01, 0xA5A5_A5A5, 0x5A5A_5A5A, 0x1234_ABCD, 0xDEAD_BEEF, 0xCAFE_BABE),
+            (
+                0x9E37_79B9,
+                0x9E37_79B9,
+                0x9E37_79B9,
+                0x9E37_79B9,
+                0x243F_6A88,
+                0x85A3_08D3,
+            ),
+            (
+                0x6A09_E667,
+                0xBB67_AE85,
+                0x3C6E_F372,
+                0xA54F_F53A,
+                0x510E_527F,
+                0x9B05_688C,
+            ),
+            (
+                0x1000_0000,
+                0x2000_0000,
+                0x4000_0000,
+                0x8000_0000,
+                0x1111_1111,
+                0x2222_2222,
+            ),
+            (
+                0x0000_00FF,
+                0x0000_FF00,
+                0x00FF_0000,
+                0xFF00_0000,
+                0x00FF_00FF,
+                0xFF00_FF00,
+            ),
+            (
+                0xC2E1_2A01,
+                0xA5A5_A5A5,
+                0x5A5A_5A5A,
+                0x1234_ABCD,
+                0xDEAD_BEEF,
+                0xCAFE_BABE,
+            ),
         ];
 
         for (a, b, c, d, mx, my) in goldens {
             let r = g_function(a, b, c, d, mx, my);
-            assert!(r.witness.validate(), "validate failed for ({a:#x},{b:#x},…)");
+            assert!(
+                r.witness.validate(),
+                "validate failed for ({a:#x},{b:#x},…)"
+            );
             let (ea, eb, ec, ed) = blake3_reference_g(a, b, c, d, mx, my);
             assert_eq!((r.a, r.b, r.c, r.d), (ea, eb, ec, ed), "G mismatch");
         }
@@ -259,12 +318,38 @@ mod tests {
     #[test]
     fn g_function_randomized_fuzz_against_reference() {
         let seeds: [u32; 32] = [
-            0x243f_6a88, 0x85a3_08d3, 0x1319_8a2e, 0x0370_7344, 0xa409_3822, 0x299f_31d0,
-            0x082e_fa98, 0xec4e_6c89, 0x4528_21e6, 0x38d0_1377, 0xbe54_66cf, 0x34e9_0c6c,
-            0xc0ac_29b7, 0xc97c_50dd, 0x3f84_d5b5, 0xb547_0917, 0x9216_d5d9, 0x8979_fb1b,
-            0xd131_0ba6, 0x98df_b5ac, 0x2ffd_72db, 0xd01a_dfb7, 0xb8e1_afed, 0x6a26_7e96,
-            0xba7c_9045, 0xf12c_7f99, 0x24a1_9947, 0xb391_6cf7, 0x0801_f2e2, 0x858e_fc16,
-            0x6369_20d8, 0x7157_4a69,
+            0x243f_6a88,
+            0x85a3_08d3,
+            0x1319_8a2e,
+            0x0370_7344,
+            0xa409_3822,
+            0x299f_31d0,
+            0x082e_fa98,
+            0xec4e_6c89,
+            0x4528_21e6,
+            0x38d0_1377,
+            0xbe54_66cf,
+            0x34e9_0c6c,
+            0xc0ac_29b7,
+            0xc97c_50dd,
+            0x3f84_d5b5,
+            0xb547_0917,
+            0x9216_d5d9,
+            0x8979_fb1b,
+            0xd131_0ba6,
+            0x98df_b5ac,
+            0x2ffd_72db,
+            0xd01a_dfb7,
+            0xb8e1_afed,
+            0x6a26_7e96,
+            0xba7c_9045,
+            0xf12c_7f99,
+            0x24a1_9947,
+            0xb391_6cf7,
+            0x0801_f2e2,
+            0x858e_fc16,
+            0x6369_20d8,
+            0x7157_4a69,
         ];
         for i in 0..256 {
             let a = seeds[i % 32].wrapping_mul(i as u32);

@@ -159,7 +159,10 @@ impl Blake3Gadget {
     }
 
     /// **`hash_merkle_parent_witness`**: two full **`synthesize_compress`** chains (**chunk start** + **root**).
-    pub fn synthesize_merkle_parent_hash<C: ConstraintSystem>(cs: &mut C, witness: &MerkleParentHashWitness) {
+    pub fn synthesize_merkle_parent_hash<C: ConstraintSystem>(
+        cs: &mut C,
+        witness: &MerkleParentHashWitness,
+    ) {
         Self::synthesize_compress(cs, &witness.compress_chunk_start);
         Self::synthesize_compress(cs, &witness.compress_root);
     }
@@ -173,10 +176,12 @@ impl Blake3Gadget {
     }
 
     fn synth_msg_block_permute<C: ConstraintSystem>(cs: &mut C) {
-        let in_ids: [[VarId; 32]; 16] =
-            std::array::from_fn(|_| std::array::from_fn(|_| cs.allocate_variable(VarKind::Private)));
-        let out_ids: [[VarId; 32]; 16] =
-            std::array::from_fn(|_| std::array::from_fn(|_| cs.allocate_variable(VarKind::Private)));
+        let in_ids: [[VarId; 32]; 16] = std::array::from_fn(|_| {
+            std::array::from_fn(|_| cs.allocate_variable(VarKind::Private))
+        });
+        let out_ids: [[VarId; 32]; 16] = std::array::from_fn(|_| {
+            std::array::from_fn(|_| cs.allocate_variable(VarKind::Private))
+        });
         for i in 0..16 {
             let src = MSG_PERMUTATION[i];
             for j in 0..32 {
@@ -215,7 +220,10 @@ impl Blake3Gadget {
     }
 
     /// Returns **sum** wire ids and the **final carry-out** wire (after bit 31).
-    fn synth_ripple<C: ConstraintSystem>(cs: &mut C, rw: &RippleCarryWitness) -> ([VarId; 32], VarId) {
+    fn synth_ripple<C: ConstraintSystem>(
+        cs: &mut C,
+        rw: &RippleCarryWitness,
+    ) -> ([VarId; 32], VarId) {
         synth_ripple_with_a(cs, rw, |_, c| c.allocate_variable(VarKind::Private))
     }
 
@@ -240,7 +248,11 @@ impl Blake3Gadget {
     }
 }
 
-fn synth_ripple_with_a<C, F>(cs: &mut C, _rw: &RippleCarryWitness, mut a_var: F) -> ([VarId; 32], VarId)
+fn synth_ripple_with_a<C, F>(
+    cs: &mut C,
+    _rw: &RippleCarryWitness,
+    mut a_var: F,
+) -> ([VarId; 32], VarId)
 where
     C: ConstraintSystem,
     F: FnMut(usize, &mut C) -> VarId,
@@ -268,13 +280,23 @@ mod tests {
 
     #[test]
     fn test_blake3_g_constraint_cost() {
-        let g = g_function(0x1111_1111, 0x2222_2222, 0x3333_3333, 0x4444_4444, 0x_0505_0505, 0x0a0a_0a0a);
+        let g = g_function(
+            0x1111_1111,
+            0x2222_2222,
+            0x3333_3333,
+            0x4444_4444,
+            0x_0505_0505,
+            0x0a0a_0a0a,
+        );
         let mut m = MockProver::new();
         Blake3Gadget::synthesize_g(&mut m, &g.witness);
         let n = m.constraint_count();
         println!("blake3_g_constraint_count={n}");
         assert!(n > 0, "expected non-zero constraint count");
-        assert_eq!(n, 518, "regression: G witness synthesis cost (MockProver enforce_* count)");
+        assert_eq!(
+            n, 518,
+            "regression: G witness synthesis cost (MockProver enforce_* count)"
+        );
     }
 
     #[test]

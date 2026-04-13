@@ -1,0 +1,208 @@
+{
+  "kind": "SovereignWitnessV1",
+  "private_aux_hex": {
+    "proof_metadata": "0703015fae5d72b91d036b4e431feca72cbe4b0e22c7c51e348fd3baa096bb54c12f6b",
+    "rollup_context_digest": "6a7877de54179de831dc77aab70bce59fc073bc0550b6d073ffbac059c7a17de"
+  },
+  "private_bit_wires": [
+    {
+      "idx": 0,
+      "lane": 0,
+      "path": "limb_bits",
+      "v": 1
+    },
+    {
+      "idx": 1,
+      "lane": 1,
+      "path": "limb_bits",
+      "v": 0
+    },
+    {
+      "idx": 2,
+      "lane": 2,
+      "path": "limb_bits",
+      "v": 0
+    },
+    {
+      "idx": 3,
+      "lane": 3,
+      "path": "limb_bits",
+      "v": 1
+    },
+    {
+      "idx": 4,
+      "lane": 4,
+      "path": "limb_bits",
+      "v": 0
+    },
+    {
+      "idx": 5,
+      "lane": 5,
+      "path": "limb_bits",
+      "v": 1
+    },
+    {
+      "idx": 6,
+      "lane": 6,
+      "path": "limb_bits",
+      "v": 0
+    },
+    {
+      "idx": 7,
+      "lane": 7,
+      "path": "limb_bits",
+      "v": 0
+    },
+    {
+      "idx": 8,
+      "lane": 8,
+      "path": "limb_bits",
+      "v": 0
+    },
+    {
+      "idx": 9,
+      "lane": 9,
+      "path": "limb_bits",
+      "v": 0
+    },
+    {
+      "idx": 10,
+      "lane": 10,
+      "path": "limb_bits",
+      "v": 0
+    },
+    {
+      "idx": 11,
+      "lane": 11,
+      "path": "limb_bits",
+      "v": 0
+    },
+    {
+      "idx": 12,
+      "lane": 12,
+      "path": "limb_bits",
+      "v": 1
+    },
+    {
+      "idx": 13,
+      "lane": 13,
+      "path": "limb_bits",
+      "v": 0
+    },
+    {
+      "idx": 14,
+      "lane": 14,
+      "path": "limb_bits",
+      "v": 0
+    },
+    {
+      "idx": 15,
+      "lane": 15,
+      "path": "limb_bits",
+      "v": 1
+    },
+    {
+      "idx": 16,
+      "lane": 16,
+      "path": "limb_bits",
+      "v": 0
+    },
+    {
+      "idx": 17,
+      "lane": 17,
+      "path": "limb_bits",
+      "v": 0
+    },
+    {
+      "idx": 18,
+      "lane": 18,
+      "path": "limb_bits",
+      "v": 1
+    },
+    {
+      "idx": 19,
+      "lane": 19,
+      "path": "limb_bits",
+      "v": 0
+    },
+    {
+      "idx": 20,
+      "lane": 20,
+      "path": "limb_bits",
+      "v": 1
+    },
+    {
+      "idx": 21,
+      "lane": 21,
+      "path": "limb_bits",
+      "v": 1
+    },
+    {
+      "idx": 22,
+      "lane": 22,
+      "path": "limb_bits",
+      "v": 0
+    },
+    {
+      "idx": 23,
+      "lane": 23,
+      "path": "limb_bits",
+      "v": 0
+    },
+    {
+      "idx": 24,
+      "lane": 24,
+      "path": "limb_bits",
+      "v": 0
+    },
+    {
+      "idx": 25,
+      "lane": 25,
+      "path": "limb_bits",
+      "v": 0
+    },
+    {
+      "idx": 26,
+      "lane": 26,
+      "path": "limb_bits",
+      "v": 0
+    },
+    {
+      "idx": 27,
+      "lane": 27,
+      "path": "limb_bits",
+      "v": 0
+    },
+    {
+      "idx": 28,
+      "lane": 28,
+      "path": "limb_bits",
+      "v": 0
+    },
+    {
+      "idx": 29,
+      "lane": 29,
+      "path": "limb_bits",
+      "v": 0
+    },
+    {
+      "idx": 30,
+      "lane": 30,
+      "path": "limb_bits",
+      "v": 0
+    },
+    {
+      "idx": 31,
+      "lane": 31,
+      "path": "limb_bits",
+      "v": 0
+    }
+  ],
+  "private_wire_count": 32,
+  "public": {
+    "digest_hex": "29903480baaffd857b0dae41d6c5430d1ddd70d0c27e85c494e7ae01a9d50af1",
+    "domain_tag": "QSSM-SOVEREIGN-LIMB-v1.0",
+    "message_limb_u30": 3444777,
+    "root_hex": "64e74fcb73ad97f8f5c23ef224fab6eb489c738f51c9722068b0a0405afbe043"
+  }
+}

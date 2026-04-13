@@ -52,7 +52,12 @@ fn full_adder_flat(out: &mut Option<&mut Vec<Value>>, idx: &mut usize, path: &st
     push_bool_named(out, idx, path, "carry_out", fa.carry_out);
 }
 
-fn ripple_flat(out: &mut Option<&mut Vec<Value>>, idx: &mut usize, path: &str, rw: &RippleCarryWitness) {
+fn ripple_flat(
+    out: &mut Option<&mut Vec<Value>>,
+    idx: &mut usize,
+    path: &str,
+    rw: &RippleCarryWitness,
+) {
     push_bits32(out, idx, &format!("{path}.bits_a"), &rw.bits_a);
     push_bits32(out, idx, &format!("{path}.bits_b"), &rw.bits_b);
     push_bool_named(out, idx, path, "cin", rw.cin);
@@ -64,14 +69,24 @@ fn ripple_flat(out: &mut Option<&mut Vec<Value>>, idx: &mut usize, path: &str, r
     push_bool_named(out, idx, path, "cout", rw.cout);
 }
 
-fn xor_witness_flat(out: &mut Option<&mut Vec<Value>>, idx: &mut usize, path: &str, xw: &XorWitness) {
+fn xor_witness_flat(
+    out: &mut Option<&mut Vec<Value>>,
+    idx: &mut usize,
+    path: &str,
+    xw: &XorWitness,
+) {
     push_bits32(out, idx, &format!("{path}.bits_a"), &xw.bits_a);
     push_bits32(out, idx, &format!("{path}.bits_b"), &xw.bits_b);
     push_bits32(out, idx, &format!("{path}.and_bits"), &xw.and_bits);
     push_bits32(out, idx, &format!("{path}.output_bits"), &xw.output_bits);
 }
 
-fn bit_rotate_flat(out: &mut Option<&mut Vec<Value>>, idx: &mut usize, path: &str, br: &BitRotateWitness) {
+fn bit_rotate_flat(
+    out: &mut Option<&mut Vec<Value>>,
+    idx: &mut usize,
+    path: &str,
+    br: &BitRotateWitness,
+) {
     push_bits32(out, idx, &format!("{path}.in_bits"), &br.in_bits);
     push_bits32(out, idx, &format!("{path}.out_bits"), &br.out_bits);
     if let Some(v) = out.as_mut() {
@@ -85,7 +100,12 @@ fn bit_rotate_flat(out: &mut Option<&mut Vec<Value>>, idx: &mut usize, path: &st
     *idx += 1;
 }
 
-fn add32_chained_flat(out: &mut Option<&mut Vec<Value>>, idx: &mut usize, path: &str, ac: &Add32ChainedWitness) {
+fn add32_chained_flat(
+    out: &mut Option<&mut Vec<Value>>,
+    idx: &mut usize,
+    path: &str,
+    ac: &Add32ChainedWitness,
+) {
     ripple_flat(out, idx, &format!("{path}.first"), &ac.first);
     ripple_flat(out, idx, &format!("{path}.second"), &ac.second);
 }
@@ -122,7 +142,8 @@ pub fn compression_private_wire_count(w: &CompressionWitness) -> usize {
 /// Sum of both compress witnesses in a Merkle-parent package.
 #[must_use]
 pub fn merkle_parent_private_wire_count(w: &MerkleParentHashWitness) -> usize {
-    compression_private_wire_count(&w.compress_chunk_start) + compression_private_wire_count(&w.compress_root)
+    compression_private_wire_count(&w.compress_chunk_start)
+        + compression_private_wire_count(&w.compress_root)
 }
 
 /// **`SovereignWitness`** private limb bit count (**32** padded wires).
