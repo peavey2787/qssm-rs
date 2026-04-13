@@ -1,3 +1,5 @@
+![qssm-mssq-logo](https://github.com/user-attachments/assets/be64df74-dcc1-4473-8db6-dbd300d9dae6)
+
 # QSSM: Quantum-Safe Sovereign Multiset
 
 ### Post-quantum sovereignty for BlockDAG sequencing
@@ -36,3 +38,5 @@ This project is licensed under the **Business Source License 1.1 (BSL-1.1)**. Se
 * **Change date:** April 13, 2029 (then **GPLv3** or later, per `LICENSE`).
 
 *Math is law. Sovereignty is non-negotiable.*
+
+<img width="707" height="937" alt="miss-q" src="https://github.com/user-attachments/assets/40a9f10f-5968-426d-8eb0-c8666bfe9771" />
