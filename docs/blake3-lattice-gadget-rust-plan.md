@@ -107,9 +107,46 @@ flowchart LR
 |-------|---------|----------------|
 | **0** | **`merkle.rs`**: **mandatory** LE bit‑path vs **sibling orientation** per level; **`IndexMismatch`** if not; then **`recompute_root`**. | MS tests; tamper / wrong index negatives. |
 | **1** | **`bits.rs`**: **`to_le_bits`**, **`constraint_xor` (\(x+y-2xy\))**, **`FullAdder`**, **`ripple_carry_adder`**, **`XorWitness`**, **`RippleCarryWitness`**, **`validate()`**—**one** phase, **day one**. | No `wrapping_add` on add witness API; LE byte tests. |
-| **2** | **`blake3_native.rs`**: Merkle‑parent‑width / quarter‑round using **only** Phase 1 bit primitives. | Vectors vs **`blake3`** / **`hash_domain`**. |
+| **2** | **`blake3_native.rs`**: BLAKE3 **G‑function** and quarter‑round **only** via **`XorWitness`**, **`RippleCarryWitness`**, **`bit_wire_rotate`**, and **witness chaining** (normative structure below). | Vectors vs **`blake3`** / **`hash_domain`**; Merkle‑parent preimage path. |
 | **3** | **`binding.rs`**: **§5** **Sovereign Digest**; **30‑bit** limb; **never** raw root or mod‑only **`m`**. | Golden vectors; **`PublicInstance::validate`**. |
 | **4** | **R1CS IR / backend stub**; optional benches. | Feature‑gated. |
+
+---
+
+## Phase 2 — BLAKE3 G‑function (normative structure)
+
+**Math is law:** The mixing **G‑function** (as used inside BLAKE3’s **compress** / quarter‑round on **`u32`** lanes) **must not** be implemented with a hidden “native `u32` quarter‑round” on the **witness path**. Every **Add**, **XOR**, and **Rotate** step is exposed as **explicit, chainable witness data** built **only** from Phase 1 types.
+
+### Algebraic composition (Add + XOR only from Phase 1)
+
+The four conceptual steps of the **G‑function** on two 32‑bit lanes (and the analogous steps in a full quarter‑round) reduce to:
+
+1. **Add (mod \(2^{32}\))** — **must** be a **fresh** **`RippleCarryWitness`** (or a thin wrapper whose **only** nonlinear payload is a **`RippleCarryWitness`**) taking **LE** input bit arrays derived from prior chain outputs via **`to_le_bits`** / **`from_le_bits`**. **Forbidden:** `wrapping_add`, `+` on **`u32`**, or any single-instruction add as the **definition** of the witness.
+2. **XOR** — **must** be a **fresh** **`XorWitness`** on the **LE** bit arrays of the two operands (each operand is the **output bits** of the immediately preceding witness node in the chain, or initial decomposed words).
+3. **Repeat** add / xor per the BLAKE3 **quarter‑round** ordering (rotation **offsets** and step order from the BLAKE3 spec; **fixed** in code and covered by tests).
+
+**Rotate** is **not** a third algebraic primitive in **`bits.rs`**; it is a **wire permutation** (see below). After each **rotate**, the **output** is a **new** `[bool; 32]` (or a dedicated witness struct holding it) that feeds the **next** **`XorWitness`** / **`RippleCarryWitness`**.
+
+### Explicit rotations — `bit_wire_rotate`
+
+**Function (normative API shape):**
+
+`bit_wire_rotate(bits: [bool; 32], offset: u8) -> BitRotateWitness`
+
+- **Semantics:** **`out_bits[i] = bits[index(i)]`** where **`index(i)`** is a **pure re‑indexing** of positions **`0..32`** (a permutation). For a **right** rotation by **`r`** bit positions in the **LE** lane convention, use the index map that matches BLAKE3 **`ROTR`** on **`u32`** (e.g. **`out_bits[i] = bits[(i + r) % 32]`** once the LE convention is aligned—**must** be verified against **`blake3`** test vectors).
+- **Forbidden on the witness path:** **`rotate_right`**, **`<<`**, **`>>`**, or any **arithmetic** rotate on **`u32`** to **materialize** the witness; the **only** allowed mechanism is **copying** / **wiring** bits by **index**.
+- **`BitRotateWitness`** (name illustrative) **must** retain **`in_bits`**, **`out_bits`**, and **`offset`** (or the full **32‑entry index map**) so an R1CS backend can emit **copy** / **permutation** constraints without introducing multiplicative degree.
+
+### Witness chaining (no overwrite)
+
+- **Rule:** Each **Add** or **XOR** in the G‑function **creates a new** witness struct instance (**new** **`RippleCarryWitness`**, **new** **`XorWitness`**). **Do not** mutate or reuse a single struct to represent successive steps.
+- **Rule:** Outputs are **named** as successive stages (e.g. **`stage_k_sum`**, **`stage_k_xor`**) held in a **vector** or **explicit struct-of-structs** (e.g. **`QuarterRoundWitness { adds: [...], xors: [...], rotates: [...] }`**) where each field is an **owned** sub‑witness, not a reference overwritten in place.
+- **Rationale:** Preserves **one R1CS variable per wire** and matches **fresh‑witness** degree‑2 discipline from the integration spec.
+
+### Exit criteria (Phase 2)
+
+- **Unit tests:** **`bit_wire_rotate`** + **`XorWitness`** + **`RippleCarryWitness`** composed into at least one full **quarter‑round** match **`blake3`** reference **`u32`** outputs on golden inputs.
+- **Integration:** Fixed **64‑byte** Merkle‑parent **`hash_domain`** path (domain prefix **constant**) matches **`qssm_utils::merkle_parent`** on test vectors.
 
 ---
 
@@ -122,7 +159,7 @@ flowchart LR
 | [`crates/qssm-gadget/src/bits.rs`](crates/qssm-gadget/src/bits.rs) | Degree‑2 XOR, **`FullAdder`**, ripple + **`XorWitness` / `RippleCarryWitness`** from **day one**; LE only. |
 | [`crates/qssm-gadget/src/merkle.rs`](crates/qssm-gadget/src/merkle.rs) | **Phase 0** LE path ↔ orientation; **`recompute_root`**. |
 | [`crates/qssm-gadget/src/binding.rs`](crates/qssm-gadget/src/binding.rs) | **§5** **Sovereign Digest** → **30‑bit** **`m`**. |
-| [`crates/qssm-gadget/src/blake3_native.rs`](crates/qssm-gadget/src/blake3_native.rs) | BLAKE3 using **`bits`** primitives only. |
+| [`crates/qssm-gadget/src/blake3_native.rs`](crates/qssm-gadget/src/blake3_native.rs) | G‑function / quarter‑round: **`XorWitness`**, **`RippleCarryWitness`**, **`bit_wire_rotate`**, **`BitRotateWitness`**, chained **`QuarterRoundWitness`** (no native `u32` mix on witness path). |
 | [`crates/qssm-gadget/src/error.rs`](crates/qssm-gadget/src/error.rs) | **`GadgetError`** variants. |
 | [`crates/qssm-gadget/tests/`](crates/qssm-gadget/tests/) | MS + digest golden tests. |
 
@@ -149,7 +186,7 @@ flowchart LR
 1. Scaffold **`qssm-gadget`** + workspace + **`error`**.  
 2. **`merkle.rs`**: Phase 0 **LE bit path** vs **orientation**; **`recompute_root`**.  
 3. **`bits.rs`**: **Phase 1 unified** — primitives **and** **`XorWitness` / `RippleCarryWitness` / `validate`** **together**.  
-4. **`blake3_native.rs`** (Phase 2 table).  
+4. **`blake3_native.rs`**: **`bit_wire_rotate`**, G‑function via **fresh** **`XorWitness` / `RippleCarryWitness`** chain; quarter‑round + Merkle‑parent vectors (Phase 2 section).  
 5. **`binding.rs`**: **§5** Sovereign Digest + 30‑bit limb (Phase 3 table).  
 6. R1CS stub (Phase 4) + benches + spec cross‑links.
 
