@@ -4,8 +4,9 @@
 //! This demo is a **Public-Difference ZK Proof**: the Lyubashevsky layer hides the opening witness
 //! and does not place Alice’s and Bob’s **absolute** balances in the public LE message, but the
 //! encoded public scalar **`m` reveals the distance (difference)** between them under the shift
-//! encoding—enough to decide the winner. **V2.0** may hide the delta (e.g. witness-hiding range /
-//! MS-style paths).
+//! encoding—enough to decide the winner ([`duel_holds`] ⇔ Alice ahead). The on-chain verifier
+//! accepts any in-range encoding from [`valid_duel_public_message`] (Alice ahead, Bob ahead, or tie).
+//! **V2.0** may hide the delta (e.g. witness-hiding range / MS-style paths).
 //!
 //! # Constants
 //! Leaderboard SMT key: [`leaderboard_key`] = `hash_domain(DOMAIN ‖ "MSSQ_DUEL_LEADERBOARD_V1")`.
@@ -55,9 +56,24 @@ pub fn public_message_for_duel(v_a: u64, v_b: u64) -> Result<u64, MillionairesDu
     Ok(m as u64)
 }
 
+/// `true` iff the public duel scalar indicates **Alice’s balance exceeds Bob’s** (`m > DUEL_SHIFT`).
 #[must_use]
 pub fn duel_holds(public_m: u64) -> bool {
     public_m > DUEL_SHIFT
+}
+
+/// `true` iff `m` can be produced by [`public_message_for_duel`] for some `v_a, v_b < MAX_DEMO_BALANCE`
+/// (covers Alice ahead, Bob ahead, and ties). Used by the verifier instead of [`duel_holds`] alone.
+#[must_use]
+pub fn valid_duel_public_message(m: u64) -> bool {
+    if m >= MAX_MESSAGE {
+        return false;
+    }
+    let m = i128::from(m);
+    let shift = i128::from(DUEL_SHIFT);
+    let diff = m - shift;
+    let max_abs = i128::from(MAX_DEMO_BALANCE.saturating_sub(1));
+    diff >= -max_abs && diff <= max_abs
 }
 
 /// First 8 bytes LE `u64` + [`WEALTHIEST_KNIGHT_TAG`].
@@ -262,6 +278,32 @@ pub struct MillionairesDuelVerifier {
     pub candidates: Vec<[u8; 32]>,
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn valid_duel_public_message_matches_public_message_for_duel() {
+        for v_a in [0u64, 40, MAX_DEMO_BALANCE - 1] {
+            for v_b in [0u64, 56, MAX_DEMO_BALANCE - 1] {
+                let m = public_message_for_duel(v_a, v_b).expect("in range");
+                assert!(
+                    valid_duel_public_message(m),
+                    "v_a={v_a} v_b={v_b} m={m}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn valid_duel_public_message_rejects_out_of_band() {
+        assert!(!valid_duel_public_message(MAX_MESSAGE));
+        assert!(!valid_duel_public_message(DUEL_SHIFT + MAX_DEMO_BALANCE));
+        // One more than max negative gap: |v_a - v_b| would need to be MAX_DEMO_BALANCE.
+        assert!(!valid_duel_public_message(DUEL_SHIFT - MAX_DEMO_BALANCE));
+    }
+}
+
 impl TxProofVerifier for MillionairesDuelVerifier {
     fn verify_tx(&self, tx: &L2Transaction, ctx: &RollupContext) -> Result<(), ProofError> {
         if tx.id != leaderboard_key() {
@@ -275,7 +317,7 @@ impl TxProofVerifier for MillionairesDuelVerifier {
             &self.candidates,
         )
         .map_err(|_| ProofError::Invalid)?;
-        if !duel_holds(bundle.public_message) {
+        if !valid_duel_public_message(bundle.public_message) {
             return Err(ProofError::Invalid);
         }
         let vk = VerifyingKey::from_seed(bundle.crs_seed);

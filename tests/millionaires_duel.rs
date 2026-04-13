@@ -15,7 +15,8 @@ use qssm_common::{rollup_context_from_l1, Batch, L1Anchor, L2Transaction, MockKa
 use qssm_le::{prove_arithmetic, verify_lattice, PublicInstance, VerifyingKey, Witness};
 use qssm_ref::millionaires_duel::{
     decode_millionaires_proof, duel_holds, encode_millionaires_proof, leaderboard_key,
-    parse_leaderboard_leaf, prestige_payload, public_message_for_duel, MillionairesDuelVerifier,
+    parse_leaderboard_leaf, prestige_payload, public_message_for_duel, valid_duel_public_message,
+    MillionairesDuelVerifier, DUEL_SHIFT, MAX_DEMO_BALANCE,
 };
 use qssm_utils::{leader_attestation_signing_bytes, leader_id_from_ml_dsa_public_key};
 
@@ -76,7 +77,7 @@ fn build_duel_tx(
     let sk_winner = if winner == id_a { &sk_alice } else { &sk_bob };
 
     let public_m = public_message_for_duel(v_a, v_b).expect("balances");
-    assert!(duel_holds(public_m));
+    assert!(valid_duel_public_message(public_m));
 
     let vk = VerifyingKey::from_seed(crs);
     let public = PublicInstance { message: public_m };
@@ -119,12 +120,34 @@ fn valid_duel_updates_leaderboard_leaf() {
 }
 
 #[test]
-fn duel_rejects_when_alice_not_richer() {
+fn duel_accepts_when_bob_richer() {
     let anchor = anchor_finalized(3);
     let ctx = rollup_context_from_l1(&anchor);
     let d = ctx.digest();
-    let public_m = public_message_for_duel(400, 900).unwrap();
-    assert!(!duel_holds(public_m));
+    let (tx, cands) = build_duel_tx(&anchor, d, 400, 900, [0x3Cu8; 32]);
+    assert!(!duel_holds(public_message_for_duel(400, 900).unwrap()));
+
+    let batch = Batch {
+        txs: sort_lexicographical(vec![tx]),
+    };
+    let mut state = RollupState::new();
+    let r0 = state.root();
+    let verifier = MillionairesDuelVerifier {
+        expected_slot: anchor.get_current_slot(),
+        candidates: cands.to_vec(),
+    };
+    apply_batch(&mut state, &batch, &ctx, &verifier).unwrap();
+    assert_ne!(state.root(), r0);
+}
+
+#[test]
+fn duel_rejects_impossible_public_message() {
+    let anchor = anchor_finalized(4);
+    let ctx = rollup_context_from_l1(&anchor);
+    let d = ctx.digest();
+    // |v_a - v_b| is at most MAX_DEMO_BALANCE - 1; this scalar implies a larger gap.
+    let public_m = DUEL_SHIFT + MAX_DEMO_BALANCE;
+    assert!(!valid_duel_public_message(public_m));
 
     let sk_alice = MlDsa65::from_seed(&Seed::from([0xD1u8; 32]));
     let sk_bob = MlDsa65::from_seed(&Seed::from([0xD2u8; 32]));
@@ -135,7 +158,7 @@ fn duel_rejects_when_alice_not_richer() {
     let winner = elect_leader(&seed, &cands).unwrap();
     let sk_winner = if winner == id_a { &sk_alice } else { &sk_bob };
 
-    let vk = VerifyingKey::from_seed([0x3Cu8; 32]);
+    let vk = VerifyingKey::from_seed([0x3Du8; 32]);
     let public = PublicInstance { message: public_m };
     let witness = Witness {
         r: [0i32; qssm_le::N],

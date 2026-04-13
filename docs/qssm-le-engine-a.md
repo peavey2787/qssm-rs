@@ -152,13 +152,23 @@ The following trace represents a cold-start execution of the millionaires_duel b
 cargo run -p qssm-ref --bin millionaires_duel --release
     Finished `release` profile [optimized] target(s) in 0.16s
      Running `target\release\millionaires_duel.exe`
-Millionaire’s Duel — defaults: use args `<v_a> <v_b>` (demo uses Public-Difference ZK).
-Balances: Alice=1000, Bob=500
+QSSM Protocol Family: Millionaires' Duel
+Privacy-Preserving Magnitude Comparison via Lattice-Based Predicates
+------------------------------------------------------------------------
+
+Demo: Public-Difference ZK, ML-DSA attestations, SMT leaderboard.
+You will enter each player’s balance at the prompts below.
+
+Enter Alice’s balance (non-negative integer): 1000
+Enter Bob’s balance (non-negative integer): 500
+
+Using balances: Alice=1000, Bob=500
+Magnitude: Alice > Bob (public duel scalar above shift)
 verify_lattice: 0.026ms (release / God-Mode path)
 [SMT State] Slot: 0x49024683049c88d3e77be87167ca787f12d779ccd778d0be92f916719ccbe7f1
 [SMT State] Data: [01 00 00 00 00 00 00 00 57 65 61 6c 74 68 69 65 73 74 4b 6e 69 67 68 74 00 00 00 00 00 00 00 00]
 Parsed: 1 Win | Status: WealthiestKnight
-State transition: Alice (ID: c3a3107688d2…) promoted to ‘Wealthiest Knight’ — rollup root fb…
+State transition: slot leader Alice (ID: c3a3107688d2…) committed duel outcome winner=Alice — rollup root fb…
 Full SMT root: fb452a66a363ea1c3301c52f03528cbb46b3a9fb9365c264576c7ce9f2307a42
 
 Note on Latency: The 0.026ms verification time confirms the efficiency of the NTT-optimized negacyclic convolution. This performance ceiling allows for high-throughput validation without the need for specialized hardware accelerators.
