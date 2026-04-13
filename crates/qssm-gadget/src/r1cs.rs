@@ -3,6 +3,7 @@
 //! **`bits.rs`** stays witness-only; this module **reads** witness fields and issues IR hooks.
 
 use crate::bits::{RippleCarryWitness, XorWitness};
+use crate::blake3_compress::{CompressionWitness, MerkleParentHashWitness, MSG_PERMUTATION};
 use crate::blake3_native::{Add32ChainedWitness, BitRotateWitness, GWitness};
 
 /// Handle to one R1CS variable (witness or public input).
@@ -92,6 +93,50 @@ impl ConstraintSystem for MockProver {
 pub struct Blake3Gadget;
 
 impl Blake3Gadget {
+    /// One **`compress`**: **56 × `synthesize_g`**, **6** message word permutations (**512** `enforce_equal` each), **16 × 32** XOR bit hooks for feed-forward (see **`synth_xor_bits`**).
+    pub fn synthesize_compress<C: ConstraintSystem>(cs: &mut C, witness: &CompressionWitness) {
+        for round in 0..7 {
+            for step in 0..8 {
+                Self::synthesize_g(cs, &witness.g_steps[round][step].g);
+            }
+            if round < 6 {
+                Self::synth_msg_block_permute(cs);
+            }
+        }
+        for _ in 0..16 {
+            Self::synth_xor_bits(cs);
+        }
+    }
+
+    /// **`hash_merkle_parent_witness`**: two full **`synthesize_compress`** chains (**chunk start** + **root**).
+    pub fn synthesize_merkle_parent_hash<C: ConstraintSystem>(cs: &mut C, witness: &MerkleParentHashWitness) {
+        Self::synthesize_compress(cs, &witness.compress_chunk_start);
+        Self::synthesize_compress(cs, &witness.compress_root);
+    }
+
+    fn synth_msg_block_permute<C: ConstraintSystem>(cs: &mut C) {
+        let in_ids: [[VarId; 32]; 16] =
+            std::array::from_fn(|_| std::array::from_fn(|_| cs.allocate_variable(VarKind::Private)));
+        let out_ids: [[VarId; 32]; 16] =
+            std::array::from_fn(|_| std::array::from_fn(|_| cs.allocate_variable(VarKind::Private)));
+        for i in 0..16 {
+            let src = MSG_PERMUTATION[i];
+            for j in 0..32 {
+                cs.enforce_equal(out_ids[i][j], in_ids[src][j]);
+            }
+        }
+    }
+
+    fn synth_xor_bits<C: ConstraintSystem>(cs: &mut C) {
+        for _ in 0..32 {
+            let x = cs.allocate_variable(VarKind::Private);
+            let y = cs.allocate_variable(VarKind::Private);
+            let and_xy = cs.allocate_variable(VarKind::Private);
+            let z = cs.allocate_variable(VarKind::Private);
+            cs.enforce_xor(x, y, and_xy, z);
+        }
+    }
+
     pub fn synthesize_g<C: ConstraintSystem>(cs: &mut C, witness: &GWitness) {
         Self::synth_add32_chained(cs, &witness.add_ab_mx);
         Self::synth_xor(cs, &witness.xor_d_a);
@@ -108,13 +153,7 @@ impl Blake3Gadget {
     }
 
     fn synth_xor<C: ConstraintSystem>(cs: &mut C, _w: &XorWitness) {
-        for _i in 0..32 {
-            let x = cs.allocate_variable(VarKind::Private);
-            let y = cs.allocate_variable(VarKind::Private);
-            let and_xy = cs.allocate_variable(VarKind::Private);
-            let z = cs.allocate_variable(VarKind::Private);
-            cs.enforce_xor(x, y, and_xy, z);
-        }
+        Self::synth_xor_bits(cs);
     }
 
     /// Returns **sum** wire ids and the **final carry-out** wire (after bit 31).

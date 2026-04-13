@@ -1,4 +1,4 @@
-//! `qssm-gadget`: degree‑2 bit witnesses, MS Merkle Phase 0, Sovereign Digest limb (Engine B → A).
+//! `qssm-gadget`: degree‑2 bit witnesses, MS Merkle Phase 0, BLAKE3 compress (Phase 5), Sovereign Digest limb (Engine B → A).
 //!
 //! Normative plan: `docs/blake3-lattice-gadget-rust-plan.md` (workspace root).
 
@@ -6,11 +6,16 @@
 
 pub mod binding;
 pub mod bits;
+pub mod blake3_compress;
 pub mod blake3_native;
 pub mod error;
 pub mod merkle;
 pub mod r1cs;
 
+pub use blake3_compress::{
+    hash_merkle_parent_witness, CompressionWitness, MerkleParentHashWitness, MSG_PERMUTATION,
+    MSG_SCHEDULE, MSG_SCHEDULE_ROW,
+};
 pub use binding::{
     encode_proof_metadata_v1, message_limb_from_sovereign_digest_normative, sovereign_digest,
     sovereign_message_limb_v1, SovereignDigest, SovereignWitness, DOMAIN_SOVEREIGN_LIMB_V1,

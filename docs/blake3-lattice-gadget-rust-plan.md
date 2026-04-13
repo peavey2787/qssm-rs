@@ -90,7 +90,8 @@ This section replaces any notion of “take **`root % 2^{30}`**” or other **un
 3. **Phase 1** (**`bits.rs`**) uses **degree‑2** XOR and **ripple** witnesses **from day one**—**always** with LE decomposition.
 4. **`SovereignDigest`** (§3, §5) is computed; **30‑bit** **`m`** follows **only** from that digest.
 5. **Phase 4** (**`r1cs.rs`**) provides the **normative constraint IR** and **`MockProver`** baseline counts on top of the same witnesses (parallel to the B→A limb path).
-6. Engine A lattice proof closes the statement.
+6. **Phase 5** (**`blake3_compress.rs`**) witnesses **full BLAKE3 `compress`** (Merkle parent via **`hash_domain(DOMAIN_MERKLE_PARENT, …)`**).
+7. Engine A lattice proof closes the statement.
 
 ```mermaid
 flowchart LR
@@ -98,10 +99,12 @@ flowchart LR
   P0[Phase 0 bit path vs orientation]
   Bits[Phase 1 bits.rs witnesses]
   R4[Phase 4 r1cs MockProver baseline]
+  P5[Phase 5 BLAKE3 compress witness]
   SD[Sovereign Digest then limb]
   LE[Engine A lattice proof]
   MS --> P0 --> Bits --> SD --> LE
   Bits --> R4
+  Bits --> P5
 ```
 
 ---
@@ -115,6 +118,40 @@ flowchart LR
 | **2** | **`blake3_native.rs`**: BLAKE3 **G‑function** and quarter‑round **only** via **`XorWitness`**, **`RippleCarryWitness`**, **`bit_wire_rotate`**, and **witness chaining** (normative structure below). | Vectors vs **`blake3`** / **`hash_domain`**; Merkle‑parent preimage path. |
 | **3** | **`binding.rs`**: **Sovereign Digest** per **Phase 3** (input schema, **`DOMAIN_SOVEREIGN_LIMB_V1`**, LE limb via **bit decomposition**, **`SovereignWitness`**). | Golden vectors; **`PublicInstance::validate`**; witness **`validate()`** round‑trip. |
 | **4** | **`r1cs.rs`**: normative **constraint IR** — **`ConstraintSystem`**, **`Blake3Gadget::synthesize_g`**, **`MockProver`** baseline counter; real provers implement the same trait. | **`test_blake3_g_constraint_cost`** locks **G** cost; optional benches. |
+| **5** | **`blake3_compress.rs`**: **`MSG_SCHEDULE`**, **`CompressionWitness`** (**56 × `G`** / compress), **`hash_merkle_parent_witness`**; **`Blake3Gadget::synthesize_compress`** / **`synthesize_merkle_parent_hash`**. | **`test_full_merkle_parent_parity`**: digest **bit-for-bit** vs **`qssm_utils::merkle_parent`**; **MockProver** full-chain count locked (**65 184**). |
+
+---
+
+## Phase 5 — Compression engine & Merkle parent witness (`blake3_compress.rs`)
+
+**Math is law:** One BLAKE3 **`compress`** matches the [reference `compress` / `round` / `permute`](https://github.com/BLAKE3-team/BLAKE3/blob/master/reference_impl/reference_impl.rs): **7** rounds, **8** **`G`** applications per round (**56** total per compress), **`MSG_PERMUTATION`** on the **16** message words **between** rounds (**no arithmetic** on schedule indices—only **public** permutation / **copy** wiring).
+
+### **`MSG_SCHEDULE` and quarter-round order**
+
+- **`ROUND_G_LANES`**: the **eight** `(state indices a,b,c,d, mx_word, my_word)` tuples per **`round`** (column **G**s then diagonal **G**s), identical to the reference **`round`** function.
+- **`MSG_SCHEDULE`**: **7 × 8** pairs **`(mx_word, my_word)`** into the **current** 16-word message block; the **same eight pairs** apply every round because **`MSG_PERMUTATION`** reshuffles **words** between rounds (normative BLAKE3).
+- **`MSG_SCHEDULE_ROW`** / **`MSG_SCHEDULE`**: `[(0,1),(2,3),…,(14,15)]` repeated **7** times in code for auditability.
+
+### **`CompressionWitness`**
+
+- **Fields:** **`chaining_value`**, **`block_words_initial`**, **`counter_low` / `counter_high`**, **`block_len`**, **`flags`**, **`g_steps: [[QuarterRoundWitness; 8]; 7]`**, **`output_words: [u32; 16]`** after feed-forward XOR.
+- **`build` / `validate()`:** **`validate`** checks every nested **`GWitness`** and compares **`output_words`** to **`compress_native`** (oracle).
+
+### **Merkle parent — `hash_merkle_parent_witness`**
+
+- **Target:** **`qssm_utils::merkle::merkle_parent(left, right)`** = **`hash_domain(DOMAIN_MERKLE_PARENT, &[left‖right])`** (UTF‑8 domain prefix then **64**-byte chunk).
+- **Two compresses** (single-chunk **`Hasher`** path for this preimage length): **(1)** first **64** bytes of **`domain ‖ left ‖ right`** with **`CHUNK_START`**; **(2)** remaining tail with **`CHUNK_END | ROOT`** (same **partial block** layout as the reference **`Output::root_output_bytes`** compress).
+- **`MerkleParentHashWitness`:** **`compress_chunk_start`** + **`compress_root`**; **`digest()`** = first **32** bytes of **`compress_root.output_words`** (LE).
+
+### **Constraint budget (`MockProver`)**
+
+- Per **`compress`:** **56 × 518** (**`synthesize_g`**) + **6 × 512** (**message word permute**, **32** bits × **16** words) + **16 × 32** (**finalize XOR** bit hooks) = **32 592**.
+- **Full Merkle parent:** **2 × 32 592 = 65 184** (**`synthesize_merkle_parent_hash`**). Regression-locked in **`test_full_merkle_parent_parity`**.
+
+### **Exit criteria (Phase 5)**
+
+- Golden **`test_full_merkle_parent_parity`**: **`merkle_parent`** vs witness **`digest()`** **byte- and bit-equal**; **`println!`** sovereign machine constraint count.
+- **`CompressionWitness::validate`** and unit tests vs **`compress_native`**.
 
 ---
 
@@ -125,6 +162,7 @@ Phase 4 is **no longer** an unspecified “stub”: the **gadget constraint IR**
 - **`ConstraintSystem`** (normative methods): **`allocate_variable`**, **`enforce_xor`** (boolean XOR with explicit AND wire, consistent with **`XorWitness`**), **`enforce_full_adder`**, **`enforce_equal`** (rotations / copies).
 - **`MockProver`**: reference implementation of **`ConstraintSystem`**; **`constraint_count()`** increments **once per `enforce_*`** — this is the **baseline cost metric** for regressions until a real backend lands.
 - **`Blake3Gadget::synthesize_g`**: walks **`GWitness`** in the **same order** as **`g_function`** (Phase 2) and emits constraints for XORs, ripple adds, and bit rotations.
+- **`Blake3Gadget::synthesize_compress`** / **`synthesize_merkle_parent_hash`** (Phase 5): full **`CompressionWitness`** and **`MerkleParentHashWitness`** chains into **`MockProver`** (see **Phase 5**).
 - **Exit test:** **`test_blake3_g_constraint_cost`** — build **`GWitness`** via **`g_function`**, run **`Blake3Gadget::synthesize_g`**, assert a **fixed** constraint total (documented in the test). **Optional benches** remain for future throughput work; they do not replace the **MockProver** baseline.
 
 Phase 3 **Sovereign Digest** / **`SovereignWitness`** ( **`binding.rs`** ) stays the normative **B→A message limb** path; future work may **emit** limb/digest wiring through the same **`ConstraintSystem`** pattern.
@@ -252,9 +290,10 @@ Let **`D = SovereignDigest`** be **`[u8; 32]`** (**256** bits).
 | [`crates/qssm-gadget/src/merkle.rs`](crates/qssm-gadget/src/merkle.rs) | **Phase 0** LE path ↔ orientation; **`recompute_root`**. |
 | [`crates/qssm-gadget/src/binding.rs`](crates/qssm-gadget/src/binding.rs) | **Phase 3**: **`hash_domain(DOMAIN_SOVEREIGN_LIMB_V1, [root‖rollup‖metadata])`**, LE **30‑bit** limb from **`to_le_bits`**, **`SovereignWitness`**. |
 | [`crates/qssm-gadget/src/blake3_native.rs`](crates/qssm-gadget/src/blake3_native.rs) | G‑function / quarter‑round: **`XorWitness`**, **`RippleCarryWitness`**, **`bit_wire_rotate`**, **`BitRotateWitness`**, chained **`QuarterRoundWitness`** (no native `u32` mix on witness path). |
-| [`crates/qssm-gadget/src/r1cs.rs`](crates/qssm-gadget/src/r1cs.rs) | **Phase 4**: normative **`ConstraintSystem`**, **`MockProver`** (baseline constraint counter), **`Blake3Gadget`** emission over **`GWitness`**. |
+| [`crates/qssm-gadget/src/blake3_compress.rs`](crates/qssm-gadget/src/blake3_compress.rs) | **Phase 5**: **`MSG_SCHEDULE`**, **`CompressionWitness`** (**56 × `G`**), **`hash_merkle_parent_witness`**, **`compress_native`** oracle. |
+| [`crates/qssm-gadget/src/r1cs.rs`](crates/qssm-gadget/src/r1cs.rs) | **Phase 4–5**: **`ConstraintSystem`**, **`MockProver`**, **`Blake3Gadget::synthesize_g`**, **`synthesize_compress`**, **`synthesize_merkle_parent_hash`**. |
 | [`crates/qssm-gadget/src/error.rs`](crates/qssm-gadget/src/error.rs) | **`GadgetError`** variants. |
-| [`crates/qssm-gadget/tests/`](crates/qssm-gadget/tests/) | MS + digest golden tests. |
+| [`crates/qssm-gadget/tests/`](crates/qssm-gadget/tests/) | MS + digest golden + **`full_merkle_parent_parity`** (Merkle parent **bit** parity + constraint count). |
 
 ---
 
@@ -285,7 +324,8 @@ Let **`D = SovereignDigest`** be **`[u8; 32]`** (**256** bits).
    - Limb: **LE** first **30** bits via **`to_le_bits`** / padded **`[bool; 32]`** + **`from_le_bits`** (no mask‑only normative API; optimized code **must** match bit construction in tests).  
    - Add **`SovereignWitness`** + **`validate()`** (recompute **`hash_domain`**, rederive **`message_limb`**, check **`limb_bits`**).  
    - Golden tests: fixed **`root`/`rollup`/`metadata`** → **`digest`** → **`m`**; **`PublicInstance::validate`** smoke.  
-6. **Phase 4 (done — normative):** **`r1cs.rs`** — **`ConstraintSystem`**, **`MockProver`** as **baseline** cost counter, **`Blake3Gadget::synthesize_g`**, **`test_blake3_g_constraint_cost`**; optional benches + spec cross‑links as follow‑ons.
+6. **Phase 4 (done — normative):** **`r1cs.rs`** — **`ConstraintSystem`**, **`MockProver`** as **baseline** cost counter, **`Blake3Gadget::synthesize_g`**, **`test_blake3_g_constraint_cost`**; optional benches + spec cross‑links as follow‑ons.  
+7. **Phase 5 (done — compression engine):** **`blake3_compress.rs`** — **`MSG_SCHEDULE` / `MSG_PERMUTATION`**, **`CompressionWitness`**, **`hash_merkle_parent_witness`** (two compresses = **`merkle_parent`** path); **`r1cs`**: **`synthesize_compress`**, **`synthesize_merkle_parent_hash`**; **`tests/full_merkle_parent_parity.rs`** locks **65 184** **`MockProver`** units and **bit-for-bit** digest parity vs **`qssm_utils`**.
 
 ---
 
