@@ -93,6 +93,7 @@ This section replaces any notion of “take **`root % 2^{30}`**” or other **un
 6. **Phase 5** (**`blake3_compress.rs`**) witnesses **full BLAKE3 `compress`** (Merkle parent via **`hash_domain(DOMAIN_MERKLE_PARENT, …)`**).
 7. **Phase 6** emits **prover JSON** + **`prover_package.json`** (sovereign + Merkle artifacts, R1CS manifest metadata) — **complete**.
 8. **Phase 7** (**`lattice_bridge.rs`**) binds **`prover_package.engine_a_public.message_limb_u30`** to **`SovereignWitness`** JSON and (optionally, feature **`lattice-bridge`**) to **`qssm-le`** **`PublicInstance`** / **`RqPoly::embed_constant`**; then Engine A lattice proof closes the statement.
+9. **Phase 8** (**`entropy.rs`**) supplies **`sovereign_entropy`** (Kaspa ‖ local floor, optional NIST XOR) embedded in **`encode_proof_metadata_v2`** so the **30‑bit limb** commits to the pulse used; **`nist_included`** is public in JSON and **`prover_package.nist_beacon_included`**.
 
 ```mermaid
 flowchart LR
@@ -101,10 +102,11 @@ flowchart LR
   Bits[Phase 1 bits.rs witnesses]
   R4[Phase 4 r1cs MockProver baseline]
   P5[Phase 5 BLAKE3 compress witness]
+  EP[Phase 8 entropy floor plus NIST]
   SD[Sovereign Digest then limb]
   LB[Lattice bridge limb check]
   LE[Engine A lattice proof]
-  MS --> P0 --> Bits --> SD --> LB --> LE
+  MS --> P0 --> Bits --> EP --> SD --> LB --> LE
   Bits --> R4
   Bits --> P5
 ```
@@ -118,11 +120,12 @@ flowchart LR
 | **0** | **`merkle.rs`**: **mandatory** LE bit‑path vs **sibling orientation** per level; **`IndexMismatch`** if not; then **`recompute_root`**. | MS tests; tamper / wrong index negatives. |
 | **1** | **`bits.rs`**: **`to_le_bits`**, **`constraint_xor` (\(x+y-2xy\))**, **`FullAdder`**, **`ripple_carry_adder`**, **`XorWitness`**, **`RippleCarryWitness`**, **`validate()`**—**one** phase, **day one**. | No `wrapping_add` on add witness API; LE byte tests. |
 | **2** | **`blake3_native.rs`**: BLAKE3 **G‑function** and quarter‑round **only** via **`XorWitness`**, **`RippleCarryWitness`**, **`bit_wire_rotate`**, and **witness chaining** (normative structure below). | Vectors vs **`blake3`** / **`hash_domain`**; Merkle‑parent preimage path. |
-| **3** | **`binding.rs`**: **Sovereign Digest** per **Phase 3** (input schema, **`DOMAIN_SOVEREIGN_LIMB_V1`**, LE limb via **bit decomposition**, **`SovereignWitness`**). | Golden vectors; **`PublicInstance::validate`**; witness **`validate()`** round‑trip. |
+| **3** | **`binding.rs`**: **Sovereign Digest** (**`DOMAIN_SOVEREIGN_LIMB_V2`**, **`encode_proof_metadata_v2`** incl. Phase 8 entropy + **`nist` flag**, LE limb, **`SovereignWitness`**). | Golden vectors; **`PublicInstance::validate`**; witness **`validate()`** round‑trip. |
 | **4** | **`r1cs.rs`**: normative **constraint IR** — **`ConstraintSystem`**, **`Blake3Gadget::synthesize_g`**, **`MockProver`** baseline counter; real provers implement the same trait. | **`test_blake3_g_constraint_cost`** locks **G** cost; optional benches. |
 | **5** | **`blake3_compress.rs`**: **`MSG_SCHEDULE`**, **`CompressionWitness`** (**56 × `G`** / compress), **`hash_merkle_parent_witness`**; **`Blake3Gadget::synthesize_compress`** / **`synthesize_merkle_parent_hash`**. | **`test_full_merkle_parent_parity`**: digest **bit-for-bit** vs **`qssm_utils::merkle_parent`**; **MockProver** full-chain count locked (**65 184**). |
 | **6** | **`prover_json.rs`** + **`examples/l2_handshake.rs`** + deployment docs: **`SovereignWitness` / Merkle** → **`to_prover_json`**, **`prover_package.json`**, R1CS manifest path, wire-count metadata. | Example runs; artifacts on disk; manifest line count **65 184**; **`docs/l2-kaspa-core-deployment-manifest.md`** aligned. |
 | **7** | **`lattice_bridge.rs`**: **`verify_limb_binding_json`** (always); **`verify_handshake_with_le`** (feature **`lattice-bridge`**); **`BRIDGE_Q = 7_340_033`** = **`qssm_le::Q`**. | JSON limb equality + **`m < 2^{30}`**; optional LE path checks **`embed_constant`** vs **`m mod Q`** (and **`coeff₀ = m`** when **`m < Q`**). |
+| **8** | **`entropy.rs`**: **`EntropyProvider`**, **`entropy_floor` = BLAKE3(Kaspa‖local)**, **`fetch_nist_pulse`** (NIST Beacon **2.0** **`pulse.outputValue`**, first **32** bytes, **200 OK** only, **500 ms** timeout), **`generate_sovereign_entropy`** → **Final = Floor ⊕ Pulse** if NIST succeeds. | Unit tests (floor, XOR, hex parse); **`l2_handshake`** simulates NIST up/down + production path; package **`nist_beacon_included`**. |
 
 ---
 
@@ -162,7 +165,7 @@ flowchart LR
 ## Phase 6 — Prover JSON & L2 handshake artifacts (**complete**)
 
 - **`prover_json`**: private wire counting for sovereign + Merkle compress witnesses; value hooks for golden / tooling.
-- **`examples/l2_handshake.rs`**: deterministic demo — Merkle parent witness, **`SovereignWitness::bind`**, **`Blake3Gadget::export_r1cs`**, writes **`prover_package.json`**, **`sovereign_witness.json`**, **`merkle_parent_witness.json`**, **`r1cs_merkle_parent.manifest.txt`** (large stack on Windows worker thread).
+- **`examples/l2_handshake.rs`**: Merkle parent witness, **`EntropyProvider`** (Phase 8), **`SovereignWitness::bind`**, **`Blake3Gadget::export_r1cs`**, writes **`prover_package.json`** (**`nist_beacon_included`**), **`sovereign_witness.json`**, **`merkle_parent_witness.json`**, **`r1cs_merkle_parent.manifest.txt`** (large stack on Windows worker thread).
 - **Deployment manifest:** [`l2-kaspa-core-deployment-manifest.md`](./l2-kaspa-core-deployment-manifest.md) lists Engine B/A field map and artifact paths.
 
 **Exit criteria:** example + tests green; package JSON schema stable for Engine A consumption.
@@ -181,6 +184,22 @@ flowchart LR
 - **`verify_handshake_with_le(package_dir)`** — behind Cargo feature **`lattice-bridge`** (optional **`qssm-le`** dep): runs the JSON check, then **`PublicInstance { message: m }.validate()`**, then asserts **`RqPoly::embed_constant(m).0[0] == (m % Q)`** as **`u32`** (matches **`qssm-le`**). When additionally **`m < Q`**, **`coeff_0 = m`** with no reduction — helper **`limb_to_q_coeff0`** documents that subrange.
 
 **Exit criteria:** **`cargo test -p qssm-gadget`**; **`cargo test -p qssm-gadget --features lattice-bridge`** covers LE handshake test; **`l2_handshake`** prints PATH A verification after **`verify_limb_binding_json`**.
+
+---
+
+## Phase 8 — Opportunistic entropy provider (`entropy.rs`)
+
+**Entropy floor (normative):** **`Floor = BLAKE3(Kaspa_Hash ‖ Local_Entropy)`** with **`Kaspa_Hash`** and **`Local_Entropy`** each **32** bytes (concatenated **64**‑byte preimage, raw **`blake3_hash`** — no extra domain tag in Phase 8).
+
+**Booster (opportunistic):** If **`GET`** [`https://beacon.nist.gov/beacon/2.0/pulse/last`](https://beacon.nist.gov/beacon/2.0/pulse/last) returns **200 OK** within **500 ms**, parse **`pulse.outputValue`** (hex, **64** bytes), take the **first 32** bytes as **`NIST_Pulse`**, and set **`Final = Floor ⊕ NIST_Pulse`** (byte‑wise XOR). Otherwise use **`Final = Floor`** and record **`nist_included = false`**.
+
+**Sovereign binding:** **`Final`** is stored as **`sovereign_entropy`** on **`SovereignWitness`** and appended (with **`nist_included`** as a trailing **`u8`**) via **`encode_proof_metadata_v2`**, which is hashed inside **`chunk₂`** of **`hash_domain(DOMAIN_SOVEREIGN_LIMB_V2, …)`**. The **30‑bit limb** therefore depends on the exact entropy bytes and on whether NIST was mixed in.
+
+**JSON / package:** **`public.nist_included`** on **`SovereignWitnessV1`**; **`prover_package.json`** carries **`nist_beacon_included`** (must match when present — checked by **`verify_limb_binding_json`**).
+
+**Latency posture:** At **~10 BPS**, an L2 cannot wait **5 s** for a beacon round; **500 ms** caps tail latency so consensus / block production keep moving with the **Kaspa floor** when the booster is absent.
+
+**Exit criteria:** **`cargo test -p qssm-gadget`**; **`l2_handshake`** stderr shows simulated NIST down/up and production policy line.
 
 ---
 
@@ -249,26 +268,29 @@ with **no** implicit reordering. **Normative mapping:**
 
 | Segment | Role | Length / type |
 |---------|------|----------------|
-| **`domain_tag`** | Protocol‑unique string (**`DOMAIN_SOVEREIGN_LIMB_V1`**, below) | UTF‑8 bytes (not NUL‑terminated in hash) |
+| **`domain_tag`** | Protocol‑unique string (**`DOMAIN_SOVEREIGN_LIMB_V2`**, below) | UTF‑8 bytes (not NUL‑terminated in hash) |
 | **`chunk₀`** | **Merkle root** | **32** bytes |
 | **`chunk₁`** | **Rollup context** | **`rollup_context_digest`**, **32** bytes |
-| **`chunk₂`** | **Proof metadata** | **Variable**, **canonical** encoding (fixed field order below) |
+| **`chunk₂`** | **Proof metadata** | **Variable**, **canonical** **`encode_proof_metadata_v2`** (v1 prefix **‖** **32**‑byte **`sovereign_entropy`** **‖** **`nist_included`** **u8**) |
 
 **Forbidden:** Passing **`root`**, **`rollup`**, or **`metadata`** in a different order; omitting **`domain_tag`** from **`hash_domain`**’s first argument and stuffing it inside **`chunks`** unless the implementation is proven byte‑identical to the table above.
 
-**`ProofMetadata` (normative field order for Engine B v1):** encode as a single contiguous byte array in this order (adjust version suffix in constant if this schema bumps):
+**`ProofMetadata` (normative — Engine B v2):** **`encode_proof_metadata_v2`** = v1 prefix **‖** Phase 8 tail:
 
 1. **`n`** — **`u8`** (MS nonce),  
 2. **`k`** — **`u8`** (bit index),  
 3. **`bit_at_k`** — **`u8`**,  
-4. **`challenge`** — **`[u8; 32]`** (Fiat–Shamir bytes from **`GhostMirrorProof`**).
+4. **`challenge`** — **`[u8; 32]`** (Fiat–Shamir bytes from **`GhostMirrorProof`**),  
+5. **`sovereign_entropy`** — **`[u8; 32]`** (**`BLAKE3(Kaspa‖local)`**, optionally XOR NIST pulse — see **Phase 8**),  
+6. **`nist_included`** — **`u8`** (**0** / **1**).
 
-Additional FS‑bound fields (e.g. **`value`**, **`target`**, **`context`** length‑prefixed) **may** be appended in a **documented** v2 schema; v1 **must** match the four fields above for cross‑implementation tests.
+Legacy **`encode_proof_metadata_v1`** remains for building the **first four** fields only; **production** sovereign digests use **v2** + **`DOMAIN_SOVEREIGN_LIMB_V2`**.
 
-### Domain separation — **`DOMAIN_SOVEREIGN_LIMB_V1`**
+### Domain separation — **`DOMAIN_SOVEREIGN_LIMB_V2`** (normative)
 
-- **Normative string (exact, case‑sensitive):** **`QSSM-SOVEREIGN-LIMB-v1.0`**
-- **Purpose:** Binds the digest to the **Sovereign limb** construction so preimage cannot be confused with **`DOMAIN_MS`**, **`DOMAIN_MERKLE_PARENT`**, **`QSSM-LE-FS-LYU-v1.0`**, or other **`hash_domain`** users.
+- **Normative string (exact, case‑sensitive):** **`QSSM-SOVEREIGN-LIMB-v2.0`**
+- **Historical:** **`QSSM-SOVEREIGN-LIMB-v1.0`** (**`DOMAIN_SOVEREIGN_LIMB_V1`**) — preimage without Phase 8 tail; retained in code for migration reference only.
+- **Purpose:** Binds the digest to the **Sovereign limb** construction (including entropy) so preimage cannot be confused with **`DOMAIN_MS`**, **`DOMAIN_MERKLE_PARENT`**, **`QSSM-LE-FS-LYU-v1.0`**, or other **`hash_domain`** users.
 - **Rule:** **Do not** reuse this string for non‑limb hashes; **do not** alias another domain string to the same UTF‑8 bytes.
 
 ### Limb extraction — **first 30 bits**, LE‑consistent, **no `mod 2^{30}` shortcut**
@@ -288,8 +310,8 @@ Let **`D = SovereignDigest`** be **`[u8; 32]`** (**256** bits).
 
 | Field / group | Content |
 |---------------|---------|
-| **Inputs (copy or reference)** | **`root`**, **`rollup_context_digest`**, **`proof_metadata`** bytes actually hashed |
-| **`domain_tag`** | **`DOMAIN_SOVEREIGN_LIMB_V1`** (or fixed `&'static str`) |
+| **Inputs (copy or reference)** | **`root`**, **`rollup_context_digest`**, **`proof_metadata`** bytes actually hashed; **`sovereign_entropy`**, **`nist_included`**, **`n`/`k`/`bit_at_k`/`challenge`** (must agree with metadata encoding) |
+| **`domain_tag`** | **`DOMAIN_SOVEREIGN_LIMB_V2`** (or fixed `&'static str`) |
 | **`digest`** | Output **`[u8; 32]`** of **`hash_domain`** |
 | **`limb_bits`** | The **30** selected booleans (and optional padding witness to **32** bits) |
 | **`message_limb`** | **`u64`** in **`[0, 2^{30})`** |
@@ -313,17 +335,18 @@ Let **`D = SovereignDigest`** be **`[u8; 32]`** (**256** bits).
 
 | File | Responsibility |
 |------|----------------|
-| [`crates/qssm-gadget/Cargo.toml`](crates/qssm-gadget/Cargo.toml) | Crate manifest; `qssm-utils`, `thiserror`; feature **`lattice-bridge`** → optional **`qssm-le`**; `blake3` dev for vectors. |
-| [`crates/qssm-gadget/src/lib.rs`](crates/qssm-gadget/src/lib.rs) | `bits`, `merkle`, `binding`, `blake3_native`, **`r1cs`**, **`lattice_bridge`**, `error`; re‑exports **`ConstraintSystem`**, **`MockProver`**, **`Blake3Gadget`**, **`verify_limb_binding_json`**. |
+| [`crates/qssm-gadget/Cargo.toml`](crates/qssm-gadget/Cargo.toml) | Crate manifest; `qssm-utils`, `ureq`, `thiserror`; feature **`lattice-bridge`** → optional **`qssm-le`**; `blake3` dev for vectors. |
+| [`crates/qssm-gadget/src/lib.rs`](crates/qssm-gadget/src/lib.rs) | `bits`, `merkle`, `binding`, `blake3_native`, **`entropy`**, **`r1cs`**, **`lattice_bridge`**, `error`; re‑exports **`ConstraintSystem`**, **`MockProver`**, **`Blake3Gadget`**, **`verify_limb_binding_json`**. |
 | [`crates/qssm-gadget/src/bits.rs`](crates/qssm-gadget/src/bits.rs) | Degree‑2 XOR, **`FullAdder`**, ripple + **`XorWitness` / `RippleCarryWitness`** from **day one**; LE only. |
 | [`crates/qssm-gadget/src/merkle.rs`](crates/qssm-gadget/src/merkle.rs) | **Phase 0** LE path ↔ orientation; **`recompute_root`**. |
-| [`crates/qssm-gadget/src/binding.rs`](crates/qssm-gadget/src/binding.rs) | **Phase 3**: **`hash_domain(DOMAIN_SOVEREIGN_LIMB_V1, [root‖rollup‖metadata])`**, LE **30‑bit** limb from **`to_le_bits`**, **`SovereignWitness`**. |
+| [`crates/qssm-gadget/src/binding.rs`](crates/qssm-gadget/src/binding.rs) | **Phase 3+8**: **`hash_domain(DOMAIN_SOVEREIGN_LIMB_V2, [root‖rollup‖metadata_v2])`**, LE **30‑bit** limb, **`SovereignWitness`** (**`nist_included`**, **`sovereign_entropy`**). |
+| [`crates/qssm-gadget/src/entropy.rs`](crates/qssm-gadget/src/entropy.rs) | **Phase 8**: **`EntropyProvider`**, **`fetch_nist_pulse`**, **`generate_sovereign_entropy`**, **500 ms** default timeout. |
 | [`crates/qssm-gadget/src/blake3_native.rs`](crates/qssm-gadget/src/blake3_native.rs) | G‑function / quarter‑round: **`XorWitness`**, **`RippleCarryWitness`**, **`bit_wire_rotate`**, **`BitRotateWitness`**, chained **`QuarterRoundWitness`** (no native `u32` mix on witness path). |
 | [`crates/qssm-gadget/src/blake3_compress.rs`](crates/qssm-gadget/src/blake3_compress.rs) | **Phase 5**: **`MSG_SCHEDULE`**, **`CompressionWitness`** (**56 × `G`**), **`hash_merkle_parent_witness`**, **`compress_native`** oracle. |
 | [`crates/qssm-gadget/src/r1cs.rs`](crates/qssm-gadget/src/r1cs.rs) | **Phase 4–5**: **`ConstraintSystem`**, **`MockProver`**, **`Blake3Gadget::synthesize_g`**, **`synthesize_compress`**, **`synthesize_merkle_parent_hash`**. |
-| [`crates/qssm-gadget/src/lattice_bridge.rs`](crates/qssm-gadget/src/lattice_bridge.rs) | **Phase 7**: **`BRIDGE_Q`**, **`verify_limb_binding_json`**, **`verify_handshake_with_le`** (feature **`lattice-bridge`**). |
+| [`crates/qssm-gadget/src/lattice_bridge.rs`](crates/qssm-gadget/src/lattice_bridge.rs) | **Phase 7**: **`BRIDGE_Q`**, **`verify_limb_binding_json`** (+ **`nist_beacon_included`** vs **`public.nist_included`**), **`verify_handshake_with_le`** (feature **`lattice-bridge`**). |
 | [`crates/qssm-gadget/src/error.rs`](crates/qssm-gadget/src/error.rs) | **`GadgetError`** variants. |
-| [`crates/qssm-gadget/examples/l2_handshake.rs`](crates/qssm-gadget/examples/l2_handshake.rs) | **Phase 6** demo; calls **`verify_limb_binding_json`**; optional **`verify_handshake_with_le`** with **`--features lattice-bridge`**. |
+| [`crates/qssm-gadget/examples/l2_handshake.rs`](crates/qssm-gadget/examples/l2_handshake.rs) | **Phase 6+8** demo; Phase 8 NIST up/down simulation + production **`EntropyProvider::default()`**; **`nist_beacon_included`** in package; **`verify_limb_binding_json`**; optional **`verify_handshake_with_le`** with **`--features lattice-bridge`**. |
 | [`crates/qssm-gadget/tests/`](crates/qssm-gadget/tests/) | MS + digest golden + **`full_merkle_parent_parity`** (Merkle parent **bit** parity + constraint count). |
 
 ---
@@ -358,7 +381,8 @@ Let **`D = SovereignDigest`** be **`[u8; 32]`** (**256** bits).
 6. **Phase 4 (done — normative):** **`r1cs.rs`** — **`ConstraintSystem`**, **`MockProver`** as **baseline** cost counter, **`Blake3Gadget::synthesize_g`**, **`test_blake3_g_constraint_cost`**; optional benches + spec cross‑links as follow‑ons.  
 7. **Phase 5 (done — compression engine):** **`blake3_compress.rs`** — **`MSG_SCHEDULE` / `MSG_PERMUTATION`**, **`CompressionWitness`**, **`hash_merkle_parent_witness`** (two compresses = **`merkle_parent`** path); **`r1cs`**: **`synthesize_compress`**, **`synthesize_merkle_parent_hash`**; **`tests/full_merkle_parent_parity.rs`** locks **65 184** **`MockProver`** units and **bit-for-bit** digest parity vs **`qssm_utils`**.  
 8. **Phase 6 (done):** **`prover_json`** + **`l2_handshake`** + deployment manifest — artifact JSON + **`prover_package.json`** + R1CS manifest path.  
-9. **Phase 7 (done):** **`lattice_bridge.rs`** — **`verify_limb_binding_json`**; feature **`lattice-bridge`**: **`verify_handshake_with_le`**, **`BRIDGE_Q`**, **`RqPoly::embed_constant`** **coeff₀ = m** check; tests + example PATH A line.
+9. **Phase 7 (done):** **`lattice_bridge.rs`** — **`verify_limb_binding_json`**; feature **`lattice-bridge`**: **`verify_handshake_with_le`**, **`BRIDGE_Q`**, **`RqPoly::embed_constant`** **coeff₀ = m** check; tests + example PATH A line.  
+10. **Phase 8 (done):** **`entropy.rs`** — Kaspa ‖ local floor, **500 ms** NIST beacon fetch, XOR booster; **`encode_proof_metadata_v2`** + **`SovereignWitness`** **`nist_included`**; **`l2_handshake`** + **`verify_limb_binding_json`** **`nist_beacon_included`** check.
 
 ---
 
@@ -382,8 +406,9 @@ Let **`D = SovereignDigest`** be **`[u8; 32]`** (**256** bits).
 
 **Normative pipeline:**
 
-1. **Compute** **`SovereignDigest = H(domain_tag ‖ Root ‖ RollupContext ‖ ProofMetadata)`** using domain‑separated hashing; chunk order **fixed** in code and tests (**Phase 3** input schema).  
-2. **Only then** extract **`m`**: **first 30 bits** of **`SovereignDigest`** in **LE** order via **bit decomposition** (**Phase 3**); **`SovereignWitness`** holds digest + limb for **`validate()`**.  
-3. **Forbidden:** **`m`** from raw root truncation or **mod‑only** reduction **without** this hash.
+1. **Compute** **`sovereign_entropy`** (**Phase 8**): **`Floor = BLAKE3(Kaspa_Hash ‖ Local_Entropy)`**; if NIST beacon returns in time, **`Final = Floor ⊕ NIST_Pulse`**, else **`Final = Floor`**.  
+2. **Compute** **`SovereignDigest = H(domain_tag ‖ Root ‖ RollupContext ‖ ProofMetadata_v2)`** using domain‑separated hashing (**`DOMAIN_SOVEREIGN_LIMB_V2`**); **`ProofMetadata_v2`** includes **`sovereign_entropy`** and **`nist_included`** (**Phase 3+8**).  
+3. **Only then** extract **`m`**: **first 30 bits** of **`SovereignDigest`** in **LE** order via **bit decomposition**; **`SovereignWitness`** holds digest + limb + entropy flags for **`validate()`**.  
+4. **Forbidden:** **`m`** from raw root truncation or **mod‑only** reduction **without** this hash.
 
 ---

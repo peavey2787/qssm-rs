@@ -21,6 +21,8 @@ pub enum LatticeBridgeError {
     MissingField(&'static str),
     #[error("limb mismatch: prover_package has {pkg} but sovereign witness has {sov}")]
     LimbMismatch { pkg: u64, sov: u64 },
+    #[error("nist_included mismatch: prover_package nist_beacon_included={pkg} but sovereign public.nist_included={sov}")]
+    NistIncludedMismatch { pkg: bool, sov: bool },
     #[error("message limb {0} out of 30-bit range (must be < 2^30)")]
     LimbOutOfRange30(u64),
     #[error("message limb {0} is not canonically liftable below BRIDGE_Q (must be < {BRIDGE_Q})")]
@@ -70,6 +72,17 @@ pub fn verify_limb_binding_json(package_dir: &Path) -> Result<(), LatticeBridgeE
     }
     if limb_pkg >= MAX_LIMB_EXCLUSIVE {
         return Err(LatticeBridgeError::LimbOutOfRange30(limb_pkg));
+    }
+    if let Some(pkg_nist) = pkg.get("nist_beacon_included").and_then(|v| v.as_bool()) {
+        let sov_nist = sov["public"]["nist_included"]
+            .as_bool()
+            .ok_or(LatticeBridgeError::MissingField("public.nist_included"))?;
+        if pkg_nist != sov_nist {
+            return Err(LatticeBridgeError::NistIncludedMismatch {
+                pkg: pkg_nist,
+                sov: sov_nist,
+            });
+        }
     }
     Ok(())
 }
@@ -129,13 +142,21 @@ mod tests {
             d.join("sovereign_witness.json"),
             serde_json::to_string_pretty(&json!({
                 "kind": "SovereignWitnessV1",
-                "public": { "message_limb_u30": 42u64, "root_hex": "", "digest_hex": "", "domain_tag": "x" },
+                "public": {
+                    "message_limb_u30": 42u64,
+                    "root_hex": "",
+                    "digest_hex": "",
+                    "domain_tag": "QSSM-SOVEREIGN-LIMB-v2.0",
+                    "nist_included": false,
+                    "sovereign_entropy_hex": "",
+                },
             }))
             .unwrap(),
         )
         .unwrap();
         let pkg = json!({
             "engine_a_public": { "message_limb_u30": 42u64 },
+            "nist_beacon_included": false,
             "artifacts": { "sovereign_witness_json": "sovereign_witness.json" },
         });
         std::fs::write(
@@ -147,6 +168,7 @@ mod tests {
 
         let pkg_bad = json!({
             "engine_a_public": { "message_limb_u30": 43u64 },
+            "nist_beacon_included": false,
             "artifacts": { "sovereign_witness_json": "sovereign_witness.json" },
         });
         std::fs::write(
@@ -157,6 +179,42 @@ mod tests {
         assert!(matches!(
             verify_limb_binding_json(&d),
             Err(LatticeBridgeError::LimbMismatch { .. })
+        ));
+        let _ = std::fs::remove_dir_all(&d);
+    }
+
+    #[test]
+    fn verify_limb_binding_nist_mismatch() {
+        let d = temp_pkg_dir();
+        std::fs::write(
+            d.join("sovereign_witness.json"),
+            serde_json::to_string_pretty(&json!({
+                "kind": "SovereignWitnessV1",
+                "public": {
+                    "message_limb_u30": 9u64,
+                    "root_hex": "",
+                    "digest_hex": "",
+                    "domain_tag": "QSSM-SOVEREIGN-LIMB-v2.0",
+                    "nist_included": false,
+                    "sovereign_entropy_hex": "",
+                },
+            }))
+            .unwrap(),
+        )
+        .unwrap();
+        let pkg = json!({
+            "engine_a_public": { "message_limb_u30": 9u64 },
+            "nist_beacon_included": true,
+            "artifacts": { "sovereign_witness_json": "sovereign_witness.json" },
+        });
+        std::fs::write(
+            d.join("prover_package.json"),
+            serde_json::to_string_pretty(&pkg).unwrap(),
+        )
+        .unwrap();
+        assert!(matches!(
+            verify_limb_binding_json(&d),
+            Err(LatticeBridgeError::NistIncludedMismatch { .. })
         ));
         let _ = std::fs::remove_dir_all(&d);
     }
@@ -174,7 +232,9 @@ mod tests {
                     "message_limb_u30": limb,
                     "root_hex": "00",
                     "digest_hex": "00",
-                    "domain_tag": "QSSM-SOVEREIGN-LIMB-v1.0",
+                    "domain_tag": "QSSM-SOVEREIGN-LIMB-v2.0",
+                    "nist_included": false,
+                    "sovereign_entropy_hex": "00",
                 },
             }))
             .unwrap(),
@@ -182,6 +242,7 @@ mod tests {
         .unwrap();
         let pkg = json!({
             "engine_a_public": { "message_limb_u30": limb },
+            "nist_beacon_included": false,
             "artifacts": { "sovereign_witness_json": "sovereign_witness.json" },
         });
         std::fs::write(

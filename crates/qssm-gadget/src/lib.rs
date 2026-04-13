@@ -8,6 +8,7 @@ pub mod binding;
 pub mod bits;
 pub mod blake3_compress;
 pub mod blake3_native;
+pub mod entropy;
 pub mod error;
 pub mod lattice_bridge;
 pub mod merkle;
@@ -15,8 +16,9 @@ pub mod prover_json;
 pub mod r1cs;
 
 pub use binding::{
-    encode_proof_metadata_v1, message_limb_from_sovereign_digest_normative, sovereign_digest,
-    sovereign_message_limb_v1, SovereignDigest, SovereignWitness, DOMAIN_SOVEREIGN_LIMB_V1,
+    encode_proof_metadata_v1, encode_proof_metadata_v2,
+    message_limb_from_sovereign_digest_normative, sovereign_digest, sovereign_message_limb_v1,
+    SovereignDigest, SovereignWitness, DOMAIN_SOVEREIGN_LIMB_V1, DOMAIN_SOVEREIGN_LIMB_V2,
 };
 pub use bits::{
     constraint_and, constraint_or, constraint_xor, from_le_bits, to_le_bits, FullAdder,
@@ -29,6 +31,10 @@ pub use blake3_compress::{
 pub use blake3_native::{
     bit_wire_rotate, g_function, Add32ChainedWitness, BitRotateWitness, GFunctionResult, GWitness,
     QuarterRoundWitness,
+};
+pub use entropy::{
+    entropy_floor, fetch_nist_pulse, generate_sovereign_entropy, EntropyProvider,
+    DEFAULT_NIST_TIMEOUT, NIST_BEACON_LAST_PULSE_URL,
 };
 pub use error::GadgetError;
 #[cfg(feature = "lattice-bridge")]

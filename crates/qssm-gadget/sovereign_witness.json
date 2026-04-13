@@ -1,7 +1,13 @@
 {
   "kind": "SovereignWitnessV1",
   "private_aux_hex": {
-    "proof_metadata": "0703015fae5d72b91d036b4e431feca72cbe4b0e22c7c51e348fd3baa096bb54c12f6b",
+    "challenge_hex": "5fae5d72b91d036b4e431feca72cbe4b0e22c7c51e348fd3baa096bb54c12f6b",
+    "proof_fields": {
+      "bit_at_k": 1,
+      "k": 3,
+      "n": 7
+    },
+    "proof_metadata": "0703015fae5d72b91d036b4e431feca72cbe4b0e22c7c51e348fd3baa096bb54c12f6b80eb95bbef85dd5bb50ec26a1a08011002ed906aac5c7dcaa69a1f0448a90ec601",
     "rollup_context_digest": "6a7877de54179de831dc77aab70bce59fc073bc0550b6d073ffbac059c7a17de"
   },
   "private_bit_wires": [
@@ -27,7 +33,7 @@
       "idx": 3,
       "lane": 3,
       "path": "limb_bits",
-      "v": 1
+      "v": 0
     },
     {
       "idx": 4,
@@ -39,13 +45,13 @@
       "idx": 5,
       "lane": 5,
       "path": "limb_bits",
-      "v": 1
+      "v": 0
     },
     {
       "idx": 6,
       "lane": 6,
       "path": "limb_bits",
-      "v": 0
+      "v": 1
     },
     {
       "idx": 7,
@@ -57,7 +63,7 @@
       "idx": 8,
       "lane": 8,
       "path": "limb_bits",
-      "v": 0
+      "v": 1
     },
     {
       "idx": 9,
@@ -87,7 +93,7 @@
       "idx": 13,
       "lane": 13,
       "path": "limb_bits",
-      "v": 0
+      "v": 1
     },
     {
       "idx": 14,
@@ -99,7 +105,7 @@
       "idx": 15,
       "lane": 15,
       "path": "limb_bits",
-      "v": 1
+      "v": 0
     },
     {
       "idx": 16,
@@ -111,13 +117,13 @@
       "idx": 17,
       "lane": 17,
       "path": "limb_bits",
-      "v": 0
+      "v": 1
     },
     {
       "idx": 18,
       "lane": 18,
       "path": "limb_bits",
-      "v": 1
+      "v": 0
     },
     {
       "idx": 19,
@@ -141,7 +147,7 @@
       "idx": 22,
       "lane": 22,
       "path": "limb_bits",
-      "v": 0
+      "v": 1
     },
     {
       "idx": 23,
@@ -165,7 +171,7 @@
       "idx": 26,
       "lane": 26,
       "path": "limb_bits",
-      "v": 0
+      "v": 1
     },
     {
       "idx": 27,
@@ -200,9 +206,11 @@
   ],
   "private_wire_count": 32,
   "public": {
-    "digest_hex": "29903480baaffd857b0dae41d6c5430d1ddd70d0c27e85c494e7ae01a9d50af1",
-    "domain_tag": "QSSM-SOVEREIGN-LIMB-v1.0",
-    "message_limb_u30": 3444777,
-    "root_hex": "64e74fcb73ad97f8f5c23ef224fab6eb489c738f51c9722068b0a0405afbe043"
+    "digest_hex": "4131728432f8c533e9926045878645233016c43b8e31211c8f7638871cb8ee66",
+    "domain_tag": "QSSM-SOVEREIGN-LIMB-v2.0",
+    "message_limb_u30": 74592577,
+    "nist_included": true,
+    "root_hex": "64e74fcb73ad97f8f5c23ef224fab6eb489c738f51c9722068b0a0405afbe043",
+    "sovereign_entropy_hex": "80eb95bbef85dd5bb50ec26a1a08011002ed906aac5c7dcaa69a1f0448a90ec6"
   }
 }

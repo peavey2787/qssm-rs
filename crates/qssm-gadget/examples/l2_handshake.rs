@@ -1,13 +1,16 @@
-//! **L2 handshake demo** — simulates a Kaspa L1 block binding, rolls up two state leaves with **`merkle_parent`**, then runs the **Sovereign Digest** path for Engine A.
+//! **L2 handshake demo** — simulates a Kaspa L1 block binding, rolls up two state leaves with **`merkle_parent`**, then runs the **Sovereign Digest** path (Phase 8 entropy floor + opportunistic NIST booster) for Engine A.
 //!
 //! Writes to the **current working directory**:
-//! - **`prover_package.json`** — sovereign + Merkle witness JSON + metadata for Engine A.
+//! - **`prover_package.json`** — sovereign + Merkle witness JSON + metadata for Engine A (**`nist_beacon_included`**).
 //! - **`r1cs_merkle_parent.manifest.txt`** — **65 184** constraint lines (`Blake3Gadget::export_r1cs`).
 //!
 //! Run: `cargo run -p qssm-gadget --example l2_handshake`
+//!
+//! Phase 8: **500 ms** NIST beacon timeout — if the server is not ready, the **Kaspa ‖ local** BLAKE3 floor is used alone (**`nist_included = false`**).
 
-use qssm_gadget::binding::{encode_proof_metadata_v1, SovereignWitness};
+use qssm_gadget::binding::SovereignWitness;
 use qssm_gadget::blake3_compress::hash_merkle_parent_witness;
+use qssm_gadget::entropy::EntropyProvider;
 use qssm_gadget::lattice_bridge::verify_limb_binding_json;
 use qssm_gadget::prover_json::{merkle_parent_private_wire_count, sovereign_private_wire_count};
 use qssm_gadget::r1cs::Blake3Gadget;
@@ -27,8 +30,40 @@ fn run() {
 
     let rollup_ctx = hash_domain(DOMAIN_MSSQ_ROLLUP_CONTEXT, &[kaspa_block_id.as_slice()]);
     let challenge = blake3_hash(b"L2_FS_CHALLENGE_V1");
-    let meta = encode_proof_metadata_v1(7, 3, 1, &challenge);
-    let sovereign = SovereignWitness::bind(state_root, rollup_ctx, meta);
+    let local_entropy = blake3_hash(b"L2_LOCAL_ENTROPY_V1");
+
+    eprintln!("Phase 8 — NIST Down (simulated timeout / offline): Kaspa ‖ local floor only");
+    let (ent_down, nist_down) = EntropyProvider::simulate_nist_down()
+        .generate_sovereign_entropy(kaspa_block_id, local_entropy);
+    eprintln!(
+        "  nist_included={nist_down} sovereign_entropy_hex={}",
+        hex::encode(ent_down)
+    );
+
+    let sim_pulse = blake3_hash(b"SIM_NIST_PULSE_V1");
+    eprintln!("Phase 8 — NIST Up (simulated 200 OK pulse XOR into floor)");
+    let (ent_up, nist_up) = EntropyProvider::simulate_nist_up(sim_pulse)
+        .generate_sovereign_entropy(kaspa_block_id, local_entropy);
+    eprintln!(
+        "  nist_included={nist_up} sovereign_entropy_hex={}",
+        hex::encode(ent_up)
+    );
+
+    let prov = EntropyProvider::default();
+    let (sovereign_entropy, nist_included) =
+        prov.generate_sovereign_entropy(kaspa_block_id, local_entropy);
+    eprintln!("Phase 8 — Production policy (≤500ms NIST try): nist_included={nist_included}");
+
+    let sovereign = SovereignWitness::bind(
+        state_root,
+        rollup_ctx,
+        7,
+        3,
+        1,
+        challenge,
+        sovereign_entropy,
+        nist_included,
+    );
     assert!(sovereign.validate());
 
     let r1cs_text = Blake3Gadget::export_r1cs(&merkle_w);
@@ -52,6 +87,7 @@ fn run() {
         "merkle_leaf_left_hex": hex::encode(leaf_left),
         "merkle_leaf_right_hex": hex::encode(leaf_right),
         "rollup_state_root_hex": hex::encode(state_root),
+        "nist_beacon_included": nist_included,
         "engine_a_public": {
             "message_limb_u30": sovereign.message_limb,
         },
