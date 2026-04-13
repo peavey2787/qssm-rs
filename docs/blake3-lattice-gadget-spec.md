@@ -1,9 +1,12 @@
-### **The QSSM Protocol Family Series**
-* **Overview:** [The Architecture of Sovereignty](./architecture-overview.md)
-* **Engine A (QSSM-LE):** [General Lattice Logic](./qssm-le-engine-a.md)
-* **Engine B (QSSM-MS):** [Succinct Predicate Logic](./qssm-ms-engine-b.md)
-* **The Queue (MSSQ):** [Egalitarian Rollup Layer](./mssq-rollup.md)
-* **Integration (B→A):** [BLAKE3–Lattice Gadget](./blake3-lattice-gadget-spec.md)
+### Documentation map
+
+* [README](../README.md) — Project home
+* [Architecture overview](./architecture-overview.md)
+* [MSSQ — Egalitarian rollup](./mssq-rollup.md)
+* [QSSM-LE — Engine A](./qssm-le-engine-a.md)
+* [QSSM-MS — Engine B](./qssm-ms-engine-b.md)
+* [BLAKE3–lattice gadget — Rust plan](./blake3-lattice-gadget-rust-plan.md)
+* [Kaspa L2 core deployment manifest](./l2-kaspa-core-deployment-manifest.md)
 
 ---
 
