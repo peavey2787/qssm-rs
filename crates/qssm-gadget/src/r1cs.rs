@@ -40,6 +40,56 @@ pub struct MockProver {
     public_vars: u32,
 }
 
+/// Textual R1CS manifest: one line per **`enforce_*`** (same variable-id order as **`MockProver`** synthesis).
+#[derive(Debug, Default)]
+pub struct R1csLineExporter {
+    next_var: u32,
+    lines: Vec<String>,
+}
+
+impl R1csLineExporter {
+    #[must_use]
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    #[must_use]
+    pub fn line_count(&self) -> usize {
+        self.lines.len()
+    }
+
+    #[must_use]
+    pub fn into_string(self) -> String {
+        self.lines.join("\n")
+    }
+}
+
+impl ConstraintSystem for R1csLineExporter {
+    fn allocate_variable(&mut self, _kind: VarKind) -> VarId {
+        let id = VarId(self.next_var);
+        self.next_var = self.next_var.saturating_add(1);
+        id
+    }
+
+    fn enforce_xor(&mut self, x: VarId, y: VarId, and_xy: VarId, z: VarId) {
+        self.lines.push(format!(
+            "xor\tx={}\ty={}\tand_xy={}\tz={}",
+            x.0, y.0, and_xy.0, z.0
+        ));
+    }
+
+    fn enforce_full_adder(&mut self, a: VarId, b: VarId, cin: VarId, sum: VarId, cout: VarId) {
+        self.lines.push(format!(
+            "full_adder\ta={}\tb={}\tcin={}\tsum={}\tcout={}",
+            a.0, b.0, cin.0, sum.0, cout.0
+        ));
+    }
+
+    fn enforce_equal(&mut self, a: VarId, b: VarId) {
+        self.lines.push(format!("equal\ta={}\tb={}", a.0, b.0));
+    }
+}
+
 impl MockProver {
     #[must_use]
     pub fn new() -> Self {
@@ -112,6 +162,14 @@ impl Blake3Gadget {
     pub fn synthesize_merkle_parent_hash<C: ConstraintSystem>(cs: &mut C, witness: &MerkleParentHashWitness) {
         Self::synthesize_compress(cs, &witness.compress_chunk_start);
         Self::synthesize_compress(cs, &witness.compress_root);
+    }
+
+    /// Phase 6: **65 184** lines (Merkle-parent path), tab-separated opcode + variable indices.
+    #[must_use]
+    pub fn export_r1cs(witness: &MerkleParentHashWitness) -> String {
+        let mut ex = R1csLineExporter::new();
+        Self::synthesize_merkle_parent_hash(&mut ex, witness);
+        ex.into_string()
     }
 
     fn synth_msg_block_permute<C: ConstraintSystem>(cs: &mut C) {
@@ -217,5 +275,20 @@ mod tests {
         println!("blake3_g_constraint_count={n}");
         assert!(n > 0, "expected non-zero constraint count");
         assert_eq!(n, 518, "regression: G witness synthesis cost (MockProver enforce_* count)");
+    }
+
+    #[test]
+    fn export_r1cs_merkle_matches_mockprover_line_count() {
+        use crate::blake3_compress::hash_merkle_parent_witness;
+
+        let left = [1u8; 32];
+        let right = [2u8; 32];
+        let w = hash_merkle_parent_witness(&left, &right);
+        let mut m = MockProver::new();
+        Blake3Gadget::synthesize_merkle_parent_hash(&mut m, &w);
+        let text = Blake3Gadget::export_r1cs(&w);
+        let lines = text.lines().count();
+        assert_eq!(lines as u64, m.constraint_count());
+        assert_eq!(lines, 65_184);
     }
 }
