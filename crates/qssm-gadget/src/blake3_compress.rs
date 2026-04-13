@@ -107,15 +107,7 @@ pub fn compress_native(
     for round in 0..7 {
         for step in 0..8 {
             let (a, b, c, d, mi, mj) = ROUND_G_LANES[step];
-            g_native(
-                &mut state,
-                a,
-                b,
-                c,
-                d,
-                block[mi],
-                block[mj],
-            );
+            g_native(&mut state, a, b, c, d, block[mi], block[mj]);
         }
         if round < 6 {
             permute_block_words(&mut block);
@@ -192,14 +184,7 @@ impl CompressionWitness {
         for round in 0..7 {
             for step in 0..8 {
                 let (a, b, c, d, mi, mj) = ROUND_G_LANES[step];
-                let r = g_function(
-                    state[a],
-                    state[b],
-                    state[c],
-                    state[d],
-                    block[mi],
-                    block[mj],
-                );
+                let r = g_function(state[a], state[b], state[c], state[d], block[mi], block[mj]);
                 state[a] = r.a;
                 state[b] = r.b;
                 state[c] = r.c;
@@ -312,14 +297,8 @@ impl MerkleParentHashWitness {
         words_from_little_endian_bytes(&block1, &mut block1_words);
 
         let block_len = tail.len() as u32;
-        let compress_root = CompressionWitness::build(
-            cv1,
-            block1_words,
-            0,
-            0,
-            block_len,
-            CHUNK_END | ROOT,
-        );
+        let compress_root =
+            CompressionWitness::build(cv1, block1_words, 0, 0, block_len, CHUNK_END | ROOT);
 
         Self {
             compress_chunk_start,
@@ -363,7 +342,13 @@ mod tests {
             for step in 0..8 {
                 let (a, b, c, d, mi, mj) = ROUND_G_LANES[step];
                 let _ = (a, b, c, d);
-                assert_eq!((mi, mj), (MSG_SCHEDULE[round][step].0 as usize, MSG_SCHEDULE[round][step].1 as usize));
+                assert_eq!(
+                    (mi, mj),
+                    (
+                        MSG_SCHEDULE[round][step].0 as usize,
+                        MSG_SCHEDULE[round][step].1 as usize
+                    )
+                );
             }
         }
     }
