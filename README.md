@@ -1,4 +1,6 @@
-![qssm-mssq-logo](https://github.com/user-attachments/assets/be64df74-dcc1-4473-8db6-dbd300d9dae6)
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/9570f905-ed28-4d42-9095-df68a2504742" width="450">
+</p>
 
 # QSSM: Quantum-Safe Sovereign Multiset
 
@@ -39,4 +41,6 @@ This project is licensed under the **Business Source License 1.1 (BSL-1.1)**. Se
 
 *Math is law. Sovereignty is non-negotiable.*
 
-<img width="707" height="937" alt="miss-q" src="https://github.com/user-attachments/assets/40a9f10f-5968-426d-8eb0-c8666bfe9771" />
+<p align="center">
+  <img width="280" alt="miss-q" src="https://github.com/user-attachments/assets/40a9f10f-5968-426d-8eb0-c8666bfe9771" />
+</p>
