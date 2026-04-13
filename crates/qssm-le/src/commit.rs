@@ -11,6 +11,9 @@ use crate::LeError;
 const DOMAIN_LE_FS: &str = "QSSM-LE-FS-LYU-v1.0";
 
 /// Public inputs visible to all verifiers (no secret witness).
+///
+/// **`message`** is **`0 ≤ message < 2^30`** ([`MAX_MESSAGE`](crate::params::MAX_MESSAGE)).  
+/// Engine B may supply it from **`qssm-gadget`** `binding::SovereignWitness::message_limb` (normative sovereign digest → **30‑bit** LE limb).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PublicInstance {
     pub message: u64,

@@ -73,9 +73,11 @@ This section replaces any notion of “take **`root % 2^{30}`**” or other **un
    - **`RollupContext`**: **`rollup_context_digest`** (32 B).  
    - **`ProofMetadata`**: fixed schema of Engine B fields required for non‑malleability (e.g. **`n`**, **`k`**, **`challenge`**, FS‑bound fields)—exact chunk order **fixed in code** and golden tests.
 
-2. **Only then** extract **`m`**: take the **first 30 bits** of **`SovereignDigest`** under a **documented LE bit order** (e.g. low 30 bits of the first four bytes assembled consistently with **`to_le_bits`**) so **`0 ≤ m < 2^{30}`** for **`qssm-le`** **`PublicInstance`**.
+2. **Only then** extract **`m`**: the **first 30 bits** of **`SovereignDigest`** in **LE** order via **explicit bit decomposition** (see **Phase 3**); **no** **`mod 2^{30}`** / mask‑only shortcut on the **witness API** without bit‑equivalent construction.
 
 3. **Security posture:** Pre‑hashing **binds** **`m`** to **root + rollup + metadata**, so **30‑bit** outputs are **not** raw root snippets—collision and malleability risk is reduced versus embedding or naïvely reducing the root.
+
+4. **`SovereignWitness`:** holds inputs, **`digest`**, limb bits, and **`message_limb`**; **`validate()`** recomputes hash and limb (**Phase 3**).
 
 **Forbidden in normative APIs:** **`m = root mod 2^{30}`**, **`m = truncate(root)`** without the **Sovereign Digest** step above.
 
@@ -108,7 +110,7 @@ flowchart LR
 | **0** | **`merkle.rs`**: **mandatory** LE bit‑path vs **sibling orientation** per level; **`IndexMismatch`** if not; then **`recompute_root`**. | MS tests; tamper / wrong index negatives. |
 | **1** | **`bits.rs`**: **`to_le_bits`**, **`constraint_xor` (\(x+y-2xy\))**, **`FullAdder`**, **`ripple_carry_adder`**, **`XorWitness`**, **`RippleCarryWitness`**, **`validate()`**—**one** phase, **day one**. | No `wrapping_add` on add witness API; LE byte tests. |
 | **2** | **`blake3_native.rs`**: BLAKE3 **G‑function** and quarter‑round **only** via **`XorWitness`**, **`RippleCarryWitness`**, **`bit_wire_rotate`**, and **witness chaining** (normative structure below). | Vectors vs **`blake3`** / **`hash_domain`**; Merkle‑parent preimage path. |
-| **3** | **`binding.rs`**: **§5** **Sovereign Digest**; **30‑bit** limb; **never** raw root or mod‑only **`m`**. | Golden vectors; **`PublicInstance::validate`**. |
+| **3** | **`binding.rs`**: **Sovereign Digest** per **Phase 3** (input schema, **`DOMAIN_SOVEREIGN_LIMB_V1`**, LE limb via **bit decomposition**, **`SovereignWitness`**). | Golden vectors; **`PublicInstance::validate`**; witness **`validate()`** round‑trip. |
 | **4** | **R1CS IR / backend stub**; optional benches. | Feature‑gated. |
 
 ---
@@ -150,6 +152,80 @@ The four conceptual steps of the **G‑function** on two 32‑bit lanes (and the
 
 ---
 
+## Phase 3 — Sovereign Digest / **`binding.rs`** (normative structure)
+
+**Math is law:** The Engine A message limb **`m`** is derived **only** from a **domain‑separated** digest over a **fixed‑order** preimage. **No** raw root, **`root % 2^{30}`**, or **`u32 & ((1<<30)-1)`** as the **normative definition** of the limb—limb bits **must** come from **explicit LE bit decomposition** (and masking via **bit selection** / **`from_le_bits`** on a **30‑bit‑padded** witness), matching Phase 1 discipline.
+
+### Input schema — exact **`hash_domain`** preimage order
+
+The reference uses **`qssm_utils::hashing::hash_domain(domain, chunks)`**, which defines the BLAKE3 preimage as:
+
+**`UTF8(domain_tag) ‖ chunk₀ ‖ chunk₁ ‖ chunk₂`**
+
+with **no** implicit reordering. **Normative mapping:**
+
+| Segment | Role | Length / type |
+|---------|------|----------------|
+| **`domain_tag`** | Protocol‑unique string (**`DOMAIN_SOVEREIGN_LIMB_V1`**, below) | UTF‑8 bytes (not NUL‑terminated in hash) |
+| **`chunk₀`** | **Merkle root** | **32** bytes |
+| **`chunk₁`** | **Rollup context** | **`rollup_context_digest`**, **32** bytes |
+| **`chunk₂`** | **Proof metadata** | **Variable**, **canonical** encoding (fixed field order below) |
+
+**Forbidden:** Passing **`root`**, **`rollup`**, or **`metadata`** in a different order; omitting **`domain_tag`** from **`hash_domain`**’s first argument and stuffing it inside **`chunks`** unless the implementation is proven byte‑identical to the table above.
+
+**`ProofMetadata` (normative field order for Engine B v1):** encode as a single contiguous byte array in this order (adjust version suffix in constant if this schema bumps):
+
+1. **`n`** — **`u8`** (MS nonce),  
+2. **`k`** — **`u8`** (bit index),  
+3. **`bit_at_k`** — **`u8`**,  
+4. **`challenge`** — **`[u8; 32]`** (Fiat–Shamir bytes from **`GhostMirrorProof`**).
+
+Additional FS‑bound fields (e.g. **`value`**, **`target`**, **`context`** length‑prefixed) **may** be appended in a **documented** v2 schema; v1 **must** match the four fields above for cross‑implementation tests.
+
+### Domain separation — **`DOMAIN_SOVEREIGN_LIMB_V1`**
+
+- **Normative string (exact, case‑sensitive):** **`QSSM-SOVEREIGN-LIMB-v1.0`**
+- **Purpose:** Binds the digest to the **Sovereign limb** construction so preimage cannot be confused with **`DOMAIN_MS`**, **`DOMAIN_MERKLE_PARENT`**, **`QSSM-LE-FS-LYU-v1.0`**, or other **`hash_domain`** users.
+- **Rule:** **Do not** reuse this string for non‑limb hashes; **do not** alias another domain string to the same UTF‑8 bytes.
+
+### Limb extraction — **first 30 bits**, LE‑consistent, **no `mod 2^{30}` shortcut**
+
+Let **`D = SovereignDigest`** be **`[u8; 32]`** (**256** bits).
+
+1. **Flatten `D` to LE bit indices `0..255`:** bit **`j`** has weight **`2^j`** in the usual **little‑endian byte order** (`bit 0` = LSB of **`D[0]`**, …, **`bit 7`** = MSB of **`D[0]`**, **`bit 8`** = LSB of **`D[1]`**, etc.). Implementation **may** obtain indices **`0..29`** by decomposing **`D[0]`, `D[1]`, `D[2]`** and the **lower six bits** of **`D[3]`** only (equivalent to the low **30** bits of the **256‑bit LE** integer).
+2. **Normative limb construction:** Build a **30‑bit** value **`m`** as  
+   **`m = Σ_{i=0}^{29} b_i · 2^i`**  
+   where **`b_i`** are the **boolean** bits from step **1** (same indices).  
+3. **Witness / R1CS path:** Express extraction as **`to_le_bits`** on the relevant bytes (or per‑byte decomposition) **then** **select** **`b_0..b_{29}`** into a **padded** **`[bool; 32]`** with **`b_{30} = b_{31} = false`**, then **`m = from_le_bits(&padded)`** as **`u64`** (fits **`0 ≤ m < 2^{30}`**).
+4. **Forbidden as normative definition of the limb:** `digest_u32 % (1<<30)`, **`w & ((1<<30)-1)`** without an **explicit** bit‑decomposition step in the **public witness API**; any **`&` mask** in optimized code **must** be **test‑equivalent** to the **bit‑wise** construction above.
+
+### Validator — **`SovereignWitness`**
+
+**`SovereignWitness`** (name normative) **must** hold **everything** needed to re‑verify the binding **in one pass**:
+
+| Field / group | Content |
+|---------------|---------|
+| **Inputs (copy or reference)** | **`root`**, **`rollup_context_digest`**, **`proof_metadata`** bytes actually hashed |
+| **`domain_tag`** | **`DOMAIN_SOVEREIGN_LIMB_V1`** (or fixed `&'static str`) |
+| **`digest`** | Output **`[u8; 32]`** of **`hash_domain`** |
+| **`limb_bits`** | The **30** selected booleans (and optional padding witness to **32** bits) |
+| **`message_limb`** | **`u64`** in **`[0, 2^{30})`** |
+
+**`validate(&self) -> bool` (or `Result`):**
+
+1. Recompute **`digest' = hash_domain(domain_tag, &[root, rollup, metadata])`** and assert **`digest' == self.digest`**.  
+2. Recompute **`m'`** from **`digest'`** using the **normative bit extraction** (§ above) and assert **`m' == self.message_limb`** and consistency of **`limb_bits`**.
+
+**Rationale:** Enables a single **struct** for audits, tests, and future R1CS “bind **`m`** to digest” constraints without hidden state.
+
+### Exit criteria (Phase 3)
+
+- **Unit tests:** Golden **`hash_domain`** preimage (known **`root`**, **`rollup`**, **`metadata`**) → known **`digest`** (optional: vs **`blake3`** manual call) → **`message_limb`** equals **bit‑constructed** value.  
+- **Integration:** **`PublicInstance::validate`** accepts **`message_limb`** for **`qssm-le`**.  
+- **`SovereignWitness::validate`** passes on happy path; fails if **`root`** or **`metadata`** is tampered.
+
+---
+
 ## Key files (rewritten)
 
 | File | Responsibility |
@@ -158,7 +234,7 @@ The four conceptual steps of the **G‑function** on two 32‑bit lanes (and the
 | [`crates/qssm-gadget/src/lib.rs`](crates/qssm-gadget/src/lib.rs) | `bits`, `merkle`, `binding`, `error`; optional `blake3_native`. |
 | [`crates/qssm-gadget/src/bits.rs`](crates/qssm-gadget/src/bits.rs) | Degree‑2 XOR, **`FullAdder`**, ripple + **`XorWitness` / `RippleCarryWitness`** from **day one**; LE only. |
 | [`crates/qssm-gadget/src/merkle.rs`](crates/qssm-gadget/src/merkle.rs) | **Phase 0** LE path ↔ orientation; **`recompute_root`**. |
-| [`crates/qssm-gadget/src/binding.rs`](crates/qssm-gadget/src/binding.rs) | **§5** **Sovereign Digest** → **30‑bit** **`m`**. |
+| [`crates/qssm-gadget/src/binding.rs`](crates/qssm-gadget/src/binding.rs) | **Phase 3**: **`hash_domain(DOMAIN_SOVEREIGN_LIMB_V1, [root‖rollup‖metadata])`**, LE **30‑bit** limb from **`to_le_bits`**, **`SovereignWitness`**. |
 | [`crates/qssm-gadget/src/blake3_native.rs`](crates/qssm-gadget/src/blake3_native.rs) | G‑function / quarter‑round: **`XorWitness`**, **`RippleCarryWitness`**, **`bit_wire_rotate`**, **`BitRotateWitness`**, chained **`QuarterRoundWitness`** (no native `u32` mix on witness path). |
 | [`crates/qssm-gadget/src/error.rs`](crates/qssm-gadget/src/error.rs) | **`GadgetError`** variants. |
 | [`crates/qssm-gadget/tests/`](crates/qssm-gadget/tests/) | MS + digest golden tests. |
@@ -187,7 +263,11 @@ The four conceptual steps of the **G‑function** on two 32‑bit lanes (and the
 2. **`merkle.rs`**: Phase 0 **LE bit path** vs **orientation**; **`recompute_root`**.  
 3. **`bits.rs`**: **Phase 1 unified** — primitives **and** **`XorWitness` / `RippleCarryWitness` / `validate`** **together**.  
 4. **`blake3_native.rs`**: **`bit_wire_rotate`**, G‑function via **fresh** **`XorWitness` / `RippleCarryWitness`** chain; quarter‑round + Merkle‑parent vectors (Phase 2 section).  
-5. **`binding.rs`**: **§5** Sovereign Digest + 30‑bit limb (Phase 3 table).  
+5. **`binding.rs` (Phase 3):**  
+   - Implement **`encode_proof_metadata_v1(n, k, bit_at_k, challenge)`** → **`Vec<u8>`** in the **normative field order** (Phase 3 **`ProofMetadata`**).  
+   - Limb: **LE** first **30** bits via **`to_le_bits`** / padded **`[bool; 32]`** + **`from_le_bits`** (no mask‑only normative API; optimized code **must** match bit construction in tests).  
+   - Add **`SovereignWitness`** + **`validate()`** (recompute **`hash_domain`**, rederive **`message_limb`**, check **`limb_bits`**).  
+   - Golden tests: fixed **`root`/`rollup`/`metadata`** → **`digest`** → **`m`**; **`PublicInstance::validate`** smoke.  
 6. R1CS stub (Phase 4) + benches + spec cross‑links.
 
 ---
@@ -212,8 +292,8 @@ The four conceptual steps of the **G‑function** on two 32‑bit lanes (and the
 
 **Normative pipeline:**
 
-1. **Compute** **`SovereignDigest = H(domain_tag ‖ Root ‖ RollupContext ‖ ProofMetadata)`** using domain‑separated hashing; chunk order **fixed** in code and tests.  
-2. **Only then** extract **`m`**: **first 30 bits** of **`SovereignDigest`** under a **documented LE bit order** so **`0 ≤ m < 2^{30}`** for **`PublicInstance`**.  
+1. **Compute** **`SovereignDigest = H(domain_tag ‖ Root ‖ RollupContext ‖ ProofMetadata)`** using domain‑separated hashing; chunk order **fixed** in code and tests (**Phase 3** input schema).  
+2. **Only then** extract **`m`**: **first 30 bits** of **`SovereignDigest`** in **LE** order via **bit decomposition** (**Phase 3**); **`SovereignWitness`** holds digest + limb for **`validate()`**.  
 3. **Forbidden:** **`m`** from raw root truncation or **mod‑only** reduction **without** this hash.
 
 ---

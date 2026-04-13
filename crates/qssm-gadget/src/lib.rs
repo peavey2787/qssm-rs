@@ -11,7 +11,10 @@ pub mod error;
 pub mod merkle;
 pub mod r1cs;
 
-pub use binding::{sovereign_message_limb_v1, DOMAIN_SOVEREIGN_LIMB_V1};
+pub use binding::{
+    encode_proof_metadata_v1, message_limb_from_sovereign_digest_normative, sovereign_digest,
+    sovereign_message_limb_v1, SovereignDigest, SovereignWitness, DOMAIN_SOVEREIGN_LIMB_V1,
+};
 pub use blake3_native::{
     bit_wire_rotate, g_function, Add32ChainedWitness, BitRotateWitness, GFunctionResult, GWitness,
     QuarterRoundWitness,
