@@ -1,17 +1,15 @@
 //! Root smoke: finalized anchor → ML-DSA leader → MS + rollup context → SMT state.
 
-use mssq_batcher::{
-    apply_batch, elect_leader, rollup_context_from_l1, sort_lexicographical, verify_leader_attestation,
-    LeaderAttestation, RollupState,
-};
 use ml_dsa::signature::{Keypair, Signer};
 use ml_dsa::{KeyGen, MlDsa65, Seed};
+use mssq_batcher::{
+    apply_batch, elect_leader, rollup_context_from_l1, sort_lexicographical,
+    verify_leader_attestation, LeaderAttestation, RollupState,
+};
 use qssm_common::{Batch, L1Anchor, L1BatchSink, L2Transaction, MockKaspaAdapter};
 use qssm_ms::{commit, prove, verify};
 use qssm_ref::verify::AcceptAllTxVerifier;
-use qssm_utils::{
-    leader_attestation_signing_bytes, leader_id_from_ml_dsa_public_key, mssq_seed_k,
-};
+use qssm_utils::{leader_attestation_signing_bytes, leader_id_from_ml_dsa_public_key, mssq_seed_k};
 
 #[test]
 fn test_egalitarian_sequencing() {
@@ -65,15 +63,7 @@ fn test_egalitarian_sequencing() {
     let entropy = anchor.get_ledger_entropy();
     let (root_alice, salts_alice) = commit(10_000u64, [7u8; 32], entropy).unwrap();
     let (_, salts_bob) = commit(5_000u64, [9u8; 32], entropy).unwrap();
-    let proof_alice = prove(
-        10_000,
-        5_000,
-        &salts_alice,
-        entropy,
-        demo_ctx,
-        &ctx_d,
-    )
-    .unwrap();
+    let proof_alice = prove(10_000, 5_000, &salts_alice, entropy, demo_ctx, &ctx_d).unwrap();
     assert!(verify(
         root_alice,
         &proof_alice,
@@ -101,13 +91,7 @@ fn test_egalitarian_sequencing() {
     };
     let mut state = RollupState::new();
     let r0 = state.root();
-    apply_batch(
-        &mut state,
-        &sorted_batch,
-        &ctx,
-        &AcceptAllTxVerifier,
-    )
-    .unwrap();
+    apply_batch(&mut state, &sorted_batch, &ctx, &AcceptAllTxVerifier).unwrap();
     assert_ne!(state.root(), r0);
 
     anchor.post_batch(&sorted_batch).unwrap();

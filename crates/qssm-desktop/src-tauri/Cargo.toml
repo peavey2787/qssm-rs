@@ -1,0 +1,27 @@
+[package]
+name = "qssm-desktop"
+version = "0.1.0"
+description = "Tauri helper: sovereign witness + QSSM-LE proof from handoff JSON"
+authors = ["QSSM"]
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[lib]
+name = "qssm_desktop_lib"
+crate-type = ["lib", "cdylib", "staticlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+hex = { workspace = true }
+rand = { workspace = true }
+thiserror = { workspace = true }
+qssm-gadget = { path = "../../qssm-gadget", features = ["lattice-bridge"] }
+qssm-common = { path = "../../qssm-common" }
+qssm-le = { path = "../../qssm-le" }
+qssm-utils = { path = "../../qssm-utils" }

@@ -1,9 +1,9 @@
 //! Integration: Millionaire’s Duel (Public-Difference ZK + ML-DSA + leaderboard SMT).
 #![forbid(unsafe_code)]
 
-use std::time::Instant;
 #[cfg(not(debug_assertions))]
 use std::time::Duration;
+use std::time::Instant;
 
 use ml_dsa::signature::{Keypair, Signer};
 use ml_dsa::{KeyGen, MlDsa65, Seed};
@@ -12,10 +12,10 @@ use mssq_batcher::{
     LeaderAttestation, RollupState,
 };
 use qssm_common::{rollup_context_from_l1, Batch, L1Anchor, L2Transaction, MockKaspaAdapter};
-use qssm_le::{prove_arithmetic, PublicInstance, VerifyingKey, Witness, verify_lattice};
+use qssm_le::{prove_arithmetic, verify_lattice, PublicInstance, VerifyingKey, Witness};
 use qssm_ref::millionaires_duel::{
-    decode_millionaires_proof, encode_millionaires_proof, leaderboard_key, parse_leaderboard_leaf,
-    prestige_payload, public_message_for_duel, duel_holds, MillionairesDuelVerifier,
+    decode_millionaires_proof, duel_holds, encode_millionaires_proof, leaderboard_key,
+    parse_leaderboard_leaf, prestige_payload, public_message_for_duel, MillionairesDuelVerifier,
 };
 use qssm_utils::{leader_attestation_signing_bytes, leader_id_from_ml_dsa_public_key};
 
@@ -80,9 +80,10 @@ fn build_duel_tx(
 
     let vk = VerifyingKey::from_seed(crs);
     let public = PublicInstance { message: public_m };
-    let witness = Witness { r: [0i32; qssm_le::N] };
-    let (commitment, proof) =
-        prove_arithmetic(&vk, &public, &witness, &ctx_digest).expect("prove");
+    let witness = Witness {
+        r: [0i32; qssm_le::N],
+    };
+    let (commitment, proof) = prove_arithmetic(&vk, &public, &witness, &ctx_digest).expect("prove");
 
     let att = sign_att(sk_winner, anchor, winner, ctx_digest);
     let wire = encode_millionaires_proof(&att, vk.crs_seed, public_m, &commitment, &proof);
@@ -136,9 +137,10 @@ fn duel_rejects_when_alice_not_richer() {
 
     let vk = VerifyingKey::from_seed([0x3Cu8; 32]);
     let public = PublicInstance { message: public_m };
-    let witness = Witness { r: [0i32; qssm_le::N] };
-    let (commitment, proof) =
-        prove_arithmetic(&vk, &public, &witness, &d).expect("prove");
+    let witness = Witness {
+        r: [0i32; qssm_le::N],
+    };
+    let (commitment, proof) = prove_arithmetic(&vk, &public, &witness, &d).expect("prove");
     let att = sign_att(sk_winner, &anchor, winner, d);
     let wire = encode_millionaires_proof(&att, vk.crs_seed, public_m, &commitment, &proof);
     let tx = L2Transaction {
@@ -220,7 +222,9 @@ fn verify_lattice_latency_release_god_mode() {
     let public = PublicInstance {
         message: public_message_for_duel(1000, 500).unwrap(),
     };
-    let witness = Witness { r: [0i32; qssm_le::N] };
+    let witness = Witness {
+        r: [0i32; qssm_le::N],
+    };
     let ctx = [0xEEu8; 32];
     let (c, p) = prove_arithmetic(&vk, &public, &witness, &ctx).expect("prove");
     let t0 = Instant::now();

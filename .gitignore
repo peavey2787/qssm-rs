@@ -21,3 +21,7 @@ Thumbs.db
 
 # --- Testing & Logs ---
 *.log
+
+# --- qssm-desktop (Tauri + Vite) ---
+crates/qssm-desktop/node_modules/
+crates/qssm-desktop/dist/

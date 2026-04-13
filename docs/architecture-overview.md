@@ -1,5 +1,6 @@
 ### **The QSSM Protocol Family Series**
 * **Overview:** [The Architecture of Sovereignty](./architecture-overview.md)
+* **Desktop helper (primary user entry):** [`crates/qssm-desktop/`](../crates/qssm-desktop/) — Tauri app: handoff JSON → Phase 8 NIST/Kaspa entropy → sovereign witness JSON + QSSM‑LE proof scaffold.
 * **Engine A (QSSM-LE):** [General Lattice Logic](./qssm-le-engine-a.md)
 * **Engine B (QSSM-MS):** [Succinct Predicate Logic](./qssm-ms-engine-b.md)
 * **The Queue (MSSQ):** [Egalitarian Rollup Layer](./mssq-rollup.md)
@@ -19,6 +20,14 @@ For the last decade, decentralized finance (DeFi) has lived inside an “Algebra
 While brilliant, SNARKs come with heavy baggage: they require complex “trusted setups,” they rely on fragile algebraic curves that quantum computers will eventually shatter, and they are so computationally “expensive” that they have forced us into a world of centralized sequencers. These sequencers act as the “kings” of the network, reordering your transactions to extract billions in value (Maximum Extractable Value, or MEV).
 
 The QSSM Protocol Family — pronounced “Q‑sum” — is a formal protocol suite designed to delete these diseases. By moving away from universal algebraic circuits and toward Sovereign Native Logic, we have built a system that is post‑quantum secure, MEV‑zero by design, and efficient enough to run on a mobile phone.
+
+---
+
+## User entry point: QSSM Desktop Helper (`qssm-desktop`)
+
+For **operators and integrators**, the default path into the stack is the **Tauri‑based helper** in [`crates/qssm-desktop/`](../crates/qssm-desktop/): a small desktop shell that loads a **handoff JSON** (Kaspa parent id, state root, rollup context digest, FS challenge fields), runs **Phase 8** opportunistic entropy (**NIST beacon** with timeout + **Kaspa ‖ local** floor), builds a **`SovereignWitness`** (JSON), and runs a **QSSM‑LE** `prove_arithmetic` demo against a fixed demo verifying key. The UI shows **L1 sync** (mock until wired to `qssm-kaspa`), **QRNG / NIST vs fallback**, and **prover latency** for the sovereign limb step.
+
+**Run (from repo):** `cd crates/qssm-desktop && npm install && npm run build && cargo tauri dev` (requires [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/) and `cargo install tauri-cli` *or* `npx @tauri-apps/cli@2 dev` from that directory).
 
 ---
 

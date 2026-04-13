@@ -22,7 +22,10 @@ impl VerifyingKey {
         let mut coeffs = [0u32; N];
         for (i, c) in coeffs.iter_mut().enumerate() {
             let ib = (i as u32).to_le_bytes();
-            let buf = hash_domain(DOMAIN_LE, &[b"A_row", self.crs_seed.as_slice(), ib.as_slice()]);
+            let buf = hash_domain(
+                DOMAIN_LE,
+                &[b"A_row", self.crs_seed.as_slice(), ib.as_slice()],
+            );
             let mut w = [0u8; 4];
             w.copy_from_slice(&buf[..4]);
             *c = u32::from_le_bytes(w) % Q;

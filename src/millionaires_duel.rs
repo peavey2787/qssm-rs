@@ -12,12 +12,10 @@
 
 #![forbid(unsafe_code)]
 
-use mssq_batcher::{
-    verify_leader_attestation_ctx, LeaderAttestation, ProofError, TxProofVerifier,
-};
+use mssq_batcher::{verify_leader_attestation_ctx, LeaderAttestation, ProofError, TxProofVerifier};
 use qssm_common::L2Transaction;
 use qssm_le::{
-    Commitment, LatticeProof, PublicInstance, RqPoly, VerifyingKey, verify_lattice, MAX_MESSAGE, N,
+    verify_lattice, Commitment, LatticeProof, PublicInstance, RqPoly, VerifyingKey, MAX_MESSAGE, N,
 };
 use qssm_utils::RollupContext;
 
@@ -285,13 +283,7 @@ impl TxProofVerifier for MillionairesDuelVerifier {
             message: bundle.public_message,
         };
         let digest = ctx.digest();
-        match verify_lattice(
-            &vk,
-            &public,
-            &bundle.commitment,
-            &bundle.proof,
-            &digest,
-        ) {
+        match verify_lattice(&vk, &public, &bundle.commitment, &bundle.proof, &digest) {
             Ok(true) => Ok(()),
             Ok(false) | Err(_) => Err(ProofError::Invalid),
         }
@@ -316,6 +308,8 @@ pub fn format_leaf_data_hex(leaf: &[u8; 32]) -> String {
 /// Parse wins from first 8 bytes and detect [`WEALTHIEST_KNIGHT_TAG`] in the tail.
 pub fn parse_leaderboard_leaf(leaf: &[u8; 32]) -> (u64, bool) {
     let wins = u64::from_le_bytes(leaf[0..8].try_into().unwrap());
-    let has_tag = leaf[8..].windows(WEALTHIEST_KNIGHT_TAG.len()).any(|w| w == WEALTHIEST_KNIGHT_TAG);
+    let has_tag = leaf[8..]
+        .windows(WEALTHIEST_KNIGHT_TAG.len())
+        .any(|w| w == WEALTHIEST_KNIGHT_TAG);
     (wins, has_tag)
 }

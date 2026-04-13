@@ -22,8 +22,8 @@ mod params;
 mod ring;
 
 pub use commit::{
-    commit_mlwe, prove_with_witness, verify_lattice_algebraic, Commitment, LatticeProof, PublicInstance,
-    Witness,
+    commit_mlwe, prove_with_witness, verify_lattice_algebraic, Commitment, LatticeProof,
+    PublicInstance, Witness,
 };
 pub use crs::VerifyingKey;
 pub use error::LeError;
