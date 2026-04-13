@@ -3,8 +3,8 @@
 
 use ml_dsa::signature::Verifier;
 use ml_dsa::{EncodedVerifyingKey, MlDsa65, Signature, VerifyingKey};
-use qssm_common::L1Anchor;
 use qssm_common::rollup_context_from_l1;
+use qssm_common::L1Anchor;
 use qssm_utils::{
     leader_attestation_signing_bytes, leader_id_from_ml_dsa_public_key, leader_score_digest,
     mssq_seed_k, RollupContext,
@@ -50,9 +50,11 @@ pub fn elect_leader(seed: &[u8; 32], candidates: &[[u8; 32]]) -> Result<[u8; 32]
 }
 
 fn verify_mldsa65(pk: &[u8], msg: &[u8], sig_bytes: &[u8]) -> Result<(), BatcherError> {
-    let enc = EncodedVerifyingKey::<MlDsa65>::try_from(pk).map_err(|_| BatcherError::InvalidSigningKey)?;
+    let enc = EncodedVerifyingKey::<MlDsa65>::try_from(pk)
+        .map_err(|_| BatcherError::InvalidSigningKey)?;
     let vk = VerifyingKey::<MlDsa65>::decode(&enc);
-    let sig = Signature::<MlDsa65>::try_from(sig_bytes).map_err(|_| BatcherError::InvalidSignature)?;
+    let sig =
+        Signature::<MlDsa65>::try_from(sig_bytes).map_err(|_| BatcherError::InvalidSignature)?;
     vk.verify(msg, &sig)
         .map_err(|_| BatcherError::InvalidSignature)
 }

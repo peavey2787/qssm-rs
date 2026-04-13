@@ -10,6 +10,8 @@ pub mod blake3_compress;
 pub mod blake3_native;
 pub mod entropy;
 pub mod error;
+pub mod predicate;
+pub mod template;
 pub mod lattice_bridge;
 pub mod merkle;
 pub mod prover_json;
@@ -33,9 +35,13 @@ pub use blake3_native::{
     QuarterRoundWitness,
 };
 pub use entropy::{
-    entropy_floor, fetch_nist_pulse, generate_sovereign_entropy, EntropyProvider,
-    DEFAULT_NIST_TIMEOUT, NIST_BEACON_LAST_PULSE_URL,
+    entropy_floor, fetch_nist_pulse, generate_sovereign_entropy, generate_sovereign_entropy_from_anchor,
+    EntropyAnchor, EntropyProvider, DEFAULT_NIST_TIMEOUT, NIST_BEACON_LAST_PULSE_URL,
 };
+pub use predicate::{
+    eval_all_predicates, eval_predicate, json_at_path, CmpOp, PredicateBlock, PredicateError,
+};
+pub use template::{QssmTemplate, TemplateAnchorKind, QSSM_TEMPLATE_VERSION};
 pub use error::GadgetError;
 #[cfg(feature = "lattice-bridge")]
 pub use lattice_bridge::verify_handshake_with_le;

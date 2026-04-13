@@ -48,7 +48,10 @@ mod tests {
     #[test]
     fn domain_tags_diverge_for_same_chunks() {
         let chunk: &[u8] = b"shared-payload";
-        assert_ne!(hash_domain(DOMAIN_MS, &[chunk]), hash_domain(DOMAIN_LE, &[chunk]));
+        assert_ne!(
+            hash_domain(DOMAIN_MS, &[chunk]),
+            hash_domain(DOMAIN_LE, &[chunk])
+        );
         assert_ne!(
             hash_domain(DOMAIN_MSSQ_SEED, &[chunk]),
             hash_domain(DOMAIN_MSSQ_LEADER_SCORE, &[chunk])

@@ -1,8 +1,37 @@
-//! Phase 8 — **Opportunistic entropy**: Kaspa + local **floor**, optional NIST Randomness Beacon **booster** (strict timeout).
+//! Phase 8 — **Opportunistic entropy**: **anchor leg** + local **floor**, optional NIST Randomness Beacon **booster** (strict timeout).
+//!
+//! The first **32** bytes of the floor preimage are an **entropy anchor** (Kaspa parent id, a static root, or a hashed timestamp). Kaspa is one [`EntropyAnchor`] variant, not a hard‑coded primitive.
 
 use std::time::Duration;
 
 use qssm_utils::hashing::blake3_hash;
+
+/// **32‑byte leg** mixed with local entropy for [`entropy_floor`]. Kaspa finalized parent hash is [`Self::KaspaParentBlockHash`].
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum EntropyAnchor {
+    /// Kaspa (or other L1) **32‑byte** parent / finalized block id used as today’s floor limb.
+    KaspaParentBlockHash([u8; 32]),
+    /// Fixed **32‑byte** root (no blockchain): e.g. org‑published commitment or app session root.
+    StaticRoot([u8; 32]),
+    /// Wall‑clock (or agreed) **Unix seconds**; canonicalized to **32** bytes via domain‑separated BLAKE3.
+    TimestampUnixSecs { unix_secs: u64 },
+}
+
+impl EntropyAnchor {
+    /// **32** bytes fed into **`BLAKE3(leg ‖ local)`** (the entropy floor preimage’s first half).
+    #[must_use]
+    pub fn entropy_leg(&self) -> [u8; 32] {
+        match self {
+            Self::KaspaParentBlockHash(h) | Self::StaticRoot(h) => *h,
+            Self::TimestampUnixSecs { unix_secs } => {
+                let mut buf = [0u8; 8 + 32];
+                buf[..32].copy_from_slice(b"QSSM-ENTROPY-ANCHOR-TIMESTAMP-v1");
+                buf[32..].copy_from_slice(&unix_secs.to_le_bytes());
+                blake3_hash(&buf)
+            }
+        }
+    }
+}
 
 /// NIST Beacon **2.0** “last pulse” endpoint (JSON with **`pulse.outputValue`** hex, **64** bytes).
 pub const NIST_BEACON_LAST_PULSE_URL: &str = "https://beacon.nist.gov/beacon/2.0/pulse/last";
@@ -56,14 +85,14 @@ impl EntropyProvider {
         }
     }
 
-    /// **Floor** = **`BLAKE3(Kaspa_Hash ‖ Local_Bytes)`**; if NIST succeeds, **Final** = **Floor ⊕ Pulse** (first **32** bytes of decoded **`outputValue`**).
+    /// **Floor** = **`BLAKE3(anchor_leg ‖ Local_Bytes)`**; if NIST succeeds, **Final** = **Floor ⊕ Pulse** (first **32** bytes of decoded **`outputValue`**).
     #[must_use]
-    pub fn generate_sovereign_entropy(
+    pub fn generate_sovereign_entropy_from_anchor(
         &self,
-        kaspa_hash: [u8; 32],
+        anchor: &EntropyAnchor,
         local_bytes: [u8; 32],
     ) -> ([u8; 32], bool) {
-        let floor = entropy_floor(kaspa_hash, local_bytes);
+        let floor = entropy_floor(anchor.entropy_leg(), local_bytes);
         let pulse = if self.nist_disabled {
             None
         } else if let Some(p) = self.nist_pulse_override {
@@ -76,13 +105,26 @@ impl EntropyProvider {
             None => (floor, false),
         }
     }
+
+    /// Same as [`Self::generate_sovereign_entropy_from_anchor`] with a Kaspa **32‑byte** parent id (backward compatible).
+    #[must_use]
+    pub fn generate_sovereign_entropy(
+        &self,
+        kaspa_hash: [u8; 32],
+        local_bytes: [u8; 32],
+    ) -> ([u8; 32], bool) {
+        self.generate_sovereign_entropy_from_anchor(
+            &EntropyAnchor::KaspaParentBlockHash(kaspa_hash),
+            local_bytes,
+        )
+    }
 }
 
-/// **`BLAKE3(Kaspa_Hash ‖ Local_Bytes)`** — entropy **floor** (no NIST).
+/// **`BLAKE3(anchor_leg ‖ Local_Bytes)`** — entropy **floor** (no NIST). **`anchor_leg`** is [`EntropyAnchor::entropy_leg`].
 #[must_use]
-pub fn entropy_floor(kaspa_hash: [u8; 32], local_bytes: [u8; 32]) -> [u8; 32] {
+pub fn entropy_floor(anchor_leg: [u8; 32], local_bytes: [u8; 32]) -> [u8; 32] {
     let mut preimage = [0u8; 64];
-    preimage[..32].copy_from_slice(&kaspa_hash);
+    preimage[..32].copy_from_slice(&anchor_leg);
     preimage[32..].copy_from_slice(&local_bytes);
     blake3_hash(&preimage)
 }
@@ -127,6 +169,15 @@ pub fn generate_sovereign_entropy(kaspa_hash: [u8; 32], local_bytes: [u8; 32]) -
     EntropyProvider::default().generate_sovereign_entropy(kaspa_hash, local_bytes)
 }
 
+/// Floor + optional NIST with an arbitrary [`EntropyAnchor`].
+#[must_use]
+pub fn generate_sovereign_entropy_from_anchor(
+    anchor: &EntropyAnchor,
+    local_bytes: [u8; 32],
+) -> ([u8; 32], bool) {
+    EntropyProvider::default().generate_sovereign_entropy_from_anchor(anchor, local_bytes)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -137,6 +188,23 @@ mod tests {
         let b = [2u8; 32];
         assert_eq!(entropy_floor(a, b), entropy_floor(a, b));
         assert_ne!(entropy_floor(a, b), entropy_floor(b, a));
+    }
+
+    #[test]
+    fn timestamp_anchor_leg_deterministic() {
+        let a = EntropyAnchor::TimestampUnixSecs { unix_secs: 1_700_000_000 };
+        assert_eq!(a.entropy_leg(), a.entropy_leg());
+        let b = EntropyAnchor::TimestampUnixSecs { unix_secs: 1_700_000_001 };
+        assert_ne!(a.entropy_leg(), b.entropy_leg());
+    }
+
+    #[test]
+    fn static_root_matches_raw_leg() {
+        let h = [9u8; 32];
+        assert_eq!(
+            EntropyAnchor::StaticRoot(h).entropy_leg(),
+            EntropyAnchor::KaspaParentBlockHash(h).entropy_leg()
+        );
     }
 
     #[test]

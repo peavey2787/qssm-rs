@@ -16,22 +16,14 @@ fn tx(id_byte: u8, proof_tag: u8) -> L2Transaction {
 
 struct DenyAll;
 impl TxProofVerifier for DenyAll {
-    fn verify_tx(
-        &self,
-        _tx: &L2Transaction,
-        _ctx: &RollupContext,
-    ) -> Result<(), ProofError> {
+    fn verify_tx(&self, _tx: &L2Transaction, _ctx: &RollupContext) -> Result<(), ProofError> {
         Err(ProofError::Invalid)
     }
 }
 
 struct AcceptAll;
 impl TxProofVerifier for AcceptAll {
-    fn verify_tx(
-        &self,
-        _tx: &L2Transaction,
-        _ctx: &RollupContext,
-    ) -> Result<(), ProofError> {
+    fn verify_tx(&self, _tx: &L2Transaction, _ctx: &RollupContext) -> Result<(), ProofError> {
         Ok(())
     }
 }

@@ -125,10 +125,7 @@ impl L1Anchor for MockKaspaAdapter {
 
     fn get_ledger_entropy(&self) -> [u8; 32] {
         let le = self.slot.to_le_bytes();
-        hash_domain(
-            DOMAIN_MOCK_KASPA_ENTROPY,
-            &[le.as_slice(), &self.genesis],
-        )
+        hash_domain(DOMAIN_MOCK_KASPA_ENTROPY, &[le.as_slice(), &self.genesis])
     }
 
     fn parent_block_hash_prev(&self) -> [u8; 32] {

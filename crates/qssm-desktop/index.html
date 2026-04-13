@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QSSM Helper</title>
+    <style>
+      :root {
+        font-family: system-ui, sans-serif;
+        background: #0f1419;
+        color: #e6edf3;
+      }
+      body {
+        margin: 0;
+        padding: 1.25rem;
+        max-width: 56rem;
+      }
+      h1 {
+        font-size: 1.25rem;
+        font-weight: 600;
+      }
+      h2 {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-top: 1.75rem;
+        margin-bottom: 0.5rem;
+        color: #58a6ff;
+      }
+      .hud {
+        display: grid;
+        gap: 0.5rem;
+        padding: 1rem;
+        border-radius: 8px;
+        background: #161b22;
+        border: 1px solid #30363d;
+        margin-bottom: 1rem;
+      }
+      .hud-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+      }
+      .label {
+        color: #8b949e;
+      }
+      .dropzone {
+        border: 2px dashed #388bfd;
+        border-radius: 8px;
+        padding: 2rem;
+        text-align: center;
+        background: #0d1117;
+        margin-bottom: 1rem;
+      }
+      .dropzone.drag {
+        background: #1c2128;
+      }
+      button {
+        background: #238636;
+        color: #fff;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        margin-right: 0.5rem;
+        margin-top: 0.35rem;
+      }
+      button.secondary {
+        background: #21262d;
+        border: 1px solid #30363d;
+      }
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      pre {
+        background: #010409;
+        border: 1px solid #30363d;
+        border-radius: 6px;
+        padding: 0.75rem;
+        overflow: auto;
+        max-height: 14rem;
+        font-size: 0.75rem;
+      }
+      .err {
+        color: #f85149;
+      }
+      .panel {
+        padding: 1rem;
+        border-radius: 8px;
+        background: #161b22;
+        border: 1px solid #30363d;
+        margin-bottom: 1rem;
+      }
+      .grid2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+      }
+      @media (max-width: 720px) {
+        .grid2 {
+          grid-template-columns: 1fr;
+        }
+      }
+      label.field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        font-size: 0.8rem;
+      }
+      input[type="text"],
+      input[type="number"],
+      textarea,
+      select {
+        background: #0d1117;
+        border: 1px solid #30363d;
+        border-radius: 4px;
+        color: #e6edf3;
+        padding: 0.35rem 0.5rem;
+        font-size: 0.85rem;
+      }
+      textarea {
+        min-height: 5rem;
+        font-family: ui-monospace, monospace;
+      }
+      .pred-row {
+        display: grid;
+        grid-template-columns: 1fr 2fr auto;
+        gap: 0.5rem;
+        align-items: end;
+        margin-bottom: 0.5rem;
+        padding: 0.5rem;
+        background: #0d1117;
+        border-radius: 6px;
+        border: 1px solid #21262d;
+      }
+      .pred-row.extra {
+        grid-template-columns: 1fr 1fr 1fr;
+      }
+      .anchor-fields label {
+        margin-right: 1rem;
+        font-size: 0.85rem;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>QSSM Helper — handoff → sovereign + lattice</h1>
+
+    <div class="hud" id="hud">
+      <div class="hud-row">
+        <span class="label">L1 / anchor status</span>
+        <span id="l1">—</span>
+      </div>
+      <div class="hud-row">
+        <span class="label">Entropy anchor kind</span>
+        <span id="anchor-kind">—</span>
+      </div>
+      <div class="hud-row">
+        <span class="label">QRNG / NIST</span>
+        <span id="qrng">—</span>
+      </div>
+      <div class="hud-row">
+        <span class="label">Prover latency (30-bit limb)</span>
+        <span id="latency">—</span>
+      </div>
+    </div>
+
+    <h2>Rollup handoff (JSON file)</h2>
+    <div class="dropzone" id="dz" tabindex="0">
+      <p><strong>Drop a handoff JSON file</strong> or use the file picker.</p>
+      <p class="label" style="margin-top: 0.5rem">
+        Use <code>kaspa_parent_block_id_hex</code> <em>or</em>
+        <code>anchor</code>: <code>{ "kind": "kaspa" | "static_root" | "timestamp", … }</code> plus
+        <code>state_root_hex</code>, <code>rollup_context_digest_hex</code>, <code>n</code>,
+        <code>k</code>, <code>bit_at_k</code>, <code>challenge_hex</code>, optional
+        <code>local_entropy_hex</code>
+      </p>
+      <input type="file" id="file" accept=".json,application/json" style="margin-top: 1rem" />
+    </div>
+
+    <h2>Generic verification mode</h2>
+    <div class="panel">
+      <p class="label" style="margin-top: 0">
+        Build a handoff without Kaspa: choose a <strong>static root</strong> or <strong>Unix timestamp</strong> as the
+        entropy anchor leg (same Phase 8 floor + optional NIST). Compose <strong>Truth Gates</strong>
+        (<em>digital laws</em> — declarative checks) for <code>.qssm</code> export; verifiers evaluate the same
+        <code>PredicateBlock</code> schema as <code>qssm-gadget</code>.
+      </p>
+
+      <p class="label"><strong>Entropy anchor</strong></p>
+      <div class="anchor-fields" style="margin-bottom: 0.75rem">
+        <label><input type="radio" name="anchor-mode" value="kaspa" checked /> Kaspa parent (32-byte hex)</label>
+        <label><input type="radio" name="anchor-mode" value="static_root" /> Static root (32-byte hex)</label>
+        <label><input type="radio" name="anchor-mode" value="timestamp" /> Timestamp (Unix seconds)</label>
+      </div>
+
+      <div class="grid2">
+        <label class="field">
+          Kaspa parent / static root hex (32 bytes)
+          <input type="text" id="anchor-hex" placeholder="64 hex chars" />
+        </label>
+        <label class="field">
+          Unix seconds (timestamp anchor)
+          <input type="number" id="anchor-ts" value="1700000000" min="0" step="1" />
+        </label>
+        <label class="field">
+          state_root_hex
+          <input type="text" id="gv-state-root" />
+        </label>
+        <label class="field">
+          rollup_context_digest_hex
+          <input type="text" id="gv-rollup" />
+        </label>
+        <label class="field">n <input type="number" id="gv-n" value="1" min="0" max="255" /></label>
+        <label class="field">k <input type="number" id="gv-k" value="0" min="0" max="255" /></label>
+        <label class="field">bit_at_k <input type="number" id="gv-bit" value="0" min="0" max="1" /></label>
+        <label class="field">
+          challenge_hex
+          <input type="text" id="gv-challenge" />
+        </label>
+        <label class="field">
+          local_entropy_hex (optional)
+          <input type="text" id="gv-local" placeholder="omit for default" />
+        </label>
+      </div>
+
+      <p class="label" style="margin-top: 1rem">
+        <strong>Truth Gates</strong> — <span class="label">digital laws wired into the exported template</span>
+      </p>
+      <div class="preset-bar" style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-bottom: 0.75rem">
+        <label class="field" style="margin: 0; min-width: 12rem">
+          Preset
+          <select id="truth-preset-pick" style="margin-top: 0.25rem">
+            <option value="">Choose preset…</option>
+            <option value="blank">Blank gate (choose kind)</option>
+            <option value="greater_than">Greater than (&gt;)</option>
+            <option value="less_than">Less than (&lt;)</option>
+            <option value="age_21">Age check (21+)</option>
+          </select>
+        </label>
+        <button type="button" class="secondary" id="truth-add-from-preset" style="margin-top: 1.25rem">Add Truth Gate</button>
+        <span class="label" style="margin-top: 1.25rem">or quick add:</span>
+        <button type="button" class="secondary" id="preset-btn-gt" style="margin-top: 1.25rem">Greater Than</button>
+        <button type="button" class="secondary" id="preset-btn-lt" style="margin-top: 1.25rem">Less Than</button>
+        <button type="button" class="secondary" id="preset-btn-age" style="margin-top: 1.25rem">Age Check (21+)</button>
+      </div>
+      <div id="predicate-list"></div>
+      <button type="button" class="secondary" id="add-pred">+ Add blank Truth Gate</button>
+
+      <div class="grid2" style="margin-top: 1rem">
+        <label class="field">
+          Template id
+          <input type="text" id="tpl-id" value="my-claim" />
+        </label>
+        <label class="field">
+          Template title
+          <input type="text" id="tpl-title" value="Custom claim" />
+        </label>
+      </div>
+
+      <button type="button" id="gv-run">Run pipeline from form</button>
+      <button type="button" class="secondary" id="gv-preset-age">Digital law preset: proof of age (21+)</button>
+      <button type="button" class="secondary" id="gv-export-qssm">Export .qssm template</button>
+      <label class="field" style="margin-top: 0.5rem">
+        Export path (absolute; desktop only)
+        <input type="text" id="export-path" placeholder="C:\path\claim.qssm" />
+      </label>
+    </div>
+
+    <h2>Verify public claim vs .qssm (Truth Gates)</h2>
+    <div class="panel grid2">
+      <label class="field">
+        Template JSON (.qssm body)
+        <textarea id="verify-template"></textarea>
+      </label>
+      <label class="field">
+        Public claim JSON
+        <textarea id="verify-claim">{"claim":{"age_years":22}}</textarea>
+      </label>
+    </div>
+    <button type="button" class="secondary" id="verify-run">Run Truth Gate check</button>
+    <button type="button" class="secondary" id="load-poa-template">Insert Proof-of-age template</button>
+    <pre id="verify-out" style="max-height: 8rem">(no verify yet)</pre>
+
+    <p class="label" style="margin-top: 0.75rem">
+      <strong>Tip:</strong> drag a <code>.json</code> from the desktop onto this window (Tauri provides a real path), or use the file picker (JSON body path).
+    </p>
+
+    <h2 style="font-size: 1rem; margin-top: 1.5rem">Result</h2>
+    <pre id="out">(no run yet)</pre>
+
+    <script type="module" src="/main.js"></script>
+  </body>
+</html>

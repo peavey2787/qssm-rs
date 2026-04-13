@@ -4,7 +4,7 @@
 use rand::RngCore;
 
 use crate::crs::VerifyingKey;
-use crate::params::{C_SPAN, GAMMA, MAX_MESSAGE, MAX_PROVER_ATTEMPTS, N, BETA, ETA};
+use crate::params::{BETA, C_SPAN, ETA, GAMMA, MAX_MESSAGE, MAX_PROVER_ATTEMPTS, N};
 use crate::ring::{encode_rq_coeffs_le, short_vec_to_rq, short_vec_to_rq_bound, RqPoly};
 use crate::LeError;
 
@@ -129,7 +129,11 @@ pub fn prove_with_witness(
         let lhs = a.mul(&z)?;
         let rhs = t.add(&u.scalar_mul_signed(c));
         if lhs == rhs {
-            return Ok(LatticeProof { t, z, challenge: ch });
+            return Ok(LatticeProof {
+                t,
+                z,
+                challenge: ch,
+            });
         }
     }
     Err(LeError::ProverAborted)

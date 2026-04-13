@@ -11,7 +11,7 @@ use mssq_batcher::{
     RollupState,
 };
 use qssm_common::{rollup_context_from_l1, Batch, L1Anchor, L2Transaction, MockKaspaAdapter};
-use qssm_le::{prove_arithmetic, PublicInstance, VerifyingKey, Witness, verify_lattice};
+use qssm_le::{prove_arithmetic, verify_lattice, PublicInstance, VerifyingKey, Witness};
 use qssm_ref::millionaires_duel::{
     encode_millionaires_proof, format_leaf_data_hex, format_slot_hex, leaderboard_key,
     parse_leaderboard_leaf, prestige_payload, public_message_for_duel, MillionairesDuelVerifier,
@@ -58,7 +58,9 @@ fn sign_attestation(
 
 fn main() {
     let (v_a, v_b) = parse_u64_args();
-    println!("Millionaire’s Duel — defaults: use args `<v_a> <v_b>` (demo uses Public-Difference ZK).");
+    println!(
+        "Millionaire’s Duel — defaults: use args `<v_a> <v_b>` (demo uses Public-Difference ZK)."
+    );
     println!("Balances: Alice={v_a}, Bob={v_b}");
 
     let mut anchor = MockKaspaAdapter::new([0x42; 32]);
@@ -95,10 +97,10 @@ fn main() {
     };
 
     let vk = VerifyingKey::from_seed([0xDD; 32]);
-    let public = PublicInstance {
-        message: public_m,
+    let public = PublicInstance { message: public_m };
+    let witness = Witness {
+        r: [0i32; qssm_le::N],
     };
-    let witness = Witness { r: [0i32; qssm_le::N] };
     let (commitment, proof) = match prove_arithmetic(&vk, &public, &witness, &ctx_digest) {
         Ok(x) => x,
         Err(e) => {
@@ -112,14 +114,7 @@ fn main() {
 
     let digest = ctx.digest();
     let t0 = Instant::now();
-    let ok = verify_lattice(
-        &vk,
-        &public,
-        &commitment,
-        &proof,
-        &digest,
-    )
-    .unwrap_or(false);
+    let ok = verify_lattice(&vk, &public, &commitment, &proof, &digest).unwrap_or(false);
     let latency = t0.elapsed();
     if !ok {
         eprintln!("verify_lattice failed");

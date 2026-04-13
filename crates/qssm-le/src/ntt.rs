@@ -44,9 +44,17 @@ fn ntt_inplace(a: &mut [u32], invert: bool) {
     let mut len = 2usize;
     while len <= n {
         let wlen = if invert {
-            inv_mod(pow_mod(omega_128() as u64, (Q - 1) / (len as u32) * ((len as u32) / 2), Q))
+            inv_mod(pow_mod(
+                omega_128() as u64,
+                (Q - 1) / (len as u32) * ((len as u32) / 2),
+                Q,
+            ))
         } else {
-            pow_mod(omega_128() as u64, (Q - 1) / (len as u32) * ((len as u32) / 2), Q)
+            pow_mod(
+                omega_128() as u64,
+                (Q - 1) / (len as u32) * ((len as u32) / 2),
+                Q,
+            )
         };
         let mut i = 0usize;
         while i < n {

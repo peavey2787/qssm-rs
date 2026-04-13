@@ -1,11 +1,11 @@
 //! Invalid-leader defenses: tampered limbs, wrong slot / QRNG, ML-DSA failures.
 
+use ml_dsa::signature::{Keypair, Signer};
+use ml_dsa::{KeyGen, MlDsa65, Seed};
 use mssq_batcher::{
     elect_leader, mssq_seed_from_anchor, rollup_context_from_l1, verify_leader_attestation,
     BatcherError, LeaderAttestation,
 };
-use ml_dsa::signature::{Keypair, Signer};
-use ml_dsa::{KeyGen, MlDsa65, Seed};
 use qssm_common::{L1Anchor, MockKaspaAdapter};
 use qssm_utils::{leader_attestation_signing_bytes, leader_id_from_ml_dsa_public_key};
 
@@ -55,7 +55,12 @@ fn sign_attestation(
     }
 }
 
-fn setup_leader() -> (MockKaspaAdapter, ml_dsa::SigningKey<MlDsa65>, [u8; 32], [[u8; 32]; 1]) {
+fn setup_leader() -> (
+    MockKaspaAdapter,
+    ml_dsa::SigningKey<MlDsa65>,
+    [u8; 32],
+    [[u8; 32]; 1],
+) {
     let anchor = anchor_at_slot_10();
     let sk = signing_key_from_test_seed(0xC1);
     let pk = sk.verifying_key().encode();
