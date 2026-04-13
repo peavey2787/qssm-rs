@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Peavey Koding. All rights reserved.
+// Licensed under the Business Source License 1.1 (BSL-1.1).
+// See the LICENSE file in the repository root for full license text.
+
 //! Declarative **predicate blocks** for generic verification templates (comparison, range, set membership).
 //!
 //! Values are read from a public **`serde_json::Value`** (object tree) using dot paths, e.g. **`claim.age_years`**.
