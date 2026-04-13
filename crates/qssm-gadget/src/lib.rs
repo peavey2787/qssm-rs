@@ -10,6 +10,7 @@ pub mod blake3_compress;
 pub mod blake3_native;
 pub mod error;
 pub mod merkle;
+pub mod prover_json;
 pub mod r1cs;
 
 pub use blake3_compress::{
@@ -32,4 +33,10 @@ pub use error::GadgetError;
 pub use merkle::{
     assert_ms_leaf_index_matches_opening, MerklePathWitness, MERKLE_DEPTH_MS, MERKLE_WIDTH_MS,
 };
-pub use r1cs::{Blake3Gadget, ConstraintSystem, MockProver, VarId, VarKind};
+pub use prover_json::{
+    compression_private_wire_count, merkle_parent_hash_witness_value, merkle_parent_private_wire_count,
+    sovereign_private_wire_count, sovereign_witness_value,
+};
+pub use r1cs::{
+    Blake3Gadget, ConstraintSystem, MockProver, R1csLineExporter, VarId, VarKind,
+};

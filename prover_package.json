@@ -1,0 +1,25 @@
+{
+  "artifacts": {
+    "merkle_parent_witness_json": "merkle_parent_witness.json",
+    "r1cs_merkle_manifest_txt": "r1cs_merkle_parent.manifest.txt",
+    "sovereign_witness_json": "sovereign_witness.json"
+  },
+  "description": "Kaspa-anchored L2 handshake: Merkle parent (BLAKE3 compress witness) + Sovereign limb for Engine A",
+  "engine_a_public": {
+    "message_limb_u30": 3444777
+  },
+  "merkle_leaf_left_hex": "3f2806c4eecdc3e7dc0240304feb0fa002241049b1793979d209f910258c60fe",
+  "merkle_leaf_right_hex": "f8e30375b26408b054534a72c4c3144cccd2879b9f8e3924effaac597b5c5d2d",
+  "package_version": "qssm-l2-handshake-v1",
+  "r1cs": {
+    "constraint_line_count": 65184,
+    "line_format": "xor|full_adder|equal with tab-separated var indices",
+    "manifest_file": "r1cs_merkle_parent.manifest.txt"
+  },
+  "rollup_state_root_hex": "64e74fcb73ad97f8f5c23ef224fab6eb489c738f51c9722068b0a0405afbe043",
+  "sim_kaspa_parent_block_id_hex": "53494d5f4b415350415f504152454e545f563100000000000000000000000000",
+  "witness_wire_counts": {
+    "merkle_parent_private_bit_wires": 259840,
+    "sovereign_private_bit_wires": 32
+  }
+}

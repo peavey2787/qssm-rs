@@ -248,6 +248,16 @@ impl CompressionWitness {
         }
         true
     }
+
+    /// Phase 6: flat index-based JSON — **public** chaining / block / output words, **private** all **G** bit-wires.
+    #[must_use]
+    pub fn to_prover_json(&self) -> String {
+        serde_json::to_string_pretty(&crate::prover_json::compression_witness_value(
+            self,
+            "CompressionWitness",
+        ))
+        .expect("compression witness JSON")
+    }
 }
 
 #[inline]
@@ -319,6 +329,13 @@ impl MerkleParentHashWitness {
 
     pub fn validate(&self) -> bool {
         self.compress_chunk_start.validate() && self.compress_root.validate()
+    }
+
+    /// Phase 6: nested **`CompressionWitness`** JSON + **public** parent digest hex.
+    #[must_use]
+    pub fn to_prover_json(&self) -> String {
+        serde_json::to_string_pretty(&crate::prover_json::merkle_parent_hash_witness_value(self))
+            .expect("merkle parent hash witness JSON")
     }
 
     /// **32-byte** digest (bit-for-bit matches **`merkle_parent`**).

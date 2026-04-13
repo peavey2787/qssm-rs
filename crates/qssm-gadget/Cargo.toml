@@ -6,7 +6,10 @@ license.workspace = true
 description = "BLAKE3–lattice gadgets: degree-2 bit witnesses and MS Merkle helpers (QSSM integration)."
 
 [dependencies]
+hex.workspace = true
 qssm-utils = { path = "../qssm-utils" }
+serde.workspace = true
+serde_json.workspace = true
 thiserror.workspace = true
 
 [dev-dependencies]

@@ -100,6 +100,13 @@ impl SovereignWitness {
         let (lb, m) = message_limb_from_sovereign_digest_normative(&self.digest);
         lb == self.limb_bits && m == self.message_limb
     }
+
+    /// Phase 6: flat index-based JSON — **public** `root`, `digest`, **`message_limb_u30`**, plus **private** limb bit-wires and preimage aux hex.
+    #[must_use]
+    pub fn to_prover_json(&self) -> String {
+        serde_json::to_string_pretty(&crate::prover_json::sovereign_witness_value(self))
+            .expect("sovereign witness JSON")
+    }
 }
 
 /// Convenience: same as **`SovereignWitness::bind(...).message_limb`** (normative path internally).
@@ -133,5 +140,16 @@ mod tests {
         let meta = encode_proof_metadata_v1(0, 5, 1, &[0xee; 32]);
         let w = SovereignWitness::bind(root, ctx, meta);
         assert!(w.validate());
+    }
+
+    #[test]
+    fn sovereign_to_prover_json_roundtrip() {
+        let root = [0x01u8; 32];
+        let ctx = [0x02u8; 32];
+        let meta = encode_proof_metadata_v1(1, 0, 0, &[0x03u8; 32]);
+        let w = SovereignWitness::bind(root, ctx, meta);
+        let v: serde_json::Value = serde_json::from_str(&w.to_prover_json()).expect("parse");
+        assert_eq!(v["kind"], "SovereignWitnessV1");
+        assert_eq!(v["public"]["message_limb_u30"], serde_json::json!(w.message_limb));
     }
 }
