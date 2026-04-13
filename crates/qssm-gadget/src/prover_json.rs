@@ -165,10 +165,18 @@ pub fn sovereign_witness_value(w: &SovereignWitness) -> Value {
             "digest_hex": hex::encode(w.digest),
             "message_limb_u30": w.message_limb,
             "domain_tag": w.domain_tag,
+            "nist_included": w.nist_included,
+            "sovereign_entropy_hex": hex::encode(w.sovereign_entropy),
         },
         "private_aux_hex": {
             "rollup_context_digest": hex::encode(w.rollup_context_digest),
             "proof_metadata": hex::encode(&w.proof_metadata),
+            "challenge_hex": hex::encode(w.challenge),
+            "proof_fields": {
+                "n": w.n,
+                "k": w.k,
+                "bit_at_k": w.bit_at_k,
+            },
         },
         "private_bit_wires": priv_wires,
         "private_wire_count": idx,

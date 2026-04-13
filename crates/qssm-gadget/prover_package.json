@@ -6,10 +6,11 @@
   },
   "description": "Kaspa-anchored L2 handshake: Merkle parent (BLAKE3 compress witness) + Sovereign limb for Engine A",
   "engine_a_public": {
-    "message_limb_u30": 3444777
+    "message_limb_u30": 74592577
   },
   "merkle_leaf_left_hex": "3f2806c4eecdc3e7dc0240304feb0fa002241049b1793979d209f910258c60fe",
   "merkle_leaf_right_hex": "f8e30375b26408b054534a72c4c3144cccd2879b9f8e3924effaac597b5c5d2d",
+  "nist_beacon_included": true,
   "package_version": "qssm-l2-handshake-v1",
   "r1cs": {
     "constraint_line_count": 65184,
