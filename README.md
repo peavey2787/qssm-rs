@@ -36,7 +36,7 @@
 This project is licensed under the **Business Source License 1.1 (BSL-1.1)**. See [`LICENSE`](LICENSE) for the full text.
 
 * **Non-commercial / research use:** 100% free under the license terms.
-* **Commercial use:** requires a license for entities with **more than $5,000,000 USD** annual revenue (see `LICENSE`).
+* **Commercial use:** requires a license (see `LICENSE`).
 * **Change date:** April 13, 2029 (then **GPLv3** or later, per `LICENSE`).
 
 *Math is law. Sovereignty is non-negotiable.*
