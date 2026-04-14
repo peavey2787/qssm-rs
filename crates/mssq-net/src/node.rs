@@ -14,7 +14,7 @@ use tracing::warn;
 use crate::behaviour::{MeshBehaviour, MeshEvent};
 use crate::discovery;
 use crate::error::NetError;
-use crate::pulse::{collect_local_heartbeat, HeartbeatEnvelope, HEARTBEAT_TOPIC};
+use crate::pulse::{collect_local_heartbeat, heartbeat_topic, HeartbeatEnvelope};
 use crate::peer_cache;
 use crate::relay::{update_nat_state, RelayState};
 use crate::reputation::ReputationStore;
@@ -22,6 +22,7 @@ use crate::transport::build_swarm;
 
 #[derive(Debug, Clone)]
 pub struct NodeConfig {
+    pub network_id: u32,
     pub heartbeat_every: Duration,
     pub startup_peer_cache_probe: usize,
     pub startup_merit_query_size: usize,
@@ -30,6 +31,7 @@ pub struct NodeConfig {
 impl Default for NodeConfig {
     fn default() -> Self {
         Self {
+            network_id: 1,
             heartbeat_every: Duration::from_secs(30),
             startup_peer_cache_probe: 5,
             startup_merit_query_size: 10,
@@ -37,8 +39,18 @@ impl Default for NodeConfig {
     }
 }
 
+fn network_label(network_id: u32) -> String {
+    if network_id == 0 {
+        "MAINNET".to_string()
+    } else {
+        format!("TESTNET-{network_id}")
+    }
+}
+
 #[derive(Debug, Clone, Default)]
 pub struct NodeSnapshot {
+    pub network_id: u32,
+    pub network_label: String,
     pub peer_id: String,
     pub nat_status: String,
     pub public_addr: Option<String>,
@@ -77,10 +89,10 @@ impl NodeHandle {
 pub async fn start_node(cfg: NodeConfig) -> Result<NodeHandle, NetError> {
     let local_key = libp2p::identity::Keypair::generate_ed25519();
     let local_peer = PeerId::from(local_key.public());
-    let (mut swarm, transport_plan) = build_swarm(local_key).await?;
+    let (mut swarm, transport_plan) = build_swarm(local_key, cfg.network_id).await?;
 
-    let topic = IdentTopic::new(HEARTBEAT_TOPIC);
-    let merit_topic = IdentTopic::new("mssq/merit-query/1");
+    let topic = IdentTopic::new(heartbeat_topic(cfg.network_id));
+    let merit_topic = IdentTopic::new(format!("mssq/merit-query/net-{}", cfg.network_id));
     let merit_topic_hash = merit_topic.hash().clone();
     let _ = swarm.behaviour_mut().gossipsub.subscribe(&topic);
     let _ = swarm.behaviour_mut().gossipsub.subscribe(&merit_topic);
@@ -88,6 +100,8 @@ pub async fn start_node(cfg: NodeConfig) -> Result<NodeHandle, NetError> {
     discovery::seed_bootstrap(&mut swarm, &cached);
 
     let snapshot = Arc::new(Mutex::new(NodeSnapshot {
+        network_id: cfg.network_id,
+        network_label: network_label(cfg.network_id),
         peer_id: local_peer.to_string(),
         nat_status: "unknown".to_string(),
         public_addr: None,
@@ -380,6 +394,8 @@ fn push_pulse(buf: &mut VecDeque<String>, line: String) {
 pub fn snapshot_to_json(snapshot: &NodeSnapshot) -> Value {
     serde_json::json!({
         "peer_id": snapshot.peer_id,
+        "network_id": snapshot.network_id,
+        "network_label": snapshot.network_label,
         "nat_status": snapshot.nat_status,
         "public_addr": snapshot.public_addr,
         "active_transports": snapshot.active_transports,

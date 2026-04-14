@@ -14,7 +14,10 @@ pub struct TransportPlan {
     pub listen_addrs: Vec<Multiaddr>,
 }
 
-pub async fn build_swarm(local_key: Keypair) -> Result<(Swarm<MeshBehaviour>, TransportPlan), NetError> {
+pub async fn build_swarm(
+    local_key: Keypair,
+    network_id: u32,
+) -> Result<(Swarm<MeshBehaviour>, TransportPlan), NetError> {
     let local_peer = libp2p::PeerId::from(local_key.public());
 
     let builder = SwarmBuilder::with_existing_identity(local_key)
@@ -37,7 +40,9 @@ pub async fn build_swarm(local_key: Keypair) -> Result<(Swarm<MeshBehaviour>, Tr
     let mut active = vec!["quic", "tcp", "websocket", "relay-client", "autonat", "dcutr"];
 
     let mut swarm = builder
-        .with_behaviour(|key, relay_behaviour| build_behaviour(key, local_peer, relay_behaviour))
+        .with_behaviour(|key, relay_behaviour| {
+            build_behaviour(key, local_peer, relay_behaviour, network_id)
+        })
         .map_err(|e| NetError::Build(e.to_string()))?
         .with_swarm_config(|cfg| cfg.with_idle_connection_timeout(Duration::from_secs(60)))
         .build();

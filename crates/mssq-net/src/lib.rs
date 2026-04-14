@@ -19,4 +19,4 @@ mod transport;
 
 pub use error::NetError;
 pub use node::{snapshot_to_json, start_node, NodeConfig, NodeHandle, NodeSnapshot};
-pub use pulse::{HeartbeatEnvelope, HEARTBEAT_TOPIC};
+pub use pulse::{heartbeat_topic, HeartbeatEnvelope};

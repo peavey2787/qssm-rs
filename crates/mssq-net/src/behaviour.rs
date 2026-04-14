@@ -64,6 +64,7 @@ pub fn build_behaviour(
     local_key: &libp2p::identity::Keypair,
     local_peer: PeerId,
     relay_behaviour: relay::client::Behaviour,
+    network_id: u32,
 ) -> MeshBehaviour {
     let message_id_fn = |msg: &gossipsub::Message| {
         let h = qssm_utils::hashing::blake3_hash(&msg.data);
@@ -88,7 +89,7 @@ pub fn build_behaviour(
         .expect("mdns behaviour");
 
     let identify = identify::Behaviour::new(identify::Config::new(
-        "/mssq-net/1.0.0".to_string(),
+        format!("/mssq-net/net-{network_id}/1.0.0"),
         local_key.public(),
     ));
 

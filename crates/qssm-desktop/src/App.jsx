@@ -207,7 +207,12 @@ export default function App() {
   return (
     <div className={`app-shell ${feverClass}`}>
       <header className="top-bar">
-        <div className="brand">Sovereign Command Center</div>
+        <div className="brand">
+          Sovereign Command Center{" "}
+          <span className="status-pill warn" style={{ marginLeft: "0.45rem" }}>
+            {payload?.network_label || "TESTNET-1"}
+          </span>
+        </div>
         <nav className="nav-tabs" aria-label="Primary">
           {!mustSetup && <button type="button" className={tier === "dashboard" ? "active" : ""} onClick={() => setTier("dashboard")}>Dashboard</button>}
           <button type="button" className={tier === "identity" ? "active" : ""} onClick={() => setTier("identity")}>Manage Sovereign ID</button>

@@ -5,7 +5,9 @@ use qssm_he::{harvest, Heartbeat, HarvestConfig};
 
 use crate::error::NetError;
 
-pub const HEARTBEAT_TOPIC: &str = "qssm.he.heartbeat.v1";
+pub fn heartbeat_topic(network_id: u32) -> String {
+    format!("qssm.he.heartbeat.v1.net-{network_id}")
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct HeartbeatEnvelope {

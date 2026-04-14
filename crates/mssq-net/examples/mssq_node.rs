@@ -66,7 +66,8 @@ fn draw_dashboard(frame: &mut ratatui::Frame<'_>, snap: &NodeSnapshot) {
         .split(frame.area());
 
     let status = Paragraph::new(format!(
-        "PeerID: {}\nNAT/Public: {} / {}",
+        "Network: {}\nPeerID: {}\nNAT/Public: {} / {}",
+        snap.network_label,
         snap.peer_id,
         snap.nat_status,
         snap.public_addr

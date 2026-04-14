@@ -59,7 +59,10 @@ pub fn spawn_command_center(app: &AppHandle, bundle_mmdbs: Vec<PathBuf>) {
         };
 
         rt.block_on(async move {
-            let cfg = mssq_net::NodeConfig::default();
+            let cfg = mssq_net::NodeConfig {
+                network_id: 1,
+                ..mssq_net::NodeConfig::default()
+            };
             match mssq_net::start_node(cfg).await {
                 Ok(node) => {
                     NETWORK_ONLINE.store(true, Ordering::SeqCst);
