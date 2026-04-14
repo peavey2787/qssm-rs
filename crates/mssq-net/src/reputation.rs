@@ -64,4 +64,20 @@ impl ReputationStore {
             .map(|(k, v)| (*k, v.clone()))
             .collect()
     }
+
+    #[must_use]
+    pub fn top_merit_holders(&self, limit: usize) -> Vec<PeerId> {
+        let mut ranked: Vec<_> = self.by_peer.iter().collect();
+        ranked.sort_by(|a, b| {
+            b.1.score
+                .cmp(&a.1.score)
+                .then_with(|| b.1.accepted.cmp(&a.1.accepted))
+                .then_with(|| a.1.invalid_density.cmp(&b.1.invalid_density))
+        });
+        ranked
+            .into_iter()
+            .take(limit)
+            .map(|(peer, _)| *peer)
+            .collect()
+    }
 }

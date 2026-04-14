@@ -11,6 +11,7 @@ mod behaviour;
 mod discovery;
 mod error;
 mod node;
+mod peer_cache;
 mod pulse;
 mod relay;
 mod reputation;

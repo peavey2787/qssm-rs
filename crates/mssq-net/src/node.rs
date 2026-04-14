@@ -1,11 +1,11 @@
-use std::collections::VecDeque;
+use std::collections::{HashSet, VecDeque};
 use std::sync::Arc;
 use std::time::Duration;
 
 use futures::StreamExt;
 use libp2p::gossipsub::{IdentTopic, MessageAcceptance, MessageId};
 use libp2p::swarm::SwarmEvent;
-use libp2p::{Multiaddr, PeerId, Swarm};
+use libp2p::{PeerId, Swarm};
 use qssm_governor::{Governor, PeerAction};
 use serde_json::Value;
 use tokio::sync::{mpsc, Mutex};
@@ -15,21 +15,24 @@ use crate::behaviour::{MeshBehaviour, MeshEvent};
 use crate::discovery;
 use crate::error::NetError;
 use crate::pulse::{collect_local_heartbeat, HeartbeatEnvelope, HEARTBEAT_TOPIC};
+use crate::peer_cache;
 use crate::relay::{update_nat_state, RelayState};
 use crate::reputation::ReputationStore;
 use crate::transport::build_swarm;
 
 #[derive(Debug, Clone)]
 pub struct NodeConfig {
-    pub bootstrap_addrs: Vec<Multiaddr>,
     pub heartbeat_every: Duration,
+    pub startup_peer_cache_probe: usize,
+    pub startup_merit_query_size: usize,
 }
 
 impl Default for NodeConfig {
     fn default() -> Self {
         Self {
-            bootstrap_addrs: Vec::new(),
             heartbeat_every: Duration::from_secs(30),
+            startup_peer_cache_probe: 5,
+            startup_merit_query_size: 10,
         }
     }
 }
@@ -48,6 +51,14 @@ pub struct NodeSnapshot {
     pub is_bootstrap_mode: bool,
     pub current_t_min_milli: i64,
     pub top_deficit_peers: Vec<String>,
+    pub primary_peers: Vec<String>,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[serde(tag = "kind", rename_all = "snake_case")]
+enum MeritMessage {
+    Query { limit: usize },
+    Response { peers: Vec<String> },
 }
 
 #[derive(Clone)]
@@ -69,8 +80,12 @@ pub async fn start_node(cfg: NodeConfig) -> Result<NodeHandle, NetError> {
     let (mut swarm, transport_plan) = build_swarm(local_key).await?;
 
     let topic = IdentTopic::new(HEARTBEAT_TOPIC);
+    let merit_topic = IdentTopic::new("mssq/merit-query/1");
+    let merit_topic_hash = merit_topic.hash().clone();
     let _ = swarm.behaviour_mut().gossipsub.subscribe(&topic);
-    discovery::seed_bootstrap(&mut swarm, &cfg.bootstrap_addrs);
+    let _ = swarm.behaviour_mut().gossipsub.subscribe(&merit_topic);
+    let cached = peer_cache::load_last_addrs(cfg.startup_peer_cache_probe);
+    discovery::seed_bootstrap(&mut swarm, &cached);
 
     let snapshot = Arc::new(Mutex::new(NodeSnapshot {
         peer_id: local_peer.to_string(),
@@ -85,6 +100,7 @@ pub async fn start_node(cfg: NodeConfig) -> Result<NodeHandle, NetError> {
         is_bootstrap_mode: true,
         current_t_min_milli: 1000,
         top_deficit_peers: Vec::new(),
+        primary_peers: Vec::new(),
     }));
     let (shutdown_tx, mut shutdown_rx) = mpsc::channel(1);
     let task_snapshot = Arc::clone(&snapshot);
@@ -93,10 +109,19 @@ pub async fn start_node(cfg: NodeConfig) -> Result<NodeHandle, NetError> {
         let mut rep = ReputationStore::default();
         let mut relay_state = RelayState::default();
         let mut governor = Governor::default();
+        let mut primary_peers: HashSet<PeerId> = HashSet::new();
         let mut pulses_in_window: u32 = 0;
+        let mut startup_queried = false;
         loop {
             tokio::select! {
                 _ = ticker.tick() => {
+                    if !startup_queried {
+                        let payload = serde_json::to_vec(&MeritMessage::Query {
+                            limit: cfg.startup_merit_query_size,
+                        }).unwrap_or_default();
+                        let _ = swarm.behaviour_mut().gossipsub.publish(merit_topic.clone(), payload);
+                        startup_queried = true;
+                    }
                     if let Ok(local_density_ok) = publish_heartbeat(&mut swarm, local_peer, &topic, &task_snapshot).await {
                         governor.observe_pulse(&local_peer.to_string(), local_density_ok, unix_timestamp_ns());
                         pulses_in_window = pulses_in_window.saturating_add(1);
@@ -120,6 +145,10 @@ pub async fn start_node(cfg: NodeConfig) -> Result<NodeHandle, NetError> {
                         &mut rep,
                         &mut relay_state,
                         &mut governor,
+                        &merit_topic_hash,
+                        &merit_topic,
+                        &mut primary_peers,
+                        cfg.startup_merit_query_size,
                     ).await;
                     if accepted {
                         pulses_in_window = pulses_in_window.saturating_add(1);
@@ -165,11 +194,24 @@ async fn handle_swarm_event(
     rep: &mut ReputationStore,
     relay_state: &mut RelayState,
     governor: &mut Governor,
+    merit_topic_hash: &libp2p::gossipsub::TopicHash,
+    merit_topic: &IdentTopic,
+    primary_peers: &mut HashSet<PeerId>,
+    merit_query_size: usize,
 ) -> bool {
     match evt {
-        SwarmEvent::ConnectionEstablished { .. } | SwarmEvent::ConnectionClosed { .. } => {
+        SwarmEvent::ConnectionEstablished { endpoint, .. } => {
+            peer_cache::record_seen_addr(endpoint.get_remote_address());
             let mut guard = snapshot.lock().await;
             guard.connected_peers = swarm.connected_peers().count();
+            guard.primary_peers = primary_peers.iter().map(ToString::to_string).collect();
+            false
+        }
+        SwarmEvent::ConnectionClosed { .. } => {
+            primary_peers.retain(|p| swarm.is_connected(p));
+            let mut guard = snapshot.lock().await;
+            guard.connected_peers = swarm.connected_peers().count();
+            guard.primary_peers = primary_peers.iter().map(ToString::to_string).collect();
             false
         }
         SwarmEvent::NewListenAddr { address, .. } => {
@@ -189,6 +231,18 @@ async fn handle_swarm_event(
         }
         SwarmEvent::Behaviour(MeshEvent::Gossipsub(gossipsub_ev)) => {
             if let libp2p::gossipsub::Event::Message { propagation_source, message, message_id } = gossipsub_ev {
+                if message.topic == *merit_topic_hash {
+                    return process_merit_message(
+                        swarm,
+                        propagation_source,
+                        message.data,
+                        snapshot,
+                        rep,
+                        merit_topic,
+                        primary_peers,
+                        merit_query_size,
+                    ).await;
+                }
                 process_inbound_heartbeat(
                     swarm,
                     propagation_source,
@@ -265,6 +319,57 @@ async fn process_inbound_heartbeat(
     }
 }
 
+async fn process_merit_message(
+    swarm: &mut Swarm<MeshBehaviour>,
+    peer: PeerId,
+    data: Vec<u8>,
+    snapshot: &Arc<Mutex<NodeSnapshot>>,
+    rep: &mut ReputationStore,
+    merit_topic: &IdentTopic,
+    primary_peers: &mut HashSet<PeerId>,
+    merit_query_size: usize,
+) -> bool {
+    let msg = match serde_json::from_slice::<MeritMessage>(&data) {
+        Ok(v) => v,
+        Err(_) => return false,
+    };
+    match msg {
+        MeritMessage::Query { limit } => {
+            let peers = rep
+                .top_merit_holders(limit.min(merit_query_size))
+                .into_iter()
+                .filter(|p| swarm.is_connected(p))
+                .map(|p| p.to_string())
+                .collect::<Vec<_>>();
+            let payload = serde_json::to_vec(&MeritMessage::Response { peers }).unwrap_or_default();
+            let _ = swarm.behaviour_mut().gossipsub.publish(merit_topic.clone(), payload);
+            false
+        }
+        MeritMessage::Response { peers } => {
+            primary_peers.clear();
+            for p in peers.into_iter().take(merit_query_size) {
+                if let Ok(peer_id) = p.parse::<PeerId>() {
+                    if swarm.is_connected(&peer_id) {
+                        let _ = primary_peers.insert(peer_id);
+                    }
+                }
+            }
+            // Always include the respondent if connected to avoid empty primary set early.
+            if swarm.is_connected(&peer) {
+                let _ = primary_peers.insert(peer);
+            }
+            let mut guard = snapshot.lock().await;
+            guard.primary_peers = primary_peers.iter().map(ToString::to_string).collect();
+            let primary_len = guard.primary_peers.len();
+            push_pulse(
+                &mut guard.pulses,
+                format!("welcome_crew updated {} primary peers", primary_len),
+            );
+            false
+        }
+    }
+}
+
 fn push_pulse(buf: &mut VecDeque<String>, line: String) {
     buf.push_front(line);
     while buf.len() > 24 {
@@ -286,6 +391,7 @@ pub fn snapshot_to_json(snapshot: &NodeSnapshot) -> Value {
         "is_bootstrap_mode": snapshot.is_bootstrap_mode,
         "current_t_min_milli": snapshot.current_t_min_milli,
         "top_deficit_peers": snapshot.top_deficit_peers,
+        "primary_peers": snapshot.primary_peers,
     })
 }
 
