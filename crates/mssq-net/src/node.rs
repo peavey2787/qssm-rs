@@ -1,4 +1,4 @@
-use std::collections::{HashSet, VecDeque};
+use std::collections::{HashMap, HashSet, VecDeque};
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -6,7 +6,9 @@ use futures::StreamExt;
 use libp2p::gossipsub::{IdentTopic, MessageAcceptance, MessageId};
 use libp2p::swarm::SwarmEvent;
 use libp2p::{PeerId, Swarm};
-use qssm_governor::{Governor, PeerAction};
+use qssm_governor::{verify_metabolic_gate, Governor, GovernorState, PeerAction};
+use mssq_batcher::{apply_batch, prune_state, ProofError, RollupContext, RollupState, TxProofVerifier};
+use qssm_common::{Batch, L2Transaction};
 use serde_json::Value;
 use tokio::sync::{mpsc, Mutex};
 use tracing::warn;
@@ -19,6 +21,7 @@ use crate::peer_cache;
 use crate::relay::{update_nat_state, RelayState};
 use crate::reputation::ReputationStore;
 use crate::transport::build_swarm;
+use qssm_utils::hashing::hash_domain;
 
 #[derive(Debug, Clone)]
 pub struct NodeConfig {
@@ -26,6 +29,7 @@ pub struct NodeConfig {
     pub heartbeat_every: Duration,
     pub startup_peer_cache_probe: usize,
     pub startup_merit_query_size: usize,
+    pub history_archive: bool,
 }
 
 impl Default for NodeConfig {
@@ -35,6 +39,7 @@ impl Default for NodeConfig {
             heartbeat_every: Duration::from_secs(30),
             startup_peer_cache_probe: 5,
             startup_merit_query_size: 10,
+            history_archive: false,
         }
     }
 }
@@ -64,6 +69,16 @@ pub struct NodeSnapshot {
     pub current_t_min_milli: i64,
     pub top_deficit_peers: Vec<String>,
     pub primary_peers: Vec<String>,
+    pub governor_state: String,
+    pub local_merit_tier: String,
+    pub uptime_secs: u64,
+    pub smt_root_hex: String,
+    pub active_leases: Vec<String>,
+    pub history_archive: bool,
+    pub repair_peer_id: Option<String>,
+    pub repair_root_hex: Option<String>,
+    pub repair_proof_hex: Option<String>,
+    pub fraud_alert_message: Option<String>,
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -73,16 +88,39 @@ enum MeritMessage {
     Response { peers: Vec<String> },
 }
 
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[serde(tag = "kind", rename_all = "snake_case")]
+enum BranchMessage {
+    ReqMerkleBranch { peer_id: String },
+    MerkleBranch {
+        peer_id: String,
+        root_hex: String,
+        proof_hex: String,
+    },
+}
+
+#[derive(Debug, Clone)]
+enum NodeControl {
+    RequestBranch { peer_id: String },
+}
+
 #[derive(Clone)]
 pub struct NodeHandle {
     pub peer_id: PeerId,
     pub snapshot: Arc<Mutex<NodeSnapshot>>,
     shutdown_tx: mpsc::Sender<()>,
+    control_tx: mpsc::UnboundedSender<NodeControl>,
 }
 
 impl NodeHandle {
     pub async fn shutdown(&self) {
         let _ = self.shutdown_tx.send(()).await;
+    }
+
+    pub fn request_merkle_branch(&self, peer_id: String) -> Result<(), String> {
+        self.control_tx
+            .send(NodeControl::RequestBranch { peer_id })
+            .map_err(|_| "control channel closed".to_string())
     }
 }
 
@@ -94,8 +132,11 @@ pub async fn start_node(cfg: NodeConfig) -> Result<NodeHandle, NetError> {
     let topic = IdentTopic::new(heartbeat_topic(cfg.network_id));
     let merit_topic = IdentTopic::new(format!("mssq/merit-query/net-{}", cfg.network_id));
     let merit_topic_hash = merit_topic.hash().clone();
+    let branch_topic = IdentTopic::new(format!("mssq/req-merkle-branch/net-{}", cfg.network_id));
+    let branch_topic_hash = branch_topic.hash().clone();
     let _ = swarm.behaviour_mut().gossipsub.subscribe(&topic);
     let _ = swarm.behaviour_mut().gossipsub.subscribe(&merit_topic);
+    let _ = swarm.behaviour_mut().gossipsub.subscribe(&branch_topic);
     let cached = peer_cache::load_last_addrs(cfg.startup_peer_cache_probe);
     discovery::seed_bootstrap(&mut swarm, &cached);
 
@@ -115,14 +156,28 @@ pub async fn start_node(cfg: NodeConfig) -> Result<NodeHandle, NetError> {
         current_t_min_milli: 1000,
         top_deficit_peers: Vec::new(),
         primary_peers: Vec::new(),
+        governor_state: "Expanding".to_string(),
+        local_merit_tier: "Seedling".to_string(),
+        uptime_secs: 0,
+        smt_root_hex: hex::encode([0u8; 32]),
+        active_leases: Vec::new(),
+        history_archive: cfg.history_archive,
+        repair_peer_id: None,
+        repair_root_hex: None,
+        repair_proof_hex: None,
+        fraud_alert_message: None,
     }));
     let (shutdown_tx, mut shutdown_rx) = mpsc::channel(1);
+    let (control_tx, mut control_rx) = mpsc::unbounded_channel();
     let task_snapshot = Arc::clone(&snapshot);
     tokio::spawn(async move {
         let mut ticker = tokio::time::interval(cfg.heartbeat_every);
         let mut rep = ReputationStore::default();
         let mut relay_state = RelayState::default();
         let mut governor = Governor::default();
+        let mut rollup_state = RollupState::new();
+        let mut archive_store: HashMap<String, Vec<u8>> = HashMap::new();
+        let started_at = std::time::Instant::now();
         let mut primary_peers: HashSet<PeerId> = HashSet::new();
         let mut pulses_in_window: u32 = 0;
         let mut startup_queried = false;
@@ -144,11 +199,36 @@ pub async fn start_node(cfg: NodeConfig) -> Result<NodeHandle, NetError> {
                     pulses_in_window = 0;
                     let connected = swarm.connected_peers().count();
                     refresh_immune_snapshot(&task_snapshot, &mut governor, connected).await;
+                    let mut guard = task_snapshot.lock().await;
+                    let uptime = started_at.elapsed().as_secs();
+                    guard.uptime_secs = uptime;
+                    guard.local_merit_tier = if uptime >= 7 * 24 * 3600 {
+                        "Boosted".to_string()
+                    } else if uptime >= 24 * 3600 {
+                        "Mature".to_string()
+                    } else {
+                        "Seedling".to_string()
+                    };
+                    guard.active_leases = primary_peers
+                        .iter()
+                        .take(3)
+                        .enumerate()
+                        .map(|(i, p)| format!("lease-{:02} provider={} rent_due={} pulses", i + 1, p, 1024))
+                        .collect();
                     rep.tick_decay();
+                    if !cfg.history_archive {
+                        prune_state(&mut rollup_state, 4096);
+                    }
                 }
                 maybe_shutdown = shutdown_rx.recv() => {
                     if maybe_shutdown.is_some() {
                         break;
+                    }
+                }
+                ctrl = control_rx.recv() => {
+                    if let Some(NodeControl::RequestBranch { peer_id }) = ctrl {
+                        let payload = serde_json::to_vec(&BranchMessage::ReqMerkleBranch { peer_id }).unwrap_or_default();
+                        let _ = swarm.behaviour_mut().gossipsub.publish(branch_topic.clone(), payload);
                     }
                 }
                 evt = swarm.select_next_some() => {
@@ -163,6 +243,11 @@ pub async fn start_node(cfg: NodeConfig) -> Result<NodeHandle, NetError> {
                         &merit_topic,
                         &mut primary_peers,
                         cfg.startup_merit_query_size,
+                        &mut rollup_state,
+                        cfg.history_archive,
+                        &branch_topic_hash,
+                        &branch_topic,
+                        &mut archive_store,
                     ).await;
                     if accepted {
                         pulses_in_window = pulses_in_window.saturating_add(1);
@@ -176,6 +261,7 @@ pub async fn start_node(cfg: NodeConfig) -> Result<NodeHandle, NetError> {
         peer_id: local_peer,
         snapshot,
         shutdown_tx,
+        control_tx,
     })
 }
 
@@ -212,6 +298,11 @@ async fn handle_swarm_event(
     merit_topic: &IdentTopic,
     primary_peers: &mut HashSet<PeerId>,
     merit_query_size: usize,
+    rollup_state: &mut RollupState,
+    history_archive: bool,
+    branch_topic_hash: &libp2p::gossipsub::TopicHash,
+    branch_topic: &IdentTopic,
+    archive_store: &mut HashMap<String, Vec<u8>>,
 ) -> bool {
     match evt {
         SwarmEvent::ConnectionEstablished { endpoint, .. } => {
@@ -257,6 +348,19 @@ async fn handle_swarm_event(
                         merit_query_size,
                     ).await;
                 }
+                if message.topic == *branch_topic_hash {
+                    return process_branch_message(
+                        swarm,
+                        propagation_source,
+                        message.data,
+                        snapshot,
+                        rollup_state,
+                        history_archive,
+                        branch_topic,
+                        archive_store,
+                    )
+                    .await;
+                }
                 process_inbound_heartbeat(
                     swarm,
                     propagation_source,
@@ -265,6 +369,9 @@ async fn handle_swarm_event(
                     snapshot,
                     rep,
                     governor,
+                    rollup_state,
+                    history_archive,
+                    archive_store,
                 )
                 .await
             } else {
@@ -287,6 +394,9 @@ async fn process_inbound_heartbeat(
     snapshot: &Arc<Mutex<NodeSnapshot>>,
     rep: &mut ReputationStore,
     governor: &mut Governor,
+    rollup_state: &mut RollupState,
+    history_archive: bool,
+    archive_store: &mut HashMap<String, Vec<u8>>,
 ) -> bool {
     let connected_peers = swarm.connected_peers().count();
     let decision = governor.decision_for(&peer.to_string(), connected_peers);
@@ -305,7 +415,7 @@ async fn process_inbound_heartbeat(
     let decoded = serde_json::from_slice::<HeartbeatEnvelope>(&data).ok();
     let valid = decoded
         .as_ref()
-        .map(|m| qssm_he::verify_density(&m.raw_jitter))
+        .map(|m| verify_metabolic_gate(&m.raw_jitter) && qssm_he::verify_density(&m.raw_jitter))
         .unwrap_or(false);
     governor.observe_pulse(&peer.to_string(), valid, unix_timestamp_ns());
     if valid {
@@ -315,9 +425,35 @@ async fn process_inbound_heartbeat(
             .gossipsub
             .report_message_validation_result(&msg_id, &peer, MessageAcceptance::Accept);
         if let Some(m) = decoded {
+            let key = hash_domain(
+                "MSSQ-PULSE-LEAF-KEY-v1.0",
+                &[m.peer_id.as_bytes(), m.seed_hex.as_bytes()],
+            );
+            let proof = rollup_state.smt.prove(&key).encode();
+            let mut payload = vec![0x01];
+            payload.extend_from_slice(&1_u64.to_le_bytes());
+            let tx = L2Transaction {
+                id: key,
+                proof,
+                payload,
+            };
+            let batch = Batch { txs: vec![tx] };
+            let ctx = RollupContext {
+                finalized_block_hash: [0u8; 32],
+                finalized_blue_score: rollup_state.pulse_height,
+                qrng_epoch: 0,
+                qrng_value: [0u8; 32],
+            };
+            let _ = apply_batch(rollup_state, &batch, &ctx, &AllowAllProofs);
             let mut guard = snapshot.lock().await;
             push_pulse(&mut guard.pulses, format!("peer {} {}", m.peer_id, m.seed_hex));
+            guard.smt_root_hex = hex::encode(rollup_state.root());
             refresh_immune_snapshot_locked(&mut guard, governor, connected_peers);
+            if history_archive {
+                let encoded = rollup_state.smt.prove(&key).encode();
+                archive_store.insert(m.peer_id.clone(), encoded.clone());
+                archive_branch(rollup_state, &key, &encoded);
+            }
         }
         true
     } else {
@@ -384,6 +520,81 @@ async fn process_merit_message(
     }
 }
 
+async fn process_branch_message(
+    swarm: &mut Swarm<MeshBehaviour>,
+    propagation_source: PeerId,
+    data: Vec<u8>,
+    snapshot: &Arc<Mutex<NodeSnapshot>>,
+    rollup_state: &mut RollupState,
+    history_archive: bool,
+    branch_topic: &IdentTopic,
+    archive_store: &mut HashMap<String, Vec<u8>>,
+) -> bool {
+    let msg = match serde_json::from_slice::<BranchMessage>(&data) {
+        Ok(v) => v,
+        Err(_) => return false,
+    };
+    match msg {
+        BranchMessage::ReqMerkleBranch { peer_id } => {
+            if !history_archive {
+                return false;
+            }
+            if let Some(proof) = archive_store.get(&peer_id) {
+                let payload = serde_json::to_vec(&BranchMessage::MerkleBranch {
+                    peer_id,
+                    root_hex: hex::encode(rollup_state.root()),
+                    proof_hex: hex::encode(proof),
+                })
+                .unwrap_or_default();
+                let _ = swarm.behaviour_mut().gossipsub.publish(branch_topic.clone(), payload);
+            }
+            false
+        }
+        BranchMessage::MerkleBranch {
+            peer_id,
+            root_hex,
+            proof_hex,
+        } => {
+            let Ok(root_vec) = hex::decode(root_hex) else {
+                return false;
+            };
+            if root_vec.len() != 32 {
+                return false;
+            }
+            let mut root = [0u8; 32];
+            root.copy_from_slice(&root_vec);
+            let Ok(proof_bytes) = hex::decode(&proof_hex) else {
+                return false;
+            };
+            let Some(proof) = qssm_utils::SparseMerkleProof::decode(&proof_bytes) else {
+                return false;
+            };
+            let verified = qssm_utils::StateMirrorTree::verify_proof(root, &proof);
+            let mut guard = snapshot.lock().await;
+            if verified {
+                push_pulse(
+                    &mut guard.pulses,
+                    format!("merkle_branch_synced peer={} via={}", peer_id, propagation_source),
+                );
+                guard.repair_peer_id = Some(peer_id);
+                guard.repair_root_hex = Some(hex::encode(root));
+                guard.repair_proof_hex = Some(proof_hex);
+                guard.fraud_alert_message = None;
+            } else {
+                push_pulse(
+                    &mut guard.pulses,
+                    format!("merkle_branch_invalid peer={} via={}", peer_id, propagation_source),
+                );
+                guard.fraud_alert_message = Some(format!(
+                    "Invalid Data Received from Peer {}. Searching for honest Librarian...",
+                    peer_id
+                ));
+            }
+            verified
+        }
+    }
+}
+
 fn push_pulse(buf: &mut VecDeque<String>, line: String) {
     buf.push_front(line);
     while buf.len() > 24 {
@@ -408,6 +619,16 @@ pub fn snapshot_to_json(snapshot: &NodeSnapshot) -> Value {
         "current_t_min_milli": snapshot.current_t_min_milli,
         "top_deficit_peers": snapshot.top_deficit_peers,
         "primary_peers": snapshot.primary_peers,
+        "governor_state": snapshot.governor_state,
+        "local_merit_tier": snapshot.local_merit_tier,
+        "uptime_secs": snapshot.uptime_secs,
+        "smt_root_hex": snapshot.smt_root_hex,
+        "active_leases": snapshot.active_leases,
+        "history_archive": snapshot.history_archive,
+        "repair_peer_id": snapshot.repair_peer_id,
+        "repair_root_hex": snapshot.repair_root_hex,
+        "repair_proof_hex": snapshot.repair_proof_hex,
+        "fraud_alert_message": snapshot.fraud_alert_message,
     })
 }
 
@@ -438,6 +659,10 @@ fn refresh_immune_snapshot_locked(
             format!("{}: {}.{:03} {:?}", row.peer_id, whole, frac, row.state)
         })
         .collect();
+    snapshot.governor_state = match governor.governor_state() {
+        GovernorState::Expanding => "Expanding".to_string(),
+        GovernorState::Defending => "Defending".to_string(),
+    };
 }
 
 fn unix_timestamp_ns() -> u64 {
@@ -445,4 +670,30 @@ fn unix_timestamp_ns() -> u64 {
     now.duration_since(std::time::UNIX_EPOCH)
         .map(|dur| dur.as_nanos() as u64)
         .unwrap_or_default()
+}
+
+struct AllowAllProofs;
+
+impl TxProofVerifier for AllowAllProofs {
+    fn verify_tx(&self, _tx: &L2Transaction, _ctx: &RollupContext) -> Result<(), ProofError> {
+        Ok(())
+    }
+}
+
+fn archive_branch(state: &RollupState, key: &[u8; 32], encoded_proof: &[u8]) {
+    let line = serde_json::json!({
+        "key_hex": hex::encode(key),
+        "root_hex": hex::encode(state.root()),
+        "proof_hex": hex::encode(encoded_proof),
+        "pulse_height": state.pulse_height,
+    });
+    if let Ok(mut p) = std::env::current_dir() {
+        p.push("history_archive_merkle.jsonl");
+        if let Ok(s) = serde_json::to_string(&line) {
+            use std::io::Write as _;
+            if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open(p) {
+                let _ = writeln!(f, "{s}");
+            }
+        }
+    }
 }

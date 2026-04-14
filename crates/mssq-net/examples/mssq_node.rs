@@ -19,7 +19,11 @@ use ratatui::Terminal;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let cfg = NodeConfig::default();
+    let history_archive = std::env::args().any(|a| a == "--history-archive");
+    let cfg = NodeConfig {
+        history_archive,
+        ..NodeConfig::default()
+    };
     let handle = start_node(cfg).await?;
 
     enable_raw_mode()?;
@@ -82,8 +86,8 @@ fn draw_dashboard(frame: &mut ratatui::Frame<'_>, snap: &NodeSnapshot) {
     frame.render_widget(transports, chunks[1]);
 
     let mesh = Paragraph::new(format!(
-        "Connected Peers: {}\nActive Relays: {}",
-        snap.connected_peers, snap.active_relays
+        "Connected Peers: {}\nActive Relays: {}\nHistoryArchive: {}",
+        snap.connected_peers, snap.active_relays, snap.history_archive
     ))
     .block(Block::default().title("Mesh").borders(Borders::ALL));
     frame.render_widget(mesh, chunks[2]);

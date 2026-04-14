@@ -13,8 +13,8 @@ use mssq_batcher::{
 use qssm_common::{rollup_context_from_l1, Batch, L1Anchor, L2Transaction, MockKaspaAdapter};
 use qssm_le::{prove_arithmetic, verify_lattice, PublicInstance, VerifyingKey, Witness};
 use qssm_ref::millionaires_duel::{
-    encode_millionaires_proof, format_leaf_data_hex, format_slot_hex, leaderboard_key,
-    parse_leaderboard_leaf, prestige_payload, public_message_for_duel, MillionairesDuelVerifier,
+    duel_settlement_payload, encode_millionaires_proof, format_leaf_data_hex, format_slot_hex,
+    leaderboard_key, parse_leaderboard_leaf, public_message_for_duel, MillionairesDuelVerifier,
 };
 use qssm_utils::{leader_attestation_signing_bytes, leader_id_from_ml_dsa_public_key};
 
@@ -188,10 +188,12 @@ fn run() -> Result<(), String> {
     }
 
     let lb_key = leaderboard_key();
+    let pre_state = RollupState::new();
+    let smt_proof = pre_state.smt.prove(&lb_key).encode();
     let tx = L2Transaction {
         id: lb_key,
-        proof: wire,
-        payload: prestige_payload(1),
+        proof: smt_proof,
+        payload: duel_settlement_payload(1, &wire),
     };
     let batch = Batch {
         txs: sort_lexicographical(vec![tx]),

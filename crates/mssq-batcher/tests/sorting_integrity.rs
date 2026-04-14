@@ -9,8 +9,12 @@ use qssm_utils::{RollupContext, StateMirrorTree};
 fn tx(id_byte: u8, proof_tag: u8) -> L2Transaction {
     L2Transaction {
         id: [id_byte; 32],
-        proof: vec![proof_tag],
-        payload: vec![id_byte],
+        proof: vec![proof_tag], // replaced per test before apply_batch
+        payload: {
+            let mut p = vec![0x01];
+            p.extend_from_slice(&1_u64.to_le_bytes());
+            p
+        },
     }
 }
 
@@ -45,7 +49,9 @@ fn three_permutations_sort_to_same_order() {
 
 #[test]
 fn duplicate_tx_id_errors_before_proof() {
-    let t = tx(7, 1);
+    let mut state = RollupState::new();
+    let mut t = tx(7, 1);
+    t.proof = state.smt.prove(&t.id).encode();
     let batch = Batch {
         txs: vec![t.clone(), t],
     };
@@ -55,7 +61,6 @@ fn duplicate_tx_id_errors_before_proof() {
         qrng_epoch: 0,
         qrng_value: [0u8; 32],
     };
-    let mut state = RollupState::new();
     let err = apply_batch(&mut state, &batch, &ctx, &AcceptAll).unwrap_err();
     assert!(matches!(err, BatcherError::DuplicateTxId));
 }
@@ -80,16 +85,16 @@ fn failing_proof_aborts_batch() {
 
 #[test]
 fn accept_all_updates_root() {
-    let batch = Batch {
-        txs: vec![tx(3, 1)],
-    };
+    let mut state = RollupState::new();
+    let mut t = tx(3, 1);
+    t.proof = state.smt.prove(&t.id).encode();
+    let batch = Batch { txs: vec![t] };
     let ctx = RollupContext {
         finalized_block_hash: [0u8; 32],
         finalized_blue_score: 0,
         qrng_epoch: 0,
         qrng_value: [0u8; 32],
     };
-    let mut state = RollupState::new();
     let r0 = state.root();
     apply_batch(&mut state, &batch, &ctx, &AcceptAll).unwrap();
     assert_ne!(state.root(), r0);

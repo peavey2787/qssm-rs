@@ -15,6 +15,7 @@ use qssm_utils::{
 };
 
 use crate::BatcherError;
+use crate::lattice_anchor_seed_with_tips;
 
 /// Declared leader claim bound to slot, finalized parent hash, QRNG, optional SMT pre-root, and ML-DSA.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -36,6 +37,16 @@ pub fn mssq_seed_from_anchor<A: L1Anchor + ?Sized>(anchor: &A) -> [u8; 32] {
     let p = anchor.parent_block_hash_prev();
     let q = anchor.latest_qrng_value();
     mssq_seed_k(&p, &q)
+}
+
+/// Recompute `Seed_k` from anchor and couple it to DAG tip hashes.
+#[must_use]
+pub fn mssq_seed_from_anchor_and_dag_tips<A: L1Anchor + ?Sized>(
+    anchor: &A,
+    dag_tips: &[[u8; 32]],
+) -> [u8; 32] {
+    let base = mssq_seed_from_anchor(anchor);
+    lattice_anchor_seed_with_tips(base, dag_tips)
 }
 
 /// Candidate with lexicographically minimal `leader_score_digest(seed, id)` wins.

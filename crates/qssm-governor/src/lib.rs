@@ -30,6 +30,12 @@ pub struct GovernorConfig {
     pub throttle_msgs_per_sec: u32,
     pub bootstrap_peer_threshold: usize,
     pub bootstrap_global_density: Decimal,
+    pub base_hardware_entropy_floor: Decimal,
+    pub target_nodes: u32,
+    pub target_adjust_interval: u64,
+    pub saturation_low: Decimal,
+    pub saturation_high: Decimal,
+    pub surge_spike_threshold: Decimal,
 }
 
 impl Default for GovernorConfig {
@@ -41,7 +47,7 @@ impl Default for GovernorConfig {
             w_secs: 30,
             r_met: d(40, 0),
             lambda: d(15, 2),
-            alpha: d(15, 1),
+            alpha: d(20, 1),
             t_base,
             t_cap: t_base * d(4, 0),
             theta_w: d(10, 2),
@@ -55,8 +61,20 @@ impl Default for GovernorConfig {
             throttle_msgs_per_sec: 5,
             bootstrap_peer_threshold: 2,
             bootstrap_global_density: d(95, 2),
+            base_hardware_entropy_floor: t_base,
+            target_nodes: 128,
+            target_adjust_interval: 1024,
+            saturation_low: d(25, 2),
+            saturation_high: d(75, 2),
+            surge_spike_threshold: d(20, 2),
         }
     }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum GovernorState {
+    Expanding,
+    Defending,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -124,13 +142,22 @@ impl EntropyTracker {
 pub struct MetabolicEngine {
     cfg: GovernorConfig,
     smoothed_overload: Decimal,
+    target_nodes: Decimal,
+    prev_current_nodes: Decimal,
+    freeze_target: bool,
+    pulse_counter: u64,
 }
 
 impl MetabolicEngine {
     fn new(cfg: GovernorConfig) -> Self {
+        let target_nodes = Decimal::from(cfg.target_nodes);
         Self {
             cfg,
             smoothed_overload: Decimal::ZERO,
+            target_nodes,
+            prev_current_nodes: Decimal::ZERO,
+            freeze_target: false,
+            pulse_counter: 0,
         }
     }
 
@@ -138,19 +165,52 @@ impl MetabolicEngine {
         if window_secs == 0 {
             return;
         }
-        let r_k = Decimal::from(pulses_in_window) / Decimal::from(window_secs);
+        let current_nodes = Decimal::from(pulses_in_window);
+        let r_k = current_nodes / Decimal::from(window_secs);
         let rho = if r_k > self.cfg.r_met {
             (r_k - self.cfg.r_met) / self.cfg.r_met
         } else {
             Decimal::ZERO
         };
+        if self.prev_current_nodes > Decimal::ZERO {
+            let spike = (current_nodes - self.prev_current_nodes) / self.prev_current_nodes;
+            self.freeze_target = spike > self.cfg.surge_spike_threshold;
+        }
+        self.prev_current_nodes = current_nodes;
         self.smoothed_overload =
             (Decimal::ONE - self.cfg.lambda) * self.smoothed_overload + self.cfg.lambda * rho;
+        self.pulse_counter = self.pulse_counter.saturating_add(u64::from(pulses_in_window));
+        if self.pulse_counter >= self.cfg.target_adjust_interval {
+            self.pulse_counter = 0;
+            if !self.freeze_target {
+                let saturation = if self.target_nodes > Decimal::ZERO {
+                    current_nodes / self.target_nodes
+                } else {
+                    Decimal::ONE
+                };
+                let adjust = d(5, 2);
+                if saturation < self.cfg.saturation_low {
+                    self.target_nodes *= Decimal::ONE - adjust;
+                } else if saturation > self.cfg.saturation_high {
+                    self.target_nodes *= Decimal::ONE + adjust;
+                }
+            }
+        }
     }
 
     fn t_min(&self) -> Decimal {
         let candidate = self.cfg.t_base * (Decimal::ONE + self.cfg.alpha * self.smoothed_overload);
-        candidate.min(self.cfg.t_cap)
+        candidate
+            .max(self.cfg.base_hardware_entropy_floor)
+            .min(self.cfg.t_cap)
+    }
+
+    fn state(&self) -> GovernorState {
+        if self.freeze_target {
+            GovernorState::Defending
+        } else {
+            GovernorState::Expanding
+        }
     }
 }
 
@@ -230,6 +290,10 @@ impl Governor {
         milli(self.metabolic.t_min())
     }
 
+    pub fn governor_state(&self) -> GovernorState {
+        self.metabolic.state()
+    }
+
     pub fn global_density_avg_milli(&self, connected_peers: usize) -> i64 {
         milli(self.global_density_avg(connected_peers))
     }
@@ -298,6 +362,27 @@ impl Governor {
         observed
     }
 
+}
+
+pub fn verify_metabolic_gate(raw_entropy: &[u8]) -> bool {
+    if raw_entropy.len() < 128 {
+        return false;
+    }
+    let mut counts = [0usize; 256];
+    for b in raw_entropy {
+        counts[*b as usize] += 1;
+    }
+    let used: Vec<usize> = counts.iter().copied().filter(|c| *c > 0).collect();
+    if used.len() < 64 {
+        return false;
+    }
+    let min = *used.iter().min().unwrap_or(&0);
+    let max = *used.iter().max().unwrap_or(&0);
+    // Reject "too perfect" near-flat synthetic distributions.
+    if raw_entropy.len() >= 512 && max.saturating_sub(min) <= 1 {
+        return false;
+    }
+    true
 }
 
 fn classify_from(

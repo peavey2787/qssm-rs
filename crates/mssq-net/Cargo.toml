@@ -46,10 +46,13 @@ libp2p-yamux.workspace = true
 qssm-he = { path = "../qssm-he" }
 qssm-governor = { path = "../qssm-governor" }
 qssm-utils = { path = "../qssm-utils" }
+qssm-common = { path = "../qssm-common" }
+mssq-batcher = { path = "../mssq-batcher" }
 ratatui = { workspace = true, optional = true }
 crossterm = { workspace = true, optional = true }
 serde.workspace = true
 serde_json.workspace = true
+hex.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
 tracing.workspace = true

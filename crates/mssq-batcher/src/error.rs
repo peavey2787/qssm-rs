@@ -24,4 +24,12 @@ pub enum BatcherError {
     LeaderKeyIdMismatch,
     #[error("transaction proof did not verify for this rollup context")]
     ProofVerificationFailed,
+    #[error("missing or invalid merkle inclusion proof")]
+    InvalidMerkleProof,
+    #[error("storage lease payload is invalid")]
+    InvalidStorageLeasePayload,
+    #[error("storage lease is not found")]
+    LeaseNotFound,
+    #[error("proof of retrievability failed")]
+    PorFailed,
 }

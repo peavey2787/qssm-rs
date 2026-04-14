@@ -27,6 +27,7 @@ export default function App() {
   const [actionPwd, setActionPwd] = useState("");
   const [revealSeed, setRevealSeed] = useState("");
   const [pulsePhase, setPulsePhase] = useState(0);
+  const [hiredStorage, setHiredStorage] = useState([]);
 
   useEffect(() => {
     if (!inTauri) {
@@ -69,6 +70,7 @@ export default function App() {
   useEffect(() => {
     if (!inTauri) return;
     void refreshIdentityList();
+    void refreshHiredStorage();
   }, [inTauri]);
 
   const densityAvg = (payload?.global_density_avg_milli ?? 0) / 1000;
@@ -204,17 +206,52 @@ export default function App() {
     }
   }
 
+  async function refreshHiredStorage() {
+    try {
+      const res = await invoke("list_hired_storage");
+      const list = typeof res === "string" ? JSON.parse(res) : res;
+      setHiredStorage(Array.isArray(list) ? list : []);
+    } catch (e) {
+      setRegistryMsg(String(e));
+    }
+  }
+
+  async function hireFromWelcomeCrew() {
+    const provider = payload?.primary_peers?.[0];
+    if (!provider) return setRegistryMsg("No Welcome Crew provider available yet.");
+    try {
+      await invoke("hire_storage_provider", {
+        providerPeerId: provider,
+        leaseLabel: `lease-${Date.now()}`,
+      });
+      await refreshHiredStorage();
+    } catch (e) {
+      setRegistryMsg(String(e));
+    }
+  }
+
+  async function repairState() {
+    if (!payload?.peer_id) return setRegistryMsg("PeerID unavailable for repair.");
+    try {
+      await invoke("repair_state", { peerId: payload.peer_id });
+      setRegistryMsg("Repair request broadcasted to Librarian nodes.");
+    } catch (e) {
+      setRegistryMsg(String(e));
+    }
+  }
+
   return (
     <div className={`app-shell ${feverClass}`}>
       <header className="top-bar">
         <div className="brand">
-          Sovereign Command Center{" "}
+          QSSM Pulse — Testnet-1{" "}
           <span className="status-pill warn" style={{ marginLeft: "0.45rem" }}>
             {payload?.network_label || "TESTNET-1"}
           </span>
         </div>
         <nav className="nav-tabs" aria-label="Primary">
           {!mustSetup && <button type="button" className={tier === "dashboard" ? "active" : ""} onClick={() => setTier("dashboard")}>Dashboard</button>}
+          {!mustSetup && <button type="button" className={tier === "storage" ? "active" : ""} onClick={() => setTier("storage")}>Hired Storage</button>}
           <button type="button" className={tier === "identity" ? "active" : ""} onClick={() => setTier("identity")}>Manage Sovereign ID</button>
         </nav>
         <div className="toggles">
@@ -234,8 +271,54 @@ export default function App() {
               Density avg: <strong style={{ color: "var(--text)" }}>{payload?.global_density_avg_milli != null ? densityAvg.toFixed(3) : "—"}</strong>
               {isBootstrap && <span className="status-pill warn" style={{ marginLeft: "0.4rem" }}>Bootstrap Active</span>}
               {isBootstrap && <span className={`ghost-density ${harvestPaused ? "paused" : ""}`}> (Real: {realDensity.toFixed(3)})</span>}
+              {" "}· Reputation: <strong style={{ color: "var(--text)" }}>{payload?.local_merit_tier || "Seedling"}</strong>
+              {" "}· Governor: <span className={`status-pill ${(payload?.governor_state || "Expanding") === "Defending" ? "err" : "ok"}`}>{payload?.governor_state || "Expanding"}</span>
+              {" "}· SMT Root: <strong style={{ color: "var(--text)" }}>{payload?.smt_root_hex || "-"}</strong>
+              {" "}· {payload?.proof_verified ? <span className="status-pill ok">Proof Verified</span> : <span className="status-pill err">Proof Not Verified</span>}
+              {payload?.fraud_alert_message && (
+                <>
+                  {" "}· <span className="status-pill fraud">Fraud Alert</span>
+                </>
+              )}
+              {" "}
+              <button type="button" className="btn btn-ghost" style={{ marginLeft: "0.35rem", padding: "0.18rem 0.45rem", fontSize: "0.72rem" }} onClick={repairState}>
+                Repair State
+              </button>
+              {payload?.fraud_alert_message && (
+                <div style={{ marginTop: "0.35rem", color: "#c8a2ff" }}>{payload.fraud_alert_message}</div>
+              )}
             </div>
           </aside>
+        </div>
+      )}
+
+      {tier === "storage" && !mustSetup && (
+        <div className="vault-panel">
+          <div className="panel">
+            <h2>Hired Storage</h2>
+            <p className="muted">Lease manager for provider nodes and recurring rent.</p>
+            <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+              <button type="button" className="btn" onClick={hireFromWelcomeCrew}>Hire New Provider</button>
+              <button type="button" className="btn btn-ghost" onClick={refreshHiredStorage}>Refresh</button>
+            </div>
+          </div>
+          <div className="panel">
+            <h2>Active Leases</h2>
+            {hiredStorage.length === 0 ? (
+              <p className="muted">No hired providers yet.</p>
+            ) : (
+              <div style={{ display: "grid", gap: "0.5rem" }}>
+                {hiredStorage.map((lease, idx) => (
+                  <div key={`${lease.provider_peer_id}-${idx}`} className="panel" style={{ margin: 0, padding: "0.65rem" }}>
+                    <div><strong>{lease.lease_label || `lease-${idx + 1}`}</strong></div>
+                    <div className="muted">Provider PeerID: {lease.provider_peer_id}</div>
+                    <div className="muted">Rent Due: {lease.rent_due || "pending_epoch_1024"}</div>
+                    <div className="muted">Status: {lease.status || "active"}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
 

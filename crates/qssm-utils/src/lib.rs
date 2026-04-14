@@ -18,4 +18,4 @@ pub use leader_msg::{leader_attestation_signing_bytes, leader_id_from_ml_dsa_pub
 pub use merkle::{merkle_parent, MerkleError, PositionAwareTree};
 pub use mssq_seed::{leader_score_digest, leader_score_u64, mssq_seed_k};
 pub use rollup_context::{rollup_context_digest, RollupContext};
-pub use smt::StateMirrorTree;
+pub use smt::{SparseMerkleProof, StateMirrorTree};

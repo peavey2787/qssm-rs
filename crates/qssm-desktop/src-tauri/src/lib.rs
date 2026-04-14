@@ -7,6 +7,7 @@ pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
             let mmdbs = sidecar::mmdb_candidates(&app.handle());
+            sidecar::ensure_local_backup(&app.handle());
             sidecar::spawn_command_center(&app.handle(), mmdbs);
             Ok(())
         })
@@ -20,6 +21,9 @@ pub fn run() {
             commands::decrypt_identity,
             commands::activate_identity,
             commands::delete_identity,
+            commands::list_hired_storage,
+            commands::hire_storage_provider,
+            commands::repair_state,
         ])
         .run(tauri::generate_context!())
         .expect("error while running qssm-desktop");

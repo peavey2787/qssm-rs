@@ -14,9 +14,9 @@ use mssq_batcher::{
 use qssm_common::{rollup_context_from_l1, Batch, L1Anchor, L2Transaction, MockKaspaAdapter};
 use qssm_le::{prove_arithmetic, verify_lattice, PublicInstance, VerifyingKey, Witness};
 use qssm_ref::millionaires_duel::{
-    decode_millionaires_proof, duel_holds, encode_millionaires_proof, leaderboard_key,
-    parse_leaderboard_leaf, prestige_payload, public_message_for_duel, valid_duel_public_message,
-    MillionairesDuelVerifier, DUEL_SHIFT, MAX_DEMO_BALANCE,
+    decode_millionaires_proof, duel_holds, duel_settlement_payload, encode_millionaires_proof,
+    leaderboard_key, parse_leaderboard_leaf, public_message_for_duel, valid_duel_public_message,
+    MillionairesDuelVerifier, DUEL_SHIFT, MAX_DEMO_BALANCE, MILLIONAIRES_WIRE_PAYLOAD_OFFSET,
 };
 use qssm_utils::{leader_attestation_signing_bytes, leader_id_from_ml_dsa_public_key};
 
@@ -88,10 +88,12 @@ fn build_duel_tx(
 
     let att = sign_att(sk_winner, anchor, winner, ctx_digest);
     let wire = encode_millionaires_proof(&att, vk.crs_seed, public_m, &commitment, &proof);
+    let lb = leaderboard_key();
+    let smt_proof = RollupState::new().smt.prove(&lb).encode();
     let tx = L2Transaction {
-        id: leaderboard_key(),
-        proof: wire,
-        payload: prestige_payload(1),
+        id: lb,
+        proof: smt_proof,
+        payload: duel_settlement_payload(1, &wire),
     };
     (tx, cands)
 }
@@ -166,10 +168,12 @@ fn duel_rejects_impossible_public_message() {
     let (commitment, proof) = prove_arithmetic(&vk, &public, &witness, &d).expect("prove");
     let att = sign_att(sk_winner, &anchor, winner, d);
     let wire = encode_millionaires_proof(&att, vk.crs_seed, public_m, &commitment, &proof);
+    let lb = leaderboard_key();
+    let smt_proof = RollupState::new().smt.prove(&lb).encode();
     let tx = L2Transaction {
-        id: leaderboard_key(),
-        proof: wire,
-        payload: prestige_payload(1),
+        id: lb,
+        proof: smt_proof,
+        payload: duel_settlement_payload(1, &wire),
     };
     let batch = Batch {
         txs: sort_lexicographical(vec![tx]),
@@ -216,17 +220,19 @@ fn bad_signature_rejects() {
     let ctx = rollup_context_from_l1(&anchor);
     let d = ctx.digest();
     let (mut tx, cands) = build_duel_tx(&anchor, d, 1000, 500, [0x72u8; 32]);
-    let mut bundle = decode_millionaires_proof(&tx.proof).unwrap();
+    let mut bundle = decode_millionaires_proof(&tx.payload[MILLIONAIRES_WIRE_PAYLOAD_OFFSET..]).unwrap();
     if !bundle.attestation.signature.is_empty() {
         bundle.attestation.signature[0] ^= 0xFF;
     }
-    tx.proof = encode_millionaires_proof(
+    let new_wire = encode_millionaires_proof(
         &bundle.attestation,
         bundle.crs_seed,
         bundle.public_message,
         &bundle.commitment,
         &bundle.proof,
     );
+    tx.payload.truncate(MILLIONAIRES_WIRE_PAYLOAD_OFFSET);
+    tx.payload.extend_from_slice(&new_wire);
     let batch = Batch {
         txs: sort_lexicographical(vec![tx]),
     };

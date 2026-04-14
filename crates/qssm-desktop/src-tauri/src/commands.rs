@@ -1,6 +1,8 @@
 //! Tauri commands for sovereign identity + mesh snapshot controls.
 
 use serde_json::{json, Value};
+use std::fs;
+use tauri::Manager;
 
 use qssm_he::HarvestConfig;
 use bip39::Mnemonic;
@@ -89,4 +91,53 @@ pub fn activate_identity(app: tauri::AppHandle, id: String, pwd: String) -> Resu
 #[tauri::command]
 pub fn delete_identity(app: tauri::AppHandle, id: String, pwd: String) -> Result<(), String> {
     crate::identity::delete_identity(&app, &id, &pwd)
+}
+
+#[tauri::command]
+pub fn list_hired_storage(app: tauri::AppHandle) -> Result<Value, String> {
+    let dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("app_data_dir: {e}"))?;
+    let path = dir.join("hired_storage.json");
+    if !path.exists() {
+        return Ok(json!([]));
+    }
+    let raw = fs::read_to_string(path).map_err(|e| e.to_string())?;
+    serde_json::from_str(&raw).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub fn hire_storage_provider(
+    app: tauri::AppHandle,
+    provider_peer_id: String,
+    lease_label: String,
+) -> Result<Value, String> {
+    let dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("app_data_dir: {e}"))?;
+    fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
+    let path = dir.join("hired_storage.json");
+    let mut cur: Vec<Value> = if path.exists() {
+        serde_json::from_str(&fs::read_to_string(&path).map_err(|e| e.to_string())?)
+            .unwrap_or_default()
+    } else {
+        Vec::new()
+    };
+    cur.push(json!({
+        "provider_peer_id": provider_peer_id,
+        "lease_label": lease_label,
+        "rent_due": "pending_epoch_1024",
+        "status": "active",
+    }));
+    fs::write(&path, serde_json::to_string_pretty(&cur).map_err(|e| e.to_string())?)
+        .map_err(|e| e.to_string())?;
+    Ok(json!({"ok": true, "count": cur.len()}))
+}
+
+#[tauri::command]
+pub fn repair_state(peer_id: String) -> Result<Value, String> {
+    crate::sidecar::request_merkle_repair_for_peer(peer_id)?;
+    Ok(json!({"ok": true}))
 }

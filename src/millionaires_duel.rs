@@ -85,6 +85,23 @@ pub fn prestige_payload(wins: u64) -> Vec<u8> {
     v
 }
 
+/// `0x01` balance prefix + 8-byte wins + 24-byte leaf tail + millionaires wire (see batcher `apply_balance_delta`).
+pub const MILLIONAIRES_WIRE_PAYLOAD_OFFSET: usize = 1 + 8 + 24;
+
+/// Settlement payload: tagged balance update so the lattice bundle can live after the SMT leaf tail slice.
+#[must_use]
+pub fn duel_settlement_payload(wins: u64, millionaires_wire: &[u8]) -> Vec<u8> {
+    let mut v = Vec::with_capacity(MILLIONAIRES_WIRE_PAYLOAD_OFFSET + millionaires_wire.len());
+    v.push(0x01);
+    v.extend_from_slice(&wins.to_le_bytes());
+    let mut tail = [0u8; 24];
+    let n = WEALTHIEST_KNIGHT_TAG.len().min(24);
+    tail[..n].copy_from_slice(&WEALTHIEST_KNIGHT_TAG[..n]);
+    v.extend_from_slice(&tail);
+    v.extend_from_slice(millionaires_wire);
+    v
+}
+
 /// Parsed compound proof for one duel settlement transaction.
 #[derive(Debug, Clone)]
 pub struct MillionairesProofBundle {
@@ -309,7 +326,11 @@ impl TxProofVerifier for MillionairesDuelVerifier {
         if tx.id != leaderboard_key() {
             return Err(ProofError::Invalid);
         }
-        let bundle = decode_millionaires_proof(&tx.proof).map_err(|_| ProofError::Invalid)?;
+        let wire = tx
+            .payload
+            .get(MILLIONAIRES_WIRE_PAYLOAD_OFFSET..)
+            .ok_or(ProofError::Invalid)?;
+        let bundle = decode_millionaires_proof(wire).map_err(|_| ProofError::Invalid)?;
         verify_leader_attestation_ctx(
             &bundle.attestation,
             ctx,

@@ -75,19 +75,30 @@ fn test_egalitarian_sequencing() {
     ));
     assert!(prove(5_000, 10_000, &salts_bob, entropy, demo_ctx, &ctx_d).is_err());
 
+    let id_alice = [1u8; 32];
+    let id_bob = [2u8; 32];
+    let mut builder = RollupState::new();
+    let tx_alice = L2Transaction {
+        id: id_alice,
+        proof: builder.smt.prove(&id_alice).encode(),
+        payload: b"alice".to_vec(),
+    };
+    apply_batch(
+        &mut builder,
+        &Batch {
+            txs: vec![tx_alice.clone()],
+        },
+        &ctx,
+        &AcceptAllTxVerifier,
+    )
+    .unwrap();
+    let tx_bob = L2Transaction {
+        id: id_bob,
+        proof: builder.smt.prove(&id_bob).encode(),
+        payload: b"bob".to_vec(),
+    };
     let sorted_batch = Batch {
-        txs: sort_lexicographical(vec![
-            L2Transaction {
-                id: [2u8; 32],
-                proof: vec![1, 2, 3],
-                payload: b"bob".to_vec(),
-            },
-            L2Transaction {
-                id: [1u8; 32],
-                proof: vec![4, 5],
-                payload: b"alice".to_vec(),
-            },
-        ]),
+        txs: sort_lexicographical(vec![tx_alice, tx_bob]),
     };
     let mut state = RollupState::new();
     let r0 = state.root();

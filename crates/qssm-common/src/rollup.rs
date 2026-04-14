@@ -1,14 +1,21 @@
 //! Rollup state + `RollupContext` construction from an [`L1Anchor`](crate::L1Anchor).
 #![forbid(unsafe_code)]
 
+use std::collections::BTreeMap;
+use std::collections::VecDeque;
+
 use qssm_utils::{RollupContext, StateMirrorTree};
 
 use crate::L1Anchor;
+use crate::StorageLease;
 
 /// Account / storage tree + cached Merkle root semantics via [`StateMirrorTree`].
 #[derive(Debug, Clone, Default)]
 pub struct RollupState {
     pub smt: StateMirrorTree,
+    pub leases: BTreeMap<[u8; 32], StorageLease>,
+    pub pulse_height: u64,
+    pub recent_roots: VecDeque<[u8; 32]>,
 }
 
 impl RollupState {
@@ -16,6 +23,9 @@ impl RollupState {
     pub fn new() -> Self {
         Self {
             smt: StateMirrorTree::new(),
+            leases: BTreeMap::new(),
+            pulse_height: 0,
+            recent_roots: VecDeque::new(),
         }
     }
 
