@@ -84,6 +84,20 @@ This repository is a Cargo **workspace**. Most functionality lives under `crates
 
 ---
 
+## `qssm-he` (QSSM-HE — hardware heart)
+
+**Purpose:** **Raw hardware-anchored entropy**: OpenEntropy **raw** capture on Unix, optional IMU bytes via [`SensorEntropy`], BLAKE3 **sovereign seed**, heuristic **density** screening (rayon), and Argon2id **PMK** derivation for cold backups.
+
+**What it provides**
+
+- `harvest` / `harvest_with_sensor`, `poll_raw_accelerometer_i16`
+- `Heartbeat`, `verify_density`, `to_seed`, `generate_pmk`
+- **Unix:** `openentropy-core` raw capture. **Windows x86_64:** TSC delta harvester (`_rdtsc`, no OS RNG). **Other targets:** [`HeError::UnsupportedEntropyPlatform`].
+
+**For:** Applications that want a small, UI-agnostic entropy library; complements Phase 8 flows in `qssm-gadget` (optional future wiring).
+
+---
+
 ## `mssq-batcher`
 
 **Purpose:** **MSSQ rollup clerk**: deterministic transaction ordering, **ML-DSA** leader lottery and attestation verification, and **proof-gated** application of batches to `RollupState` / SMT.
@@ -141,6 +155,7 @@ qssm-ms     ←  qssm-ref (tests / demos)
 mssq-batcher←  qssm-ref
 qssm-kaspa  ←  qssm-ref
 qssm-gadget ←  qssm-desktop
+qssm-he     ←  (standalone; optional future: qssm-gadget / desktop)
 ```
 
 ---
@@ -151,7 +166,7 @@ The table below maps **this repository’s crates** to the conceptual stack. Whe
 
 | Stack module | Role in v1.2 | Maps to this repo | Notes |
 |---------------|----------------|-------------------|--------|
-| **QSSM-HE (Heart)** | Entropy that salts proofs (“physical breath”) | **`qssm-gadget`** (`entropy` module) is the library implementation; **`qssm-desktop`** Tauri commands *invoke* those flows with handoff JSON / anchors | Entropy logic is **not** isolated as its own crate today; it lives in `qssm-gadget` by design. |
+| **QSSM-HE (Heart)** | Entropy that salts proofs (“physical breath”) | **`crates/qssm-he`** (raw harvest + PMK); **`qssm-gadget`** Phase 8 `entropy` remains for anchor + NIST-style flows; **`qssm-desktop`** can call either path | `qssm-he` is the dedicated hardware-oriented crate; gadget entropy is still the handoff / beacon integration layer. |
 | **QSSM-LE — Engine A** | Lattice proofs for complex anchoring / identity | **`crates/qssm-le`** | Matches. |
 | **QSSM-MS — Engine B** | ~291-byte Ghost-Mirror fast path for inequalities | **`crates/qssm-ms`** | Matches. |
 | **Epistemic Governor (Module 4)** | DAA, reputation, metabolic rate (inflation / difficulty) | **Not implemented** in **`mssq-batcher`** | Current batcher covers **leader lottery**, **ML-DSA attestations**, **lex ordering**, and **SMT updates**—no DAA/reputation/difficulty policy module appears in code. |
@@ -162,8 +177,8 @@ The table below maps **this repository’s crates** to the conceptual stack. Whe
 
 - **Governor (Module 4):** When you implement DAA/reputation/metabolic policy, you will almost certainly want either a **dedicated crate** (e.g. `qssm-governor` or `mssq-governor`) or a clearly separated module with stable APIs—so rollup nodes can swap policy without forking the batcher’s sequencing core.
 - **libp2p-MSSQ:** A **new crate** (e.g. `mssq-network` / `libp2p-mssq`) is the natural home once you add peer propagation, gossip topics, and proof relay—nothing in the current workspace fills that role.
-- **QSSM-HE:** A **separate crate is optional**: today entropy is **`qssm-gadget::entropy`**. Splitting **`qssm-he`** out would only be justified if you want a minimal dependency surface (e.g. nodes that harvest entropy but do not pull the full gadget stack).
+- **QSSM-HE:** Implemented as **`qssm-he`**. Use **`qssm-gadget::entropy`** when you need Phase 8 anchor + NIST beacon mixing; use **`qssm-he`** for raw hardware observatory + PMK / sovereign seed semantics.
 
 ---
 
-*Last updated with workspace members as of the `Cargo.toml` workspace list (`qssm-common`, `qssm-utils`, `qssm-gadget`, `qssm-le`, `qssm-ms`, `mssq-batcher`, `qssm-kaspa`, `qssm-desktop/src-tauri`, and root `qssm-ref`).*
+*Last updated with workspace members as of the `Cargo.toml` workspace list (`qssm-common`, `qssm-utils`, `qssm-gadget`, `qssm-le`, `qssm-ms`, `mssq-batcher`, `qssm-kaspa`, `qssm-he`, `qssm-desktop/src-tauri`, and root `qssm-ref`).*

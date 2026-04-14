@@ -7,6 +7,7 @@ members = [
     "crates/qssm-ms",
     "crates/mssq-batcher",
     "crates/qssm-kaspa",
+    "crates/qssm-he",
     "crates/qssm-desktop/src-tauri",
     ".",
 ]
@@ -17,8 +18,13 @@ edition = "2021"
 license = "MIT OR Apache-2.0"
 
 [workspace.dependencies]
+argon2 = "0.5"
 blake3 = "1.5"
+accelerometer = "0.12"
 hex = "0.4"
+openentropy-core = "0.12"
+rayon = "1.10"
+smallvec = "1.13"
 ml-dsa = "0.1.0-rc.8"
 rand = "0.8"
 serde = { version = "1", features = ["derive"] }
