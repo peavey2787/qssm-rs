@@ -23,7 +23,7 @@ bench = false
 
 [dependencies]
 futures.workspace = true
-libp2p = { workspace = true, features = [
+libp2p = { version = "0.56", default-features = false, features = [
     "tokio",
     "dns",
     "tcp",

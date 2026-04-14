@@ -41,6 +41,9 @@ serde_json = "1"
 thiserror = "1.0"
 ureq = { version = "2.10", features = ["json"] }
 
+[profile.dev]
+split-debuginfo = "unpacked"
+
 [package]
 name = "qssm-ref"
 version = "0.1.0"

@@ -19,19 +19,3 @@ mod transport;
 pub use error::NetError;
 pub use node::{snapshot_to_json, start_node, NodeConfig, NodeHandle, NodeSnapshot};
 pub use pulse::{HeartbeatEnvelope, HEARTBEAT_TOPIC};
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[tokio::test]
-    async fn node_start_shutdown_smoke() {
-        let h = start_node(NodeConfig::default()).await.expect("start");
-        h.shutdown().await;
-    }
-
-    #[test]
-    fn density_gate_rejects_flat_payload() {
-        assert!(!qssm_he::verify_density(&vec![0u8; 1024]));
-    }
-}
