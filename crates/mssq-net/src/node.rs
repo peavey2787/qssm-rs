@@ -6,8 +6,10 @@ use futures::StreamExt;
 use libp2p::gossipsub::{IdentTopic, MessageAcceptance, MessageId};
 use libp2p::swarm::SwarmEvent;
 use libp2p::{Multiaddr, PeerId, Swarm};
+use qssm_governor::{Governor, PeerAction};
 use serde_json::Value;
 use tokio::sync::{mpsc, Mutex};
+use tracing::warn;
 
 use crate::behaviour::{MeshBehaviour, MeshEvent};
 use crate::discovery;
@@ -41,6 +43,9 @@ pub struct NodeSnapshot {
     pub connected_peers: usize,
     pub active_relays: usize,
     pub pulses: VecDeque<String>,
+    pub global_density_avg_milli: i64,
+    pub current_t_min_milli: i64,
+    pub top_deficit_peers: Vec<String>,
 }
 
 #[derive(Clone)]
@@ -73,6 +78,9 @@ pub async fn start_node(cfg: NodeConfig) -> Result<NodeHandle, NetError> {
         connected_peers: 0,
         active_relays: 0,
         pulses: VecDeque::new(),
+        global_density_avg_milli: 950,
+        current_t_min_milli: 1000,
+        top_deficit_peers: Vec::new(),
     }));
     let (shutdown_tx, mut shutdown_rx) = mpsc::channel(1);
     let task_snapshot = Arc::clone(&snapshot);
@@ -80,10 +88,19 @@ pub async fn start_node(cfg: NodeConfig) -> Result<NodeHandle, NetError> {
         let mut ticker = tokio::time::interval(cfg.heartbeat_every);
         let mut rep = ReputationStore::default();
         let mut relay_state = RelayState::default();
+        let mut governor = Governor::default();
+        let mut pulses_in_window: u32 = 0;
         loop {
             tokio::select! {
                 _ = ticker.tick() => {
-                    let _ = publish_heartbeat(&mut swarm, local_peer, &topic, &task_snapshot).await;
+                    if let Ok(local_density_ok) = publish_heartbeat(&mut swarm, local_peer, &topic, &task_snapshot).await {
+                        governor.observe_pulse(&local_peer.to_string(), local_density_ok, unix_timestamp_ns());
+                        pulses_in_window = pulses_in_window.saturating_add(1);
+                    }
+                    governor.update_pressure(pulses_in_window, cfg.heartbeat_every.as_secs().max(1) as u32);
+                    pulses_in_window = 0;
+                    let connected = swarm.connected_peers().count();
+                    refresh_immune_snapshot(&task_snapshot, &mut governor, connected).await;
                     rep.tick_decay();
                 }
                 maybe_shutdown = shutdown_rx.recv() => {
@@ -92,7 +109,17 @@ pub async fn start_node(cfg: NodeConfig) -> Result<NodeHandle, NetError> {
                     }
                 }
                 evt = swarm.select_next_some() => {
-                    handle_swarm_event(evt, &mut swarm, &task_snapshot, &mut rep, &mut relay_state).await;
+                    let accepted = handle_swarm_event(
+                        evt,
+                        &mut swarm,
+                        &task_snapshot,
+                        &mut rep,
+                        &mut relay_state,
+                        &mut governor,
+                    ).await;
+                    if accepted {
+                        pulses_in_window = pulses_in_window.saturating_add(1);
+                    }
                 }
             }
         }
@@ -110,14 +137,15 @@ async fn publish_heartbeat(
     local_peer: PeerId,
     topic: &IdentTopic,
     snapshot: &Arc<Mutex<NodeSnapshot>>,
-) -> Result<(), NetError> {
+) -> Result<bool, NetError> {
     let hb = collect_local_heartbeat()?;
+    let local_density_ok = qssm_he::verify_density(&hb.raw_jitter);
     let env = HeartbeatEnvelope::from_heartbeat(local_peer, &hb);
     let payload = serde_json::to_vec(&env).map_err(|e| NetError::GossipCodec(e.to_string()))?;
     let _ = swarm.behaviour_mut().gossipsub.publish(topic.clone(), payload);
     let mut guard = snapshot.lock().await;
     push_pulse(&mut guard.pulses, format!("local {} {}", env.peer_id, env.seed_hex));
-    Ok(())
+    Ok(local_density_ok)
 }
 
 async fn handle_swarm_event(
@@ -126,15 +154,18 @@ async fn handle_swarm_event(
     snapshot: &Arc<Mutex<NodeSnapshot>>,
     rep: &mut ReputationStore,
     relay_state: &mut RelayState,
-) {
+    governor: &mut Governor,
+) -> bool {
     match evt {
         SwarmEvent::ConnectionEstablished { .. } | SwarmEvent::ConnectionClosed { .. } => {
             let mut guard = snapshot.lock().await;
             guard.connected_peers = swarm.connected_peers().count();
+            false
         }
         SwarmEvent::NewListenAddr { address, .. } => {
             let mut guard = snapshot.lock().await;
             guard.public_addr = Some(address.to_string());
+            false
         }
         SwarmEvent::Behaviour(MeshEvent::AutoNat(ev)) => {
             update_nat_state(relay_state, &ev);
@@ -144,16 +175,29 @@ async fn handle_swarm_event(
                 relay_state.reservation_attempted = true;
                 guard.active_relays = 1;
             }
+            false
         }
         SwarmEvent::Behaviour(MeshEvent::Gossipsub(gossipsub_ev)) => {
             if let libp2p::gossipsub::Event::Message { propagation_source, message, message_id } = gossipsub_ev {
-                process_inbound_heartbeat(swarm, propagation_source, message_id, message.data, snapshot, rep).await;
+                process_inbound_heartbeat(
+                    swarm,
+                    propagation_source,
+                    message_id,
+                    message.data,
+                    snapshot,
+                    rep,
+                    governor,
+                )
+                .await
+            } else {
+                false
             }
         }
         SwarmEvent::Behaviour(ev) => {
             discovery::on_mesh_event(swarm, &ev);
+            false
         }
-        _ => {}
+        _ => false,
     }
 }
 
@@ -164,12 +208,28 @@ async fn process_inbound_heartbeat(
     data: Vec<u8>,
     snapshot: &Arc<Mutex<NodeSnapshot>>,
     rep: &mut ReputationStore,
-) {
+    governor: &mut Governor,
+) -> bool {
+    let connected_peers = swarm.connected_peers().count();
+    let decision = governor.decision_for(&peer.to_string(), connected_peers);
+    if matches!(decision.action, PeerAction::Drop) {
+        warn!("governor dropped heartbeat from peer {}", peer);
+        swarm
+            .behaviour_mut()
+            .gossipsub
+            .report_message_validation_result(&msg_id, &peer, MessageAcceptance::Reject);
+        let mut guard = snapshot.lock().await;
+        push_pulse(&mut guard.pulses, format!("peer {} dropped_by_governor", peer));
+        refresh_immune_snapshot_locked(&mut guard, governor, connected_peers);
+        return false;
+    }
+
     let decoded = serde_json::from_slice::<HeartbeatEnvelope>(&data).ok();
     let valid = decoded
         .as_ref()
         .map(|m| qssm_he::verify_density(&m.raw_jitter))
         .unwrap_or(false);
+    governor.observe_pulse(&peer.to_string(), valid, unix_timestamp_ns());
     if valid {
         rep.accept(peer);
         swarm
@@ -179,7 +239,9 @@ async fn process_inbound_heartbeat(
         if let Some(m) = decoded {
             let mut guard = snapshot.lock().await;
             push_pulse(&mut guard.pulses, format!("peer {} {}", m.peer_id, m.seed_hex));
+            refresh_immune_snapshot_locked(&mut guard, governor, connected_peers);
         }
+        true
     } else {
         rep.penalize_density(peer);
         swarm
@@ -188,6 +250,8 @@ async fn process_inbound_heartbeat(
             .report_message_validation_result(&msg_id, &peer, MessageAcceptance::Reject);
         let mut guard = snapshot.lock().await;
         push_pulse(&mut guard.pulses, format!("peer {} rejected_density", peer));
+        refresh_immune_snapshot_locked(&mut guard, governor, connected_peers);
+        false
     }
 }
 
@@ -207,5 +271,42 @@ pub fn snapshot_to_json(snapshot: &NodeSnapshot) -> Value {
         "connected_peers": snapshot.connected_peers,
         "active_relays": snapshot.active_relays,
         "pulses": snapshot.pulses,
+        "global_density_avg_milli": snapshot.global_density_avg_milli,
+        "current_t_min_milli": snapshot.current_t_min_milli,
+        "top_deficit_peers": snapshot.top_deficit_peers,
     })
+}
+
+async fn refresh_immune_snapshot(
+    snapshot: &Arc<Mutex<NodeSnapshot>>,
+    governor: &mut Governor,
+    connected_peers: usize,
+) {
+    let mut guard = snapshot.lock().await;
+    refresh_immune_snapshot_locked(&mut guard, governor, connected_peers);
+}
+
+fn refresh_immune_snapshot_locked(
+    snapshot: &mut NodeSnapshot,
+    governor: &mut Governor,
+    connected_peers: usize,
+) {
+    snapshot.global_density_avg_milli = governor.global_density_avg_milli(connected_peers);
+    snapshot.current_t_min_milli = governor.current_t_min_milli();
+    snapshot.top_deficit_peers = governor
+        .top_deficit_peers(connected_peers, 5)
+        .into_iter()
+        .map(|row| {
+            let whole = row.deficit_milli / 1000;
+            let frac = row.deficit_milli.abs() % 1000;
+            format!("{}: {}.{:03} {:?}", row.peer_id, whole, frac, row.state)
+        })
+        .collect();
+}
+
+fn unix_timestamp_ns() -> u64 {
+    let now = std::time::SystemTime::now();
+    now.duration_since(std::time::UNIX_EPOCH)
+        .map(|dur| dur.as_nanos() as u64)
+        .unwrap_or_default()
 }

@@ -60,6 +60,7 @@ fn draw_dashboard(frame: &mut ratatui::Frame<'_>, snap: &NodeSnapshot) {
             Constraint::Length(4),
             Constraint::Length(4),
             Constraint::Length(4),
+            Constraint::Length(6),
             Constraint::Min(6),
         ])
         .split(frame.area());
@@ -86,6 +87,22 @@ fn draw_dashboard(frame: &mut ratatui::Frame<'_>, snap: &NodeSnapshot) {
     .block(Block::default().title("Mesh").borders(Borders::ALL));
     frame.render_widget(mesh, chunks[2]);
 
+    let immune_top = if snap.top_deficit_peers.is_empty() {
+        "-".to_string()
+    } else {
+        snap.top_deficit_peers.join(" | ")
+    };
+    let immune = Paragraph::new(format!(
+        "Global Density Avg: {}.{:03}\nCurrent T_min: {}.{:03}\nTop Deficit Peers: {}",
+        snap.global_density_avg_milli / 1000,
+        (snap.global_density_avg_milli.abs() % 1000),
+        snap.current_t_min_milli / 1000,
+        (snap.current_t_min_milli.abs() % 1000),
+        immune_top
+    ))
+    .block(Block::default().title("Immune System").borders(Borders::ALL));
+    frame.render_widget(immune, chunks[3]);
+
     let pulse_items: Vec<ListItem<'_>> = snap
         .pulses
         .iter()
@@ -96,5 +113,5 @@ fn draw_dashboard(frame: &mut ratatui::Frame<'_>, snap: &NodeSnapshot) {
             .title("The Pulse (verified hardware signatures)")
             .borders(Borders::ALL),
     );
-    frame.render_widget(pulse, chunks[3]);
+    frame.render_widget(pulse, chunks[4]);
 }
