@@ -1,7 +1,7 @@
 [package]
 name = "qssm-desktop"
 version = "0.1.0"
-description = "Tauri helper: sovereign witness + QSSM-LE proof from handoff JSON"
+description = "Tauri: Sovereign Command Center + QSSM-LE / .qssm laboratory"
 authors = ["QSSM"]
 edition.workspace = true
 license.workspace = true
@@ -18,9 +18,20 @@ tauri-build = { version = "2", features = [] }
 tauri = { version = "2", features = [] }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
+blake3 = { workspace = true }
 hex = { workspace = true }
 rand = { workspace = true }
 thiserror = { workspace = true }
+tokio = { workspace = true, features = ["macros", "rt-multi-thread", "time"] }
+ureq = { workspace = true, features = ["json"] }
+maxminddb.workspace = true
+bip39 = "2.1"
+argon2 = { workspace = true }
+zeroize = "1.8"
+aes-gcm = "0.10"
+libp2p = { workspace = true }
+mssq-net = { path = "../../mssq-net" }
+qssm-he = { path = "../../qssm-he" }
 qssm-gadget = { path = "../../qssm-gadget", features = ["lattice-bridge"] }
 qssm-common = { path = "../../qssm-common" }
 qssm-le = { path = "../../qssm-le" }

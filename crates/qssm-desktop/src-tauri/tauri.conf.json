@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "QSSM Helper",
+  "productName": "Sovereign Command Center",
   "version": "0.1.0",
   "identifier": "com.qssm.desktop",
   "build": {
@@ -13,9 +13,9 @@
     "windows": [
       {
         "label": "main",
-        "title": "QSSM Helper",
-        "width": 920,
-        "height": 720
+        "title": "Sovereign Command Center",
+        "width": 1280,
+        "height": 840
       }
     ],
     "security": {
@@ -27,6 +27,10 @@
     "targets": "app",
     "icon": [
       "icons/icon.ico"
+    ],
+    "resources": [
+      "resources/README_GEOLITE.md",
+      "resources/dbip-city-lite.mmdb"
     ]
   }
 }
