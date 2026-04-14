@@ -98,6 +98,21 @@ This repository is a Cargo **workspace**. Most functionality lives under `crates
 
 ---
 
+## `mssq-net`
+
+**Purpose:** Production libp2p swarm runtime for MSSQ: transport composition (QUIC/TCP/WS + browser-facing vectors), mesh intelligence (mDNS + Kad + AutoNAT + DCUtR + Relay client), and heartbeat gossip ingestion with density gating via `qssm-he`.
+
+**What it provides**
+
+- Tokio swarm bootstrap and runtime loop (`NodeConfig`, `start_node`, `NodeHandle`)
+- `NetworkBehaviour` composition: Gossipsub, Kademlia, mDNS, AutoNAT, DCUtR, Relay client, Identify, Ping
+- 30s heartbeat publishing + inbound `verify_density` validation + reputation penalties
+- `examples/mssq_node.rs` ratatui dashboard for peer/NAT/transport/mesh/pulse telemetry
+
+**For:** Operators running a live MSSQ networking node and browser-compatible entry points, decoupled from UI-specific desktop code.
+
+---
+
 ## `mssq-batcher`
 
 **Purpose:** **MSSQ rollup clerk**: deterministic transaction ordering, **ML-DSA** leader lottery and attestation verification, and **proof-gated** application of batches to `RollupState` / SMT.
@@ -156,6 +171,7 @@ mssq-batcher←  qssm-ref
 qssm-kaspa  ←  qssm-ref
 qssm-gadget ←  qssm-desktop
 qssm-he     ←  (standalone; optional future: qssm-gadget / desktop)
+mssq-net    ←  qssm-he, qssm-utils
 ```
 
 ---
@@ -181,4 +197,4 @@ The table below maps **this repository’s crates** to the conceptual stack. Whe
 
 ---
 
-*Last updated with workspace members as of the `Cargo.toml` workspace list (`qssm-common`, `qssm-utils`, `qssm-gadget`, `qssm-le`, `qssm-ms`, `mssq-batcher`, `qssm-kaspa`, `qssm-he`, `qssm-desktop/src-tauri`, and root `qssm-ref`).*
+*Last updated with workspace members as of the `Cargo.toml` workspace list (`qssm-common`, `qssm-utils`, `qssm-gadget`, `qssm-le`, `qssm-ms`, `mssq-batcher`, `qssm-kaspa`, `qssm-he`, `mssq-net`, `qssm-desktop/src-tauri`, and root `qssm-ref`).*

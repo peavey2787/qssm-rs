@@ -28,6 +28,7 @@
 
 * [`crates/qssm-le`](crates/qssm-le) — Core lattice linear engine (receipts for the ~0.026 ms claim).
 * [`crates/qssm-he`](crates/qssm-he) — Hardware-anchored entropy harvest, sovereign seed, PMK (QSSM-HE).
+* [`crates/mssq-net`](crates/mssq-net) — Libp2p swarm runtime (transport mesh, discovery, relay intelligence, pulse gossip).
 * [`crates/qssm-desktop`](crates/qssm-desktop) — Tauri desktop helper (“Lab” UI).
 * [`crates/mssq-batcher`](crates/mssq-batcher) — Mirror-Shift Sovereign Queue sequencer.
 * [`crates/qssm-gadget`](crates/qssm-gadget) — Human-readable sugar blocks and predicate logic.

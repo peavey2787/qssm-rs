@@ -34,6 +34,9 @@ MSSQ leverages the high‑throughput, low‑latency properties of the Kaspa Bloc
 ### **DA Layer**
 Kaspa L1 provides the immutable anchor \(s\) for randomness and a passive **L1‑embedded inbox** for L2 transactions.
 
+### **Networking Layer (implementation note)**
+The libp2p swarm implementation is tracked in `crates/mssq-net` (Tokio runtime): QUIC/TCP/WS transports, browser-facing vectors, mDNS + Kad discovery, Relay v2 client, AutoNAT/DCUtR, and Gossipsub heartbeat propagation with `qssm-he` density gating.
+
 ### **Proving Engines**
 Heterogeneous verification via:
 
