@@ -17,4 +17,6 @@ pub enum HeError {
     JitterDensityRejected,
     #[error("raw hardware jitter harvest is not implemented for this target OS/arch")]
     UnsupportedEntropyPlatform,
+    #[error("hardware harvest is paused (UI / policy toggle)")]
+    HarvestDisabled,
 }

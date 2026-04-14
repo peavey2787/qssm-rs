@@ -12,6 +12,7 @@ use smallvec::SmallVec;
 
 use crate::density;
 use crate::error::HeError;
+use crate::harvest_gate::guard_harvest_enabled;
 use crate::sensor::{SensorEntropy, SENSOR_INLINE_CAP};
 use crate::time::unix_timestamp_ns;
 use crate::Heartbeat;
@@ -51,6 +52,7 @@ pub fn harvest_with_sensor(
 }
 
 fn harvest_inner(config: &HarvestConfig, sensor_entropy: SensorEntropy) -> Result<Heartbeat, HeError> {
+    guard_harvest_enabled()?;
     let raw_jitter = platform_raw_jitter(config.raw_bytes)?;
     if raw_jitter.len() < density::MIN_RAW_BYTES {
         return Err(HeError::InsufficientRawBytes {

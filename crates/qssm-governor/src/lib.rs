@@ -234,6 +234,14 @@ impl Governor {
         milli(self.global_density_avg(connected_peers))
     }
 
+    pub fn real_density_avg_milli(&self) -> i64 {
+        milli(self.entropy.mean())
+    }
+
+    pub fn is_bootstrap_mode(&self, connected_peers: usize) -> bool {
+        connected_peers <= self.cfg.bootstrap_peer_threshold && self.entropy.len() < self.cfg.n_min
+    }
+
     pub fn decision_for(&mut self, peer_id: &str, connected_peers: usize) -> GovernorDecision {
         let global_avg = self.global_density_avg(connected_peers);
         let cfg = self.cfg.clone();

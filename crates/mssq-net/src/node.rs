@@ -44,6 +44,8 @@ pub struct NodeSnapshot {
     pub active_relays: usize,
     pub pulses: VecDeque<String>,
     pub global_density_avg_milli: i64,
+    pub real_density_avg_milli: i64,
+    pub is_bootstrap_mode: bool,
     pub current_t_min_milli: i64,
     pub top_deficit_peers: Vec<String>,
 }
@@ -79,6 +81,8 @@ pub async fn start_node(cfg: NodeConfig) -> Result<NodeHandle, NetError> {
         active_relays: 0,
         pulses: VecDeque::new(),
         global_density_avg_milli: 950,
+        real_density_avg_milli: 0,
+        is_bootstrap_mode: true,
         current_t_min_milli: 1000,
         top_deficit_peers: Vec::new(),
     }));
@@ -138,7 +142,13 @@ async fn publish_heartbeat(
     topic: &IdentTopic,
     snapshot: &Arc<Mutex<NodeSnapshot>>,
 ) -> Result<bool, NetError> {
-    let hb = collect_local_heartbeat()?;
+    let hb = match collect_local_heartbeat() {
+        Ok(h) => h,
+        Err(e) => {
+            tracing::debug!(target: "mssq_net", "heartbeat skipped: {e}");
+            return Ok(false);
+        }
+    };
     let local_density_ok = qssm_he::verify_density(&hb.raw_jitter);
     let env = HeartbeatEnvelope::from_heartbeat(local_peer, &hb);
     let payload = serde_json::to_vec(&env).map_err(|e| NetError::GossipCodec(e.to_string()))?;
@@ -272,6 +282,8 @@ pub fn snapshot_to_json(snapshot: &NodeSnapshot) -> Value {
         "active_relays": snapshot.active_relays,
         "pulses": snapshot.pulses,
         "global_density_avg_milli": snapshot.global_density_avg_milli,
+        "real_density_avg_milli": snapshot.real_density_avg_milli,
+        "is_bootstrap_mode": snapshot.is_bootstrap_mode,
         "current_t_min_milli": snapshot.current_t_min_milli,
         "top_deficit_peers": snapshot.top_deficit_peers,
     })
@@ -292,6 +304,8 @@ fn refresh_immune_snapshot_locked(
     connected_peers: usize,
 ) {
     snapshot.global_density_avg_milli = governor.global_density_avg_milli(connected_peers);
+    snapshot.real_density_avg_milli = governor.real_density_avg_milli();
+    snapshot.is_bootstrap_mode = governor.is_bootstrap_mode(connected_peers);
     snapshot.current_t_min_milli = governor.current_t_min_milli();
     snapshot.top_deficit_peers = governor
         .top_deficit_peers(connected_peers, 5)
