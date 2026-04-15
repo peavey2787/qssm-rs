@@ -6,19 +6,23 @@
 //! differ (avoids an astronomically rare fixed `2^63` hemisphere straddle under 256 trials).
 #![forbid(unsafe_code)]
 
+mod commitment;
+mod core;
 mod error;
+mod transcript;
 
+pub use commitment::leaves::Salts;
 pub use error::MsError;
 
-use qssm_utils::hashing::{hash_domain, DOMAIN_MS};
-use qssm_utils::{merkle_parent, PositionAwareTree};
+use commitment::leaves::{build_leaves, derive_salts, ms_leaf};
+use commitment::tree::verify_path_to_root;
+use core::{highest_differing_bit, ledger_rotation, rot_for_nonce};
+use qssm_utils::PositionAwareTree;
+use transcript::fs_challenge;
 
 /// Merkle root over 128 position-aware leaves.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Root(pub [u8; 32]);
-
-/// Per-leaf salts: index `2 * i + b` binds bit `b ∈ {0,1}` at position `i` (0..64).
-pub type Salts = [[u8; 32]; 128];
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GhostMirrorProof {
@@ -30,118 +34,13 @@ pub struct GhostMirrorProof {
     pub challenge: [u8; 32],
 }
 
-fn ledger_rotation(ledger_entropy: &[u8; 32]) -> u64 {
-    let mut b = [0u8; 8];
-    b.copy_from_slice(&ledger_entropy[..8]);
-    u64::from_le_bytes(b)
-}
-
-/// Ledger-anchored per-nonce rotation: `n ∈ [0,255]` yields 256 full-width `u64` tweaks
-/// (plain `r ⊕ zext(n)` only flips low bits and often cannot straddle `2^63` for small values).
-fn rot_for_nonce(r: u64, n: u8) -> u64 {
-    let h = hash_domain(DOMAIN_MS, &[b"rot_nonce", &r.to_le_bytes(), &[n]]);
-    let mut b = [0u8; 8];
-    b.copy_from_slice(&h[..8]);
-    u64::from_le_bytes(b)
-}
-
-fn ms_leaf(i: u8, bit: u8, salt: &[u8; 32], ledger: &[u8; 32]) -> [u8; 32] {
-    hash_domain(DOMAIN_MS, &[b"leaf", &[i], &[bit], salt.as_slice(), ledger])
-}
-
-fn build_leaves(salts: &Salts, ledger: &[u8; 32]) -> Vec<[u8; 32]> {
-    let mut leaves = Vec::with_capacity(128);
-    for i in 0u8..64 {
-        for b in 0u8..=1u8 {
-            let idx = 2 * (i as usize) + (b as usize);
-            leaves.push(ms_leaf(i, b, &salts[idx], ledger));
-        }
-    }
-    leaves
-}
-
-fn highest_differing_bit(a: u64, b: u64) -> Option<u8> {
-    let mut k: u8 = 63;
-    loop {
-        let ba = (a >> k) & 1;
-        let bb = (b >> k) & 1;
-        if ba != bb {
-            return Some(k);
-        }
-        if k == 0 {
-            return None;
-        }
-        k -= 1;
-    }
-}
-
-#[allow(clippy::too_many_arguments)]
-fn fs_challenge(
-    root: &[u8; 32],
-    n: u8,
-    k: u8,
-    entropy: &[u8; 32],
-    value: u64,
-    target: u64,
-    context: &[u8],
-    rollup_context_digest: &[u8; 32],
-) -> [u8; 32] {
-    hash_domain(
-        DOMAIN_MS,
-        &[
-            b"fs_v2",
-            root.as_slice(),
-            &[n],
-            &[k],
-            entropy.as_slice(),
-            &value.to_le_bytes(),
-            &target.to_le_bytes(),
-            context,
-            rollup_context_digest.as_slice(),
-        ],
-    )
-}
-
-fn verify_path_to_root(
-    root: &[u8; 32],
-    leaf: &[u8; 32],
-    index: usize,
-    width: usize,
-    proof: &[[u8; 32]],
-) -> bool {
-    if !width.is_power_of_two() {
-        return false;
-    }
-    let mut acc = *leaf;
-    let mut idx: usize = index;
-    for sib in proof {
-        let (left, right) = if idx.is_multiple_of(2) {
-            (&acc, sib)
-        } else {
-            (sib, &acc)
-        };
-        acc = merkle_parent(left, right);
-        idx /= 2;
-    }
-    idx == 0 && acc == *root && proof.len() == width.ilog2() as usize
-}
-
 /// Deterministic salts from `seed` (reproducible CI / demos).
 pub fn commit(
     _value: u64,
     seed: [u8; 32],
     ledger_entropy: [u8; 32],
 ) -> Result<(Root, Salts), MsError> {
-    let mut salts = [[0u8; 32]; 128];
-    for i in 0u32..64 {
-        for b in 0u8..=1u8 {
-            let idx = (2 * i + b as u32) as usize;
-            salts[idx] = hash_domain(
-                DOMAIN_MS,
-                &[b"salt", seed.as_slice(), &i.to_le_bytes(), &[b]],
-            );
-        }
-    }
+    let salts = derive_salts(seed);
     let leaves = build_leaves(&salts, &ledger_entropy);
     let tree = PositionAwareTree::new(leaves)?;
     Ok((Root(tree.get_root()), salts))
