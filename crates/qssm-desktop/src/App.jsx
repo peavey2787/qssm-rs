@@ -8,7 +8,9 @@ import MnemonicDisplay from "./components/MnemonicDisplay.jsx";
 export default function App() {
   const inTauri = typeof window !== "undefined" && !!window.__TAURI_INTERNALS__?.invoke;
   const [payload, setPayload] = useState(null);
-  const [net, setNet] = useState({ online: null, error: null });
+  const [net, setNet] = useState({ online: null, error: null, detail: null });
+  const [networkId, setNetworkId] = useState(null);
+  const [networkSwitchErr, setNetworkSwitchErr] = useState("");
   const [tier, setTier] = useState("dashboard");
   const [mustSetup, setMustSetup] = useState(false);
   const [wizardMode, setWizardMode] = useState(null);
@@ -34,6 +36,7 @@ export default function App() {
       setNet({
         online: false,
         error: "Running in browser dev server only. Start with `cargo tauri dev`.",
+        detail: null,
       });
       return () => {};
     }
@@ -42,6 +45,10 @@ export default function App() {
     (async () => {
       const u1 = await listen("command-center", (e) => {
         setPayload(e.payload);
+        const nid = e.payload?.network_id;
+        if (typeof nid === "number" && !Number.isNaN(nid)) {
+          setNetworkId(nid);
+        }
         setPulsePhase((p) => (p + 1) % 1_000_000);
       });
       if (cancelled) {
@@ -53,7 +60,15 @@ export default function App() {
         setNet({
           online: e.payload?.online ?? false,
           error: e.payload?.error ?? null,
+          detail: e.payload?.detail ?? null,
         });
+        if (e.payload?.detail === "switching network") {
+          setPayload(null);
+        }
+        const nid = e.payload?.network_id;
+        if (typeof nid === "number" && !Number.isNaN(nid)) {
+          setNetworkId(nid);
+        }
       });
       if (cancelled) {
         u2();
@@ -71,7 +86,21 @@ export default function App() {
     if (!inTauri) return;
     void refreshIdentityList();
     void refreshHiredStorage();
+    (async () => {
+      try {
+        const id = await invoke("get_network_profile");
+        setNetworkId(typeof id === "number" ? id : Number(id));
+      } catch {
+        setNetworkId(1);
+      }
+    })();
   }, [inTauri]);
+
+  function networkLabelFromId(id) {
+    if (id === 0) return "MAINNET";
+    if (id == null || Number.isNaN(id)) return "…";
+    return `TESTNET-${id}`;
+  }
 
   const densityAvg = (payload?.global_density_avg_milli ?? 0) / 1000;
   const realDensity = (payload?.real_density_avg_milli ?? 0) / 1000;
@@ -243,11 +272,41 @@ export default function App() {
   return (
     <div className={`app-shell ${feverClass}`}>
       <header className="top-bar">
-        <div className="brand">
-          QSSM Pulse — Testnet-1{" "}
-          <span className="status-pill warn" style={{ marginLeft: "0.45rem" }}>
-            {payload?.network_label || "TESTNET-1"}
+        <div className="brand" style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
+          <span>QSSM Pulse</span>
+          <label className="network-select-wrap" htmlFor="network-profile">
+            <span className="sr-only">Network</span>
+            <select
+              id="network-profile"
+              className="network-select"
+              value={networkId ?? 1}
+              disabled={networkId === null || !inTauri}
+              onChange={async (e) => {
+                setNetworkSwitchErr("");
+                const v = Number(e.target.value);
+                if (!Number.isInteger(v) || v < 0) return;
+                try {
+                  await invoke("set_network_profile", { networkId: v });
+                } catch (err) {
+                  setNetworkSwitchErr(String(err));
+                }
+              }}
+            >
+              <option value={0}>Mainnet</option>
+              <option value={1}>Testnet-1</option>
+            </select>
+          </label>
+          <span className="status-pill warn">
+            {payload?.network_label ?? networkLabelFromId(networkId)}
           </span>
+          {net.detail === "switching network" && (
+            <span className="status-pill" style={{ borderColor: "var(--accent)", color: "var(--accent)" }}>Switching…</span>
+          )}
+          {networkSwitchErr && (
+            <span className="status-pill err" title={networkSwitchErr}>
+              {networkSwitchErr.length > 48 ? `${networkSwitchErr.slice(0, 45)}…` : networkSwitchErr}
+            </span>
+          )}
         </div>
         <nav className="nav-tabs" aria-label="Primary">
           {!mustSetup && <button type="button" className={tier === "dashboard" ? "active" : ""} onClick={() => setTier("dashboard")}>Dashboard</button>}
@@ -255,9 +314,27 @@ export default function App() {
           <button type="button" className={tier === "identity" ? "active" : ""} onClick={() => setTier("identity")}>Manage Sovereign ID</button>
         </nav>
         <div className="toggles">
-          <span className={`status-pill ${net.online ? "ok" : net.online === false ? "err" : ""}`} title={net.error || ""}>
+          <span className={`status-pill ${net.online ? "ok" : net.online === false ? "err" : ""}`} title={net.error || net.detail || ""}>
             {net.online === null ? "Network …" : net.online ? "Mesh online" : "Network offline"}
           </span>
+          {inTauri && net.online === false && net.detail !== "switching network" && (
+            <button
+              type="button"
+              className="btn btn-ghost"
+              style={{ fontSize: "0.72rem", padding: "0.2rem 0.5rem" }}
+              title={net.error || "Restart the mssq-net sidecar thread"}
+              onClick={async () => {
+                setNetworkSwitchErr("");
+                try {
+                  await invoke("retry_network_sidecar");
+                } catch (err) {
+                  setNetworkSwitchErr(String(err));
+                }
+              }}
+            >
+              Retry mesh
+            </button>
+          )}
         </div>
       </header>
 

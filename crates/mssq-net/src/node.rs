@@ -221,9 +221,9 @@ pub async fn start_node(cfg: NodeConfig) -> Result<NodeHandle, NetError> {
                     }
                 }
                 maybe_shutdown = shutdown_rx.recv() => {
-                    if maybe_shutdown.is_some() {
-                        break;
-                    }
+                    // `Some(())` = graceful shutdown; `None` = all `shutdown_tx` senders dropped — exit either way.
+                    let _ = maybe_shutdown;
+                    break;
                 }
                 ctrl = control_rx.recv() => {
                     if let Some(NodeControl::RequestBranch { peer_id }) = ctrl {

@@ -141,3 +141,19 @@ pub fn repair_state(peer_id: String) -> Result<Value, String> {
     crate::sidecar::request_merkle_repair_for_peer(peer_id)?;
     Ok(json!({"ok": true}))
 }
+
+/// Switch MSSQ `network_id` (0 = mainnet, 1 = testnet-1). Stops the current sidecar node and starts a new one.
+///
+/// Invoke from JS with camelCase: `invoke("set_network_profile", { networkId: 0 | 1 })`.
+#[tauri::command]
+pub fn set_network_profile(network_id: u32) -> Result<(), String> {
+    if network_id > 1 {
+        return Err("unsupported network_id: use 0 (mainnet) or 1 (testnet-1)".into());
+    }
+    crate::sidecar::request_network_switch(network_id)
+}
+
+#[tauri::command]
+pub fn get_network_profile() -> u32 {
+    crate::sidecar::current_network_id()
+}

@@ -24,6 +24,8 @@ pub fn run() {
             commands::list_hired_storage,
             commands::hire_storage_provider,
             commands::repair_state,
+            commands::set_network_profile,
+            commands::get_network_profile,
         ])
         .run(tauri::generate_context!())
         .expect("error while running qssm-desktop");
