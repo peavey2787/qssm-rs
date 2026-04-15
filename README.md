@@ -10,13 +10,13 @@
 
 ### Documentation map
 
-* [Architecture overview](docs/01-architecture/architecture-overview.md)
-* [MSSQ — Egalitarian rollup](docs/02-protocol-specs/mssq.md)
-* [QSSM-LE — Engine A](docs/02-protocol-specs/qssm-le-engine-a.md)
-* [QSSM-MS — Engine B](docs/02-protocol-specs/qssm-ms-engine-b.md)
-* [BLAKE3–lattice gadget spec](docs/02-protocol-specs/blake3-lattice-gadget-spec.md)
-* [BLAKE3–lattice gadget — Rust plan](docs/04-implementation-plans/blake3-lattice-gadget-rust-plan.md)
-* [Kaspa L2 core deployment manifest](docs/01-architecture/l2-kaspa-deployment.md)
+* [Architecture overview](docs/architecture-overview.md)
+* [MSSQ — Egalitarian rollup](docs/mssq-rollup.md)
+* [QSSM-LE — Engine A](docs/qssm-le-engine-a.md)
+* [QSSM-MS — Engine B](docs/qssm-ms-engine-b.md)
+* [BLAKE3–lattice gadget spec](docs/blake3-lattice-gadget-spec.md)
+* [BLAKE3–lattice gadget — Rust plan](docs/blake3-lattice-gadget-rust-plan.md)
+* [Kaspa L2 core deployment manifest](docs/l2-kaspa-core-deployment-manifest.md)
 
 ## ⚡ Core performance
 
@@ -27,8 +27,6 @@
 ## 🛠 Project structure
 
 * [`crates/qssm-le`](crates/qssm-le) — Core lattice linear engine (receipts for the ~0.026 ms claim).
-* [`crates/qssm-he`](crates/qssm-he) — Hardware-anchored entropy harvest, sovereign seed, PMK (QSSM-HE).
-* [`crates/mssq-net`](crates/mssq-net) — Libp2p swarm runtime (transport mesh, discovery, relay intelligence, pulse gossip).
 * [`crates/qssm-desktop`](crates/qssm-desktop) — Tauri desktop helper (“Lab” UI).
 * [`crates/mssq-batcher`](crates/mssq-batcher) — Mirror-Shift Sovereign Queue sequencer.
 * [`crates/qssm-gadget`](crates/qssm-gadget) — Human-readable sugar blocks and predicate logic.

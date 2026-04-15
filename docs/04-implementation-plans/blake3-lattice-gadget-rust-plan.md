@@ -171,7 +171,7 @@ flowchart LR
 ## Phase 6 — Prover JSON & L2 handshake artifacts (**complete**)
 
 - **`prover_json`**: private wire counting for sovereign + Merkle compress witnesses; value hooks for golden / tooling.
-- **`examples/l2_handshake.rs`**: Merkle parent witness, **`EntropyProvider`** (Phase 8), **`SovereignWitness::bind`**, **`Blake3Gadget::export_r1cs`**, writes **`prover_package.json`** (**`nist_beacon_included`**), **`sovereign_witness.json`**, **`merkle_parent_witness.json`**, **`r1cs_merkle_parent.manifest.txt`** (large stack on Windows worker thread).
+- **`examples/l2_handshake.rs`**: Merkle parent witness, **`EntropyProvider`** (Phase 8), **`SovereignWitness::bind`**, **`Blake3Gadget::export_r1cs`**, writes artifacts to **`crates/qssm-gadget/assets/`**: **`prover_package.json`** (**`nist_beacon_included`**), **`sovereign_witness.json`**, **`merkle_parent_witness.json`**, **`r1cs_merkle_parent.manifest.txt`** (large stack on Windows worker thread).
 - **Deployment manifest:** [`l2-kaspa-deployment.md`](../01-architecture/l2-kaspa-deployment.md) lists Engine B/A field map and artifact paths.
 
 **Exit criteria:** example + tests green; package JSON schema stable for Engine A consumption.

@@ -13,3 +13,6 @@ thiserror.workspace = true
 
 [dev-dependencies]
 qssm-kaspa = { path = "../qssm-kaspa" }
+qssm-examples = { path = "../qssm-examples" }
+qssm-le = { path = "../qssm-le" }
+qssm-ms = { path = "../qssm-ms" }

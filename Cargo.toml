@@ -6,12 +6,12 @@ members = [
     "crates/qssm-le",
     "crates/qssm-ms",
     "crates/mssq-batcher",
+    "crates/qssm-examples",
     "crates/qssm-kaspa",
     "crates/qssm-he",
     "crates/mssq-net",
     "crates/qssm-governor",
     "crates/qssm-desktop/src-tauri",
-    ".",
 ]
 resolver = "2"
 
@@ -45,24 +45,3 @@ maxminddb = "0.24"
 
 [profile.dev]
 split-debuginfo = "unpacked"
-
-[package]
-name = "qssm-ref"
-version = "0.1.0"
-edition.workspace = true
-publish = false
-
-[build-dependencies]
-winres = "0.1"
-
-[dependencies]
-ml-dsa.workspace = true
-mssq-batcher = { path = "crates/mssq-batcher" }
-qssm-common = { path = "crates/qssm-common" }
-qssm-kaspa = { path = "crates/qssm-kaspa" }
-qssm-le = { path = "crates/qssm-le" }
-qssm-ms = { path = "crates/qssm-ms" }
-qssm-utils = { path = "crates/qssm-utils" }
-
-[dev-dependencies]
-ml-dsa.workspace = true

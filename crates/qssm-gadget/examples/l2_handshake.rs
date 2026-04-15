@@ -1,6 +1,6 @@
 //! **L2 handshake demo** — simulates a Kaspa L1 block binding, rolls up two state leaves with **`merkle_parent`**, then runs the **Sovereign Digest** path (Phase 8 entropy floor + opportunistic NIST booster) for Engine A.
 //!
-//! Writes to the **current working directory**:
+//! Writes to **`crates/qssm-gadget/assets/`**:
 //! - **`prover_package.json`** — sovereign + Merkle witness JSON + metadata for Engine A (**`nist_beacon_included`**).
 //! - **`r1cs_merkle_parent.manifest.txt`** — **65 184** constraint lines (`Blake3Gadget::export_r1cs`).
 //!
@@ -22,6 +22,9 @@ use serde_json::json;
 use std::path::Path;
 
 fn run() {
+    let assets_dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("assets");
+    std::fs::create_dir_all(&assets_dir).expect("create assets dir");
+
     let mut kaspa_block_id = [0u8; 32];
     kaspa_block_id[..19].copy_from_slice(b"SIM_KASPA_PARENT_V1");
 
@@ -73,11 +76,11 @@ fn run() {
     assert_eq!(r1cs_text.lines().count(), 65_184);
 
     let sovereign_json = sovereign.to_prover_json();
-    std::fs::write("sovereign_witness.json", sovereign_json.as_str())
+    std::fs::write(assets_dir.join("sovereign_witness.json"), sovereign_json.as_str())
         .expect("sovereign_witness.json");
 
     let merkle_json = merkle_parent_hash_witness_to_prover_json(&merkle_w);
-    std::fs::write("merkle_parent_witness.json", merkle_json.as_str())
+    std::fs::write(assets_dir.join("merkle_parent_witness.json"), merkle_json.as_str())
         .expect("merkle_parent_witness.json");
 
     let sovereign_private_wires = sovereign_private_wire_count();
@@ -111,11 +114,11 @@ fn run() {
     });
 
     std::fs::write(
-        "prover_package.json",
+        assets_dir.join("prover_package.json"),
         serde_json::to_string_pretty(&package).expect("package json"),
     )
     .expect("write prover_package.json");
-    std::fs::write("r1cs_merkle_parent.manifest.txt", r1cs_text.as_str())
+    std::fs::write(assets_dir.join("r1cs_merkle_parent.manifest.txt"), r1cs_text.as_str())
         .expect("write r1cs manifest");
 
     eprintln!(
@@ -124,13 +127,13 @@ fn run() {
         merkle_wires
     );
 
-    verify_limb_binding_json(Path::new(".")).expect("verify_limb_binding_json");
+    verify_limb_binding_json(&assets_dir).expect("verify_limb_binding_json");
     println!("PATH A VERIFIED: Kaspa State bound to Lattice Proof successfully.");
 
     #[cfg(feature = "lattice-bridge")]
     {
         use qssm_gadget::lattice_bridge::verify_handshake_with_le;
-        verify_handshake_with_le(Path::new(".")).expect("verify_handshake_with_le");
+        verify_handshake_with_le(&assets_dir).expect("verify_handshake_with_le");
         println!("PATH A + LE: PublicInstance and RqPoly::embed_constant coeff0 OK.");
     }
 }

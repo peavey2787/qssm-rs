@@ -46,7 +46,7 @@ Copy the following from the **qssm-rs** workspace to bootstrap a new Kaspa-ancho
 
 | Path | Role |
 |------|------|
-| [`crates/qssm-gadget/examples/l2_handshake.rs`](../../crates/qssm-gadget/examples/l2_handshake.rs) | End-to-end: simulated Kaspa block id → Phase 8 **`EntropyProvider`** (500 ms NIST try) → `merkle_parent` witness → **`SovereignWitness`** (**`nist_included`**, **`sovereign_entropy`**) → **`prover_package.json`** (**`nist_beacon_included`**), **`sovereign_witness.json`**, **`merkle_parent_witness.json`**, **`r1cs_merkle_parent.manifest.txt`**. Runs on a **32 MiB** worker thread stack (large compress + JSON). Command: `cargo run -p qssm-gadget --example l2_handshake`. |
+| [`crates/qssm-gadget/examples/l2_handshake.rs`](../../crates/qssm-gadget/examples/l2_handshake.rs) | End-to-end: simulated Kaspa block id → Phase 8 **`EntropyProvider`** (500 ms NIST try) → `merkle_parent` witness → **`SovereignWitness`** (**`nist_included`**, **`sovereign_entropy`**) → artifacts written to **`crates/qssm-gadget/assets/`**: **`prover_package.json`** (**`nist_beacon_included`**), **`sovereign_witness.json`**, **`merkle_parent_witness.json`**, **`r1cs_merkle_parent.manifest.txt`**. Runs on a **32 MiB** worker thread stack (large compress + JSON). Command: `cargo run -p qssm-gadget --example l2_handshake`. |
 
 ## Engine A (lattice) — not in this repo
 
