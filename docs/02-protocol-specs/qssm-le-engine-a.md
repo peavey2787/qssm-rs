@@ -1,12 +1,12 @@
 ### Documentation map
 
-* [README](../README.md) — Project home
-* [Architecture overview](./architecture-overview.md)
-* [MSSQ — Egalitarian rollup](./mssq-rollup.md)
+* [README](../../README.md) — Project home
+* [Architecture overview](../01-architecture/architecture-overview.md)
+* [MSSQ — Egalitarian rollup](./mssq.md)
 * [QSSM-MS — Engine B](./qssm-ms-engine-b.md)
 * [BLAKE3–lattice gadget spec](./blake3-lattice-gadget-spec.md)
-* [BLAKE3–lattice gadget — Rust plan](./blake3-lattice-gadget-rust-plan.md)
-* [Kaspa L2 core deployment manifest](./l2-kaspa-core-deployment-manifest.md)
+* [BLAKE3–lattice gadget — Rust plan](../04-implementation-plans/blake3-lattice-gadget-rust-plan.md)
+* [Kaspa L2 core deployment manifest](../01-architecture/l2-kaspa-deployment.md)
 
 ---
 
@@ -58,7 +58,7 @@ To achieve sub‑10ms verification, the implementation utilizes a Number Theoret
 
 ---
 
-The public parameters include a fixed pseudorandom ring element **\(A \in R_q\)** sampled transparently from the CRS seed (see `VerifyingKey::matrix_a_poly` in `qssm-le`). The reference code does **not** expand a full rank‑\(k\) module matrix with \(k = 2\); Table 1 lists **\(k = 1\)** to match that design. Heuristic hardness is discussed in terms of ring‑structured SIS/LWE problems at dimension \(n\); formal reductions to a specific module problem are not claimed for this stub.
+The public parameters include a fixed pseudorandom ring element **\(A \in R_q\)** sampled transparently from the CRS seed (see `VerifyingKey::matrix_a_poly` in `qssm-le`). The reference code does **not** expand a full rank‑\(k\) module matrix with \(k = 2\); Table 1 lists **\(k = 1\)** to match that design. Heuristic hardness is discussed in terms of ring‑structured SIS/LWE problems at dimension \(n\); formal reductions to a specific module problem are not claimed for this stub.
 
 ---
 
@@ -112,7 +112,7 @@ Let **`rollup_context_digest`** be a 32‑byte BLAKE3 digest over a canonical **
 
 1. Form commitment \(C = A r + \mu(m)\) with short \(r\).  
 2. Sample short \(y\); compute \(t = A y\).  
-3. Hash inputs are concatenated **in this order** (each as specified in `fs_challenge_bytes`): **`QSSM-LE-FS-LYU-v1.0`** (UTF‑8 domain string, **first**), then **`rollup_context_digest`** (32 bytes), **CRS seed** (`vk`, 32 bytes), **public message** \(m\) (8 bytes LE `u64`), **commitment** \(C\) (encoded coefficients), **masking** \(t\) (encoded coefficients). Apply **BLAKE3**, then map the digest to a small integer **\(c\)** in \([-C_{\text{span}}, C_{\text{span}}]\).  
+3. Hash inputs are concatenated **in this order** (each as specified in `fs_challenge_bytes`): **`QSSM-LE-FS-LYU-v1.0`** (UTF‑8 domain string, **first**), then **`rollup_context_digest`** (32 bytes), **CRS seed** (`vk`, 32 bytes), **public message** \(m\) (8 bytes LE `u64`), **commitment** \(C\) (encoded coefficients), **masking** \(t\) (encoded coefficients). Apply **BLAKE3**, then map the digest to a small integer **\(c\)** in \([-C_{\text{span}}, C_{\text{span}}]\).  
 4. \(z = y + c \cdot r\) (ring arithmetic).  
 5. **Reject** unless \(\|z\|_\infty \le \gamma\) (and \(y\) satisfied its bound).  
 6. Output \(\pi = (t, z, \text{challenge\_bytes})\).
@@ -123,7 +123,7 @@ Fail-fast order matches `verify_lattice_algebraic` in `qssm-le`:
 
 1. **Validate public inputs.** Ensure the public message \(m\) satisfies **\(0 \le m < 2^{30}\)** (`PublicInstance::validate` / `MAX_MESSAGE`).  
 2. **Norm check.** If **\(\|z\|_\infty > \gamma\)** (centered mod \(q\)), **reject immediately** — do not proceed to the ring equation.  
-3. **Fiat–Shamir reconstitution.** Recompute the challenge digest from **`(\texttt{QSSM-LE-FS-LYU-v1.0}, \texttt{rollup\_context\_digest}, \text{vk}, m, C, t)\)** in the same order as Prove step 3; check it equals the proof’s **`challenge`**, then map to the scalar **\(c\)**.  
+3. **Fiat–Shamir reconstitution.** Recompute the challenge digest from **`(\texttt{QSSM-LE-FS-LYU-v1.0}, \texttt{rollup\_context\_digest}, \text{vk}, m, C, t)\)** in the same order as Prove step 3; check it equals the proof’s **`challenge`**, then map to the scalar **\(c\)**.  
 4. **Ring equation.** Verify **\(A z \stackrel{?}{=} t + c \cdot (C - \mu(m))\)** in \(R_q\).
 
 No witness \(r\) is transmitted.

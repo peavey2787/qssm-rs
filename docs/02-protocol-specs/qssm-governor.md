@@ -1,11 +1,11 @@
 ### Documentation map
 
-* [README](../README.md) ó Project home
-* [Architecture overview](./architecture-overview.md)
-* [MSSQ ó Egalitarian rollup](./mssq-rollup.md)
-* [QSSM-LE ó Engine A](./qssm-le-engine-a.md)
-* [QSSM-MS ó Engine B](./qssm-ms-engine-b.md)
-* **This document** ó QSSM Governor (Metabolic DAA)
+* [README](../../README.md) ù Project home
+* [Architecture overview](../01-architecture/architecture-overview.md)
+* [MSSQ ù Egalitarian rollup](./mssq.md)
+* [QSSM-LE ù Engine A](./qssm-le-engine-a.md)
+* [QSSM-MS ù Engine B](./qssm-ms-engine-b.md)
+* **This document** ù QSSM Governor (Metabolic DAA)
 
 ---
 

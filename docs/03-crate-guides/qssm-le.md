@@ -13,7 +13,7 @@ Crate: `crates/qssm-le`. Ring \(R_q = \mathbb{Z}_q[X]/(X^{64}+1)\), **length-128
 
 Public API: `lib.rs` re-exports `prove_arithmetic`, `verify_lattice`, `commit_mlwe`, `VerifyingKey`, `PublicInstance`, `Witness`, `Commitment`, `LatticeProof`, constants from `params`, `RqPoly`, etc.
 
-## Parameters (`src/params.rs`)
+## Parameters (`src/protocol/params.rs`)
 
 | Constant | Value | Meaning |
 |----------|--------|---------|
@@ -25,7 +25,7 @@ Public API: `lib.rs` re-exports `prove_arithmetic`, `verify_lattice`, `commit_ml
 | `C_SPAN` | 16 | Fiat–Shamir scalar challenge range \([-16, 16]\). |
 | `MAX_PROVER_ATTEMPTS` | 65536 | Rejection sampling loop budget. |
 
-## NTT implementation (`src/ntt.rs`)
+## NTT implementation (`src/algebra/ntt.rs`)
 
 - **Primitive 128th root:** \(\omega = 5^{(q-1)/128} \pmod q\) via `pow_mod`.
 - **`ntt_inplace(a: &mut [u32], invert)`**: Cooley–Tukey style butterfly on **power-of-two** length; bit-reverse permutation; iterative stages with `wlen` from \(\omega\). **Inverse** scales by **`n^{-1} \bmod q`** at end.
@@ -34,9 +34,9 @@ Public API: `lib.rs` re-exports `prove_arithmetic`, `verify_lattice`, `commit_ml
   2. Forward NTT both, **pointwise multiply mod q**, inverse NTT.
   3. **Fold** negacyclic wrap: `out[i] = (fa[i] + Q - fa[i+N]) % Q` for `i < N`.
 
-This is the kernel behind **`RqPoly::mul`** (`src/ring.rs`).
+This is the kernel behind **`RqPoly::mul`** (`src/algebra/ring.rs`).
 
-## Ring (`src/ring.rs`)
+## Ring (`src/algebra/ring.rs`)
 
 - **`RqPoly([u32; N])`**: add/sub mod `Q`, **`mul` → `ntt::negacyclic_mul`**, scalar multiply, **`embed_constant(message)`** puts `message % Q` in coeff 0.
 - **`encode_rq_coeffs_le`**: 256 bytes, coeffs as LE u32 — feeds Fiat–Shamir hashing.
@@ -47,7 +47,7 @@ Short vectors **`short_vec_to_rq` / `short_vec_to_rq_bound`** map signed coeffs 
 
 **`VerifyingKey { crs_seed: [u8; 32] }`**. **`matrix_a_poly()`**: row `i` is first 4 bytes of **`hash_domain(DOMAIN_LE, ["A_row", crs_seed, i_le])`**, reduced mod `Q` — transparent **A** in \(R_q\).
 
-## Fiat–Shamir and anti-replay (`src/commit.rs`)
+## Fiat–Shamir and anti-replay (`src/protocol/commit.rs`)
 
 ### Challenge bytes
 

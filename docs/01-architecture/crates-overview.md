@@ -1,8 +1,8 @@
 ### Documentation map
 
-* [README](../README.md) — Project home
+* [README](../../README.md) — Project home
 * [Architecture overview](./architecture-overview.md)
-* [MSSQ — Egalitarian rollup](./mssq-rollup.md)
+* [MSSQ — Egalitarian rollup](../02-protocol-specs/mssq.md)
 * **This document** — Workspace crates: roles and dependencies
 
 ---

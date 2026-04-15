@@ -2,7 +2,7 @@
 
 * [README](../../README.md) — Project home
 * [Crates overview](../01-architecture/crates-overview.md)
-* [MSSQ rollup](../mssq-rollup.md)
+* [MSSQ protocol spec](../02-protocol-specs/mssq.md)
 * **This document** — `qssm-common`: L1 view, `SovereignAnchor`, rollup types
 
 ---
@@ -13,11 +13,11 @@ Crate: `crates/qssm-common`. **Forbidden:** `unsafe` code.
 
 ## Role
 
-Single place for **L1-facing traits**, **mock BlockDAG behaviour**, **L2 wire types**, and **`RollupState`** so engines, batcher, Kaspa adapter, and tests share one definition of “what the anchor said” and “what MSSQ sequenced.”
+Single place for **L1-facing traits**, **L2 wire types**, and **`RollupState`** so engines, batcher, Kaspa adapter, and tests share one definition of “what the anchor said” and “what MSSQ sequenced.”
 
 ## `L1Anchor` — how QSSM reads Kaspa (finalized, not volatile tip)
 
-Defined in `src/l1_anchor.rs`. Implementations must be **`Send + Sync`**.
+Defined in `src/chain/l1_anchor.rs`. Implementations must be **`Send + Sync`**.
 
 The trait is explicitly **finality-aware**: rollup proofs and seeds use **settled** limbs, not tip-only volatile fields.
 
@@ -31,7 +31,7 @@ The trait is explicitly **finality-aware**: rollup proofs and seeds use **settle
 | `finalized_blue_score` | Kaspa **blue score at the finalized boundary** included in rollup context (mock: `finalized_tick`). |
 | `is_block_finalized` | Policy predicate: whether a 32-byte hash counts as finalized for this node’s view. |
 
-**`rollup_context_from_l1`** (`src/rollup.rs`) builds **`qssm_utils::RollupContext`**:
+**`rollup_context_from_l1`** (`src/chain/rollup.rs`) builds **`qssm_utils::RollupContext`**:
 
 ```text
 finalized_block_hash  = parent_block_hash_prev()
@@ -64,12 +64,12 @@ QRNG value is **`hash_domain(DOMAIN_MOCK_QRNG, [epoch_le, genesis])`**.
 
 **`is_block_finalized`**: true for genesis hash **or** current **`parent_block_hash_prev()`** (narrow mock policy).
 
-## Wire types (`src/types.rs`)
+## Wire types (`src/types/mod.rs`)
 
 - **`L2Transaction`**: `id` (32 B), `proof` (opaque bytes — batcher decodes **`SparseMerkleProof`**), `payload`.
 - **`Batch`**: ordered `Vec<L2Transaction>`.
 - **`SmtRoot`**: newtype around `[u8; 32]`.
-- **`StorageLease`**: lease id, user, provider, rent, user leaf key, due pulse, active/slashed flags — carried in **`RollupState`** (`src/rollup.rs`).
+- **`StorageLease`**: lease id, user, provider, rent, user leaf key, due pulse, active/slashed flags — carried in **`RollupState`** (`src/chain/rollup.rs`).
 
 ## `RollupState`
 

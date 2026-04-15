@@ -8,7 +8,7 @@
 
 # QSSM-HE — hardware entropy (`qssm-he`)
 
-Crate: `crates/qssm-he`. This specification matches the **current Rust implementation** (`src/lib.rs`, `harvest.rs`, `density.rs`, `pmk.rs`, `sensor.rs`, `harvest_gate.rs`, `time.rs`, Windows `windows_tsc`).
+Crate: `crates/qssm-he`. This specification matches the **current Rust implementation** (`src/lib.rs`, `src/core/{harvest,density,pmk}.rs`, `src/backend/{sensor,time,windows_tsc}.rs`, `src/filter/harvest_gate.rs`).
 
 ## Purpose
 

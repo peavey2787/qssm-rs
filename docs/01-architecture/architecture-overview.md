@@ -1,13 +1,13 @@
 ### Documentation map
 
-* [README](../README.md) — Project home
-* **Desktop helper (primary user entry):** [`crates/qssm-desktop/`](../crates/qssm-desktop/) — Tauri app: handoff JSON → Phase 8 NIST/Kaspa entropy → sovereign witness JSON + QSSM‑LE proof scaffold.
-* [MSSQ — Egalitarian rollup](./mssq-rollup.md)
-* [QSSM-LE — Engine A](./qssm-le-engine-a.md)
-* [QSSM-MS — Engine B](./qssm-ms-engine-b.md)
-* [BLAKE3–lattice gadget spec](./blake3-lattice-gadget-spec.md)
-* [BLAKE3–lattice gadget — Rust plan](./blake3-lattice-gadget-rust-plan.md)
-* [Kaspa L2 core deployment manifest](./l2-kaspa-core-deployment-manifest.md)
+* [README](../../README.md) — Project home
+* **Desktop helper (primary user entry):** [`crates/qssm-desktop/`](../../crates/qssm-desktop/) — Tauri app: handoff JSON → Phase 8 NIST/Kaspa entropy → sovereign witness JSON + QSSM‑LE proof scaffold.
+* [MSSQ — Egalitarian rollup](../02-protocol-specs/mssq.md)
+* [QSSM-LE — Engine A](../02-protocol-specs/qssm-le-engine-a.md)
+* [QSSM-MS — Engine B](../02-protocol-specs/qssm-ms-engine-b.md)
+* [BLAKE3–lattice gadget spec](../02-protocol-specs/blake3-lattice-gadget-spec.md)
+* [BLAKE3–lattice gadget — Rust plan](../04-implementation-plans/blake3-lattice-gadget-rust-plan.md)
+* [Kaspa L2 core deployment manifest](./l2-kaspa-deployment.md)
 
 ---
 
@@ -28,7 +28,7 @@ The QSSM Protocol Family — pronounced “Q‑sum” — is a formal protocol s
 
 ## User entry point: QSSM Desktop Helper (`qssm-desktop`)
 
-For **operators and integrators**, the default path into the stack is the **Tauri‑based helper** in [`crates/qssm-desktop/`](../crates/qssm-desktop/): a small desktop shell that loads a **handoff JSON** (Kaspa parent id, state root, rollup context digest, FS challenge fields), runs **Phase 8** opportunistic entropy (**NIST beacon** with timeout + **Kaspa ‖ local** floor), builds a **`SovereignWitness`** (JSON), and runs a **QSSM‑LE** `prove_arithmetic` demo against a fixed demo verifying key. The UI shows **L1 sync** (mock until wired to `qssm-kaspa`), **QRNG / NIST vs fallback**, and **prover latency** for the sovereign limb step.
+For **operators and integrators**, the default path into the stack is the **Tauri‑based helper** in [`crates/qssm-desktop/`](../../crates/qssm-desktop/): a small desktop shell that loads a **handoff JSON** (Kaspa parent id, state root, rollup context digest, FS challenge fields), runs **Phase 8** opportunistic entropy (**NIST beacon** with timeout + **Kaspa ‖ local** floor), builds a **`SovereignWitness`** (JSON), and runs a **QSSM‑LE** `prove_arithmetic` demo against a fixed demo verifying key. The UI shows **L1 sync** (mock until wired to `qssm-kaspa`), **QRNG / NIST vs fallback**, and **prover latency** for the sovereign limb step.
 
 **Run (from repo):** `cd crates/qssm-desktop && npm install && npm run build && cargo tauri dev` (requires [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/) and `cargo install tauri-cli` *or* `npx @tauri-apps/cli@2 dev` from that directory).
 
@@ -82,7 +82,7 @@ For these tasks, using Engine A is like using a freight train to deliver a singl
 QSSM‑MS is the “Sovereign Scalpel.” It uses a proprietary Mirror‑Shift logic that replaces all algebra with simple integer rotations and hash‑chains.
 
 ### **What it is**
-A template‑specific NIZK argument: proof body **~291 bytes** (excluding the **32‑byte** Merkle root); see [Engine B](./qssm-ms-engine-b.md) §4.
+A template‑specific NIZK argument: proof body **~291 bytes** (excluding the **32‑byte** Merkle root); see [Engine B](../02-protocol-specs/qssm-ms-engine-b.md) §4.
 
 ### **The Trick**
 It uses a “Boolean Ghost‑Mirror.” Instead of doing math, Alice and Bob interpret their values as points on a circle. A random rotation from the Kaspa ledger “shifts” the circle. Alice then proves her position using a tiny Merkle path.

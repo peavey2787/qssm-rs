@@ -1,12 +1,12 @@
 ### Documentation map
 
-* [README](../README.md) — Project home
-* [Architecture overview](./architecture-overview.md)
-* [MSSQ — Egalitarian rollup](./mssq-rollup.md)
+* [README](../../README.md) — Project home
+* [Architecture overview](../01-architecture/architecture-overview.md)
+* [MSSQ — Egalitarian rollup](./mssq.md)
 * [QSSM-LE — Engine A](./qssm-le-engine-a.md)
 * [BLAKE3–lattice gadget spec](./blake3-lattice-gadget-spec.md)
-* [BLAKE3–lattice gadget — Rust plan](./blake3-lattice-gadget-rust-plan.md)
-* [Kaspa L2 core deployment manifest](./l2-kaspa-core-deployment-manifest.md)
+* [BLAKE3–lattice gadget — Rust plan](../04-implementation-plans/blake3-lattice-gadget-rust-plan.md)
+* [Kaspa L2 core deployment manifest](../01-architecture/l2-kaspa-deployment.md)
 
 ---
 

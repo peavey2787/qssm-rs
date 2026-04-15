@@ -2,7 +2,7 @@
 
 * [README](../../README.md) — Project home
 * [Crates overview](../01-architecture/crates-overview.md)
-* [MSSQ rollup](../mssq-rollup.md)
+* [MSSQ protocol spec](../02-protocol-specs/mssq.md)
 * **This document** — `mssq-batcher`: sequencing and SMT transitions
 
 ---
@@ -17,21 +17,21 @@ Deterministic **MSSQ batch application**: lexicographic ordering, optional **ML-
 
 ## Sequencing
 
-- **`sort_lexicographical`**: sorts transactions by **`tx.id`** (32-byte key) in ascending lexicographic order (`crates/mssq-batcher/src/sequencer.rs`).
+- **`sort_lexicographical`**: sorts transactions by **`tx.id`** (32-byte key) in ascending lexicographic order (`crates/mssq-batcher/src/roles/sequencer.rs`).
 
 ## Leader lottery and attestations
 
 - **`mssq_seed_from_anchor`**: `Seed_k = mssq_seed_k(parent_block_hash_prev, latest_qrng_value)` via `qssm_utils::mssq_seed_k`.
 - **`mssq_seed_from_anchor_and_dag_tips`**: mixes the base seed with DAG tip hashes using `lattice_anchor_seed_with_tips` (`causal_dag` module).
-- **`elect_leader`**: among candidates, picks the id with **minimal** `leader_score_digest(seed, id)` (lex tie-break by id walk order).
+- **`elect_leader`**: among candidates, picks the id with **minimal** `leader_score_digest(seed, id)`; on exact digest ties, retains the **first candidate in input order**.
 - **`LeaderAttestation`**: slot, parent hash, QRNG limbs, claimed leader id, ML-DSA-65 public key bytes, signature, optional `smt_root_pre`.
 - **`verify_leader_attestation_ctx`**: checks slot/context QRNG/parent hash, candidate membership, derived leader id from signing key, **lottery winner**, and ML-DSA signature over `leader_attestation_signing_bytes(...)` including rollup context digest.
 
-See `crates/mssq-batcher/src/leader.rs`.
+See `crates/mssq-batcher/src/roles/leader.rs`.
 
 ## `apply_batch` pipeline
 
-Implemented in `crates/mssq-batcher/src/state.rs`:
+Implemented in `crates/mssq-batcher/src/state/view.rs`:
 
 1. **Duplicate ids**: `BTreeSet` — duplicate `tx.id` → `DuplicateTxId`.
 2. **`TxProofVerifier::verify_tx`**: application proof (e.g. lattice bundle) against `RollupContext` → `ProofVerificationFailed` on failure.
@@ -61,8 +61,8 @@ Errors include `InvalidStorageLeasePayload`, `LeaseNotFound`, `PorFailed` (`crat
 
 ## Causal DAG and merit (library exports)
 
-- **`CausalDag`**, **`EntropyPulse`**, **`lattice_anchor_seed_with_tips`** — DAG/tip coupling for seeds (`causal_dag.rs`).
-- **`merit_maturation`**, **`MeritState`**, **`MeritTier`** — pure time-based tier/multiplier helper (`merit.rs`). **Other crates may use this;** the `mssq-net` node currently uses a **separate** uptime-based string for UI snapshot (`Seedling` / `Mature` / `Boosted`) and does not call `merit_maturation` directly.
+- **`CausalDag`**, **`EntropyPulse`**, **`lattice_anchor_seed_with_tips`** — DAG/tip coupling for seeds (`crates/mssq-batcher/src/dag/causal.rs`).
+- **`merit_maturation`**, **`MeritState`**, **`MeritTier`** — pure time-based tier/multiplier helper (`crates/mssq-batcher/src/dag/merit.rs`). **Other crates may use this;** the `mssq-net` node currently uses a **separate** uptime-based string for UI snapshot (`Seedling` / `Mature` / `Boosted`) and does not call `merit_maturation` directly.
 
 ## Related crates
 

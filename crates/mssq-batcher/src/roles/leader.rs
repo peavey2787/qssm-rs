@@ -2,7 +2,7 @@
 // Licensed under the Business Source License 1.1 (BSL-1.1).
 // See the LICENSE file in the repository root for full license text.
 
-//! PQ-friendly MSSQ leader lottery + ML-DSA–bound attestations.
+//! PQ-friendly MSSQ leader lottery + ML-DSA-bound attestations.
 #![forbid(unsafe_code)]
 
 use ml_dsa::signature::Verifier;
@@ -14,8 +14,8 @@ use qssm_utils::{
     mssq_seed_k, RollupContext,
 };
 
+use crate::dag::causal::lattice_anchor_seed_with_tips;
 use crate::BatcherError;
-use crate::lattice_anchor_seed_with_tips;
 
 /// Declared leader claim bound to slot, finalized parent hash, QRNG, optional SMT pre-root, and ML-DSA.
 #[derive(Debug, Clone, PartialEq, Eq)]

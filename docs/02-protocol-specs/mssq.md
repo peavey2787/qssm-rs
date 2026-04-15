@@ -1,12 +1,12 @@
 ### Documentation map
 
-* [README](../README.md) — Project home
-* [Architecture overview](./architecture-overview.md)
+* [README](../../README.md) — Project home
+* [Architecture overview](../01-architecture/architecture-overview.md)
 * [QSSM-LE — Engine A](./qssm-le-engine-a.md)
 * [QSSM-MS — Engine B](./qssm-ms-engine-b.md)
 * [BLAKE3–lattice gadget spec](./blake3-lattice-gadget-spec.md)
-* [BLAKE3–lattice gadget — Rust plan](./blake3-lattice-gadget-rust-plan.md)
-* [Kaspa L2 core deployment manifest](./l2-kaspa-core-deployment-manifest.md)
+* [BLAKE3–lattice gadget — Rust plan](../04-implementation-plans/blake3-lattice-gadget-rust-plan.md)
+* [Kaspa L2 core deployment manifest](../01-architecture/l2-kaspa-deployment.md)
 
 ---
 
@@ -33,9 +33,6 @@ MSSQ leverages the high‑throughput, low‑latency properties of the Kaspa Bloc
 
 ### **DA Layer**
 Kaspa L1 provides the immutable anchor \(s\) for randomness and a passive **L1‑embedded inbox** for L2 transactions.
-
-### **Networking Layer (implementation note)**
-The libp2p swarm implementation is tracked in `crates/mssq-net` (Tokio runtime): QUIC/TCP/WS transports, browser-facing vectors, mDNS + Kad discovery, Relay v2 client, AutoNAT/DCUtR, and Gossipsub heartbeat propagation with `qssm-he` density gating.
 
 ### **Proving Engines**
 Heterogeneous verification via:

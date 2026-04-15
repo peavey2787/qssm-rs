@@ -1,12 +1,12 @@
 ### Documentation map
 
-* [README](../README.md) — Project home
+* [README](../../README.md) — Project home
 * [Architecture overview](./architecture-overview.md)
-* [MSSQ — Egalitarian rollup](./mssq-rollup.md)
-* [QSSM-LE — Engine A](./qssm-le-engine-a.md)
-* [QSSM-MS — Engine B](./qssm-ms-engine-b.md)
-* [BLAKE3–lattice gadget spec](./blake3-lattice-gadget-spec.md)
-* [BLAKE3–lattice gadget — Rust plan](./blake3-lattice-gadget-rust-plan.md)
+* [MSSQ — Egalitarian rollup](../02-protocol-specs/mssq.md)
+* [QSSM-LE — Engine A](../02-protocol-specs/qssm-le-engine-a.md)
+* [QSSM-MS — Engine B](../02-protocol-specs/qssm-ms-engine-b.md)
+* [BLAKE3–lattice gadget spec](../02-protocol-specs/blake3-lattice-gadget-spec.md)
+* [BLAKE3–lattice gadget — Rust plan](../04-implementation-plans/blake3-lattice-gadget-rust-plan.md)
 
 ---
 
@@ -18,35 +18,35 @@ Copy the following from the **qssm-rs** workspace to bootstrap a new Kaspa-ancho
 
 | Path | Role |
 |------|------|
-| [`crates/qssm-gadget/`](../crates/qssm-gadget/) | Entire crate: `bits`, `blake3_native`, `blake3_compress`, `binding`, `merkle`, `r1cs`, `prover_json`, `error`. |
-| [`crates/qssm-gadget/Cargo.toml`](../crates/qssm-gadget/Cargo.toml) | Manifest (depends on `qssm-utils`, `ureq`, `serde`, `serde_json`, `hex`, `thiserror`). |
+| [`crates/qssm-gadget/`](../../crates/qssm-gadget/) | Entire crate: `bits`, `blake3_native`, `blake3_compress`, `binding`, `merkle`, `r1cs`, `prover_json`, `error`. |
+| [`crates/qssm-gadget/Cargo.toml`](../../crates/qssm-gadget/Cargo.toml) | Manifest (depends on `qssm-utils`, `ureq`, `serde`, `serde_json`, `hex`, `thiserror`). |
 
 ## Required dependency crate
 
 | Path | Role |
 |------|------|
-| [`crates/qssm-utils/`](../crates/qssm-utils/) | `hash_domain`, `merkle_parent`, `DOMAIN_MERKLE_PARENT`, `DOMAIN_MSSQ_ROLLUP_CONTEXT`, `blake3_hash`, etc. |
-| [`crates/qssm-utils/Cargo.toml`](../crates/qssm-utils/Cargo.toml) | Manifest (`blake3`). |
+| [`crates/qssm-utils/`](../../crates/qssm-utils/) | `hash_domain`, `merkle_parent`, `DOMAIN_MERKLE_PARENT`, `DOMAIN_MSSQ_ROLLUP_CONTEXT`, `blake3_hash`, etc. |
+| [`crates/qssm-utils/Cargo.toml`](../../crates/qssm-utils/Cargo.toml) | Manifest (`blake3`). |
 
 ## Workspace / versions
 
 | File | Role |
 |------|------|
-| Root [`Cargo.toml`](../Cargo.toml) | Workspace `members` entry for `crates/qssm-gadget` and `crates/qssm-utils`; `[workspace.dependencies]` entries used by the gadget: `blake3`, `hex`, `serde`, `serde_json`, `thiserror`. |
+| Root [`Cargo.toml`](../../Cargo.toml) | Workspace `members` entry for `crates/qssm-gadget` and `crates/qssm-utils`; `[workspace.dependencies]` entries used by the gadget: `blake3`, `hex`, `serde`, `serde_json`, `thiserror`. |
 
 ## Normative docs (recommended)
 
 | File | Role |
 |------|------|
-| [`docs/blake3-lattice-gadget-rust-plan.md`](./blake3-lattice-gadget-rust-plan.md) | Implementation law (phases, Merkle + Sovereign + R1CS). |
-| [`docs/blake3-lattice-gadget-spec.md`](./blake3-lattice-gadget-spec.md) | Design spec cross-link. |
+| [`docs/04-implementation-plans/blake3-lattice-gadget-rust-plan.md`](../04-implementation-plans/blake3-lattice-gadget-rust-plan.md) | Implementation law (phases, Merkle + Sovereign + R1CS). |
+| [`docs/02-protocol-specs/blake3-lattice-gadget-spec.md`](../02-protocol-specs/blake3-lattice-gadget-spec.md) | Design spec cross-link. |
 | This file | Copy list for L2 teams. |
 
 ## Reference example (optional but useful)
 
 | Path | Role |
 |------|------|
-| [`crates/qssm-gadget/examples/l2_handshake.rs`](../crates/qssm-gadget/examples/l2_handshake.rs) | End-to-end: simulated Kaspa block id → Phase 8 **`EntropyProvider`** (500 ms NIST try) → `merkle_parent` witness → **`SovereignWitness`** (**`nist_included`**, **`sovereign_entropy`**) → **`prover_package.json`** (**`nist_beacon_included`**), **`sovereign_witness.json`**, **`merkle_parent_witness.json`**, **`r1cs_merkle_parent.manifest.txt`**. Runs on a **32 MiB** worker thread stack (large compress + JSON). Command: `cargo run -p qssm-gadget --example l2_handshake`. |
+| [`crates/qssm-gadget/examples/l2_handshake.rs`](../../crates/qssm-gadget/examples/l2_handshake.rs) | End-to-end: simulated Kaspa block id → Phase 8 **`EntropyProvider`** (500 ms NIST try) → `merkle_parent` witness → **`SovereignWitness`** (**`nist_included`**, **`sovereign_entropy`**) → **`prover_package.json`** (**`nist_beacon_included`**), **`sovereign_witness.json`**, **`merkle_parent_witness.json`**, **`r1cs_merkle_parent.manifest.txt`**. Runs on a **32 MiB** worker thread stack (large compress + JSON). Command: `cargo run -p qssm-gadget --example l2_handshake`. |
 
 ## Engine A (lattice) — not in this repo
 

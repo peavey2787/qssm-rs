@@ -1,7 +1,7 @@
 ### Documentation map
 
 * [README](../../README.md) — Project home
-* [Extended narrative (legacy path)](../qssm-governor.md)
+* [Extended narrative (legacy path)](../02-protocol-specs/qssm-governor.md)
 * [Crates overview](../01-architecture/crates-overview.md)
 * **This document** — `qssm-governor`: metabolic policy and reputation math (code-accurate)
 
@@ -100,4 +100,4 @@ This is **not** identical to **`verify_density`** (different rules).
 
 ## Extended prose
 
-Older narrative formulas and tables live in **[`docs/qssm-governor.md`](../qssm-governor.md)**; where that file disagrees with **`crates/qssm-governor/src/lib.rs`**, **the code wins**.
+Older narrative formulas and tables live in **[`docs/02-protocol-specs/qssm-governor.md`](../02-protocol-specs/qssm-governor.md)**; where that file disagrees with **`crates/qssm-governor/src/lib.rs`**, **the code wins**.

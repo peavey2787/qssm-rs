@@ -10,13 +10,13 @@
 
 ### Documentation map
 
-* [Architecture overview](docs/architecture-overview.md)
-* [MSSQ — Egalitarian rollup](docs/mssq-rollup.md)
-* [QSSM-LE — Engine A](docs/qssm-le-engine-a.md)
-* [QSSM-MS — Engine B](docs/qssm-ms-engine-b.md)
-* [BLAKE3–lattice gadget spec](docs/blake3-lattice-gadget-spec.md)
-* [BLAKE3–lattice gadget — Rust plan](docs/blake3-lattice-gadget-rust-plan.md)
-* [Kaspa L2 core deployment manifest](docs/l2-kaspa-core-deployment-manifest.md)
+* [Architecture overview](docs/01-architecture/architecture-overview.md)
+* [MSSQ — Egalitarian rollup](docs/02-protocol-specs/mssq.md)
+* [QSSM-LE — Engine A](docs/02-protocol-specs/qssm-le-engine-a.md)
+* [QSSM-MS — Engine B](docs/02-protocol-specs/qssm-ms-engine-b.md)
+* [BLAKE3–lattice gadget spec](docs/02-protocol-specs/blake3-lattice-gadget-spec.md)
+* [BLAKE3–lattice gadget — Rust plan](docs/04-implementation-plans/blake3-lattice-gadget-rust-plan.md)
+* [Kaspa L2 core deployment manifest](docs/01-architecture/l2-kaspa-deployment.md)
 
 ## ⚡ Core performance
 
