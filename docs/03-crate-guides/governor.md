@@ -96,7 +96,7 @@ This is **not** identical to **`verify_density`** (different rules).
 
 ## Integration
 
-**`mssq-net`** (`node.rs`): instantiates **`Governor`**, calls **`observe_pulse`** / **`update_pressure`** / **`decision_for`**; inbound heartbeats rejected when action is **`Drop`**; valid pulses pass **`verify_metabolic_gate` ∧ `qssm_he::verify_density`**.
+**`mssq-net`** (`crates/mssq-net/src/node/`): **`Governor`** is owned by the spawned task in **`node/mod.rs`** (**`observe_pulse`**, **`update_pressure`** on ticker ticks). **`node/events.rs`** calls **`decision_for`** on inbound heartbeats and rejects when action is **`Drop`**; accepted paths require **`verify_metabolic_gate` ∧ `qssm_he::verify_density`** on decoded envelopes.
 
 ## Extended prose
 

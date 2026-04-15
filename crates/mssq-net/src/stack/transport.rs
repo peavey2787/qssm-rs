@@ -4,8 +4,8 @@ use libp2p::identity::Keypair;
 use libp2p::swarm::Swarm;
 use libp2p::{noise, tcp, yamux, Multiaddr, SwarmBuilder};
 
-use crate::behaviour::{build_behaviour, MeshBehaviour};
-use crate::error::NetError;
+use super::behaviour::{build_behaviour, MeshBehaviour};
+use crate::common::error::NetError;
 
 #[derive(Debug, Clone)]
 pub struct TransportPlan {

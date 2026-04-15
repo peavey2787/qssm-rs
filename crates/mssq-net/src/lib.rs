@@ -1,22 +1,21 @@
 //! `mssq-net`: production-oriented libp2p swarm glue for MSSQ.
 //!
-//! - Multi-transport stack (QUIC priority, TCP+Noise+Yamux fallback, WebSocket).
-//! - Mesh behaviours (Gossipsub, Kademlia, mDNS, AutoNAT, DCUtR, Relay client).
-//! - QSSM-HE pulse generation/validation with density gating + peer reputation.
-//! - Tokio runtime + example dashboard in `examples/mssq_node.rs`.
+//! - **`stack`**: transport + `MeshBehaviour` + discovery helpers.
+//! - **`connectivity`**: NAT/relay state and on-disk peer address cache.
+//! - **`protocol`**: heartbeat gossip and reputation.
+//! - **`common`**: `NetError` and small shared helpers.
+//! - **`node`**: Tokio orchestration (`start_node`, snapshots).
+//! - Example dashboard: `examples/mssq_node.rs`.
 
 #![forbid(unsafe_code)]
 
-mod behaviour;
-mod discovery;
-mod error;
-mod node;
-mod peer_cache;
-mod pulse;
-mod relay;
-mod reputation;
-mod transport;
+pub mod common;
+pub mod connectivity;
+pub mod protocol;
+pub mod stack;
 
-pub use error::NetError;
+mod node;
+
+pub use common::error::NetError;
 pub use node::{snapshot_to_json, start_node, NodeConfig, NodeHandle, NodeSnapshot};
-pub use pulse::{heartbeat_topic, HeartbeatEnvelope};
+pub use protocol::pulse::{heartbeat_topic, HeartbeatEnvelope};

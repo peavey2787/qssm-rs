@@ -69,7 +69,7 @@ Fields: **`raw_jitter`**, **`sensor_entropy`**, **`timestamp`** (`unix_timestamp
 
 ## Consumers (workspace)
 
-- **`mssq-net`**: `pulse.rs` uses **`harvest`** for local heartbeats; inbound messages require **`verify_density(raw_jitter)`**.
+- **`mssq-net`**: `protocol/pulse.rs` uses **`harvest`** for local heartbeats; inbound messages require **`verify_density(raw_jitter)`**.
 - **`qssm-desktop`**: mnemonics from harvest, harvest toggle.
 
 ## Related

@@ -119,10 +119,11 @@ This repository is a Cargo **workspace**. Most functionality lives under `crates
 
 **What it provides**
 
-- Tokio swarm bootstrap and runtime loop (`NodeConfig`, `start_node`, `NodeHandle`, `NodeSnapshot`, `snapshot_to_json`)
-- Transport stack: QUIC, TCP + Noise + Yamux, DNS, WebSocket, relay client (see `crates/mssq-net/src/transport.rs`); `TransportPlan` also records browser-oriented webrtc-direct / webtransport listen targets for operator visibility where configured
-- `NetworkBehaviour` composition: Gossipsub, Kademlia, mDNS, AutoNAT, DCUtR, Relay client, Identify, Ping
-- Heartbeat topic (`heartbeat_topic`, `HeartbeatEnvelope`), inbound density validation, reputation module
+- Tokio swarm bootstrap and runtime loop under `crates/mssq-net/src/node/`: orchestration in `node/mod.rs` (`start_node`, `NodeHandle`, `snapshot_to_json`); config/snapshot types in `node/types.rs`; swarm message handling in `node/events.rs`; optional archive I/O in `node/archive.rs`
+- Supporting modules: `src/stack/` (transport, behaviour, discovery), `src/connectivity/` (relay NAT hints, peer address cache), `src/protocol/` (pulse + reputation), `src/common/` (`NetError`, small utils)
+- Transport stack: QUIC, TCP + Noise + Yamux, DNS, WebSocket, relay client (see `crates/mssq-net/src/stack/transport.rs`); `TransportPlan` also records browser-oriented webrtc-direct / webtransport listen targets for operator visibility where configured
+- `NetworkBehaviour` composition: Gossipsub, Kademlia, mDNS, AutoNAT, DCUtR, Relay client, Identify, Ping (`src/stack/behaviour.rs`)
+- Heartbeat topic (`heartbeat_topic`, `HeartbeatEnvelope`) and harvest in `src/protocol/pulse.rs`; inbound density validation and **`ReputationStore`** in `src/protocol/reputation.rs`
 - Optional **`dashboard`** feature: `examples/mssq_node.rs` ratatui dashboard (`cargo run --example mssq_node --features dashboard`)
 
 **Dependencies (workspace):** `qssm-he`, `qssm-governor`, `qssm-utils`, `qssm-common`, `mssq-batcher` (rollup types / batch application paths where the node touches state proofs).

@@ -2,7 +2,7 @@ use libp2p::kad;
 use libp2p::swarm::Swarm;
 use libp2p::Multiaddr;
 
-use crate::behaviour::{MeshBehaviour, MeshEvent};
+use super::behaviour::{MeshBehaviour, MeshEvent};
 
 pub fn seed_bootstrap(swarm: &mut Swarm<MeshBehaviour>, addrs: &[Multiaddr]) {
     for addr in addrs {

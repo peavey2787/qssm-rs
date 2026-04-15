@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use qssm_he::{harvest, Heartbeat, HarvestConfig};
 
-use crate::error::NetError;
+use crate::common::error::NetError;
 
 pub fn heartbeat_topic(network_id: u32) -> String {
     format!("qssm.he.heartbeat.v1.net-{network_id}")
