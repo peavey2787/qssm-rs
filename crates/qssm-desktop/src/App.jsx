@@ -4,6 +4,7 @@ import { listen } from "@tauri-apps/api/event";
 import CommandMap from "./components/CommandMap.jsx";
 import PulseCanvas from "./components/PulseCanvas.jsx";
 import MnemonicDisplay from "./components/MnemonicDisplay.jsx";
+import AdvancedLaboratory from "./components/AdvancedLaboratory.jsx";
 
 export default function App() {
   const inTauri = typeof window !== "undefined" && !!window.__TAURI_INTERNALS__?.invoke;
@@ -311,6 +312,7 @@ export default function App() {
         <nav className="nav-tabs" aria-label="Primary">
           {!mustSetup && <button type="button" className={tier === "dashboard" ? "active" : ""} onClick={() => setTier("dashboard")}>Dashboard</button>}
           {!mustSetup && <button type="button" className={tier === "storage" ? "active" : ""} onClick={() => setTier("storage")}>Hired Storage</button>}
+          {!mustSetup && <button type="button" className={tier === "lab" ? "active" : ""} onClick={() => setTier("lab")}>Lab</button>}
           <button type="button" className={tier === "identity" ? "active" : ""} onClick={() => setTier("identity")}>Manage Sovereign ID</button>
         </nav>
         <div className="toggles">
@@ -398,6 +400,8 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {tier === "lab" && !mustSetup && <AdvancedLaboratory />}
 
       {tier === "identity" && (
         <div className="vault-panel">

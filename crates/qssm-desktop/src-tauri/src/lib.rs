@@ -26,6 +26,12 @@ pub fn run() {
             commands::repair_state,
             commands::set_network_profile,
             commands::get_network_profile,
+            commands::generate_proof_from_file,
+            commands::generate_proof_from_handoff_json,
+            commands::lattice_demo_vk_seed_hex,
+            commands::proof_of_age_template_json,
+            commands::verify_claim_with_template,
+            commands::export_qssm_template,
         ])
         .run(tauri::generate_context!())
         .expect("error while running qssm-desktop");
