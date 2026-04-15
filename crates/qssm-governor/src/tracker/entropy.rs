@@ -1,3 +1,9 @@
+//! Global entropy tracker (windowed memory for network density).
+//!
+//! Ownership boundary:
+//! - Tracks only aggregate score history.
+//! - Contains no policy thresholds or enforcement decisions.
+
 use std::collections::VecDeque;
 
 use rust_decimal::Decimal;

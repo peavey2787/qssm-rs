@@ -1,3 +1,5 @@
+//! Policy state/action enums exported for consumers and audit surfaces.
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum GovernorState {
     Expanding,

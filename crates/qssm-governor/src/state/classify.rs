@@ -1,3 +1,9 @@
+//! Classification rules for peer judgement (watch/throttle/blacklist/recovery).
+//!
+//! Ownership boundary:
+//! - Centralizes threshold/cooldown logic that should be audited.
+//! - Depends on `PeerStats` snapshots and `GovernorConfig`, not transport/runtime concerns.
+
 use rust_decimal::Decimal;
 
 use crate::tracker::peer_stats::PeerStats;

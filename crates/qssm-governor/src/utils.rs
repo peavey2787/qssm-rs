@@ -1,3 +1,9 @@
+//! Shared helpers and lightweight gates.
+//!
+//! Ownership boundary:
+//! - Decimal conversion helpers (`d`, `milli`) shared by orchestration and engine.
+//! - `verify_metabolic_gate` provides a fast entropy-quality prefilter independent of policy state.
+
 use rust_decimal::Decimal;
 
 pub(crate) fn d(num: i64, scale: u32) -> Decimal {

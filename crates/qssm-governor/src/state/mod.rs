@@ -1,3 +1,9 @@
+//! Peer/governor judgement layer.
+//!
+//! Ownership boundary:
+//! - `types`: externally visible policy states/actions.
+//! - `classify`: auditable threshold logic converting tracker memory into states.
+
 mod classify;
 mod types;
 

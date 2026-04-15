@@ -1,3 +1,9 @@
+//! Metabolic control engine ("brain") for adaptive pressure response.
+//!
+//! Ownership boundary:
+//! - Owns only rate/saturation smoothing and `t_min` derivation.
+//! - Does not track peer histories or enforce peer policy tiers.
+
 use rust_decimal::Decimal;
 
 use crate::state::GovernorState;

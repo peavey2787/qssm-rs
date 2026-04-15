@@ -1,3 +1,9 @@
+//! Per-peer rolling memory used by state classification.
+//!
+//! Ownership boundary:
+//! - Maintains only peer-local windows/counters.
+//! - Does not decide `PeerState`; classifiers consume this data.
+
 use std::collections::VecDeque;
 
 use rust_decimal::Decimal;
