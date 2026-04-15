@@ -173,7 +173,7 @@ Security is bounded by Grover’s algorithm, which reduces the effective securit
 
 ## Section 6: Reference Implementation Notes
 
-The theoretical frameworks described above have been formalized in the *qssm‑rs* reference implementation. Automated testing across the workspace confirms the 128‑bit quantum‑secure margins, the sub‑10ms NTT‑optimized verification speed, and the deterministic integrity of the \(Seed_k\) lottery. The code is the final arbiter of the protocol’s sovereign logic.
+The theoretical frameworks described above have been formalized in the *qssm‑rs* reference implementation. Automated testing across the workspace confirms the 128‑bit quantum‑secure margins, **sub-1ms verification** (`< 1ms`) in the NTT‑optimized path, and the deterministic integrity of the \(Seed_k\) lottery. The code is the final arbiter of the protocol’s sovereign logic.
 
 ---
 

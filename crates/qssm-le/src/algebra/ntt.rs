@@ -2,7 +2,7 @@
 // Licensed under the Business Source License 1.1 (BSL-1.1).
 // See the LICENSE file in the repository root for full license text.
 
-//! Length-128 NTT mod `Q` for negacyclic convolution mod \(X^{64}+1\).
+//! Length-`2N` NTT mod `Q` for negacyclic convolution mod \(X^N+1\).
 #![forbid(unsafe_code)]
 
 use crate::protocol::params::{N, Q};
@@ -25,9 +25,9 @@ fn inv_mod(a: u32) -> u32 {
     pow_mod(a as u64, Q - 2, Q)
 }
 
-/// Primitive 128-th root of unity \(\omega\) (computed as \(5^{(q-1)/128}\)).
-fn omega_128() -> u32 {
-    pow_mod(5, (Q - 1) / 128, Q)
+/// Primitive `2N`-th root of unity \(\omega\) (computed as \(5^{(q-1)/(2N)}\)).
+fn omega_2n() -> u32 {
+    pow_mod(5, (Q - 1) / (2 * N as u32), Q)
 }
 
 fn ntt_inplace(a: &mut [u32], invert: bool) {
@@ -49,14 +49,14 @@ fn ntt_inplace(a: &mut [u32], invert: bool) {
     while len <= n {
         let wlen = if invert {
             inv_mod(pow_mod(
-                omega_128() as u64,
-                (Q - 1) / (len as u32) * ((len as u32) / 2),
+                omega_2n() as u64,
+                (2 * N as u32) / (len as u32),
                 Q,
             ))
         } else {
             pow_mod(
-                omega_128() as u64,
-                (Q - 1) / (len as u32) * ((len as u32) / 2),
+                omega_2n() as u64,
+                (2 * N as u32) / (len as u32),
                 Q,
             )
         };
@@ -82,15 +82,15 @@ fn ntt_inplace(a: &mut [u32], invert: bool) {
     }
 }
 
-/// Negacyclic product mod \(X^N+1\), \(N=64\).
+/// Negacyclic product mod \(X^N+1\).
 pub(crate) fn negacyclic_mul(a: &[u32; N], b: &[u32; N]) -> [u32; N] {
-    let mut fa = [0u32; 128];
-    let mut fb = [0u32; 128];
+    let mut fa = [0u32; 2 * N];
+    let mut fb = [0u32; 2 * N];
     fa[..N].copy_from_slice(a);
     fb[..N].copy_from_slice(b);
     ntt_inplace(&mut fa, false);
     ntt_inplace(&mut fb, false);
-    for i in 0..128 {
+    for i in 0..(2 * N) {
         fa[i] = ((fa[i] as u64 * fb[i] as u64) % Q as u64) as u32;
     }
     ntt_inplace(&mut fa, true);
@@ -108,7 +108,7 @@ mod tests {
 
     #[test]
     fn ntt_roundtrip_delta() {
-        let mut v = [0u32; 128];
+        let mut v = [0u32; 2 * N];
         v[0] = 1;
         let orig = v;
         let mut a = orig;

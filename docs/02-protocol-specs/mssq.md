@@ -53,7 +53,7 @@ The workspace ships an end‑to‑end **Millionaire’s Duel** scenario: ML‑DS
 
 The MSSQ logic is now live in the qssm‑rs workspace. By running the millionaires_duel binary, users can witness the Egalitarian Lottery and deterministic state update in real‑time.
 
-Live Benchmark (Asus TUF A16): verify_lattice: 0.026ms.
+Live benchmark posture (Asus TUF A16 class hardware): verify_lattice remains **sub-1ms**.
 
 ---
 

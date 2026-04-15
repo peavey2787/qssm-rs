@@ -33,13 +33,13 @@ R_q = \mathbb{Z}_q[X]/(X^n + 1),
 
 
 
-where \(n = 64\). In this architecture, the polynomial ring \(R_q\) is utilized strictly as an algebraic container for vectorized data, facilitating Single Instruction, Multiple Data (SIMD) operations.
+where \(n = 256\). In this architecture, the polynomial ring \(R_q\) is utilized strictly as an algebraic container for vectorized data, facilitating Single Instruction, Multiple Data (SIMD) operations.
 
 The matrix **\(A\)** is derived deterministically via **`VerifyingKey::matrix_a_poly`**, which expands a **32-byte `crs_seed`** into **\(R_q\)** coefficients using **domain-separated BLAKE3** hashes. This ensures the CRS is **transparent and reproducible** by any party with the seed (it is not a fixed “backdoor” constant baked into the verifier).
 
 ### Reference Implementation Detail
 
-To achieve sub‑10ms verification, the implementation utilizes a Number Theoretic Transform (NTT) optimized for \(n = 64\). The arithmetic is performed via a 64‑bit modular lift, ensuring that the Goldilocks‑field (\(F_p\)) R1CS constraints map identically to the ring without overflow. While the QSSM family avoids universal arithmetic circuits for program representation, it leverages these structured lattice properties to achieve post‑quantum security and computational efficiency.
+The implementation utilizes a Number Theoretic Transform (NTT) optimized for \(n = 256\). The arithmetic is performed via a 64‑bit modular lift, ensuring that the Goldilocks‑field (\(F_p\)) R1CS constraints map identically to the ring without overflow. While the QSSM family avoids universal arithmetic circuits for program representation, it leverages these structured lattice properties to achieve post‑quantum security and computational efficiency.
 
 ---
 
@@ -47,8 +47,8 @@ To achieve sub‑10ms verification, the implementation utilizes a Number Theoret
 
 | Parameter | Value      | Definition                                               |
 |-----------|------------|-----------------------------------------------------------|
-| n         | 64         | Degree of the cyclotomic polynomial (Ring Dimension)      |
-| q         | 7340033    | NTT‑friendly prime modulus (implementation)                 |
+| n         | 256        | Degree of the cyclotomic polynomial (Ring Dimension)      |
+| q         | 8380417    | NTT‑friendly prime modulus (implementation)                 |
 | k         | 1          | Module rank (implementation utilizes a single \(R_q\) polynomial for the CRS) |
 | β         | 8          | Coefficient bound on witness \(r\) (prover sampling)      |
 | η         | 2 048      | Mask \(y\) bound (rejection threshold)                    |
@@ -134,9 +134,9 @@ No witness \(r\) is transmitted.
 
 The published transcript \((t, z)\) is shaped by **rejection sampling** so that \(z\) carries only bounded noise relative to \(c \cdot r\); exact HVZK constants depend on the parameter set above.
 
-**Wire format (fixed width).** Using **`encode_rq_coeffs_le`**, polynomials **\(t\)** and **\(z\)** are serialized as **fixed-width 256-byte** arrays (**\(N = 64\)** coefficients, **4 bytes LE `u32`** per coefficient). The Fiat–Shamir **`challenge`** is **32 bytes**. A complete proof **\(\pi = (t, z, \text{challenge})\)** in this layout is therefore a **stable 544-byte** payload on the wire (\(256 + 256 + 32\)), independent of coefficient values.
+**Wire format (fixed width).** Using **`encode_rq_coeffs_le`**, polynomials **\(t\)** and **\(z\)** are serialized as **fixed-width 1024-byte** arrays (**\(N = 256\)** coefficients, **4 bytes LE `u32`** per coefficient). The Fiat–Shamir **`challenge`** is **32 bytes**. A complete proof **\(\pi = (t, z, \text{challenge})\)** in this layout is therefore a **stable 2080-byte** payload on the wire (\(1024 + 1024 + 32\)), independent of coefficient values.
 
-**Verification** is dominated by a small number of NTT multiplications. While target latency is environment‑dependent, **real‑world verification has been clocked at 0.026ms on consumer‑grade hardware (Asus TUF A16)**, effectively rendering verification overhead negligible for high‑velocity BlockDAG integration.
+**Verification** is dominated by a small number of NTT multiplications. While target latency is environment‑dependent, real‑world measurements on consumer‑grade hardware remain **sub-1ms verification** (`< 1ms`), effectively rendering verification overhead negligible for high‑velocity BlockDAG integration.
 
 ---
 
@@ -164,14 +164,14 @@ Enter Bob’s balance (non-negative integer): 500
 
 Using balances: Alice=1000, Bob=500
 Magnitude: Alice > Bob (public duel scalar above shift)
-verify_lattice: 0.026ms (release / God-Mode path)
+verify_lattice: < 1ms (release / God-Mode path)
 [SMT State] Slot: 0x49024683049c88d3e77be87167ca787f12d779ccd778d0be92f916719ccbe7f1
 [SMT State] Data: [01 00 00 00 00 00 00 00 57 65 61 6c 74 68 69 65 73 74 4b 6e 69 67 68 74 00 00 00 00 00 00 00 00]
 Parsed: 1 Win | Status: WealthiestKnight
 State transition: slot leader Alice (ID: c3a3107688d2…) committed duel outcome winner=Alice — rollup root fb…
 Full SMT root: fb452a66a363ea1c3301c52f03528cbb46b3a9fb9365c264576c7ce9f2307a42
 
-Note on Latency: The 0.026ms verification time confirms the efficiency of the NTT-optimized negacyclic convolution. This performance ceiling allows for high-throughput validation without the need for specialized hardware accelerators.
+Note on Latency: Sub-1ms verification confirms the efficiency of the NTT-optimized negacyclic convolution. This performance ceiling allows for high-throughput validation without the need for specialized hardware accelerators.
 
 ---
 

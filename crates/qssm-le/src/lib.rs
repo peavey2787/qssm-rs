@@ -1,4 +1,4 @@
-//! QSSM-LE: \(R_q = \mathbb{Z}_q[X]/(X^{64}+1)\) with NTT-backed multiply, MLWE commitment
+//! QSSM-LE: \(R_q = \mathbb{Z}_q[X]/(X^{256}+1)\) with NTT-backed multiply, MLWE commitment
 //! \(C = A r + \mu\), and Lyubashevsky-style Fiat–Shamir proofs (**witness-hiding** on the wire).
 //!
 //! ```
@@ -7,7 +7,7 @@
 //! };
 //! let vk = VerifyingKey::from_seed([9u8; 32]);
 //! let public = PublicInstance { message: 12345 };
-//! let witness = Witness { r: [0i32; 64] };
+//! let witness = Witness { r: [0i32; qssm_le::N] };
 //! let ctx = [7u8; 32];
 //! let (commitment, proof) = prove_arithmetic(&vk, &public, &witness, &ctx).unwrap();
 //! assert!(verify_lattice(&vk, &public, &commitment, &proof, &ctx).unwrap());

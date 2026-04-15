@@ -9,7 +9,7 @@
 
 # `qssm-le` — Engine A in code (NTT, CRS, rollup digest)
 
-Crate: `crates/qssm-le`. Ring \(R_q = \mathbb{Z}_q[X]/(X^{64}+1)\), **length-128 NTT** negacyclic multiply, MLWE-style commitment, Lyubashevsky-style proofs.
+Crate: `crates/qssm-le`. Ring \(R_q = \mathbb{Z}_q[X]/(X^{256}+1)\), **length-512 NTT** negacyclic multiply, MLWE-style commitment, Lyubashevsky-style proofs.
 
 Public API: `lib.rs` re-exports `prove_arithmetic`, `verify_lattice`, `commit_mlwe`, `VerifyingKey`, `PublicInstance`, `Witness`, `Commitment`, `LatticeProof`, constants from `params`, `RqPoly`, etc.
 
@@ -17,8 +17,8 @@ Public API: `lib.rs` re-exports `prove_arithmetic`, `verify_lattice`, `commit_ml
 
 | Constant | Value | Meaning |
 |----------|--------|---------|
-| `N` | **64** | Polynomial degree; coefficients per `RqPoly`. |
-| `Q` | **7_340_033** | Prime modulus; **128 \| (q−1)** for length-128 NTT. |
+| `N` | **256** | Polynomial degree; coefficients per `RqPoly`. |
+| `Q` | **8_380_417** | Prime modulus; **512 \| (q−1)** for length-512 NTT. |
 | `BETA` | 8 | \(\ell_\infty\) bound on witness `r` coefficients. |
 | `MAX_MESSAGE` | \(2^{30}\) | Public scalar message range. |
 | `ETA`, `GAMMA` | 2048, 4096 | Masking / response norms for rejection and verification. |
@@ -27,10 +27,10 @@ Public API: `lib.rs` re-exports `prove_arithmetic`, `verify_lattice`, `commit_ml
 
 ## NTT implementation (`src/algebra/ntt.rs`)
 
-- **Primitive 128th root:** \(\omega = 5^{(q-1)/128} \pmod q\) via `pow_mod`.
+- **Primitive 512th root:** \(\omega = 5^{(q-1)/512} \pmod q\) via `pow_mod`.
 - **`ntt_inplace(a: &mut [u32], invert)`**: Cooley–Tukey style butterfly on **power-of-two** length; bit-reverse permutation; iterative stages with `wlen` from \(\omega\). **Inverse** scales by **`n^{-1} \bmod q`** at end.
-- **`negacyclic_mul(a, b)`** (`N=64`):
-  1. Embed `a`, `b` into **`[u32; 128]`** (upper half zero).
+- **`negacyclic_mul(a, b)`** (`N=256`):
+  1. Embed `a`, `b` into **`[u32; 512]`** (upper half zero).
   2. Forward NTT both, **pointwise multiply mod q**, inverse NTT.
   3. **Fold** negacyclic wrap: `out[i] = (fa[i] + Q - fa[i+N]) % Q` for `i < N`.
 
@@ -39,7 +39,7 @@ This is the kernel behind **`RqPoly::mul`** (`src/algebra/ring.rs`).
 ## Ring (`src/algebra/ring.rs`)
 
 - **`RqPoly([u32; N])`**: add/sub mod `Q`, **`mul` → `ntt::negacyclic_mul`**, scalar multiply, **`embed_constant(message)`** puts `message % Q` in coeff 0.
-- **`encode_rq_coeffs_le`**: 256 bytes, coeffs as LE u32 — feeds Fiat–Shamir hashing.
+- **`encode_rq_coeffs_le`**: 1024 bytes, coeffs as LE u32 — feeds Fiat–Shamir hashing.
 
 Short vectors **`short_vec_to_rq` / `short_vec_to_rq_bound`** map signed coeffs into \(\mathbb{Z}_q\) with bounds checks.
 

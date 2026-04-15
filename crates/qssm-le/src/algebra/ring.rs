@@ -1,4 +1,4 @@
-//! Cyclotomic ring \(R_q = \mathbb{Z}_q[X]/(X^{64}+1)\) with negacyclic multiplication via length-128 NTT.
+//! Cyclotomic ring \(R_q = \mathbb{Z}_q[X]/(X^{256}+1)\) with negacyclic multiplication via length-512 NTT.
 #![forbid(unsafe_code)]
 
 use crate::protocol::params::{BETA, N, Q};

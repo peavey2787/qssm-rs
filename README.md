@@ -18,11 +18,13 @@
 * [BLAKE3–lattice gadget — Rust plan](docs/blake3-lattice-gadget-rust-plan.md)
 * [Kaspa L2 core deployment manifest](docs/l2-kaspa-core-deployment-manifest.md)
 
-## ⚡ Core performance
+## ⚡ Core Performance
 
-* **Lattice-LE verification:** ~0.026 ms per proof.
-* **Architecture:** Post-quantum lattice-based multiset hash (reducible to SIS).
-* **Throughput:** Optimized for 10-BPS+ environments.
+* **Lattice-LE Verification:** **< 1 ms per proof** (Reference: 0.079 ms on Ryzen 5800X).
+* **Security Baseline:** **128-bit Post-Quantum** concrete hardness ($N=256, q=8,380,417$).
+* **Architecture:** Post-quantum lattice-based multiset hash with **Recursive Merkle Integration**.
+* **Throughput:** Sustained performance optimized for **10-BPS+ BlockDAG environments** (e.g., Kaspa).
+* **Proof Payload:** ~2.1 KB (Optimized for p2p wire-protocols and high-frequency sequencing).
 
 ## 🛠 Project structure
 

@@ -5,8 +5,8 @@
 use std::fs;
 use std::path::Path;
 
-/// Must match **`qssm_le::Q`** — MLWE modulus for **`R_q = Z_q[X]/(X^64+1)`**.
-pub const BRIDGE_Q: u32 = 7_340_033;
+/// Must match **`qssm_le::Q`** — MLWE modulus for **`R_q = Z_q[X]/(X^256+1)`**.
+pub const BRIDGE_Q: u32 = 8_380_417;
 
 /// Exclusive upper bound for the **30‑bit** limb (**`2^30`**, same as **`qssm_le::MAX_MESSAGE`** intent).
 pub const MAX_LIMB_EXCLUSIVE: u64 = 1u64 << 30;

@@ -1,10 +1,10 @@
 //! Beta parameters: modulus, dimension, shortness, message range.
 #![forbid(unsafe_code)]
 
-/// Polynomial degree \(n = 64\) for \(R_q = \mathbb{Z}_q[X]/(X^n+1)\).
-pub const N: usize = 64;
-/// Prime modulus with \(128 \mid (q-1)\) for length-128 NTT.
-pub const Q: u32 = 7_340_033;
+/// Polynomial degree \(n = 256\) for \(R_q = \mathbb{Z}_q[X]/(X^n+1)\).
+pub const N: usize = 256;
+/// Prime modulus with \(512 \mid (q-1)\) for length-512 NTT.
+pub const Q: u32 = 8_380_417;
 /// \(\ell_\infty\) bound on witness coefficients (rejection sampling threshold).
 pub const BETA: u32 = 8;
 /// Public message must embed below Goldilocks lift range (doc: \(v < 2^{30}\)).

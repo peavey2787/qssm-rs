@@ -21,7 +21,7 @@ This note specifies how **BLAKE3**-based artifacts from **Engine B** (position
 
 The **reference ring** remains **`qssm-le`**:  
 \[
-R_q = \mathbb{Z}_q[X]/(X^{64}+1),\quad q = 7\,340\,033.
+R_q = \mathbb{Z}_q[X]/(X^{256}+1),\quad q = 8\,380\,417.
 \]  
 This document is **normative for gadget design**; it does **not** replace the **`qssm-le`** / **`qssm-ms`** crates as the behavior spec for standalone verification.
 
