@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::predicate::{eval_all_predicates, PredicateBlock};
+use crate::lattice::predicate::{eval_all_predicates, PredicateBlock};
 
 pub const QSSM_TEMPLATE_VERSION: u32 = 1;
 
@@ -24,7 +24,7 @@ pub struct QssmTemplate {
     pub title: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
-    /// Which anchor kinds provers may use for [`crate::entropy::EntropyAnchor`].
+    /// Which anchor kinds provers may use for [`crate::primitives::entropy::EntropyAnchor`].
     pub allowed_anchor_kinds: Vec<TemplateAnchorKind>,
     pub predicates: Vec<PredicateBlock>,
     /// Hex **32** bytes — must match prover when checking QSSM‑LE demo proofs (**`VerifyingKey::from_seed`**).
@@ -49,7 +49,7 @@ impl QssmTemplate {
                 TemplateAnchorKind::StaticRoot,
                 TemplateAnchorKind::TimestampUnixSecs,
             ],
-            predicates: crate::predicate::proof_of_age_predicates(),
+            predicates: crate::lattice::predicate::proof_of_age_predicates(),
             lattice_vk_seed_hex: None,
             notes: None,
         }
@@ -64,7 +64,7 @@ impl QssmTemplate {
     pub fn verify_public_claim(
         &self,
         public_claim: &Value,
-    ) -> Result<(), crate::predicate::PredicateError> {
+    ) -> Result<(), crate::lattice::predicate::PredicateError> {
         eval_all_predicates(public_claim, &self.predicates)
     }
 }

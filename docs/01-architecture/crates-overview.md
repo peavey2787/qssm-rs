@@ -76,6 +76,7 @@ This repository is a Cargo **workspace**. Most functionality lives under `crates
 
 **What it provides**
 
+- **Source layout:** `src/primitives/` (bits, BLAKE3 kernels, entropy), `src/lattice/` (handshake + predicates), `src/circuit/` (binding, R1CS, templates), `src/io/` (prover JSON). Crate root still exposes logical modules (`qssm_gadget::entropy`, `::binding`, …) as thin re-exports.
 - `entropy`: `EntropyAnchor`, `EntropyProvider`, `generate_sovereign_entropy` / `…_from_anchor` (used by flows that need salted, auditable randomness)
 - `predicate`: template/predicate evaluation (`PredicateBlock`, `eval_predicate`, …)
 - `binding`: `SovereignWitness`, sovereign digest limbs, proof metadata encoding

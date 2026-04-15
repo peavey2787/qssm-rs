@@ -2,10 +2,10 @@
 
 use serde_json::{json, Value};
 
-use crate::binding::SovereignWitness;
-use crate::bits::{FullAdder, RippleCarryWitness, XorWitness};
-use crate::blake3_compress::{CompressionWitness, MerkleParentHashWitness};
-use crate::blake3_native::{Add32ChainedWitness, BitRotateWitness, GWitness};
+use crate::circuit::binding::SovereignWitness;
+use crate::primitives::bits::{FullAdder, RippleCarryWitness, XorWitness};
+use crate::primitives::blake3_compress::{CompressionWitness, MerkleParentHashWitness};
+use crate::primitives::blake3_native::{Add32ChainedWitness, BitRotateWitness, GWitness};
 
 #[inline]
 fn bv(b: bool) -> u8 {
@@ -221,4 +221,18 @@ pub fn merkle_parent_hash_witness_value(w: &MerkleParentHashWitness) -> Value {
         "compress_chunk_start": compression_witness_value(&w.compress_chunk_start, "compress_chunk_start"),
         "compress_root": compression_witness_value(&w.compress_root, "compress_root"),
     })
+}
+
+/// Pretty JSON for a [`CompressionWitness`](crate::primitives::blake3_compress::CompressionWitness) (phase 6 layout).
+#[must_use]
+pub fn compression_witness_to_prover_json(w: &CompressionWitness) -> String {
+    serde_json::to_string_pretty(&compression_witness_value(w, "CompressionWitness"))
+        .expect("compression witness JSON")
+}
+
+/// Pretty JSON for a [`MerkleParentHashWitness`](crate::primitives::blake3_compress::MerkleParentHashWitness).
+#[must_use]
+pub fn merkle_parent_hash_witness_to_prover_json(w: &MerkleParentHashWitness) -> String {
+    serde_json::to_string_pretty(&merkle_parent_hash_witness_value(w))
+        .expect("merkle parent hash witness JSON")
 }

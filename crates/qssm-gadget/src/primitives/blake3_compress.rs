@@ -2,7 +2,7 @@
 //!
 //! Normative algorithm: [BLAKE3 reference implementation](https://github.com/BLAKE3-team/BLAKE3/blob/master/reference_impl/reference_impl.rs) § `compress` / `round` / `permute`.
 
-use crate::blake3_native::{g_function, QuarterRoundWitness};
+use super::blake3_native::{g_function, QuarterRoundWitness};
 
 /// BLAKE3 **IV** (same as spec / `blake3` crate).
 pub const IV: [u32; 8] = [
@@ -234,15 +234,6 @@ impl CompressionWitness {
         true
     }
 
-    /// Phase 6: flat index-based JSON — **public** chaining / block / output words, **private** all **G** bit-wires.
-    #[must_use]
-    pub fn to_prover_json(&self) -> String {
-        serde_json::to_string_pretty(&crate::prover_json::compression_witness_value(
-            self,
-            "CompressionWitness",
-        ))
-        .expect("compression witness JSON")
-    }
 }
 
 #[inline]
@@ -308,13 +299,6 @@ impl MerkleParentHashWitness {
 
     pub fn validate(&self) -> bool {
         self.compress_chunk_start.validate() && self.compress_root.validate()
-    }
-
-    /// Phase 6: nested **`CompressionWitness`** JSON + **public** parent digest hex.
-    #[must_use]
-    pub fn to_prover_json(&self) -> String {
-        serde_json::to_string_pretty(&crate::prover_json::merkle_parent_hash_witness_value(self))
-            .expect("merkle parent hash witness JSON")
     }
 
     /// **32-byte** digest (bit-for-bit matches **`merkle_parent`**).

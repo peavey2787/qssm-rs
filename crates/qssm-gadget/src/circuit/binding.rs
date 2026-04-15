@@ -2,11 +2,11 @@
 //!
 //! Preimage order (normative, **v2.0**): **`hash_domain(DOMAIN_SOVEREIGN_LIMB_V2, &[root32, rollup32, metadata])`**  
 //! where **`metadata`** = **`encode_proof_metadata_v2`** = v1 fields **`‖ sovereign_entropy[32] ‖ nist_flag`**.  
-//! Limb: first **30** bits of the digest in **LE** order via [`crate::bits::to_le_bits`] / [`crate::bits::from_le_bits`] only — **no** `& ((1<<30)-1)` or **`% 2^30`** on the public witness path.
+//! Limb: first **30** bits of the digest in **LE** order via [`crate::primitives::bits::to_le_bits`] / [`crate::primitives::bits::from_le_bits`] only — **no** `& ((1<<30)-1)` or **`% 2^30`** on the public witness path.
 
 use qssm_utils::hashing::hash_domain;
 
-use crate::bits::{from_le_bits, to_le_bits};
+use crate::primitives::bits::{from_le_bits, to_le_bits};
 
 /// Historical domain (**v1.0**); **v2.0** is normative for [`SovereignWitness`].
 pub const DOMAIN_SOVEREIGN_LIMB_V1: &str = "QSSM-SOVEREIGN-LIMB-v1.0";
@@ -170,7 +170,7 @@ impl SovereignWitness {
     /// Phase 6: flat index-based JSON — **public** `root`, `digest`, **`message_limb_u30`**, **`nist_included`**, plus **private** limb bit-wires and preimage aux hex.
     #[must_use]
     pub fn to_prover_json(&self) -> String {
-        serde_json::to_string_pretty(&crate::prover_json::sovereign_witness_value(self))
+        serde_json::to_string_pretty(&crate::io::prover_json::sovereign_witness_value(self))
             .expect("sovereign witness JSON")
     }
 }

@@ -2,7 +2,7 @@
 
 use qssm_utils::merkle_parent;
 
-use crate::bits::to_le_bits;
+use crate::primitives::bits::to_le_bits;
 use crate::error::GadgetError;
 
 /// Engine B Ghost‑Mirror tree: 128 leaves, depth 7 (`qssm-ms` / `PositionAwareTree`).
@@ -72,7 +72,7 @@ pub fn assert_ms_leaf_index_matches_opening(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::bits::to_le_bits;
+    use crate::primitives::bits::to_le_bits;
 
     #[test]
     fn phase0_parities_align_with_index_walk() {

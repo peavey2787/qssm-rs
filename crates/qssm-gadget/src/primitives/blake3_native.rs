@@ -1,12 +1,12 @@
-//! Phase 2: BLAKE3 **G‑function** using only [`crate::bits::XorWitness`] and
-//! [`crate::bits::RippleCarryWitness`], plus **index‑only** rotation wiring.
+//! Phase 2: BLAKE3 **G‑function** using only [`super::bits::XorWitness`] and
+//! [`super::bits::RippleCarryWitness`], plus **index‑only** rotation wiring.
 //!
 //! The algorithm matches the portable **G** from the [BLAKE3 specification](https://github.com/BLAKE3-team/BLAKE3-specs)
 //! (same ordering as the reference / `blake3` crate compress kernel):  
 //! `a ← a+b+mx`, `d ← rotr(d⊕a,16)`, `c ← c+d`, `b ← rotr(b⊕c,12)`,  
 //! `a ← a+b+my`, `d ← rotr(d⊕a,8)`, `c ← c+d`, `b ← rotr(b⊕c,7)`.
 
-use crate::bits::{from_le_bits, RippleCarryWitness, XorWitness};
+use super::bits::{from_le_bits, RippleCarryWitness, XorWitness};
 
 /// **ROTR** on a 32‑bit **LE** lane: `out[i] = in[(i + r) mod 32]` (matches `u32::rotate_right(r)` with `to_le_bits`).
 #[must_use]
@@ -220,7 +220,7 @@ mod tests {
     fn bit_wire_rotate_matches_u32_rotate_right() {
         for v in [0u32, 1, 0xFFFF_FFFF, 0x00FF_00FF, 0x1234_5678, 0xDEAD_BEEF] {
             for r in [0u8, 1, 7, 8, 12, 16, 31] {
-                let bits = crate::bits::to_le_bits(v);
+                let bits = crate::primitives::bits::to_le_bits(v);
                 let w = bit_wire_rotate(bits, r);
                 assert!(w.validate());
                 let got = from_le_bits(&w.out_bits);

@@ -1,10 +1,10 @@
-//! Phase 4 — R1CS IR surface, **`MockProver`** cost counter, and **`Blake3Gadget`** emission over [`GWitness`](crate::blake3_native::GWitness).
+//! Phase 4 — R1CS IR surface, **`MockProver`** cost counter, and **`Blake3Gadget`** emission over [`GWitness`](crate::primitives::blake3_native::GWitness).
 //!
 //! **`bits.rs`** stays witness-only; this module **reads** witness fields and issues IR hooks.
 
-use crate::bits::{RippleCarryWitness, XorWitness};
-use crate::blake3_compress::{CompressionWitness, MerkleParentHashWitness, MSG_PERMUTATION};
-use crate::blake3_native::{Add32ChainedWitness, BitRotateWitness, GWitness};
+use crate::primitives::bits::{RippleCarryWitness, XorWitness};
+use crate::primitives::blake3_compress::{CompressionWitness, MerkleParentHashWitness, MSG_PERMUTATION};
+use crate::primitives::blake3_native::{Add32ChainedWitness, BitRotateWitness, GWitness};
 
 /// Handle to one R1CS variable (witness or public input).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -25,7 +25,7 @@ pub trait ConstraintSystem {
     /// Boolean XOR with explicit AND wire: **`and_xy = x · y`**, **`z = x + y - 2·and_xy`** (matches [`XorWitness`]).
     fn enforce_xor(&mut self, x: VarId, y: VarId, and_xy: VarId, z: VarId);
 
-    /// One [`crate::bits::FullAdder`] stage: **`sum`**, **`cout`** from **`a`**, **`b`**, **`cin`**.
+    /// One [`crate::primitives::bits::FullAdder`] stage: **`sum`**, **`cout`** from **`a`**, **`b`**, **`cin`**.
     fn enforce_full_adder(&mut self, a: VarId, b: VarId, cin: VarId, sum: VarId, cout: VarId);
 
     /// **`a = b`** (copy / permutation edge).
@@ -139,7 +139,7 @@ impl ConstraintSystem for MockProver {
     }
 }
 
-/// BLAKE3 **G**-step synthesis: walks a [`GWitness`] in the same order as [`crate::blake3_native::g_function`].
+/// BLAKE3 **G**-step synthesis: walks a [`GWitness`] in the same order as [`crate::primitives::blake3_native::g_function`].
 pub struct Blake3Gadget;
 
 impl Blake3Gadget {
@@ -276,7 +276,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::blake3_native::g_function;
+    use crate::primitives::blake3_native::g_function;
 
     #[test]
     fn test_blake3_g_constraint_cost() {
@@ -301,7 +301,7 @@ mod tests {
 
     #[test]
     fn export_r1cs_merkle_matches_mockprover_line_count() {
-        use crate::blake3_compress::hash_merkle_parent_witness;
+        use crate::primitives::blake3_compress::hash_merkle_parent_witness;
 
         let left = [1u8; 32];
         let right = [2u8; 32];
