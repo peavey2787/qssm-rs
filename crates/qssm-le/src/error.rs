@@ -12,4 +12,8 @@ pub enum LeError {
     RingMul,
     #[error("prover rejected too many times (Lyubashevsky aborts)")]
     ProverAborted,
+    #[error("verifier rejected proof: infinity norm exceeded bound")]
+    InvalidNorm,
+    #[error("verifier rejected proof: transcript domain/challenge mismatch")]
+    DomainMismatch,
 }

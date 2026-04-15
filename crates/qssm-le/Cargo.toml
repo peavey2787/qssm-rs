@@ -10,6 +10,8 @@ blake3.workspace = true
 qssm-utils = { path = "../qssm-utils" }
 rand.workspace = true
 thiserror.workspace = true
+subtle = "2.6"
+zeroize = { version = "1.8", features = ["derive"] }
 
 [dev-dependencies]
 qssm-ms = { path = "../qssm-ms" }

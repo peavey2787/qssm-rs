@@ -22,3 +22,4 @@ ureq.workspace = true
 blake3.workspace = true
 qssm-le = { path = "../qssm-le" }
 qssm-ms = { path = "../qssm-ms" }
+proptest = "1.6"

@@ -17,7 +17,7 @@
 
 ## Abstract
 
-Presenting QSSM‑LE (Lattice Engine), a post‑quantum **witness‑hiding** NIZK layer for sovereign verification on BlockDAG architectures. QSSM‑LE commits in a cyclotomic ring \(R_q\) using a module‑LWE style commitment \(C = A r + \mu(m)\) and proves knowledge of short \(r\) via a **Lyubashevsky‑style** Fiat–Shamir protocol: the prover publishes a masking term **\(t = A y\)**, challenge **\(c\)** from BLAKE3 over **`QSSM-LE-FS-LYU-v1.0` (domain tag, first)**, then **`rollup_context_digest`**, CRS seed, public message \(m\), commitment \(C\), and masking \(t\)**, and response **\(z = y + c r\)**, using **rejection sampling** until **\(\|z\|_\infty \le \gamma\)** (and bounds on \(y\)). The verifier checks the norm bound and the ring equation **\(A z = t + c \cdot (C - \mu(m))\)** without ever seeing \(r\). Soundness and ZK depend on standard module‑SIS / module‑LWE heuristics and on **careful tuning** of \((\beta, \gamma, \eta, C_{\text{span}})\) (see `qssm-le` `params` module).
+Presenting QSSM‑LE (Lattice Engine), a post‑quantum **witness‑hiding** NIZK layer for sovereign verification on BlockDAG architectures. QSSM‑LE commits in a cyclotomic ring \(R_q\) using a module‑LWE style commitment \(C = A r + \mu(\text{public\_binding})\) and proves knowledge of short \(r\) via a **Lyubashevsky‑style** Fiat–Shamir protocol: the prover publishes a masking term **\(t = A y\)**, derives a transcript seed from BLAKE3 over **`QSSM-LE-FS-LYU-v1.0`** plus cross-protocol context, expands a short polynomial challenge **\(c(x)\)**, and responds with **\(z = y + c(x)r\)**, using **rejection sampling** until **\(\|z\|_\infty \le \gamma\)** (and bounds on \(y\)). The verifier checks the norm bound and the ring equation **\(A z = t + c(x) \cdot (C - \mu)\)** without ever seeing \(r\). Soundness and ZK depend on standard module‑SIS / module‑LWE heuristics and on **careful tuning** of \((\beta, \gamma, \eta, C_{\text{poly}})\) (see `qssm-le` `params` module).
 
 ---
 
@@ -53,7 +53,8 @@ The implementation utilizes a Number Theoretic Transform (NTT) optimized for \(n
 | β         | 8          | Coefficient bound on witness \(r\) (prover sampling)      |
 | η         | 2 048      | Mask \(y\) bound (rejection threshold)                    |
 | γ         | 4 096      | Verifier‑accepted bound on \(\|z\|_\infty\)              |
-| \(C_{\text{span}}\) | 16 | FS scalar challenge range \([-C_{\text{span}},C_{\text{span}}]\) |
+| \(C_{\text{poly\_size}}\) | 64 | FS polynomial challenge coefficient count |
+| \(C_{\text{poly\_span}}\) | 16 | FS per-coefficient range \([-C_{\text{poly\_span}},C_{\text{poly\_span}}]\) |
 
 
 ---
@@ -68,14 +69,14 @@ The protocol employs a commitment scheme that is computationally hiding under M�
 
 ### Commitment Construction
 
-To commit to a message \(v_A\) with **\(0 \le v_A < 2^{30}\)** (the implementation rejects \(v_A \ge \texttt{MAX_MESSAGE} = 2^{30}\)), it is first embedded as a constant polynomial \(\mu_A \in R_q\).  
+To commit, the implementation embeds either a legacy scalar limb or a digest coefficient-vector into \(\mu \in R_q\) (`PublicBinding`).  
 Alice samples short randomness for **\(r\)** in \(R_q\) (coefficient \(\ell_\infty\) bound \(\beta\)).  
 The commitment is defined as:
 
 
 
 \[
-C(v_A, r) = A\, r + \mu_A \pmod{q}.
+C(\text{public\_binding}, r) = A\, r + \mu \pmod{q}.
 \]
 
 
@@ -98,7 +99,7 @@ The witness \(r\) is sampled with \(\|r\|_\infty \le \beta\). The masking vector
 
 ## 3. Message embedding and Goldilocks consistency (v1)
 
-Public integers \(m\) are embedded as a structured constant term \(\mu(m)\) in \(R_q\) (see implementation). For v1, the code enforces **\(0 \le m < 2^{30}\)** (`MAX_MESSAGE`); values with \(m \ge 2^{30}\) are rejected. **Full R1CS → ring gadgets** (e.g. BLAKE3 and Merkle verification feeding \(\mu(m)\)) are specified in the [BLAKE3–Lattice Gadget](./blake3-lattice-gadget-spec.md) note; the reference code implements the **linear commitment + Lyubashevsky response** path described below.
+Public input is embedded as \(\mu(\text{public\_binding})\) in \(R_q\): secure mode uses digest coefficient-vector lanes; legacy mode keeps the 30-bit limb for compatibility only. **Full R1CS → ring gadgets** (e.g. BLAKE3 and Merkle verification feeding \(\mu\)) are specified in the [BLAKE3–Lattice Gadget](./blake3-lattice-gadget-spec.md) note.
 
 ---
 
@@ -112,19 +113,20 @@ Let **`rollup_context_digest`** be a 32‑byte BLAKE3 digest over a canonical **
 
 1. Form commitment \(C = A r + \mu(m)\) with short \(r\).  
 2. Sample short \(y\); compute \(t = A y\).  
-3. Hash inputs are concatenated **in this order** (each as specified in `fs_challenge_bytes`): **`QSSM-LE-FS-LYU-v1.0`** (UTF‑8 domain string, **first**), then **`rollup_context_digest`** (32 bytes), **CRS seed** (`vk`, 32 bytes), **public message** \(m\) (8 bytes LE `u64`), **commitment** \(C\) (encoded coefficients), **masking** \(t\) (encoded coefficients). Apply **BLAKE3**, then map the digest to a small integer **\(c\)** in \([-C_{\text{span}}, C_{\text{span}}]\).  
-4. \(z = y + c \cdot r\) (ring arithmetic).  
+3. Hash inputs are concatenated **in this order** (each as specified in `fs_challenge_bytes`): domain, cross-protocol binding labels, **`rollup_context_digest`**, **CRS seed**, serialized public binding bytes, **commitment** \(C\), and **masking** \(t\). Apply **BLAKE3** to obtain a seed.  
+4. Expand seed into short polynomial challenge \(c(x)\) with \(C_{\text{poly\_size}}\) coefficients in \([-C_{\text{poly\_span}}, C_{\text{poly\_span}}]\).  
+5. \(z = y + c(x) \cdot r\) (ring arithmetic).  
 5. **Reject** unless \(\|z\|_\infty \le \gamma\) (and \(y\) satisfied its bound).  
-6. Output \(\pi = (t, z, \text{challenge\_bytes})\).
+6. Output \(\pi = (t, z, \text{challenge\_seed})\).
 
 ### Verify
 
 Fail-fast order matches `verify_lattice_algebraic` in `qssm-le`:
 
-1. **Validate public inputs.** Ensure the public message \(m\) satisfies **\(0 \le m < 2^{30}\)** (`PublicInstance::validate` / `MAX_MESSAGE`).  
+1. **Validate public inputs.** Ensure selected public binding mode satisfies bounds (`PublicInstance::validate`).  
 2. **Norm check.** If **\(\|z\|_\infty > \gamma\)** (centered mod \(q\)), **reject immediately** — do not proceed to the ring equation.  
-3. **Fiat–Shamir reconstitution.** Recompute the challenge digest from **`(\texttt{QSSM-LE-FS-LYU-v1.0}, \texttt{rollup\_context\_digest}, \text{vk}, m, C, t)\)** in the same order as Prove step 3; check it equals the proof’s **`challenge`**, then map to the scalar **\(c\)**.  
-4. **Ring equation.** Verify **\(A z \stackrel{?}{=} t + c \cdot (C - \mu(m))\)** in \(R_q\).
+3. **Fiat–Shamir reconstitution.** Recompute challenge seed from the same transcript inputs; check it equals proof **`challenge_seed`**; expand the same polynomial challenge \(c(x)\).  
+4. **Ring equation.** Verify **\(A z \stackrel{?}{=} t + c(x) \cdot (C - \mu)\)** in \(R_q\).
 
 No witness \(r\) is transmitted.
 

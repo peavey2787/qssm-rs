@@ -132,3 +132,38 @@ Lint check (Clippy):
 ```bash
 cargo clippy --workspace --all-targets -- -D warnings
 ```
+
+## Run and Use qssm-proofs
+
+`qssm-proofs` lives at `crates/qssm-proofs` and provides formal invariant scaffolding, benchmark-target tracking, and a CI hardness floor test.
+
+Build the crate:
+
+```bash
+cargo build -p qssm-proofs
+```
+
+Run only qssm-proofs tests:
+
+```bash
+cargo test -p qssm-proofs
+```
+
+Run the CI hardness floor test directly (`>= 112` bits required):
+
+```bash
+cargo test -p qssm-proofs ci_security_floor_112_bits
+```
+
+What this test does:
+
+- Reads the effective security estimate from:
+  - an estimator JSON artifact (if wired by caller), or
+  - fallback audit ledger: `docs/02-protocol-specs/qssm-le-concrete-security-audit-2026-04-15.md`
+- Fails if effective security is below 112 bits.
+
+Quick compile check including qssm-proofs:
+
+```bash
+cargo check --workspace
+```

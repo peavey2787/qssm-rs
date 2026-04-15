@@ -11,6 +11,8 @@ members = [
     "crates/qssm-he",
     "crates/mssq-net",
     "crates/qssm-governor",
+    "crates/qssm-proofs",
+    "crates/qssm-integration",
     "crates/qssm-desktop/src-tauri",
 ]
 resolver = "2"

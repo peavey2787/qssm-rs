@@ -48,9 +48,10 @@ pub mod template {
 }
 
 pub use binding::{
+    digest_coeff_vector_from_sovereign_digest,
     encode_proof_metadata_v1, encode_proof_metadata_v2,
     message_limb_from_sovereign_digest_normative, sovereign_digest, sovereign_message_limb_v1,
-    SovereignDigest, SovereignWitness, DOMAIN_SOVEREIGN_LIMB_V1, DOMAIN_SOVEREIGN_LIMB_V2,
+    SovereignDigest, SovereignWitness, DIGEST_COEFF_VECTOR_SIZE, DOMAIN_SOVEREIGN_LIMB_V1, DOMAIN_SOVEREIGN_LIMB_V2,
 };
 pub use bits::{
     constraint_and, constraint_or, constraint_xor, from_le_bits, to_le_bits, FullAdder,

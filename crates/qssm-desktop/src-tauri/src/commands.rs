@@ -261,11 +261,12 @@ fn random_witness(rng: &mut impl RngCore) -> Witness {
     }
 }
 
-fn prove_lattice_demo(message_limb: u64, rollup_ctx: &[u8; 32]) -> Result<serde_json::Value, String> {
+fn prove_lattice_demo(
+    digest_coeff_vector: [u32; qssm_le::PUBLIC_DIGEST_COEFFS],
+    rollup_ctx: &[u8; 32],
+) -> Result<serde_json::Value, String> {
     let vk = VerifyingKey::from_seed(VK_SEED);
-    let public = PublicInstance {
-        message: message_limb,
-    };
+    let public = PublicInstance::digest_coeffs(digest_coeff_vector);
     public.validate().map_err(|e| e.to_string())?;
 
     let mut rng = rand::thread_rng();
@@ -276,7 +277,7 @@ fn prove_lattice_demo(message_limb: u64, rollup_ctx: &[u8; 32]) -> Result<serde_
                 "commitment_coeffs_hex": hex::encode(encode_rq_coeffs_le(&commitment.0)),
                 "t_coeffs_hex": hex::encode(encode_rq_coeffs_le(&proof.t)),
                 "z_coeffs_hex": hex::encode(encode_rq_coeffs_le(&proof.z)),
-                "challenge_hex": hex::encode(proof.challenge),
+                "challenge_hex": hex::encode(proof.challenge_seed),
             }));
         }
     }
@@ -316,7 +317,7 @@ fn run_pipeline(h: HandoffFile) -> Result<serde_json::Value, String> {
     }
 
     let sw = sovereign_witness_value(&sovereign);
-    let lattice = prove_lattice_demo(sovereign.message_limb, &rollup_ctx)?;
+    let lattice = prove_lattice_demo(sovereign.digest_coeff_vector, &rollup_ctx)?;
     let qrng = if nist_included { "nist" } else { "fallback" };
     let l1_sync = match anchor_kind {
         "kaspa" => L1_HUD,
@@ -364,7 +365,7 @@ pub fn proof_of_age_template_json() -> Result<String, String> {
     let mut t = QssmTemplate::proof_of_age("proof-of-age-21");
     t.lattice_vk_seed_hex = Some(hex::encode(VK_SEED));
     t.notes = Some(
-        "Pair with QSSM Helper output: check sovereign_witness.public.message_limb_u30 and lattice_proof against qssm-le verifying key from lattice_vk_seed_hex.".into(),
+        "Pair with QSSM Helper output: check sovereign_witness.public.digest_coeff_vector_u4 and lattice_proof against qssm-le verifying key from lattice_vk_seed_hex.".into(),
     );
     serde_json::to_string_pretty(&t).map_err(|e| e.to_string())
 }

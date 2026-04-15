@@ -1,4 +1,4 @@
-//! Phase 7 — **Lattice handshake**: sovereign **`message_limb`** as the **commitment target** for Engine A (`qssm-le`).
+//! Phase 7 — **Lattice handshake**: sovereign digest coefficient-vector as the commitment target for Engine A (`qssm-le`).
 //!
 //! Normative constant **`BRIDGE_Q`** must match **`qssm_le::Q`** (verified in **`verify_handshake_with_le`** under **`lattice-bridge`**).
 
@@ -7,8 +7,9 @@ use std::path::Path;
 
 /// Must match **`qssm_le::Q`** — MLWE modulus for **`R_q = Z_q[X]/(X^256+1)`**.
 pub const BRIDGE_Q: u32 = 8_380_417;
+pub const DIGEST_COEFF_VECTOR_SIZE: usize = 64;
 
-/// Exclusive upper bound for the **30‑bit** limb (**`2^30`**, same as **`qssm_le::MAX_MESSAGE`** intent).
+/// Exclusive upper bound for the legacy **30‑bit** limb (`2^30`, compatibility-only path).
 pub const MAX_LIMB_EXCLUSIVE: u64 = 1u64 << 30;
 
 #[derive(Debug, thiserror::Error)]
@@ -19,6 +20,8 @@ pub enum LatticeBridgeError {
     Json(#[from] serde_json::Error),
     #[error("missing or invalid field {0}")]
     MissingField(&'static str),
+    #[error("digest coeff vector mismatch between prover_package and sovereign witness")]
+    DigestCoeffVectorMismatch,
     #[error("limb mismatch: prover_package has {pkg} but sovereign witness has {sov}")]
     LimbMismatch { pkg: u64, sov: u64 },
     #[error("nist_included mismatch: prover_package nist_beacon_included={pkg} but sovereign public.nist_included={sov}")]
@@ -47,7 +50,19 @@ pub fn limb_to_q_coeff0(m: u64) -> Result<u32, LatticeBridgeError> {
     Ok(m as u32)
 }
 
-/// Load **`prover_package.json`** and the referenced **`sovereign_witness.json`**; assert **`engine_a_public.message_limb_u30`** equals **`public.message_limb_u30`**; check limb range and field lift.
+fn parse_digest_coeff_vector(v: &serde_json::Value, path: &'static str) -> Result<[u32; DIGEST_COEFF_VECTOR_SIZE], LatticeBridgeError> {
+    let arr = v.as_array().ok_or(LatticeBridgeError::MissingField(path))?;
+    if arr.len() != DIGEST_COEFF_VECTOR_SIZE {
+        return Err(LatticeBridgeError::MissingField(path));
+    }
+    let mut out = [0u32; DIGEST_COEFF_VECTOR_SIZE];
+    for (i, val) in arr.iter().enumerate() {
+        out[i] = val.as_u64().ok_or(LatticeBridgeError::MissingField(path))? as u32;
+    }
+    Ok(out)
+}
+
+/// Load package/witness JSON and assert digest coefficient-vector equality plus legacy limb consistency.
 pub fn verify_limb_binding_json(package_dir: &Path) -> Result<(), LatticeBridgeError> {
     let pkg_path = package_dir.join("prover_package.json");
     let pkg_raw = fs::read_to_string(&pkg_path)?;
@@ -61,6 +76,17 @@ pub fn verify_limb_binding_json(package_dir: &Path) -> Result<(), LatticeBridgeE
     let sovereign_path = package_dir.join(rel);
     let sov_raw = fs::read_to_string(&sovereign_path)?;
     let sov: serde_json::Value = serde_json::from_str(&sov_raw)?;
+    let pkg_coeffs = parse_digest_coeff_vector(
+        &pkg["engine_a_public"]["digest_coeff_vector_u4"],
+        "engine_a_public.digest_coeff_vector_u4",
+    )?;
+    let sov_coeffs = parse_digest_coeff_vector(
+        &sov["public"]["digest_coeff_vector_u4"],
+        "public.digest_coeff_vector_u4",
+    )?;
+    if pkg_coeffs != sov_coeffs {
+        return Err(LatticeBridgeError::DigestCoeffVectorMismatch);
+    }
     let limb_sov = sov["public"]["message_limb_u30"]
         .as_u64()
         .ok_or(LatticeBridgeError::MissingField("public.message_limb_u30"))?;
@@ -87,27 +113,18 @@ pub fn verify_limb_binding_json(package_dir: &Path) -> Result<(), LatticeBridgeE
     Ok(())
 }
 
-/// **`verify_limb_binding_json`** plus Engine A **`PublicInstance::validate`** and **`RqPoly::embed_constant`** coeff₀ check (**feature `lattice-bridge`**).
+/// **`verify_limb_binding_json`** plus Engine A public-instance validation (**feature `lattice-bridge`**).
 #[cfg(feature = "lattice-bridge")]
 pub fn verify_handshake_with_le(package_dir: &Path) -> Result<(), LatticeBridgeError> {
     verify_limb_binding_json(package_dir)?;
     let pkg_path = package_dir.join("prover_package.json");
     let pkg: serde_json::Value = serde_json::from_str(&fs::read_to_string(&pkg_path)?)?;
-    let limb = pkg["engine_a_public"]["message_limb_u30"].as_u64().ok_or(
-        LatticeBridgeError::MissingField("engine_a_public.message_limb_u30"),
+    let coeffs = parse_digest_coeff_vector(
+        &pkg["engine_a_public"]["digest_coeff_vector_u4"],
+        "engine_a_public.digest_coeff_vector_u4",
     )?;
     debug_assert_eq!(BRIDGE_Q, qssm_le::Q, "BRIDGE_Q must track qssm_le::Q");
-    qssm_le::PublicInstance { message: limb }.validate()?;
-    let q = u64::from(qssm_le::Q);
-    let expected0 = (limb % q) as u32;
-    let mu = qssm_le::RqPoly::embed_constant(limb);
-    let got0 = mu.0[0];
-    if got0 != expected0 {
-        return Err(LatticeBridgeError::EmbedCoeff0Mismatch {
-            expected: expected0,
-            got: got0,
-        });
-    }
+    qssm_le::PublicInstance::digest_coeffs(coeffs).validate()?;
     Ok(())
 }
 
@@ -143,6 +160,7 @@ mod tests {
             serde_json::to_string_pretty(&json!({
                 "kind": "SovereignWitnessV1",
                 "public": {
+                    "digest_coeff_vector_u4": vec![1u32; DIGEST_COEFF_VECTOR_SIZE],
                     "message_limb_u30": 42u64,
                     "root_hex": "",
                     "digest_hex": "",
@@ -155,7 +173,10 @@ mod tests {
         )
         .unwrap();
         let pkg = json!({
-            "engine_a_public": { "message_limb_u30": 42u64 },
+            "engine_a_public": {
+                "message_limb_u30": 42u64,
+                "digest_coeff_vector_u4": vec![1u32; DIGEST_COEFF_VECTOR_SIZE],
+            },
             "nist_beacon_included": false,
             "artifacts": { "sovereign_witness_json": "sovereign_witness.json" },
         });
@@ -167,7 +188,10 @@ mod tests {
         verify_limb_binding_json(&d).unwrap();
 
         let pkg_bad = json!({
-            "engine_a_public": { "message_limb_u30": 43u64 },
+            "engine_a_public": {
+                "message_limb_u30": 43u64,
+                "digest_coeff_vector_u4": vec![1u32; DIGEST_COEFF_VECTOR_SIZE],
+            },
             "nist_beacon_included": false,
             "artifacts": { "sovereign_witness_json": "sovereign_witness.json" },
         });
@@ -191,6 +215,7 @@ mod tests {
             serde_json::to_string_pretty(&json!({
                 "kind": "SovereignWitnessV1",
                 "public": {
+                    "digest_coeff_vector_u4": vec![2u32; DIGEST_COEFF_VECTOR_SIZE],
                     "message_limb_u30": 9u64,
                     "root_hex": "",
                     "digest_hex": "",
@@ -203,7 +228,10 @@ mod tests {
         )
         .unwrap();
         let pkg = json!({
-            "engine_a_public": { "message_limb_u30": 9u64 },
+            "engine_a_public": {
+                "message_limb_u30": 9u64,
+                "digest_coeff_vector_u4": vec![2u32; DIGEST_COEFF_VECTOR_SIZE],
+            },
             "nist_beacon_included": true,
             "artifacts": { "sovereign_witness_json": "sovereign_witness.json" },
         });
@@ -229,6 +257,7 @@ mod tests {
             serde_json::to_string_pretty(&json!({
                 "kind": "SovereignWitnessV1",
                 "public": {
+                    "digest_coeff_vector_u4": vec![3u32; DIGEST_COEFF_VECTOR_SIZE],
                     "message_limb_u30": limb,
                     "root_hex": "00",
                     "digest_hex": "00",
@@ -241,7 +270,10 @@ mod tests {
         )
         .unwrap();
         let pkg = json!({
-            "engine_a_public": { "message_limb_u30": limb },
+            "engine_a_public": {
+                "message_limb_u30": limb,
+                "digest_coeff_vector_u4": vec![3u32; DIGEST_COEFF_VECTOR_SIZE],
+            },
             "nist_beacon_included": false,
             "artifacts": { "sovereign_witness_json": "sovereign_witness.json" },
         });

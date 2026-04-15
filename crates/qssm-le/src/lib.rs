@@ -6,7 +6,7 @@
 //!     commit_mlwe, prove_arithmetic, verify_lattice, PublicInstance, VerifyingKey, Witness,
 //! };
 //! let vk = VerifyingKey::from_seed([9u8; 32]);
-//! let public = PublicInstance { message: 12345 };
+//! let public = PublicInstance::legacy_message(12345);
 //! let witness = Witness { r: [0i32; qssm_le::N] };
 //! let ctx = [7u8; 32];
 //! let (commitment, proof) = prove_arithmetic(&vk, &public, &witness, &ctx).unwrap();
@@ -23,10 +23,13 @@ pub use algebra::ring::{encode_rq_coeffs_le, short_vec_to_rq, short_vec_to_rq_bo
 pub use crs::VerifyingKey;
 pub use error::LeError;
 pub use protocol::commit::{
-    commit_mlwe, prove_with_witness, verify_lattice_algebraic, Commitment, LatticeProof,
-    PublicInstance, Witness,
+    commit_mlwe, prove_with_witness, verify_lattice_algebraic, Commitment, LatticeProof, PublicBinding,
+    PublicInstance, Witness, SecretKey, CommitmentRandomness,
 };
-pub use protocol::params::{BETA, C_SPAN, ETA, GAMMA, MAX_MESSAGE, N, Q};
+pub use protocol::params::{
+    BETA, C_POLY_SIZE, C_POLY_SPAN, C_SPAN_LEGACY, ETA, GAMMA, MAX_MESSAGE_LEGACY, N,
+    PUBLIC_DIGEST_COEFF_MAX, PUBLIC_DIGEST_COEFFS, Q,
+};
 
 /// Witness-free verifier (includes `rollup_context_digest` in FS challenge).
 pub fn verify_lattice(

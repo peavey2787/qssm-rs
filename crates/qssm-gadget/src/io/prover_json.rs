@@ -163,6 +163,7 @@ pub fn sovereign_witness_value(w: &SovereignWitness) -> Value {
         "public": {
             "root_hex": hex::encode(w.root),
             "digest_hex": hex::encode(w.digest),
+            "digest_coeff_vector_u4": w.digest_coeff_vector.to_vec(),
             "message_limb_u30": w.message_limb,
             "domain_tag": w.domain_tag,
             "nist_included": w.nist_included,

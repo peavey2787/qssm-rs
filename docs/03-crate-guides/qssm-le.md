@@ -20,9 +20,11 @@ Public API: `lib.rs` re-exports `prove_arithmetic`, `verify_lattice`, `commit_ml
 | `N` | **256** | Polynomial degree; coefficients per `RqPoly`. |
 | `Q` | **8_380_417** | Prime modulus; **512 \| (q−1)** for length-512 NTT. |
 | `BETA` | 8 | \(\ell_\infty\) bound on witness `r` coefficients. |
-| `MAX_MESSAGE` | \(2^{30}\) | Public scalar message range. |
+| `MAX_MESSAGE_LEGACY` | \(2^{30}\) | Legacy single-limb compatibility bound. |
+| `PUBLIC_DIGEST_COEFFS` | 64 | Digest coefficient-vector lane count. |
 | `ETA`, `GAMMA` | 2048, 4096 | Masking / response norms for rejection and verification. |
-| `C_SPAN` | 16 | Fiat–Shamir scalar challenge range \([-16, 16]\). |
+| `C_POLY_SIZE` | 64 | Polynomial challenge coefficient count. |
+| `C_POLY_SPAN` | 16 | Per-coefficient challenge span \([-16, 16]\). |
 | `MAX_PROVER_ATTEMPTS` | 65536 | Rejection sampling loop budget. |
 
 ## NTT implementation (`src/algebra/ntt.rs`)
@@ -58,21 +60,21 @@ Short vectors **`short_vec_to_rq` / `short_vec_to_rq_bound`** map signed coeffs 
 1. Domain  
 2. **`rollup_context_digest`** — **32 bytes**, must match **`qssm_utils::rollup_context_digest(&RollupContext)`** for the finalized L1 view the verifier uses  
 3. `vk.crs_seed`  
-4. `public.message` (LE u64)  
+4. `public.binding` bytes (legacy limb or digest coeff-vector encoding)  
 5. `encode_rq_coeffs_le(commitment)`  
 6. `encode_rq_coeffs_le(t)` (masking commitment)
 
 So proofs are **not** valid across different finalized parents, blue scores, or QRNG limbs — **rollup context digest is the anti-replay limb** for Engine A at the LE layer.
 
-### Scalar challenge
+### Polynomial challenge
 
-**`challenge_scalar(ch)`**: first 4 bytes of `ch` as LE `u32`, then **`u % (2*C_SPAN+1) - C_SPAN`** → small integer \(c\).
+**`challenge_poly(seed)`** expands transcript seed bytes into `C_POLY_SIZE` coefficients in \([-C_POLY_SPAN, C_POLY_SPAN]\), then maps that vector to an `RqPoly`.
 
 ### Prover / verifier
 
-- **`commit_mlwe`**: \(C = A \cdot r + \mu(message)\) in \(R_q\).
-- **`prove_with_witness`**: samples short `y`, sets `t = A y`, computes **`ch = fs_challenge_bytes(...)`**, \(z = y + c r\) (ring), rejects if \(\|z\|_\infty > \gamma\), checks algebraic identity **`A z = t + c (C - μ)`**.
-- **`verify_lattice_algebraic`**: recomputes **`ch`**, requires **`ch == proof.challenge`**, same identity, \(\|z\|_\infty \le \gamma\).
+- **`commit_mlwe`**: \(C = A \cdot r + \mu(public\_binding)\) in \(R_q\).
+- **`prove_with_witness`**: samples short `y`, sets `t = A y`, computes transcript seed, derives challenge polynomial `c(x)`, then \(z = y + c(x)\cdot r\); rejects if \(\|z\|_\infty > \gamma\), checks \(A z = t + c(x)\cdot(C-\mu)\).
+- **`verify_lattice_algebraic`**: recomputes seed, requires seed equality (`challenge_seed`), re-derives `c(x)`, checks same identity and norm bound.
 
 **`verify_lattice`** is the public wrapper calling **`verify_lattice_algebraic`** with **`rollup_context_digest`**.
 

@@ -21,8 +21,10 @@ fn ms_commitment_root_differs_from_mlwe_commitment() {
     let ledger = [4u8; 32];
     let (root_ms, _) = commit(12345u64, seed, ledger).unwrap();
     let vk = VerifyingKey::from_seed(seed);
-    let w = Witness { r: [0i32; 64] };
-    let public = PublicInstance { message: 12345 };
+    let w = Witness {
+        r: [0i32; qssm_le::N],
+    };
+    let public = PublicInstance::legacy_message(12345);
     let c = commit_mlwe(&vk, &public, &w).unwrap();
     let mut le_prefix = [0u8; 32];
     for i in 0..8 {

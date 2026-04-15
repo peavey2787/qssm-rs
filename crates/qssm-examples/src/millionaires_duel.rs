@@ -16,7 +16,7 @@
 use mssq_batcher::{verify_leader_attestation_ctx, LeaderAttestation, ProofError, TxProofVerifier};
 use qssm_common::L2Transaction;
 use qssm_le::{
-    verify_lattice, Commitment, LatticeProof, PublicInstance, RqPoly, VerifyingKey, MAX_MESSAGE, N,
+    verify_lattice, Commitment, LatticeProof, PublicInstance, RqPoly, VerifyingKey, MAX_MESSAGE_LEGACY, N,
 };
 use qssm_utils::RollupContext;
 
@@ -50,7 +50,7 @@ pub fn public_message_for_duel(v_a: u64, v_b: u64) -> Result<u64, MillionairesDu
     let m = diff
         .checked_add(DUEL_SHIFT as i128)
         .ok_or(MillionairesDuelError::MessageOutOfRange)?;
-    if m < 0 || m >= MAX_MESSAGE as i128 {
+    if m < 0 || m >= MAX_MESSAGE_LEGACY as i128 {
         return Err(MillionairesDuelError::MessageOutOfRange);
     }
     Ok(m as u64)
@@ -66,7 +66,7 @@ pub fn duel_holds(public_m: u64) -> bool {
 /// (covers Alice ahead, Bob ahead, and ties). Used by the verifier instead of [`duel_holds`] alone.
 #[must_use]
 pub fn valid_duel_public_message(m: u64) -> bool {
-    if m >= MAX_MESSAGE {
+    if m >= MAX_MESSAGE_LEGACY {
         return false;
     }
     let m = i128::from(m);
@@ -253,7 +253,7 @@ pub fn encode_millionaires_proof(
     push_poly(&mut v, &commitment.0);
     push_poly(&mut v, &proof.t);
     push_poly(&mut v, &proof.z);
-    v.extend_from_slice(&proof.challenge);
+    v.extend_from_slice(&proof.challenge_seed);
     v
 }
 
@@ -274,7 +274,7 @@ pub fn decode_millionaires_proof(data: &[u8]) -> Result<MillionairesProofBundle,
     let c0 = read_poly(data, &mut i)?;
     let t = read_poly(data, &mut i)?;
     let z = read_poly(data, &mut i)?;
-    let challenge = read_bytes(data, &mut i, 32)?
+    let challenge_seed = read_bytes(data, &mut i, 32)?
         .try_into()
         .map_err(|_| ProofWireError::Truncated)?;
     if i != data.len() {
@@ -285,7 +285,7 @@ pub fn decode_millionaires_proof(data: &[u8]) -> Result<MillionairesProofBundle,
         crs_seed,
         public_message,
         commitment: Commitment(c0),
-        proof: LatticeProof { t, z, challenge },
+        proof: LatticeProof { t, z, challenge_seed },
     })
 }
 
@@ -314,7 +314,7 @@ mod tests {
 
     #[test]
     fn valid_duel_public_message_rejects_out_of_band() {
-        assert!(!valid_duel_public_message(MAX_MESSAGE));
+        assert!(!valid_duel_public_message(MAX_MESSAGE_LEGACY));
         assert!(!valid_duel_public_message(DUEL_SHIFT + MAX_DEMO_BALANCE));
         // One more than max negative gap: |v_a - v_b| would need to be MAX_DEMO_BALANCE.
         assert!(!valid_duel_public_message(DUEL_SHIFT - MAX_DEMO_BALANCE));
@@ -342,9 +342,7 @@ impl TxProofVerifier for MillionairesDuelVerifier {
             return Err(ProofError::Invalid);
         }
         let vk = VerifyingKey::from_seed(bundle.crs_seed);
-        let public = PublicInstance {
-            message: bundle.public_message,
-        };
+        let public = PublicInstance::legacy_message(bundle.public_message);
         let digest = ctx.digest();
         match verify_lattice(&vk, &public, &bundle.commitment, &bundle.proof, &digest) {
             Ok(true) => Ok(()),

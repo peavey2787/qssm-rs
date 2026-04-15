@@ -186,7 +186,7 @@ flowchart LR
 **API:**
 
 - **`verify_limb_binding_json(package_dir)`** — always built; IO + JSON parse; assert package vs sovereign **`message_limb_u30`**; **`m < 2^{30}`** (Engine A public range).
-- **`verify_handshake_with_le(package_dir)`** — behind Cargo feature **`lattice-bridge`** (optional **`qssm-le`** dep): runs the JSON check, then **`PublicInstance { message: m }.validate()`**, then asserts **`RqPoly::embed_constant(m).0[0] == (m % Q)`** as **`u32`** (matches **`qssm-le`**). When additionally **`m < Q`**, **`coeff_0 = m`** with no reduction — helper **`limb_to_q_coeff0`** documents that subrange.
+- **`verify_handshake_with_le(package_dir)`** — behind Cargo feature **`lattice-bridge`** (optional **`qssm-le`** dep): runs the JSON check, then validates Engine A public binding via **`PublicInstance::digest_coeffs(...)`** in secure mode (legacy limb retained only for migration diagnostics).
 
 **Exit criteria:** **`cargo test -p qssm-gadget`**; **`cargo test -p qssm-gadget --features lattice-bridge`** covers LE handshake test; **`l2_handshake`** prints PATH A verification after **`verify_limb_binding_json`**.
 

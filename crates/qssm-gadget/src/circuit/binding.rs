@@ -1,4 +1,4 @@
-//! Phase 3 / **8** — Sovereign Digest → **30‑bit** limb for **`qssm-le`** `PublicInstance::message`.
+//! Phase 3 / **8** — Sovereign Digest → public binding payload for **`qssm-le`**.
 //!
 //! Preimage order (normative, **v2.0**): **`hash_domain(DOMAIN_SOVEREIGN_LIMB_V2, &[root32, rollup32, metadata])`**  
 //! where **`metadata`** = **`encode_proof_metadata_v2`** = v1 fields **`‖ sovereign_entropy[32] ‖ nist_flag`**.  
@@ -7,6 +7,8 @@
 use qssm_utils::hashing::hash_domain;
 
 use crate::primitives::bits::{from_le_bits, to_le_bits};
+
+pub const DIGEST_COEFF_VECTOR_SIZE: usize = 64;
 
 /// Historical domain (**v1.0**); **v2.0** is normative for [`SovereignWitness`].
 pub const DOMAIN_SOVEREIGN_LIMB_V1: &str = "QSSM-SOVEREIGN-LIMB-v1.0";
@@ -78,7 +80,36 @@ pub fn message_limb_from_sovereign_digest_normative(digest: &SovereignDigest) ->
     (padded, u64::from(m))
 }
 
-/// Full binding witness: inputs, digest, LE limb bits, **`message_limb`**, and Phase 8 entropy metadata.
+/// Deterministic digest-to-coefficient map: 256 bits -> 64 x 4-bit coefficients.
+#[must_use]
+pub fn digest_coeff_vector_from_sovereign_digest(
+    digest: &SovereignDigest,
+) -> [u32; DIGEST_COEFF_VECTOR_SIZE] {
+    let mut coeffs = [0u32; DIGEST_COEFF_VECTOR_SIZE];
+    let mut filled = 0usize;
+    let mut ctr = 0u32;
+    while filled < DIGEST_COEFF_VECTOR_SIZE {
+        let block = hash_domain(
+            "QSSM-DIGEST-COEFF-MAP-v1.0",
+            &[digest.as_slice(), &ctr.to_le_bytes()],
+        );
+        for &byte in &block {
+            if filled >= DIGEST_COEFF_VECTOR_SIZE {
+                break;
+            }
+            coeffs[filled] = u32::from(byte & 0x0f);
+            filled += 1;
+            if filled < DIGEST_COEFF_VECTOR_SIZE {
+                coeffs[filled] = u32::from(byte >> 4);
+                filled += 1;
+            }
+        }
+        ctr = ctr.wrapping_add(1);
+    }
+    coeffs
+}
+
+/// Full binding witness: inputs, digest, coefficient vector binding payload, legacy limb, and Phase 8 entropy metadata.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SovereignWitness {
     pub root: [u8; 32],
@@ -94,8 +125,11 @@ pub struct SovereignWitness {
     pub proof_metadata: Vec<u8>,
     pub domain_tag: &'static str,
     pub digest: SovereignDigest,
+    /// Digest coefficient-vector payload for Engine A binding (64 x 4-bit).
+    pub digest_coeff_vector: [u32; DIGEST_COEFF_VECTOR_SIZE],
     /// Padded witness: indices **0..30** are the normative limb bits; **30..32** are **false**.
     pub limb_bits: [bool; 32],
+    /// Legacy compatibility limb (diagnostics/migration only).
     pub message_limb: u64,
 }
 
@@ -121,6 +155,7 @@ impl SovereignWitness {
             nist_included,
         );
         let digest = sovereign_digest(&root, &rollup_context_digest, &proof_metadata);
+        let digest_coeff_vector = digest_coeff_vector_from_sovereign_digest(&digest);
         let (limb_bits, message_limb) = message_limb_from_sovereign_digest_normative(&digest);
         Self {
             root,
@@ -134,12 +169,13 @@ impl SovereignWitness {
             proof_metadata,
             domain_tag: DOMAIN_SOVEREIGN_LIMB_V2,
             digest,
+            digest_coeff_vector,
             limb_bits,
             message_limb,
         }
     }
 
-    /// Recompute **`hash_domain`** and normative limb; check **`digest`**, **`message_limb`**, **`limb_bits`**, metadata encoding.
+    /// Recompute **`hash_domain`** and derived payloads; check digest, coeff vector, legacy limb, and metadata.
     pub fn validate(&self) -> bool {
         if self.domain_tag != DOMAIN_SOVEREIGN_LIMB_V2 {
             return false;
@@ -163,8 +199,9 @@ impl SovereignWitness {
         if recomputed != self.digest {
             return false;
         }
+        let coeffs = digest_coeff_vector_from_sovereign_digest(&self.digest);
         let (lb, m) = message_limb_from_sovereign_digest_normative(&self.digest);
-        lb == self.limb_bits && m == self.message_limb
+        coeffs == self.digest_coeff_vector && lb == self.limb_bits && m == self.message_limb
     }
 
     /// Phase 6: flat index-based JSON — **public** `root`, `digest`, **`message_limb_u30`**, **`nist_included`**, plus **private** limb bit-wires and preimage aux hex.
@@ -175,7 +212,7 @@ impl SovereignWitness {
     }
 }
 
-/// Derive **`message_limb`** from a **full v2** metadata blob (see **`encode_proof_metadata_v2`**).
+/// Derive legacy **`message_limb`** from a **full v2** metadata blob (see **`encode_proof_metadata_v2`**).
 #[must_use]
 pub fn sovereign_message_limb_v1(
     root: &[u8; 32],
@@ -208,6 +245,7 @@ mod tests {
         let ent = [0x11; 32];
         let w = SovereignWitness::bind(root, ctx, 0, 5, 1, ch, ent, true);
         assert!(w.validate());
+        assert_eq!(w.digest_coeff_vector.len(), DIGEST_COEFF_VECTOR_SIZE);
     }
 
     #[test]
@@ -224,5 +262,21 @@ mod tests {
             serde_json::json!(w.message_limb)
         );
         assert_eq!(v["public"]["nist_included"], serde_json::json!(false));
+        assert_eq!(
+            v["public"]["digest_coeff_vector_u4"]
+                .as_array()
+                .expect("digest coeff array")
+                .len(),
+            DIGEST_COEFF_VECTOR_SIZE
+        );
+    }
+
+    #[test]
+    fn digest_coeff_vector_is_deterministic_and_bounded() {
+        let digest = [0xabu8; 32];
+        let a = digest_coeff_vector_from_sovereign_digest(&digest);
+        let b = digest_coeff_vector_from_sovereign_digest(&digest);
+        assert_eq!(a, b);
+        assert!(a.iter().all(|&c| c <= 0x0f));
     }
 }

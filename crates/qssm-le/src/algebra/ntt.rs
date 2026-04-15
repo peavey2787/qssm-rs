@@ -7,6 +7,14 @@
 
 use crate::protocol::params::{N, Q};
 
+const TWO_N_U32: u32 = (2 * N) as u32;
+const _: () = assert!(TWO_N_U32 > 0, "2N must be non-zero");
+const _: () = assert!(Q > 2, "Q must be an odd prime > 2");
+const _: () = assert!(
+    (Q - 1) % TWO_N_U32 == 0,
+    "invalid NTT parameters: 2N must divide Q-1"
+);
+
 fn pow_mod(mut a: u64, mut e: u32, m: u32) -> u32 {
     let m = m as u64;
     let mut r: u64 = 1;
@@ -25,9 +33,59 @@ fn inv_mod(a: u32) -> u32 {
     pow_mod(a as u64, Q - 2, Q)
 }
 
-/// Primitive `2N`-th root of unity \(\omega\) (computed as \(5^{(q-1)/(2N)}\)).
+fn prime_factors(mut n: u32) -> Vec<u32> {
+    let mut out = Vec::new();
+    let mut p = 2u32;
+    while p.saturating_mul(p) <= n {
+        if n % p == 0 {
+            out.push(p);
+            while n % p == 0 {
+                n /= p;
+            }
+        }
+        p += if p == 2 { 1 } else { 2 };
+    }
+    if n > 1 {
+        out.push(n);
+    }
+    out
+}
+
+fn find_primitive_root(q: u32) -> Option<u32> {
+    if q < 3 {
+        return None;
+    }
+    let phi = q - 1;
+    let factors = prime_factors(phi);
+    'outer: for g in 2..q {
+        for &f in &factors {
+            if pow_mod(g as u64, phi / f, q) == 1 {
+                continue 'outer;
+            }
+        }
+        return Some(g);
+    }
+    None
+}
+
+fn validate_ntt_parameters(q: u32, two_n: u32) {
+    assert!(two_n > 0, "two_n must be non-zero");
+    assert_eq!(
+        (q - 1) % two_n,
+        0,
+        "invalid NTT parameters: 2N must divide Q-1"
+    );
+}
+
+/// Primitive `2N`-th root of unity \(\omega\), derived from a discovered generator.
 fn omega_2n() -> u32 {
-    pow_mod(5, (Q - 1) / (2 * N as u32), Q)
+    validate_ntt_parameters(Q, TWO_N_U32);
+    let g = find_primitive_root(Q).expect("failed to find primitive root for Q");
+    let exp = (Q - 1) / TWO_N_U32;
+    let omega = pow_mod(g as u64, exp, Q);
+    assert_eq!(pow_mod(omega as u64, TWO_N_U32, Q), 1);
+    assert_ne!(pow_mod(omega as u64, N as u32, Q), 1);
+    omega
 }
 
 fn ntt_inplace(a: &mut [u32], invert: bool) {
@@ -50,13 +108,13 @@ fn ntt_inplace(a: &mut [u32], invert: bool) {
         let wlen = if invert {
             inv_mod(pow_mod(
                 omega_2n() as u64,
-                (2 * N as u32) / (len as u32),
+                TWO_N_U32 / (len as u32),
                 Q,
             ))
         } else {
             pow_mod(
                 omega_2n() as u64,
-                (2 * N as u32) / (len as u32),
+                TWO_N_U32 / (len as u32),
                 Q,
             )
         };
@@ -125,5 +183,20 @@ mod tests {
         y[0] = 4;
         let xy = negacyclic_mul(&x, &y);
         assert_eq!(xy[0], 12);
+    }
+
+    #[test]
+    fn derived_omega_has_expected_order() {
+        let omega = omega_2n();
+        assert_eq!(pow_mod(omega as u64, TWO_N_U32, Q), 1);
+        assert_ne!(pow_mod(omega as u64, N as u32, Q), 1);
+    }
+
+    #[test]
+    fn invalid_parameter_pair_panics() {
+        let got = std::panic::catch_unwind(|| validate_ntt_parameters(17, 8));
+        assert!(got.is_ok(), "17-1 is divisible by 8");
+        let bad = std::panic::catch_unwind(|| validate_ntt_parameters(17, 10));
+        assert!(bad.is_err(), "17-1 is not divisible by 10");
     }
 }

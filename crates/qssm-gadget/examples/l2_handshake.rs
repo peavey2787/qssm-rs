@@ -96,6 +96,7 @@ fn run() {
         "nist_beacon_included": nist_included,
         "engine_a_public": {
             "message_limb_u30": sovereign.message_limb,
+            "digest_coeff_vector_u4": sovereign.digest_coeff_vector.to_vec(),
         },
         "artifacts": {
             "sovereign_witness_json": "sovereign_witness.json",

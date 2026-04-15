@@ -32,7 +32,7 @@ This document is **normative for gadget design**; it does **not** replace the **
 | Layer | Role in integration |
 |--------|---------------------|
 | **Constraint / R1CS (Goldilocks \(F_p\))** | Bit logic, 32‑bit word arithmetic mod \(2^{32}\), BLAKE3 round functions, Merkle chaining. Coefficients are small; **`q`** is large enough for **boolean** and **limb** algebra with **no wrap** inside a single limb if limbs are chosen \(\ll q\). |
-| **Lift to \(R_q\)** | The existing LE pipeline maps structured field witnesses to **\(\mu(m)\)** and short vectors **\(r,y,z\)** (see [Engine A](./qssm-le-engine-a.md)). The **gadget** produces the integer(s) that become **`m`** or a hashed digest limb sequence **consistent** with **`MAX_MESSAGE`** and embedding rules. |
+| **Lift to \(R_q\)** | The existing LE pipeline maps structured field witnesses to **\(\mu(\text{public\_binding})\)** and short vectors **\(r,y,z\)** (see [Engine A](./qssm-le-engine-a.md)). The gadget now binds a digest coefficient-vector payload (secure mode), with legacy scalar limb retained only for migration. |
 
 **Integration invariant:** Engine B’s **7‑step** Merkle path (128 leaves → depth **7**) matches **`PositionAwareTree`** + **`merkle_parent`** in **`qssm-utils`** (`DOMAIN_MERKLE_PARENT = "QSSM-MERKLE-PARENT-v1.0"`).
 
@@ -145,7 +145,7 @@ Each **`merkle_parent`** invocation expands to **one** **`hash_domain(DOMAIN_MER
 
 ### 5.2 Binding to LE’s public input
 
-- **Option A (digest embedding):** Compute **\(d = \texttt{BLAKE3}(\text{“MS‑VERIFIED”} \Vert R^\* \Vert \cdots)\)** and embed **\(d \bmod 2^{30}\)** (or a limb) as **`m`** subject to **`MAX_MESSAGE`** (see **`qssm-le`** `params`).
+- **Option A (digest embedding):** Compute **\(d = \texttt{BLAKE3}(\text{“MS‑VERIFIED”} \Vert R^\* \Vert \cdots)\)** and embed digest-derived coefficient lanes into **`PublicBinding::DigestCoeffVector`** (see **`qssm-le`** params and commit path).
 - **Option B (multi‑proof):** Multiple **LE** messages or an extended **rollup** statement carry **32‑byte** **root** explicitly in a **batch** verifier (future **`qssm-ref`** trait).
 
 The **Fiat–Shamir** transcript for **MS** already mixes **`rollup_context_digest`**; the **integrated** statement must **re‑expose** the same digest in the **LE** FS input order when **cross‑binding** engines.
@@ -170,7 +170,7 @@ If **BLAKE3** is **collision‑resistant** and **R1CS** sound, a prover cannot f
 - [Engine A — QSSM‑LE](./qssm-le-engine-a.md)  
 - [Engine B — QSSM‑MS](./qssm-ms-engine-b.md)  
 - **`qssm-utils`**: `merkle_parent`, `hash_domain`, `DOMAIN_MERKLE_PARENT`  
-- **`qssm-le`**: `params` (`N`, `Q`, `MAX_MESSAGE`)
+- **`qssm-le`**: `params` (`N`, `Q`, `PUBLIC_DIGEST_COEFFS`, `C_POLY_SIZE`)
 
 ---
 

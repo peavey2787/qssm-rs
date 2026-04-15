@@ -81,7 +81,7 @@ fn build_duel_tx(
     assert!(valid_duel_public_message(public_m));
 
     let vk = VerifyingKey::from_seed(crs);
-    let public = PublicInstance { message: public_m };
+    let public = PublicInstance::legacy_message(public_m);
     let witness = Witness {
         r: [0i32; qssm_le::N],
     };
@@ -162,7 +162,7 @@ fn duel_rejects_impossible_public_message() {
     let sk_winner = if winner == id_a { &sk_alice } else { &sk_bob };
 
     let vk = VerifyingKey::from_seed([0x3Du8; 32]);
-    let public = PublicInstance { message: public_m };
+    let public = PublicInstance::legacy_message(public_m);
     let witness = Witness {
         r: [0i32; qssm_le::N],
     };
@@ -249,9 +249,7 @@ fn bad_signature_rejects() {
 #[test]
 fn verify_lattice_latency_release_god_mode() {
     let vk = VerifyingKey::from_seed([0x99; 32]);
-    let public = PublicInstance {
-        message: public_message_for_duel(1000, 500).unwrap(),
-    };
+    let public = PublicInstance::legacy_message(public_message_for_duel(1000, 500).unwrap());
     let witness = Witness {
         r: [0i32; qssm_le::N],
     };
