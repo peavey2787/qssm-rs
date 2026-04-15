@@ -7,6 +7,7 @@ description = "Kaspa L1 gRPC anchor (stub); enable feature kaspa-grpc for tonic 
 
 [dependencies]
 qssm-common = { path = "../qssm-common" }
+qssm-utils = { path = "../qssm-utils" }
 
 [features]
 default = []

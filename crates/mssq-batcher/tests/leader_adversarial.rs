@@ -6,7 +6,8 @@ use mssq_batcher::{
     elect_leader, mssq_seed_from_anchor, rollup_context_from_l1, verify_leader_attestation,
     BatcherError, LeaderAttestation,
 };
-use qssm_common::{L1Anchor, MockKaspaAdapter};
+use qssm_common::L1Anchor;
+use qssm_kaspa::MockKaspaAdapter;
 use qssm_utils::{leader_attestation_signing_bytes, leader_id_from_ml_dsa_public_key};
 
 fn signing_key_from_test_seed(byte: u8) -> ml_dsa::SigningKey<MlDsa65> {

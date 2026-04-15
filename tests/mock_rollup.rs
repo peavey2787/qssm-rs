@@ -6,7 +6,8 @@ use mssq_batcher::{
     apply_batch, elect_leader, rollup_context_from_l1, sort_lexicographical,
     verify_leader_attestation, LeaderAttestation, RollupState,
 };
-use qssm_common::{Batch, L1Anchor, L1BatchSink, L2Transaction, MockKaspaAdapter};
+use qssm_common::{Batch, L1Anchor, L1BatchSink, L2Transaction};
+use qssm_kaspa::MockKaspaAdapter;
 use qssm_ms::{commit, prove, verify};
 use qssm_ref::verify::AcceptAllTxVerifier;
 use qssm_utils::{leader_attestation_signing_bytes, leader_id_from_ml_dsa_public_key, mssq_seed_k};

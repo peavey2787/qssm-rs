@@ -10,3 +10,6 @@ ml-dsa.workspace = true
 qssm-common = { path = "../qssm-common" }
 qssm-utils = { path = "../qssm-utils" }
 thiserror.workspace = true
+
+[dev-dependencies]
+qssm-kaspa = { path = "../qssm-kaspa" }

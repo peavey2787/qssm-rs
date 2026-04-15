@@ -23,7 +23,7 @@ This repository is a Cargo **workspace**. Most functionality lives under `crates
 - `StorageLease` and related rollup-side bookkeeping types
 - `RollupState`: in-memory SMT (`StateMirrorTree` from `qssm-utils`), lease map, `pulse_height`, and `recent_roots` (rolling root history for pruning / fraud checks)
 - L1 traits: `L1Anchor` (finality-aware Kaspa view), `L1BatchSink` (batch posting), combined as `SovereignAnchor`
-- `MockKaspaAdapter` for tests and local demos
+- Trait surface consumed by `qssm-kaspa` adapters (including `MockKaspaAdapter` for tests/demos)
 - `rollup_context_from_l1` and related helpers to build a canonical rollup context from an anchor
 
 **For:** Every layer that sequences transactions or talks about “the rollup” without re-embedding domain definitions.

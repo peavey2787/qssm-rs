@@ -1,9 +1,7 @@
+use qssm_common::{Batch, Error, L1Anchor, L1BatchSink};
 use qssm_utils::hashing::{
     hash_domain, DOMAIN_MOCK_KASPA_BLOCK, DOMAIN_MOCK_KASPA_ENTROPY, DOMAIN_MOCK_QRNG,
 };
-
-use crate::l1_anchor::{L1Anchor, L1BatchSink};
-use crate::{Batch, Error};
 
 /// Deterministic mock BlockDAG: volatile `fast_tick` vs **`finalized_tick`** (rollup anchor).
 #[derive(Debug, Clone)]
@@ -11,7 +9,7 @@ pub struct MockKaspaAdapter {
     slot: u64,
     genesis: [u8; 32],
     posted: Vec<Batch>,
-    /// Volatile tip simulation (~100 ms narrative).
+    /// Volatile tip simulation (~100 ms narrative).
     fast_tick: u64,
     /// Tick depth included in finalized / rollup-safe parent hash.
     finalized_tick: u64,
@@ -82,10 +80,7 @@ impl MockKaspaAdapter {
     fn refresh_qrng_digest(&mut self) {
         self.qrng_value = hash_domain(
             DOMAIN_MOCK_QRNG,
-            &[
-                self.qrng_epoch.to_le_bytes().as_slice(),
-                self.genesis.as_slice(),
-            ],
+            &[self.qrng_epoch.to_le_bytes().as_slice(), self.genesis.as_slice()],
         );
     }
 

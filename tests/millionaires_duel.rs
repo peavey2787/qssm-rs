@@ -11,7 +11,8 @@ use mssq_batcher::{
     apply_batch, elect_leader, mssq_seed_from_anchor, sort_lexicographical, BatcherError,
     LeaderAttestation, RollupState,
 };
-use qssm_common::{rollup_context_from_l1, Batch, L1Anchor, L2Transaction, MockKaspaAdapter};
+use qssm_common::{rollup_context_from_l1, Batch, L1Anchor, L2Transaction};
+use qssm_kaspa::MockKaspaAdapter;
 use qssm_le::{prove_arithmetic, verify_lattice, PublicInstance, VerifyingKey, Witness};
 use qssm_ref::millionaires_duel::{
     decode_millionaires_proof, duel_holds, duel_settlement_payload, encode_millionaires_proof,

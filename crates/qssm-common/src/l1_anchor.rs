@@ -22,7 +22,7 @@ pub trait L1BatchSink {
     fn post_batch(&mut self, batch: &Batch) -> Result<(), Error>;
 }
 
-/// Rollup-facing anchor: reads + optional posting (implemented by [`crate::MockKaspaAdapter`]).
+/// Rollup-facing anchor: reads + optional posting (implemented by anchor adapters such as `qssm_kaspa::MockKaspaAdapter`).
 pub trait SovereignAnchor: L1Anchor + L1BatchSink {}
 
 impl<T: L1Anchor + L1BatchSink> SovereignAnchor for T {}

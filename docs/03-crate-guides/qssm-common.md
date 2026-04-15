@@ -51,7 +51,8 @@ Production **`GrpcKaspaAnchor`** (`crates/qssm-kaspa`) implements **`L1Anchor`**
 
 ## `MockKaspaAdapter` — deterministic BlockDAG for tests
 
-`src/mock.rs` simulates **volatile** vs **finalized** depth:
+Now lives in **`crates/qssm-kaspa/src/adapter/mock.rs`** (not in `qssm-common`).
+It simulates **volatile** vs **finalized** depth:
 
 - **`fast_tick`**: advances on **`tick_fast()`** (~volatile tip).
 - **`finalized_tick`**: included in **`parent_hash_with_tick(finalized_tick)`** — what **`parent_block_hash_prev`** uses.
