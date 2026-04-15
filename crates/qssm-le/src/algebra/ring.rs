@@ -1,7 +1,7 @@
 //! Cyclotomic ring \(R_q = \mathbb{Z}_q[X]/(X^{64}+1)\) with negacyclic multiplication via length-128 NTT.
 #![forbid(unsafe_code)]
 
-use crate::params::{BETA, N, Q};
+use crate::protocol::params::{BETA, N, Q};
 use crate::LeError;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -36,7 +36,7 @@ impl RqPoly {
 
     /// Negacyclic multiplication (uses NTT internally).
     pub fn mul(&self, other: &Self) -> Result<Self, LeError> {
-        Ok(RqPoly(crate::ntt::negacyclic_mul(&self.0, &other.0)))
+        Ok(RqPoly(crate::algebra::ntt::negacyclic_mul(&self.0, &other.0)))
     }
 
     pub fn scalar_mul_u32(&self, s: u32) -> Self {
@@ -77,11 +77,7 @@ impl RqPoly {
 fn center_u32_mod(x: u32) -> i64 {
     let x = i64::from(x);
     let q = i64::from(Q);
-    if x > q / 2 {
-        x - q
-    } else {
-        x
-    }
+    if x > q / 2 { x - q } else { x }
 }
 
 #[inline]
@@ -107,11 +103,7 @@ pub fn short_vec_to_rq_bound(coeffs: &[i32; N], bound: u32) -> Result<RqPoly, Le
         if v.unsigned_abs() > bound {
             return Err(LeError::RejectedSample);
         }
-        let u = if v >= 0 {
-            v as u32
-        } else {
-            Q - ((-v) as u32 % Q)
-        };
+        let u = if v >= 0 { v as u32 } else { Q - ((-v) as u32 % Q) };
         out[i] = u % Q;
     }
     Ok(RqPoly(out))
@@ -125,7 +117,7 @@ pub fn short_vec_to_rq(coeffs: &[i32; N]) -> Result<RqPoly, LeError> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ntt::negacyclic_mul;
+    use crate::algebra::ntt::negacyclic_mul;
 
     #[test]
     fn mul_by_one() {

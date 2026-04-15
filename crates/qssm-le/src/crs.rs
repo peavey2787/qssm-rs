@@ -3,8 +3,8 @@
 
 use qssm_utils::hashing::{hash_domain, DOMAIN_LE};
 
-use crate::params::{N, Q};
-use crate::ring::RqPoly;
+use crate::algebra::ring::RqPoly;
+use crate::protocol::params::{N, Q};
 
 /// Verifying / proving key material (nothing-up-my-sleeve seed).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

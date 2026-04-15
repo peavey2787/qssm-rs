@@ -14,21 +14,19 @@
 //! ```
 #![forbid(unsafe_code)]
 
-mod commit;
+mod algebra;
 mod crs;
 mod error;
-mod ntt;
-mod params;
-mod ring;
+mod protocol;
 
-pub use commit::{
+pub use algebra::ring::{encode_rq_coeffs_le, short_vec_to_rq, short_vec_to_rq_bound, RqPoly};
+pub use crs::VerifyingKey;
+pub use error::LeError;
+pub use protocol::commit::{
     commit_mlwe, prove_with_witness, verify_lattice_algebraic, Commitment, LatticeProof,
     PublicInstance, Witness,
 };
-pub use crs::VerifyingKey;
-pub use error::LeError;
-pub use params::{BETA, C_SPAN, ETA, GAMMA, MAX_MESSAGE, N, Q};
-pub use ring::{encode_rq_coeffs_le, short_vec_to_rq, short_vec_to_rq_bound, RqPoly};
+pub use protocol::params::{BETA, C_SPAN, ETA, GAMMA, MAX_MESSAGE, N, Q};
 
 /// Witness-free verifier (includes `rollup_context_digest` in FS challenge).
 pub fn verify_lattice(

@@ -5,7 +5,7 @@
 //! Length-128 NTT mod `Q` for negacyclic convolution mod \(X^{64}+1\).
 #![forbid(unsafe_code)]
 
-use crate::params::{N, Q};
+use crate::protocol::params::{N, Q};
 
 fn pow_mod(mut a: u64, mut e: u32, m: u32) -> u32 {
     let m = m as u64;
@@ -83,7 +83,7 @@ fn ntt_inplace(a: &mut [u32], invert: bool) {
 }
 
 /// Negacyclic product mod \(X^N+1\), \(N=64\).
-pub fn negacyclic_mul(a: &[u32; N], b: &[u32; N]) -> [u32; N] {
+pub(crate) fn negacyclic_mul(a: &[u32; N], b: &[u32; N]) -> [u32; N] {
     let mut fa = [0u32; 128];
     let mut fb = [0u32; 128];
     fa[..N].copy_from_slice(a);
@@ -104,7 +104,7 @@ pub fn negacyclic_mul(a: &[u32; N], b: &[u32; N]) -> [u32; N] {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::params::N;
+    use crate::protocol::params::N;
 
     #[test]
     fn ntt_roundtrip_delta() {

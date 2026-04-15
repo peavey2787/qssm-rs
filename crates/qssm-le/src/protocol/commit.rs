@@ -3,16 +3,16 @@
 
 use rand::RngCore;
 
+use crate::algebra::ring::{encode_rq_coeffs_le, short_vec_to_rq, short_vec_to_rq_bound, RqPoly};
 use crate::crs::VerifyingKey;
-use crate::params::{BETA, C_SPAN, ETA, GAMMA, MAX_MESSAGE, MAX_PROVER_ATTEMPTS, N};
-use crate::ring::{encode_rq_coeffs_le, short_vec_to_rq, short_vec_to_rq_bound, RqPoly};
+use crate::protocol::params::{BETA, C_SPAN, ETA, GAMMA, MAX_MESSAGE, MAX_PROVER_ATTEMPTS, N};
 use crate::LeError;
 
 const DOMAIN_LE_FS: &str = "QSSM-LE-FS-LYU-v1.0";
 
 /// Public inputs visible to all verifiers (no secret witness).
 ///
-/// **`message`** is **`0 ≤ message < 2^30`** ([`MAX_MESSAGE`](crate::params::MAX_MESSAGE)).  
+/// **`message`** is **`0 ≤ message < 2^30`** ([`MAX_MESSAGE`](crate::protocol::params::MAX_MESSAGE)).  
 /// Engine B may supply it from **`qssm-gadget`** `binding::SovereignWitness::message_limb` (normative sovereign digest → **30‑bit** LE limb).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PublicInstance {
