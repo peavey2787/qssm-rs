@@ -1,18 +1,17 @@
 ### Documentation map
 
-* [README](../../README.md) — Project home
-* [Architecture overview](../01-architecture/architecture-overview.md)
-* [MSSQ — Egalitarian rollup](../02-protocol-specs/mssq.md)
-* [QSSM-LE — Engine A](../02-protocol-specs/qssm-le-engine-a.md)
-* [QSSM-MS — Engine B](../02-protocol-specs/qssm-ms-engine-b.md)
-* [BLAKE3–lattice gadget spec](../02-protocol-specs/blake3-lattice-gadget-spec.md)
-* [Kaspa L2 core deployment manifest](../01-architecture/l2-kaspa-deployment.md)
+* [README](../README.md) — Project home
+* [Architecture overview](./architecture-overview.md)
+* [MSSQ — Egalitarian rollup](./mssq-rollup.md)
+* [QSSM-LE — Engine A](./qssm-le-engine-a.md)
+* [QSSM-MS — Engine B](./qssm-ms-engine-b.md)
+* [BLAKE3–lattice gadget spec](./blake3-lattice-gadget-spec.md)
 
 ---
 
 # BLAKE3–Lattice Gadget — Rust implementation plan
 
-This document is the **normative implementation plan** for [`blake3-lattice-gadget-spec.md`](../02-protocol-specs/blake3-lattice-gadget-spec.md). **Math is law:** there is no “primitives first, decomposition later” shortcut—**bit decomposition and degree‑2 algebra are mandatory from the first line of `bits.rs`.**
+This document is the **normative implementation plan** for [`blake3-lattice-gadget-spec.md`](./blake3-lattice-gadget-spec.md). **Math is law:** there is no “primitives first, decomposition later” shortcut—**bit decomposition and degree‑2 algebra are mandatory from the first line of `bits.rs`.**
 
 ---
 
@@ -129,7 +128,7 @@ flowchart LR
 | **3** | **`binding.rs`**: **Sovereign Digest** (**`DOMAIN_SOVEREIGN_LIMB_V2`**, **`encode_proof_metadata_v2`** incl. Phase 8 entropy + **`nist` flag**, LE limb, **`SovereignWitness`**). | Golden vectors; **`PublicInstance::validate`**; witness **`validate()`** round‑trip. |
 | **4** | **`r1cs.rs`**: normative **constraint IR** — **`ConstraintSystem`**, **`Blake3Gadget::synthesize_g`**, **`MockProver`** baseline counter; real provers implement the same trait. | **`test_blake3_g_constraint_cost`** locks **G** cost; optional benches. |
 | **5** | **`blake3_compress.rs`**: **`MSG_SCHEDULE`**, **`CompressionWitness`** (**56 × `G`** / compress), **`hash_merkle_parent_witness`**; **`Blake3Gadget::synthesize_compress`** / **`synthesize_merkle_parent_hash`**. | **`test_full_merkle_parent_parity`**: digest **bit-for-bit** vs **`qssm_utils::merkle_parent`**; **MockProver** full-chain count locked (**65 184**). |
-| **6** | **`prover_json.rs`** + **`examples/l2_handshake.rs`** + deployment docs: **`SovereignWitness` / Merkle** → **`to_prover_json`**, **`prover_package.json`**, R1CS manifest path, wire-count metadata. | Example runs; artifacts on disk; manifest line count **65 184**; **`docs/01-architecture/l2-kaspa-deployment.md`** aligned. |
+| **6** | **`prover_json.rs`** + **`examples/l2_handshake.rs`** + deployment docs: **`SovereignWitness` / Merkle** → **`to_prover_json`**, **`prover_package.json`**, R1CS manifest path, wire-count metadata. | Example runs; artifacts on disk; manifest line count **65 184**; **`docs/l2-kaspa-core-deployment-manifest.md`** aligned. |
 | **7** | **`lattice_bridge.rs`**: **`verify_limb_binding_json`** (always); **`verify_handshake_with_le`** (feature **`lattice-bridge`**); **`BRIDGE_Q = 7_340_033`** = **`qssm_le::Q`**. | JSON limb equality + **`m < 2^{30}`**; optional LE path checks **`embed_constant`** vs **`m mod Q`** (and **`coeff₀ = m`** when **`m < Q`**). |
 | **8** | **`entropy.rs`**: **`EntropyProvider`**, **`entropy_floor` = BLAKE3(Kaspa‖local)**, **`fetch_nist_pulse`** (NIST Beacon **2.0** **`pulse.outputValue`**, first **32** bytes, **200 OK** only, **500 ms** timeout), **`generate_sovereign_entropy`** → **Final = Floor ⊕ Pulse** if NIST succeeds. | Unit tests (floor, XOR, hex parse); **`l2_handshake`** simulates NIST up/down + production path; package **`nist_beacon_included`**. |
 
@@ -171,8 +170,8 @@ flowchart LR
 ## Phase 6 — Prover JSON & L2 handshake artifacts (**complete**)
 
 - **`prover_json`**: private wire counting for sovereign + Merkle compress witnesses; value hooks for golden / tooling.
-- **`examples/l2_handshake.rs`**: Merkle parent witness, **`EntropyProvider`** (Phase 8), **`SovereignWitness::bind`**, **`Blake3Gadget::export_r1cs`**, writes artifacts to **`crates/qssm-gadget/assets/`**: **`prover_package.json`** (**`nist_beacon_included`**), **`sovereign_witness.json`**, **`merkle_parent_witness.json`**, **`r1cs_merkle_parent.manifest.txt`** (large stack on Windows worker thread).
-- **Deployment manifest:** [`l2-kaspa-deployment.md`](../01-architecture/l2-kaspa-deployment.md) lists Engine B/A field map and artifact paths.
+- **`examples/l2_handshake.rs`**: Merkle parent witness, **`EntropyProvider`** (Phase 8), **`SovereignWitness::bind`**, **`Blake3Gadget::export_r1cs`**, writes **`prover_package.json`** (**`nist_beacon_included`**), **`sovereign_witness.json`**, **`merkle_parent_witness.json`**, **`r1cs_merkle_parent.manifest.txt`** (large stack on Windows worker thread).
+- **Deployment manifest:** [`l2-kaspa-core-deployment-manifest.md`](./l2-kaspa-core-deployment-manifest.md) lists Engine B/A field map and artifact paths.
 
 **Exit criteria:** example + tests green; package JSON schema stable for Engine A consumption.
 
@@ -341,19 +340,19 @@ Let **`D = SovereignDigest`** be **`[u8; 32]`** (**256** bits).
 
 | File | Responsibility |
 |------|----------------|
-| [`crates/qssm-gadget/Cargo.toml`](../../crates/qssm-gadget/Cargo.toml) | Crate manifest; `qssm-utils`, `ureq`, `thiserror`; feature **`lattice-bridge`** → optional **`qssm-le`**; `blake3` dev for vectors. |
-| [`crates/qssm-gadget/src/lib.rs`](../../crates/qssm-gadget/src/lib.rs) | `bits`, `merkle`, `binding`, `blake3_native`, **`entropy`**, **`r1cs`**, **`lattice_bridge`**, `error`; re‑exports **`ConstraintSystem`**, **`MockProver`**, **`Blake3Gadget`**, **`verify_limb_binding_json`**. |
-| [`crates/qssm-gadget/src/primitives/bits.rs`](../../crates/qssm-gadget/src/primitives/bits.rs) | Degree‑2 XOR, **`FullAdder`**, ripple + **`XorWitness` / `RippleCarryWitness`** from **day one**; LE only. |
-| [`crates/qssm-gadget/src/merkle.rs`](../../crates/qssm-gadget/src/merkle.rs) | **Phase 0** LE path ↔ orientation; **`recompute_root`**. |
-| [`crates/qssm-gadget/src/circuit/binding.rs`](../../crates/qssm-gadget/src/circuit/binding.rs) | **Phase 3+8**: **`hash_domain(DOMAIN_SOVEREIGN_LIMB_V2, [root‖rollup‖metadata_v2])`**, LE **30‑bit** limb, **`SovereignWitness`** (**`nist_included`**, **`sovereign_entropy`**). |
-| [`crates/qssm-gadget/src/primitives/entropy.rs`](../../crates/qssm-gadget/src/primitives/entropy.rs) | **Phase 8**: **`EntropyProvider`**, **`fetch_nist_pulse`**, **`generate_sovereign_entropy`**, **500 ms** default timeout. |
-| [`crates/qssm-gadget/src/primitives/blake3_native.rs`](../../crates/qssm-gadget/src/primitives/blake3_native.rs) | G‑function / quarter‑round: **`XorWitness`**, **`RippleCarryWitness`**, **`bit_wire_rotate`**, **`BitRotateWitness`**, chained **`QuarterRoundWitness`** (no native `u32` mix on witness path). |
-| [`crates/qssm-gadget/src/primitives/blake3_compress.rs`](../../crates/qssm-gadget/src/primitives/blake3_compress.rs) | **Phase 5**: **`MSG_SCHEDULE`**, **`CompressionWitness`** (**56 × `G`**), **`hash_merkle_parent_witness`**, **`compress_native`** oracle. |
-| [`crates/qssm-gadget/src/circuit/r1cs.rs`](../../crates/qssm-gadget/src/circuit/r1cs.rs) | **Phase 4–5**: **`ConstraintSystem`**, **`MockProver`**, **`Blake3Gadget::synthesize_g`**, **`synthesize_compress`**, **`synthesize_merkle_parent_hash`**. |
-| [`crates/qssm-gadget/src/lattice/lattice_bridge.rs`](../../crates/qssm-gadget/src/lattice/lattice_bridge.rs) | **Phase 7**: **`BRIDGE_Q`**, **`verify_limb_binding_json`** (+ **`nist_beacon_included`** vs **`public.nist_included`**), **`verify_handshake_with_le`** (feature **`lattice-bridge`**). |
-| [`crates/qssm-gadget/src/error.rs`](../../crates/qssm-gadget/src/error.rs) | **`GadgetError`** variants. |
-| [`crates/qssm-gadget/examples/l2_handshake.rs`](../../crates/qssm-gadget/examples/l2_handshake.rs) | **Phase 6+8** demo; Phase 8 NIST up/down simulation + production **`EntropyProvider::default()`**; **`nist_beacon_included`** in package; **`verify_limb_binding_json`**; optional **`verify_handshake_with_le`** with **`--features lattice-bridge`**. |
-| [`crates/qssm-gadget/tests/`](../../crates/qssm-gadget/tests/) | MS + digest golden + **`full_merkle_parent_parity`** (Merkle parent **bit** parity + constraint count). |
+| [`crates/qssm-gadget/Cargo.toml`](crates/qssm-gadget/Cargo.toml) | Crate manifest; `qssm-utils`, `ureq`, `thiserror`; feature **`lattice-bridge`** → optional **`qssm-le`**; `blake3` dev for vectors. |
+| [`crates/qssm-gadget/src/lib.rs`](crates/qssm-gadget/src/lib.rs) | `bits`, `merkle`, `binding`, `blake3_native`, **`entropy`**, **`r1cs`**, **`lattice_bridge`**, `error`; re‑exports **`ConstraintSystem`**, **`MockProver`**, **`Blake3Gadget`**, **`verify_limb_binding_json`**. |
+| [`crates/qssm-gadget/src/bits.rs`](crates/qssm-gadget/src/bits.rs) | Degree‑2 XOR, **`FullAdder`**, ripple + **`XorWitness` / `RippleCarryWitness`** from **day one**; LE only. |
+| [`crates/qssm-gadget/src/merkle.rs`](crates/qssm-gadget/src/merkle.rs) | **Phase 0** LE path ↔ orientation; **`recompute_root`**. |
+| [`crates/qssm-gadget/src/binding.rs`](crates/qssm-gadget/src/binding.rs) | **Phase 3+8**: **`hash_domain(DOMAIN_SOVEREIGN_LIMB_V2, [root‖rollup‖metadata_v2])`**, LE **30‑bit** limb, **`SovereignWitness`** (**`nist_included`**, **`sovereign_entropy`**). |
+| [`crates/qssm-gadget/src/entropy.rs`](crates/qssm-gadget/src/entropy.rs) | **Phase 8**: **`EntropyProvider`**, **`fetch_nist_pulse`**, **`generate_sovereign_entropy`**, **500 ms** default timeout. |
+| [`crates/qssm-gadget/src/blake3_native.rs`](crates/qssm-gadget/src/blake3_native.rs) | G‑function / quarter‑round: **`XorWitness`**, **`RippleCarryWitness`**, **`bit_wire_rotate`**, **`BitRotateWitness`**, chained **`QuarterRoundWitness`** (no native `u32` mix on witness path). |
+| [`crates/qssm-gadget/src/blake3_compress.rs`](crates/qssm-gadget/src/blake3_compress.rs) | **Phase 5**: **`MSG_SCHEDULE`**, **`CompressionWitness`** (**56 × `G`**), **`hash_merkle_parent_witness`**, **`compress_native`** oracle. |
+| [`crates/qssm-gadget/src/r1cs.rs`](crates/qssm-gadget/src/r1cs.rs) | **Phase 4–5**: **`ConstraintSystem`**, **`MockProver`**, **`Blake3Gadget::synthesize_g`**, **`synthesize_compress`**, **`synthesize_merkle_parent_hash`**. |
+| [`crates/qssm-gadget/src/lattice_bridge.rs`](crates/qssm-gadget/src/lattice_bridge.rs) | **Phase 7**: **`BRIDGE_Q`**, **`verify_limb_binding_json`** (+ **`nist_beacon_included`** vs **`public.nist_included`**), **`verify_handshake_with_le`** (feature **`lattice-bridge`**). |
+| [`crates/qssm-gadget/src/error.rs`](crates/qssm-gadget/src/error.rs) | **`GadgetError`** variants. |
+| [`crates/qssm-gadget/examples/l2_handshake.rs`](crates/qssm-gadget/examples/l2_handshake.rs) | **Phase 6+8** demo; Phase 8 NIST up/down simulation + production **`EntropyProvider::default()`**; **`nist_beacon_included`** in package; **`verify_limb_binding_json`**; optional **`verify_handshake_with_le`** with **`--features lattice-bridge`**. |
+| [`crates/qssm-gadget/tests/`](crates/qssm-gadget/tests/) | MS + digest golden + **`full_merkle_parent_parity`** (Merkle parent **bit** parity + constraint count). |
 
 ---
 
@@ -368,7 +367,7 @@ Let **`D = SovereignDigest`** be **`[u8; 32]`** (**256** bits).
 
 ## Documentation sync
 
-- Align [`blake3-lattice-gadget-spec.md`](../02-protocol-specs/blake3-lattice-gadget-spec.md) §5.2 with **§5** here (Sovereign Digest before limb).
+- Align [`blake3-lattice-gadget-spec.md`](./blake3-lattice-gadget-spec.md) §5.2 with **§5** here (Sovereign Digest before limb).
 - This file is the **implementation** law; the spec is **design** normative.
 
 ---
