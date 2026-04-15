@@ -1,12 +1,15 @@
 //! Module-LWE commitment \(C = A r + \mu\) with Lyubashevsky-style Fiat–Shamir + rejection (no witness in proof).
 #![forbid(unsafe_code)]
 
+use core::hint::black_box;
 use rand::RngCore;
 use qssm_utils::hashing::DOMAIN_MS;
 use subtle::{Choice, ConstantTimeEq, ConstantTimeLess};
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
-use crate::algebra::ring::{encode_rq_coeffs_le, short_vec_to_rq, short_vec_to_rq_bound, RqPoly};
+use crate::algebra::ring::{
+    encode_rq_coeffs_le, short_vec_to_rq, short_vec_to_rq_bound, RqPoly, ScrubbedPoly,
+};
 use crate::crs::VerifyingKey;
 use crate::protocol::params::{
     BETA, C_POLY_SIZE, C_POLY_SPAN, ETA, GAMMA, MAX_MESSAGE_LEGACY, MAX_PROVER_ATTEMPTS, N,
@@ -154,16 +157,102 @@ fn fs_challenge_bytes(
     *h.finalize().as_bytes()
 }
 
-fn ct_reject_if_above_gamma(poly: &RqPoly) -> Choice {
-    let mut ok = Choice::from(1u8);
-    let q_half = (Q / 2) as i64;
-    for &coeff in &poly.0 {
-        let x = i64::from(coeff);
-        let centered = if x > q_half { x - i64::from(Q) } else { x };
-        let abs_centered = centered.unsigned_abs();
-        ok &= (abs_centered as u32).ct_lt(&(GAMMA + 1));
+#[inline(never)]
+fn gamma_bound_scan(poly: &RqPoly) -> Choice {
+    #[inline(always)]
+    fn check_coeff(coeff: u32) -> Choice {
+        let q_half = Q / 2;
+        let x = coeff;
+        let gt_half_mask = ((q_half.wrapping_sub(x)) >> 31).wrapping_neg();
+        let centered = i64::from(x) - (i64::from(Q) & i64::from(gt_half_mask));
+        let sign_mask = centered >> 63;
+        let abs_centered = ((centered ^ sign_mask) - sign_mask) as u64;
+        (abs_centered as u32).ct_lt(&(GAMMA + 1))
     }
+    let mut ok = Choice::from(1u8);
+    macro_rules! check4 {
+        ($a:expr, $b:expr, $c:expr, $d:expr) => {{
+            ok &= check_coeff(poly.0[$a]);
+            ok &= check_coeff(poly.0[$b]);
+            ok &= check_coeff(poly.0[$c]);
+            ok &= check_coeff(poly.0[$d]);
+        }};
+    }
+    check4!(0, 1, 2, 3);
+    check4!(4, 5, 6, 7);
+    check4!(8, 9, 10, 11);
+    check4!(12, 13, 14, 15);
+    check4!(16, 17, 18, 19);
+    check4!(20, 21, 22, 23);
+    check4!(24, 25, 26, 27);
+    check4!(28, 29, 30, 31);
+    check4!(32, 33, 34, 35);
+    check4!(36, 37, 38, 39);
+    check4!(40, 41, 42, 43);
+    check4!(44, 45, 46, 47);
+    check4!(48, 49, 50, 51);
+    check4!(52, 53, 54, 55);
+    check4!(56, 57, 58, 59);
+    check4!(60, 61, 62, 63);
+    check4!(64, 65, 66, 67);
+    check4!(68, 69, 70, 71);
+    check4!(72, 73, 74, 75);
+    check4!(76, 77, 78, 79);
+    check4!(80, 81, 82, 83);
+    check4!(84, 85, 86, 87);
+    check4!(88, 89, 90, 91);
+    check4!(92, 93, 94, 95);
+    check4!(96, 97, 98, 99);
+    check4!(100, 101, 102, 103);
+    check4!(104, 105, 106, 107);
+    check4!(108, 109, 110, 111);
+    check4!(112, 113, 114, 115);
+    check4!(116, 117, 118, 119);
+    check4!(120, 121, 122, 123);
+    check4!(124, 125, 126, 127);
+    check4!(128, 129, 130, 131);
+    check4!(132, 133, 134, 135);
+    check4!(136, 137, 138, 139);
+    check4!(140, 141, 142, 143);
+    check4!(144, 145, 146, 147);
+    check4!(148, 149, 150, 151);
+    check4!(152, 153, 154, 155);
+    check4!(156, 157, 158, 159);
+    check4!(160, 161, 162, 163);
+    check4!(164, 165, 166, 167);
+    check4!(168, 169, 170, 171);
+    check4!(172, 173, 174, 175);
+    check4!(176, 177, 178, 179);
+    check4!(180, 181, 182, 183);
+    check4!(184, 185, 186, 187);
+    check4!(188, 189, 190, 191);
+    check4!(192, 193, 194, 195);
+    check4!(196, 197, 198, 199);
+    check4!(200, 201, 202, 203);
+    check4!(204, 205, 206, 207);
+    check4!(208, 209, 210, 211);
+    check4!(212, 213, 214, 215);
+    check4!(216, 217, 218, 219);
+    check4!(220, 221, 222, 223);
+    check4!(224, 225, 226, 227);
+    check4!(228, 229, 230, 231);
+    check4!(232, 233, 234, 235);
+    check4!(236, 237, 238, 239);
+    check4!(240, 241, 242, 243);
+    check4!(244, 245, 246, 247);
+    check4!(248, 249, 250, 251);
+    check4!(252, 253, 254, 255);
     ok
+}
+
+#[inline(never)]
+fn ct_reject_if_above_gamma(poly: &RqPoly) -> Choice {
+    #[inline(never)]
+    fn invoke(f: &dyn Fn(&RqPoly) -> Choice, p: &RqPoly) -> Choice {
+        f(p)
+    }
+    let dispatch: &dyn Fn(&RqPoly) -> Choice = &gamma_bound_scan;
+    black_box(invoke(dispatch, poly))
 }
 
 fn challenge_poly(seed: &[u8; 32]) -> [i32; C_POLY_SIZE] {
@@ -223,10 +312,10 @@ pub fn commit_mlwe(
     public.validate()?;
     witness.validate()?;
     let a = vk.matrix_a_poly();
-    let r = short_vec_to_rq(&witness.r)?;
-    let ar = a.mul(&r)?;
+    let r = ScrubbedPoly::from_public(&short_vec_to_rq(&witness.r)?);
+    let ar = r.mul_public(&a)?;
     let mu = mu_from_public(public);
-    Ok(Commitment(ar.add(&mu)))
+    Ok(Commitment(ar.as_public().add(&mu)))
 }
 
 pub fn prove_with_witness(
@@ -240,31 +329,32 @@ pub fn prove_with_witness(
     public.validate()?;
     witness.validate()?;
     let a = vk.matrix_a_poly();
-    let r_poly = short_vec_to_rq(&witness.r)?;
+    let r_poly = ScrubbedPoly::from_public(&short_vec_to_rq(&witness.r)?);
     let mu = mu_from_public(public);
-    let u = commitment.0.sub(&mu);
+    let u = ScrubbedPoly::from_public(&commitment.0.sub(&mu));
 
     for _ in 0..MAX_PROVER_ATTEMPTS {
         let mut nonce = CommitmentRandomness { y: [0i32; N] };
         for coeff in &mut nonce.y {
             *coeff = (rng.next_u32() % (2 * ETA + 1)) as i32 - ETA as i32;
         }
-        let y_poly = short_vec_to_rq_bound(&nonce.y, ETA)?;
-        let t = a.mul(&y_poly)?;
+        let y_poly = ScrubbedPoly::from_public(&short_vec_to_rq_bound(&nonce.y, ETA)?);
+        let t = y_poly.mul_public(&a)?.as_public();
         let challenge_seed = fs_challenge_bytes(rollup_context_digest, vk, public, commitment, &t);
         let c_poly = challenge_poly(&challenge_seed);
         let c_rq = challenge_poly_to_rq(&c_poly);
-        let cr = c_rq.mul(&r_poly)?;
+        let c_rq_secret = ScrubbedPoly::from_public(&c_rq);
+        let cr = r_poly.mul_public(&c_rq)?;
         let z = y_poly.add(&cr);
-        if ct_reject_if_above_gamma(&z).unwrap_u8() == 0 {
+        if ct_reject_if_above_gamma(&z.as_public()).unwrap_u8() == 0 {
             continue;
         }
-        let lhs = a.mul(&z)?;
-        let rhs = t.add(&c_rq.mul(&u)?);
+        let lhs = z.mul_public(&a)?.as_public();
+        let rhs = t.add(&c_rq_secret.mul_scrubbed(&u)?.as_public());
         if lhs == rhs {
             return Ok(LatticeProof {
                 t,
-                z,
+                z: z.into_public(),
                 challenge_seed,
             });
         }

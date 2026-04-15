@@ -19,7 +19,7 @@ mod crs;
 mod error;
 mod protocol;
 
-pub use algebra::ring::{encode_rq_coeffs_le, short_vec_to_rq, short_vec_to_rq_bound, RqPoly};
+pub use algebra::ring::{encode_rq_coeffs_le, short_vec_to_rq, short_vec_to_rq_bound, RqPoly, ScrubbedPoly};
 pub use crs::VerifyingKey;
 pub use error::LeError;
 pub use protocol::commit::{

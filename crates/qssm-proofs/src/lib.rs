@@ -174,6 +174,17 @@ pub fn assess_hardness(
 mod tests {
     use super::*;
 
+    fn lcg_next(state: &mut u64) -> u64 {
+        *state = state.wrapping_mul(6364136223846793005).wrapping_add(1);
+        *state
+    }
+
+    fn perturb_pm_10_percent(base: f64, state: &mut u64) -> f64 {
+        let r = (lcg_next(state) >> 11) as f64 / ((1u64 << 53) as f64);
+        let delta = (r * 0.2) - 0.1;
+        base * (1.0 + delta)
+    }
+
     #[test]
     fn hardness_assessment_structured_status_exists() {
         let assessment = assess_hardness(None, None).expect("assessment should load from system audit");
@@ -218,6 +229,38 @@ mod tests {
             "estimated bits {:.2} below floor {:.2}",
             audit.bits_of_security,
             CI_FLOOR_BITS
+        );
+    }
+
+    #[test]
+    fn test_estimator_sensitivity() {
+        const MONTE_CARLO_CASES: usize = 512;
+        const MIN_SPREAD_BITS: f64 = 8.0;
+
+        let mut min_bits = f64::INFINITY;
+        let mut max_bits = f64::NEG_INFINITY;
+        let mut rng = 0xC0FFEE1234u64;
+
+        for _ in 0..MONTE_CARLO_CASES {
+            let n = perturb_pm_10_percent(N as f64, &mut rng).round().max(64.0) as usize;
+            let q = perturb_pm_10_percent(Q as f64, &mut rng).round().max(1024.0) as u32;
+            let beta = perturb_pm_10_percent(BETA as f64, &mut rng).round().max(1.0) as u32;
+            let c_poly = perturb_pm_10_percent(C_POLY_SIZE as f64, &mut rng).round().max(8.0) as usize;
+            let bits = estimated_bits_of_security(n, q, beta, c_poly);
+
+            assert!(
+                bits >= CI_FLOOR_BITS,
+                "monte-carlo case below CI floor: bits={bits:.2}, n={n}, q={q}, beta={beta}, c_poly={c_poly}"
+            );
+
+            min_bits = min_bits.min(bits);
+            max_bits = max_bits.max(bits);
+        }
+
+        let spread = max_bits - min_bits;
+        assert!(
+            spread >= MIN_SPREAD_BITS,
+            "estimator insufficiently sensitive: spread {spread:.2} < {MIN_SPREAD_BITS:.2}"
         );
     }
 }

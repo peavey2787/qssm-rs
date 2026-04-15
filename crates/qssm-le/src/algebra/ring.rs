@@ -3,9 +3,66 @@
 
 use crate::protocol::params::{BETA, N, Q};
 use crate::LeError;
+use zeroize::{Zeroize, ZeroizeOnDrop};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct RqPoly(pub [u32; N]);
+
+/// Secret-bearing polynomial wrapper that guarantees drop-time zeroization.
+#[derive(Debug, Clone, PartialEq, Eq, Zeroize, ZeroizeOnDrop)]
+pub struct ScrubbedPoly {
+    coeffs: [u32; N],
+}
+
+impl ScrubbedPoly {
+    #[must_use]
+    pub fn from_public(poly: &RqPoly) -> Self {
+        Self { coeffs: poly.0 }
+    }
+
+    #[must_use]
+    pub fn into_public(self) -> RqPoly {
+        RqPoly(self.coeffs)
+    }
+
+    #[must_use]
+    pub fn as_public(&self) -> RqPoly {
+        RqPoly(self.coeffs)
+    }
+
+    pub fn add(&self, other: &Self) -> Self {
+        let mut out = self.as_public().add(&other.as_public()).0;
+        let scrubbed = Self { coeffs: out };
+        out.zeroize();
+        scrubbed
+    }
+
+    pub fn sub_public(&self, other: &RqPoly) -> Self {
+        let mut out = self.as_public().sub(other).0;
+        let scrubbed = Self { coeffs: out };
+        out.zeroize();
+        scrubbed
+    }
+
+    pub fn mul_scrubbed(&self, other: &Self) -> Result<Self, LeError> {
+        let mut out = self.as_public().mul(&other.as_public())?.0;
+        let scrubbed = Self { coeffs: out };
+        out.zeroize();
+        Ok(scrubbed)
+    }
+
+    pub fn mul_public(&self, other: &RqPoly) -> Result<Self, LeError> {
+        let mut out = self.as_public().mul(other)?.0;
+        let scrubbed = Self { coeffs: out };
+        out.zeroize();
+        Ok(scrubbed)
+    }
+
+    #[must_use]
+    pub fn inf_norm_centered(&self) -> u32 {
+        self.as_public().inf_norm_centered()
+    }
+}
 
 impl RqPoly {
     pub fn zero() -> Self {
@@ -129,5 +186,14 @@ mod tests {
         let pb = RqPoly(b);
         let out = negacyclic_mul(&pa.0, &pb.0);
         assert_eq!(out[0], 123);
+    }
+
+    #[test]
+    fn scrubbed_poly_roundtrip() {
+        let mut c = [0u32; N];
+        c[1] = 42;
+        let p = RqPoly(c);
+        let s = ScrubbedPoly::from_public(&p);
+        assert_eq!(s.as_public(), p);
     }
 }
