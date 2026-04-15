@@ -1,7 +1,7 @@
 //! Harvest raw jitter from OpenEntropy (`get_raw_bytes`) on **Unix**, TSC deltas on **Windows x86_64**,
 //! and optional IMU payloads.
 //!
-//! **Windows x86_64:** see [`crate::windows_tsc`]—raw CPU jitter from [`core::arch::x86_64::_rdtsc`],
+//! **Windows x86_64:** see [`crate::backend::windows_tsc`]—raw CPU jitter from [`core::arch::x86_64::_rdtsc`],
 //! not OS-provided randomness.
 
 #[cfg(unix)]
@@ -10,11 +10,11 @@ use openentropy_core::EntropyPool;
 use accelerometer::{RawAccelerometer, Vector};
 use smallvec::SmallVec;
 
-use crate::density;
-use crate::error::HeError;
-use crate::harvest_gate::guard_harvest_enabled;
-use crate::sensor::{SensorEntropy, SENSOR_INLINE_CAP};
-use crate::time::unix_timestamp_ns;
+use crate::backend::sensor::{SensorEntropy, SENSOR_INLINE_CAP};
+use crate::backend::time::unix_timestamp_ns;
+use crate::core::density;
+use crate::filter::harvest_gate::guard_harvest_enabled;
+use crate::HeError;
 use crate::Heartbeat;
 
 /// Configuration for how many raw bytes to request from the hardware observatory.
@@ -75,7 +75,7 @@ fn platform_raw_jitter(n: usize) -> Result<Vec<u8>, HeError> {
 
 #[cfg(all(windows, target_arch = "x86_64"))]
 fn platform_raw_jitter(n: usize) -> Result<Vec<u8>, HeError> {
-    crate::windows_tsc::harvest_tsc_jitter(n)
+    crate::backend::windows_tsc::harvest_tsc_jitter(n)
 }
 
 #[cfg(all(not(unix), not(all(windows, target_arch = "x86_64"))))]

@@ -1,5 +1,5 @@
 //! Global on/off switch for hardware harvesting (e.g. Tauri UI toggle).
-//! When disabled, [`super::harvest`] returns [`crate::HeError::HarvestDisabled`] immediately.
+//! When disabled, [`crate::harvest`] returns [`crate::HeError::HarvestDisabled`] immediately.
 
 use std::sync::atomic::{AtomicBool, Ordering};
 

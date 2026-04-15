@@ -19,24 +19,18 @@
 //! same [`Heartbeat`] yields deterministic output for reproducible backups.
 //!
 
-mod density;
+mod backend;
+mod core;
 mod error;
-mod harvest;
-mod harvest_gate;
-mod pmk;
-mod sensor;
-mod time;
+mod filter;
 
-#[cfg(all(windows, target_arch = "x86_64"))]
-mod windows_tsc;
-
-pub use density::{verify_density, MIN_RAW_BYTES};
+pub use backend::sensor::{SensorEntropy, SENSOR_INLINE_CAP};
+pub use backend::time::unix_timestamp_ns;
+pub use core::density::{verify_density, MIN_RAW_BYTES};
 pub use error::HeError;
-pub use harvest::{harvest, harvest_with_sensor, poll_raw_accelerometer_i16, HarvestConfig};
-pub use harvest_gate::{hardware_harvest_enabled, set_hardware_harvest_enabled};
-pub use pmk::{generate_pmk, PMK_BYTES, PMK_M_COST_KIB, PMK_P_COST, PMK_T_COST};
-pub use sensor::{SensorEntropy, SENSOR_INLINE_CAP};
-pub use time::unix_timestamp_ns;
+pub use core::harvest::{harvest, harvest_with_sensor, poll_raw_accelerometer_i16, HarvestConfig};
+pub use core::pmk::{generate_pmk, PMK_BYTES, PMK_M_COST_KIB, PMK_P_COST, PMK_T_COST};
+pub use filter::harvest_gate::{hardware_harvest_enabled, set_hardware_harvest_enabled};
 
 use blake3::Hasher;
 
