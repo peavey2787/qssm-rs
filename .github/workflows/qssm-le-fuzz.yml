@@ -1,0 +1,44 @@
+name: QSSM-LE Verifier Fuzz
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "crates/qssm-le/**"
+      - ".github/workflows/qssm-le-fuzz.yml"
+
+jobs:
+  verifier-fuzz-1h:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install nightly Rust
+        uses: dtolnay/rust-toolchain@nightly
+
+      - name: Install cargo-fuzz
+        run: cargo install cargo-fuzz --locked
+
+      - name: Verify fuzz target exists
+        working-directory: crates/qssm-le
+        run: cargo +nightly fuzz list
+
+      - name: Run verifier fuzzing for 1 hour
+        working-directory: crates/qssm-le
+        run: |
+          cargo +nightly fuzz run verify_lattice -- \
+            -max_total_time=3600 \
+            -print_final_stats=1 \
+            -rss_limit_mb=4096
+
+      - name: Upload fuzz artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qssm-le-fuzz-artifacts
+          path: |
+            crates/qssm-le/fuzz/artifacts
+            crates/qssm-le/fuzz/corpus
+          if-no-files-found: ignore

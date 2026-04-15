@@ -1,0 +1,13 @@
+[build]
+target = "x86_64-pc-windows-msvc"
+
+[target.x86_64-pc-windows-msvc]
+rustflags = [
+  "-Zsanitizer=address",
+  "-Clink-arg=/INFERASANLIBS",
+  # Provide the clang_rt ASan import library explicitly for MSVC+rust-lld.
+  # Set ASAN_LIB_DIR to your VS LLVM runtime dir, for example:
+  #   C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\Llvm\\x64\\lib\\clang\\<ver>\\lib\\windows
+  "-Clink-arg=/LIBPATH:${ASAN_LIB_DIR}",
+  "-Clink-arg=clang_rt.asan_dynamic-x86_64.lib",
+]

@@ -292,6 +292,10 @@ fn challenge_poly_to_rq(poly: &[i32; C_POLY_SIZE]) -> RqPoly {
     RqPoly(out)
 }
 
+fn is_canonical_poly(poly: &RqPoly) -> bool {
+    poly.0.iter().all(|&c| c < Q)
+}
+
 fn mu_from_public(public: &PublicInstance) -> RqPoly {
     match &public.binding {
         PublicBinding::LegacySingleLimb { message } => RqPoly::embed_constant(*message),
@@ -371,6 +375,9 @@ pub fn verify_lattice_algebraic(
     rollup_context_digest: &[u8; 32],
 ) -> Result<bool, LeError> {
     public.validate()?;
+    if !is_canonical_poly(&proof.t) || !is_canonical_poly(&proof.z) {
+        return Err(LeError::OversizedInput);
+    }
     if ct_reject_if_above_gamma(&proof.z).unwrap_u8() == 0 {
         return Err(LeError::InvalidNorm);
     }
