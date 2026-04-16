@@ -1,7 +1,19 @@
 //! Node configuration, live snapshot, and internal control / wire messages.
 
 use std::collections::VecDeque;
+use std::path::PathBuf;
 use std::time::Duration;
+
+/// Optional Lab hook: tail one `SovereignStreamManager` `steps/<rollup>.jsonl` and gossip new lines.
+#[derive(Debug, Clone)]
+pub struct SovereignLabConfig {
+    /// Path to the append-only step log (e.g. `…/steps/<64-hex-rollup>.jsonl`).
+    pub steps_jsonl_path: PathBuf,
+    /// How often to poll for new bytes (lower = snappier; avoids extra deps vs `notify`).
+    pub poll_interval: Duration,
+    /// Optional predicate law broadcast on every sovereign gossip line (array of [`PredicateBlock`] JSON or `{ "predicates": [...] }`).
+    pub template_script: Option<serde_json::Value>,
+}
 
 /// Swarm + pulse cadence configuration for a single MSSQ network instance.
 #[derive(Debug, Clone)]
@@ -11,6 +23,8 @@ pub struct NodeConfig {
     pub startup_peer_cache_probe: usize,
     pub startup_merit_query_size: usize,
     pub history_archive: bool,
+    /// When set, spawns the sovereign Lab tailer and publishes [`crate::GossipMessage`] on the sovereign gossip topic.
+    pub sovereign_lab: Option<SovereignLabConfig>,
 }
 
 impl Default for NodeConfig {
@@ -21,6 +35,7 @@ impl Default for NodeConfig {
             startup_peer_cache_probe: 5,
             startup_merit_query_size: 10,
             history_archive: false,
+            sovereign_lab: None,
         }
     }
 }
@@ -64,7 +79,9 @@ pub(crate) enum MeritMessage {
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub(crate) enum BranchMessage {
-    ReqMerkleBranch { peer_id: String },
+    ReqMerkleBranch {
+        peer_id: String,
+    },
     MerkleBranch {
         peer_id: String,
         root_hex: String,

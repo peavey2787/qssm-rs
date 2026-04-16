@@ -15,7 +15,10 @@ pub fn on_mesh_event(swarm: &mut Swarm<MeshBehaviour>, event: &MeshEvent) {
     match event {
         MeshEvent::Mdns(libp2p::mdns::Event::Discovered(list)) => {
             for (peer, addr) in list {
-                swarm.behaviour_mut().kademlia.add_address(peer, addr.clone());
+                swarm
+                    .behaviour_mut()
+                    .kademlia
+                    .add_address(peer, addr.clone());
             }
         }
         MeshEvent::Kademlia(kad::Event::OutboundQueryProgressed { .. }) => {}

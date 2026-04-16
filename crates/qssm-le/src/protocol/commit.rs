@@ -2,8 +2,9 @@
 #![forbid(unsafe_code)]
 
 use core::hint::black_box;
-use rand::RngCore;
 use qssm_utils::hashing::DOMAIN_MS;
+use qssm_utils::LE_FS_PUBLIC_BINDING_LAYOUT_VERSION;
+use rand::RngCore;
 use subtle::{Choice, ConstantTimeEq, ConstantTimeLess};
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
@@ -13,7 +14,7 @@ use crate::algebra::ring::{
 use crate::crs::VerifyingKey;
 use crate::protocol::params::{
     BETA, C_POLY_SIZE, C_POLY_SPAN, ETA, GAMMA, MAX_MESSAGE_LEGACY, MAX_PROVER_ATTEMPTS, N,
-    PUBLIC_DIGEST_COEFF_MAX, PUBLIC_DIGEST_COEFFS, Q,
+    PUBLIC_DIGEST_COEFFS, PUBLIC_DIGEST_COEFF_MAX, Q,
 };
 use crate::LeError;
 
@@ -29,9 +30,7 @@ pub enum PublicBinding {
     /// Legacy compatibility path only.
     LegacySingleLimb { message: u64 },
     /// Secure path: bind digest-derived coefficient vector.
-    DigestCoeffVector {
-        coeffs: [u32; PUBLIC_DIGEST_COEFFS],
-    },
+    DigestCoeffVector { coeffs: [u32; PUBLIC_DIGEST_COEFFS] },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -115,7 +114,11 @@ pub struct LatticeProof {
     pub challenge_seed: [u8; 32],
 }
 
+/// Serializes [`PublicBinding`] for Fiat–Shamir. **Sync:** any change to this byte layout or to
+/// [`fs_challenge_bytes`] hash-input order must bump [`qssm_utils::LE_FS_PUBLIC_BINDING_LAYOUT_VERSION`]
+/// and the gadget `TranscriptMap` / `TRANSCRIPT_MAP_LAYOUT_VERSION` in `qssm-gadget`.
 fn public_binding_fs_bytes(public: &PublicInstance) -> Vec<u8> {
+    let _ = LE_FS_PUBLIC_BINDING_LAYOUT_VERSION;
     match &public.binding {
         PublicBinding::LegacySingleLimb { message } => {
             let mut out = Vec::with_capacity(1 + 8);
@@ -384,7 +387,8 @@ pub fn verify_lattice_algebraic(
     let a = vk.matrix_a_poly();
     let mu = mu_from_public(public);
     let u = commitment.0.sub(&mu);
-    let challenge_seed = fs_challenge_bytes(rollup_context_digest, vk, public, commitment, &proof.t);
+    let challenge_seed =
+        fs_challenge_bytes(rollup_context_digest, vk, public, commitment, &proof.t);
     if challenge_seed.ct_eq(&proof.challenge_seed).unwrap_u8() == 0 {
         return Err(LeError::DomainMismatch);
     }

@@ -15,11 +15,13 @@ use tracing::warn;
 use crate::connectivity::peer_cache;
 use crate::connectivity::relay::{update_nat_state, RelayState};
 use crate::protocol::pulse::HeartbeatEnvelope;
+use crate::protocol::sovereign_gossip::GossipMessage;
 use crate::protocol::reputation::ReputationStore;
 use crate::stack::{on_mesh_event, MeshBehaviour, MeshEvent};
 use qssm_utils::hashing::hash_domain;
 
 use super::archive::archive_branch;
+use super::sovereign_verify;
 use super::types::{BranchMessage, MeritMessage, NodeSnapshot};
 use super::{push_pulse, refresh_immune_snapshot_locked};
 
@@ -47,6 +49,7 @@ pub(crate) async fn handle_swarm_event(
     branch_topic_hash: &libp2p::gossipsub::TopicHash,
     branch_topic: &IdentTopic,
     archive_store: &mut HashMap<String, Vec<u8>>,
+    sovereign_topic_hash: Option<&libp2p::gossipsub::TopicHash>,
 ) -> bool {
     match evt {
         SwarmEvent::ConnectionEstablished { endpoint, .. } => {
@@ -111,6 +114,19 @@ pub(crate) async fn handle_swarm_event(
                     )
                     .await;
                 }
+                if let Some(th) = sovereign_topic_hash {
+                    if message.topic == *th {
+                        return process_sovereign_gossip_message(
+                            swarm,
+                            propagation_source,
+                            message_id,
+                            &message.data,
+                            snapshot,
+                            governor,
+                        )
+                        .await;
+                    }
+                }
                 process_inbound_heartbeat(
                     swarm,
                     propagation_source,
@@ -136,6 +152,86 @@ pub(crate) async fn handle_swarm_event(
     }
 }
 
+async fn process_sovereign_gossip_message(
+    swarm: &mut Swarm<MeshBehaviour>,
+    peer: PeerId,
+    msg_id: MessageId,
+    data: &[u8],
+    snapshot: &Arc<Mutex<NodeSnapshot>>,
+    governor: &mut Governor,
+) -> bool {
+    let connected_peers = swarm.connected_peers().count();
+    let decision = governor.decision_for(&peer.to_string(), connected_peers);
+    if matches!(decision.action, PeerAction::Drop) {
+        swarm
+            .behaviour_mut()
+            .gossipsub
+            .report_message_validation_result(&msg_id, &peer, MessageAcceptance::Reject);
+        return false;
+    }
+
+    let msg: GossipMessage = match serde_json::from_slice(data) {
+        Ok(v) => v,
+        Err(_) => {
+            swarm
+                .behaviour_mut()
+                .gossipsub
+                .report_message_validation_result(&msg_id, &peer, MessageAcceptance::Reject);
+            return false;
+        }
+    };
+
+    let (jsonl_line, primary_targets, template_script) = match msg {
+        GossipMessage::SovereignStepV1 {
+            jsonl_line,
+            primary_targets,
+            template_script,
+            ..
+        } => (jsonl_line, primary_targets, template_script),
+    };
+
+    if jsonl_line.is_empty() {
+        swarm
+            .behaviour_mut()
+            .gossipsub
+            .report_message_validation_result(&msg_id, &peer, MessageAcceptance::Reject);
+        return false;
+    }
+
+    if let Err(e) =
+        sovereign_verify::verify_sovereign_jsonl_with_templates(&jsonl_line, template_script.as_ref())
+    {
+        warn!(
+            target: "mssq_net",
+            "sovereign_step rejected from {}: {}",
+            peer,
+            e
+        );
+        swarm
+            .behaviour_mut()
+            .gossipsub
+            .report_message_validation_result(&msg_id, &peer, MessageAcceptance::Reject);
+        return false;
+    }
+
+    swarm
+        .behaviour_mut()
+        .gossipsub
+        .report_message_validation_result(&msg_id, &peer, MessageAcceptance::Accept);
+
+    let preview: String = jsonl_line.chars().take(48).collect();
+    let mut guard = snapshot.lock().await;
+    push_pulse(
+        &mut guard.pulses,
+        format!(
+            "sovereign_step <-{} targets={} line={preview}",
+            peer,
+            primary_targets.len()
+        ),
+    );
+    false
+}
+
 async fn process_inbound_heartbeat(
     swarm: &mut Swarm<MeshBehaviour>,
     peer: PeerId,
@@ -157,7 +253,10 @@ async fn process_inbound_heartbeat(
             .gossipsub
             .report_message_validation_result(&msg_id, &peer, MessageAcceptance::Reject);
         let mut guard = snapshot.lock().await;
-        push_pulse(&mut guard.pulses, format!("peer {} dropped_by_governor", peer));
+        push_pulse(
+            &mut guard.pulses,
+            format!("peer {} dropped_by_governor", peer),
+        );
         refresh_immune_snapshot_locked(&mut guard, governor, connected_peers);
         return false;
     }
@@ -167,7 +266,11 @@ async fn process_inbound_heartbeat(
         .as_ref()
         .map(|m| verify_metabolic_gate(&m.raw_jitter) && qssm_he::verify_density(&m.raw_jitter))
         .unwrap_or(false);
-    governor.observe_pulse(&peer.to_string(), valid, crate::common::utils::unix_timestamp_ns());
+    governor.observe_pulse(
+        &peer.to_string(),
+        valid,
+        crate::common::utils::unix_timestamp_ns(),
+    );
     if valid {
         rep.accept(peer);
         swarm
@@ -196,7 +299,10 @@ async fn process_inbound_heartbeat(
             };
             let _ = apply_batch(rollup_state, &batch, &ctx, &AllowAllProofs);
             let mut guard = snapshot.lock().await;
-            push_pulse(&mut guard.pulses, format!("peer {} {}", m.peer_id, m.seed_hex));
+            push_pulse(
+                &mut guard.pulses,
+                format!("peer {} {}", m.peer_id, m.seed_hex),
+            );
             guard.smt_root_hex = hex::encode(rollup_state.root());
             refresh_immune_snapshot_locked(&mut guard, governor, connected_peers);
             if history_archive {
@@ -242,7 +348,10 @@ async fn process_merit_message(
                 .map(|p| p.to_string())
                 .collect::<Vec<_>>();
             let payload = serde_json::to_vec(&MeritMessage::Response { peers }).unwrap_or_default();
-            let _ = swarm.behaviour_mut().gossipsub.publish(merit_topic.clone(), payload);
+            let _ = swarm
+                .behaviour_mut()
+                .gossipsub
+                .publish(merit_topic.clone(), payload);
             false
         }
         MeritMessage::Response { peers } => {
@@ -296,7 +405,10 @@ async fn process_branch_message(
                     proof_hex: hex::encode(proof),
                 })
                 .unwrap_or_default();
-                let _ = swarm.behaviour_mut().gossipsub.publish(branch_topic.clone(), payload);
+                let _ = swarm
+                    .behaviour_mut()
+                    .gossipsub
+                    .publish(branch_topic.clone(), payload);
             }
             false
         }
@@ -324,7 +436,10 @@ async fn process_branch_message(
             if verified {
                 push_pulse(
                     &mut guard.pulses,
-                    format!("merkle_branch_synced peer={} via={}", peer_id, propagation_source),
+                    format!(
+                        "merkle_branch_synced peer={} via={}",
+                        peer_id, propagation_source
+                    ),
                 );
                 guard.repair_peer_id = Some(peer_id);
                 guard.repair_root_hex = Some(hex::encode(root));
@@ -333,7 +448,10 @@ async fn process_branch_message(
             } else {
                 push_pulse(
                     &mut guard.pulses,
-                    format!("merkle_branch_invalid peer={} via={}", peer_id, propagation_source),
+                    format!(
+                        "merkle_branch_invalid peer={} via={}",
+                        peer_id, propagation_source
+                    ),
                 );
                 guard.fraud_alert_message = Some(format!(
                     "Invalid Data Received from Peer {}. Searching for honest Librarian...",

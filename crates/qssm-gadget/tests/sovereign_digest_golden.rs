@@ -70,8 +70,8 @@ fn golden_sovereign_digest_and_limb() {
     assert_eq!(w.message_limb, EXPECTED_LIMB);
 
     PublicInstance::digest_coeffs(w.digest_coeff_vector)
-    .validate()
-    .expect("PublicInstance accepts sovereign digest coefficient vector");
+        .validate()
+        .expect("PublicInstance accepts sovereign digest coefficient vector");
 }
 
 #[test]

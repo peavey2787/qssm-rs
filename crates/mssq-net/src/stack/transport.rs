@@ -37,7 +37,14 @@ pub async fn build_swarm(
         .with_relay_client(noise::Config::new, yamux::Config::default)
         .map_err(|e| NetError::Build(e.to_string()))?;
 
-    let mut active = vec!["quic", "tcp", "websocket", "relay-client", "autonat", "dcutr"];
+    let mut active = vec![
+        "quic",
+        "tcp",
+        "websocket",
+        "relay-client",
+        "autonat",
+        "dcutr",
+    ];
 
     let mut swarm = builder
         .with_behaviour(|key, relay_behaviour| {
@@ -56,13 +63,17 @@ pub async fn build_swarm(
     for a in defaults {
         match a.parse::<Multiaddr>() {
             Ok(ma) => {
-                swarm
-                    .listen_on(ma.clone())
-                    .map_err(|e| NetError::Listen { addr: a.to_string(), reason: e.to_string() })?;
+                swarm.listen_on(ma.clone()).map_err(|e| NetError::Listen {
+                    addr: a.to_string(),
+                    reason: e.to_string(),
+                })?;
                 listen_addrs.push(ma);
             }
             Err(e) => {
-                return Err(NetError::Listen { addr: a.to_string(), reason: e.to_string() });
+                return Err(NetError::Listen {
+                    addr: a.to_string(),
+                    reason: e.to_string(),
+                });
             }
         }
     }
@@ -81,5 +92,11 @@ pub async fn build_swarm(
     active.push("webrtc-direct");
     active.push("webtransport");
 
-    Ok((swarm, TransportPlan { active, listen_addrs }))
+    Ok((
+        swarm,
+        TransportPlan {
+            active,
+            listen_addrs,
+        },
+    ))
 }

@@ -2,6 +2,8 @@
 
 mod archive;
 mod events;
+mod sovereign_bridge;
+mod sovereign_verify;
 mod types;
 
 use std::collections::{HashMap, HashSet, VecDeque};
@@ -20,10 +22,13 @@ use crate::common::utils::unix_timestamp_ns;
 use crate::connectivity::peer_cache;
 use crate::connectivity::relay::RelayState;
 use crate::protocol::pulse::{collect_local_heartbeat, heartbeat_topic, HeartbeatEnvelope};
+use crate::protocol::sovereign_gossip::{sovereign_step_topic, GossipMessage};
 use crate::protocol::reputation::ReputationStore;
 use crate::stack::{build_swarm, seed_bootstrap, MeshBehaviour};
 
-pub use types::{NodeConfig, NodeSnapshot};
+pub use sovereign_bridge::SovereignGossipBridge;
+pub use sovereign_verify::VERIFIER_TEMPLATE_ID_FIELD;
+pub use types::{NodeConfig, NodeSnapshot, SovereignLabConfig};
 
 use types::{network_label, BranchMessage, MeritMessage, NodeControl};
 
@@ -57,9 +62,15 @@ pub async fn start_node(cfg: NodeConfig) -> Result<NodeHandle, NetError> {
     let merit_topic_hash = merit_topic.hash().clone();
     let branch_topic = IdentTopic::new(format!("mssq/req-merkle-branch/net-{}", cfg.network_id));
     let branch_topic_hash = branch_topic.hash().clone();
+    let sovereign_topic = IdentTopic::new(sovereign_step_topic(cfg.network_id));
+    let sovereign_topic_hash = sovereign_topic.hash().clone();
+    let sovereign_lab_enabled = cfg.sovereign_lab.is_some();
     let _ = swarm.behaviour_mut().gossipsub.subscribe(&topic);
     let _ = swarm.behaviour_mut().gossipsub.subscribe(&merit_topic);
     let _ = swarm.behaviour_mut().gossipsub.subscribe(&branch_topic);
+    if sovereign_lab_enabled {
+        let _ = swarm.behaviour_mut().gossipsub.subscribe(&sovereign_topic);
+    }
     let cached = peer_cache::load_last_addrs(cfg.startup_peer_cache_probe);
     seed_bootstrap(&mut swarm, &cached);
 
@@ -69,7 +80,11 @@ pub async fn start_node(cfg: NodeConfig) -> Result<NodeHandle, NetError> {
         peer_id: local_peer.to_string(),
         nat_status: "unknown".to_string(),
         public_addr: None,
-        active_transports: transport_plan.active.iter().map(|s| s.to_string()).collect(),
+        active_transports: transport_plan
+            .active
+            .iter()
+            .map(|s| s.to_string())
+            .collect(),
         connected_peers: 0,
         active_relays: 0,
         pulses: VecDeque::new(),
@@ -92,6 +107,16 @@ pub async fn start_node(cfg: NodeConfig) -> Result<NodeHandle, NetError> {
     }));
     let (shutdown_tx, mut shutdown_rx) = mpsc::channel(1);
     let (control_tx, mut control_rx) = mpsc::unbounded_channel();
+    let (sovereign_line_tx, mut sovereign_line_rx) = mpsc::channel::<String>(64);
+    if let Some(ref lab) = cfg.sovereign_lab {
+        let path = lab.steps_jsonl_path.clone();
+        let poll = lab.poll_interval;
+        let tx = sovereign_line_tx.clone();
+        tokio::spawn(async move {
+            sovereign_bridge::run_lab_jsonl_tailer(path, poll, tx).await;
+        });
+    }
+    drop(sovereign_line_tx);
     let task_snapshot = Arc::clone(&snapshot);
     tokio::spawn(async move {
         let mut ticker = tokio::time::interval(cfg.heartbeat_every);
@@ -106,6 +131,40 @@ pub async fn start_node(cfg: NodeConfig) -> Result<NodeHandle, NetError> {
         let mut startup_queried = false;
         loop {
             tokio::select! {
+                biased;
+                line = sovereign_line_rx.recv(), if sovereign_lab_enabled => {
+                    if let Some(jsonl_line) = line {
+                        let targets: Vec<String> = primary_peers.iter().map(|p| p.to_string()).collect();
+                        for p in primary_peers.iter() {
+                            if swarm.is_connected(p) {
+                                swarm.behaviour_mut().gossipsub.add_explicit_peer(p);
+                            }
+                        }
+                        let msg = GossipMessage::SovereignStepV1 {
+                            jsonl_line,
+                            primary_targets: targets,
+                            emitted_unix_ms: crate::common::utils::unix_timestamp_ns() / 1_000_000,
+                            template_script: cfg
+                                .sovereign_lab
+                                .as_ref()
+                                .and_then(|l| l.template_script.clone()),
+                        };
+                        if let Ok(payload) = serde_json::to_vec(&msg) {
+                            let _ = swarm
+                                .behaviour_mut()
+                                .gossipsub
+                                .publish(sovereign_topic.clone(), payload);
+                        }
+                        let mut guard = task_snapshot.lock().await;
+                        push_pulse(
+                            &mut guard.pulses,
+                            format!(
+                                "sovereign_gossip published targets={} peers",
+                                primary_peers.len()
+                            ),
+                        );
+                    }
+                }
                 _ = ticker.tick() => {
                     if !startup_queried {
                         let payload = serde_json::to_vec(&MeritMessage::Query {
@@ -171,6 +230,7 @@ pub async fn start_node(cfg: NodeConfig) -> Result<NodeHandle, NetError> {
                         &branch_topic_hash,
                         &branch_topic,
                         &mut archive_store,
+                        sovereign_lab_enabled.then_some(&sovereign_topic_hash),
                     ).await;
                     if accepted {
                         pulses_in_window = pulses_in_window.saturating_add(1);
@@ -204,9 +264,15 @@ async fn publish_heartbeat(
     let local_density_ok = qssm_he::verify_density(&hb.raw_jitter);
     let env = HeartbeatEnvelope::from_heartbeat(local_peer, &hb);
     let payload = serde_json::to_vec(&env).map_err(|e| NetError::GossipCodec(e.to_string()))?;
-    let _ = swarm.behaviour_mut().gossipsub.publish(topic.clone(), payload);
+    let _ = swarm
+        .behaviour_mut()
+        .gossipsub
+        .publish(topic.clone(), payload);
     let mut guard = snapshot.lock().await;
-    push_pulse(&mut guard.pulses, format!("local {} {}", env.peer_id, env.seed_hex));
+    push_pulse(
+        &mut guard.pulses,
+        format!("local {} {}", env.peer_id, env.seed_hex),
+    );
     Ok(local_density_ok)
 }
 
@@ -279,4 +345,3 @@ pub(crate) fn refresh_immune_snapshot_locked(
         qssm_governor::GovernorState::Defending => "Defending".to_string(),
     };
 }
-

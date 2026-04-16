@@ -22,7 +22,10 @@ pub const PMK_P_COST: u32 = 1;
 /// persisted [`Heartbeat`] snapshot.
 ///
 /// Uses Argon2id with [`PMK_M_COST_KIB`], [`PMK_T_COST`], [`PMK_P_COST`], output [`PMK_BYTES`].
-pub fn generate_pmk(mnemonic_seed: &[u8], heartbeat: &Heartbeat) -> Result<Vec<u8>, crate::HeError> {
+pub fn generate_pmk(
+    mnemonic_seed: &[u8],
+    heartbeat: &Heartbeat,
+) -> Result<Vec<u8>, crate::HeError> {
     // Fast Argon2 params when running this crate's unit tests; production uses [`PMK_M_COST_KIB`].
     let m_kib = if cfg!(test) { 256u32 } else { PMK_M_COST_KIB };
     let params = Params::new(m_kib, PMK_T_COST, PMK_P_COST, Some(PMK_BYTES))

@@ -4,7 +4,7 @@
 //! - **`connectivity`**: NAT/relay state and on-disk peer address cache.
 //! - **`protocol`**: heartbeat gossip and reputation.
 //! - **`common`**: `NetError` and small shared helpers.
-//! - **`node`**: Tokio orchestration (`start_node`, snapshots).
+//! - **`node`**: Tokio orchestration (`start_node`, snapshots, optional **SovereignGossipBridge** Lab tail → gossip).
 //! - Example dashboard: `examples/mssq_node.rs`.
 
 #![forbid(unsafe_code)]
@@ -17,5 +17,9 @@ pub mod stack;
 mod node;
 
 pub use common::error::NetError;
-pub use node::{snapshot_to_json, start_node, NodeConfig, NodeHandle, NodeSnapshot};
+pub use node::{
+    snapshot_to_json, start_node, NodeConfig, NodeHandle, NodeSnapshot, SovereignGossipBridge,
+    SovereignLabConfig, VERIFIER_TEMPLATE_ID_FIELD,
+};
 pub use protocol::pulse::{heartbeat_topic, HeartbeatEnvelope};
+pub use protocol::{sovereign_step_topic, GossipMessage};

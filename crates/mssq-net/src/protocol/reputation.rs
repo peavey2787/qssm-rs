@@ -59,10 +59,7 @@ impl ReputationStore {
     #[allow(dead_code)]
     #[must_use]
     pub fn snapshot(&self) -> Vec<(PeerId, ReputationEntry)> {
-        self.by_peer
-            .iter()
-            .map(|(k, v)| (*k, v.clone()))
-            .collect()
+        self.by_peer.iter().map(|(k, v)| (*k, v.clone())).collect()
     }
 
     #[must_use]

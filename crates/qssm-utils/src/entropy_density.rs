@@ -2,7 +2,7 @@
 
 use rayon::prelude::*;
 
-/// Minimum raw jitter length for [`verify_density`](crate::verify_density).
+/// Minimum raw byte length for [`verify_density`].
 pub const MIN_RAW_BYTES: usize = 256;
 
 const CHUNK: usize = 4096;
@@ -24,22 +24,18 @@ pub fn verify_density(raw_jitter: &[u8]) -> bool {
     let p1 = ones as f64 / total as f64;
     let p0 = 1.0 - p1;
     let p_max = p0.max(p1);
-    // Extreme bit bias (e.g. all-zero buffer).
     if p_max > 0.99 {
         return false;
     }
 
-    // Single dominant byte value (constant buffer).
     if byte_max_fraction(raw_jitter) > 0.95 {
         return false;
     }
 
-    // Strong bit-level alternation 010101…
     if bit_transition_rate(raw_jitter) > 0.98 {
         return false;
     }
 
-    // Square wave at byte granularity (e.g. 0x00, 0xFF, 0x00, …).
     if is_square_wave_bytes(raw_jitter) {
         return false;
     }

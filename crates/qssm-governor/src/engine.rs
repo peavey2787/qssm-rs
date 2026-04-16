@@ -51,7 +51,9 @@ impl MetabolicEngine {
         self.prev_current_nodes = current_nodes;
         self.smoothed_overload =
             (Decimal::ONE - self.cfg.lambda) * self.smoothed_overload + self.cfg.lambda * rho;
-        self.pulse_counter = self.pulse_counter.saturating_add(u64::from(pulses_in_window));
+        self.pulse_counter = self
+            .pulse_counter
+            .saturating_add(u64::from(pulses_in_window));
         if self.pulse_counter >= self.cfg.target_adjust_interval {
             self.pulse_counter = 0;
             if !self.freeze_target {

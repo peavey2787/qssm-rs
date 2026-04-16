@@ -26,10 +26,10 @@ mod filter;
 
 pub use backend::sensor::{SensorEntropy, SENSOR_INLINE_CAP};
 pub use backend::time::unix_timestamp_ns;
-pub use core::density::{verify_density, MIN_RAW_BYTES};
-pub use error::HeError;
+pub use qssm_utils::{verify_density, MIN_RAW_BYTES};
 pub use core::harvest::{harvest, harvest_with_sensor, poll_raw_accelerometer_i16, HarvestConfig};
 pub use core::pmk::{generate_pmk, PMK_BYTES, PMK_M_COST_KIB, PMK_P_COST, PMK_T_COST};
+pub use error::HeError;
 pub use filter::harvest_gate::{hardware_harvest_enabled, set_hardware_harvest_enabled};
 
 use blake3::Hasher;
@@ -86,9 +86,7 @@ mod tests {
     #[cfg(all(windows, target_arch = "x86_64"))]
     #[test]
     fn windows_tsc_harvest_passes_density_and_uniqueness() {
-        let cfg = HarvestConfig {
-            raw_bytes: 2048,
-        };
+        let cfg = HarvestConfig { raw_bytes: 2048 };
         let h1 = harvest(&cfg).expect("tsc harvest");
         assert!(
             h1.verify_density(),

@@ -93,7 +93,9 @@ impl RqPoly {
 
     /// Negacyclic multiplication (uses NTT internally).
     pub fn mul(&self, other: &Self) -> Result<Self, LeError> {
-        Ok(RqPoly(crate::algebra::ntt::negacyclic_mul(&self.0, &other.0)))
+        Ok(RqPoly(crate::algebra::ntt::negacyclic_mul(
+            &self.0, &other.0,
+        )))
     }
 
     pub fn scalar_mul_u32(&self, s: u32) -> Self {
@@ -134,7 +136,11 @@ impl RqPoly {
 fn center_u32_mod(x: u32) -> i64 {
     let x = i64::from(x);
     let q = i64::from(Q);
-    if x > q / 2 { x - q } else { x }
+    if x > q / 2 {
+        x - q
+    } else {
+        x
+    }
 }
 
 #[inline]
@@ -160,7 +166,11 @@ pub fn short_vec_to_rq_bound(coeffs: &[i32; N], bound: u32) -> Result<RqPoly, Le
         if v.unsigned_abs() > bound {
             return Err(LeError::RejectedSample);
         }
-        let u = if v >= 0 { v as u32 } else { Q - ((-v) as u32 % Q) };
+        let u = if v >= 0 {
+            v as u32
+        } else {
+            Q - ((-v) as u32 % Q)
+        };
         out[i] = u % Q;
     }
     Ok(RqPoly(out))

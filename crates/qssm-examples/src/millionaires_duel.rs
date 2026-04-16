@@ -16,7 +16,8 @@
 use mssq_batcher::{verify_leader_attestation_ctx, LeaderAttestation, ProofError, TxProofVerifier};
 use qssm_common::L2Transaction;
 use qssm_le::{
-    verify_lattice, Commitment, LatticeProof, PublicInstance, RqPoly, VerifyingKey, MAX_MESSAGE_LEGACY, N,
+    verify_lattice, Commitment, LatticeProof, PublicInstance, RqPoly, VerifyingKey,
+    MAX_MESSAGE_LEGACY, N,
 };
 use qssm_utils::RollupContext;
 
@@ -285,7 +286,11 @@ pub fn decode_millionaires_proof(data: &[u8]) -> Result<MillionairesProofBundle,
         crs_seed,
         public_message,
         commitment: Commitment(c0),
-        proof: LatticeProof { t, z, challenge_seed },
+        proof: LatticeProof {
+            t,
+            z,
+            challenge_seed,
+        },
     })
 }
 
@@ -304,10 +309,7 @@ mod tests {
         for v_a in [0u64, 40, MAX_DEMO_BALANCE - 1] {
             for v_b in [0u64, 56, MAX_DEMO_BALANCE - 1] {
                 let m = public_message_for_duel(v_a, v_b).expect("in range");
-                assert!(
-                    valid_duel_public_message(m),
-                    "v_a={v_a} v_b={v_b} m={m}"
-                );
+                assert!(valid_duel_public_message(m), "v_a={v_a} v_b={v_b} m={m}");
             }
         }
     }

@@ -233,7 +233,6 @@ impl CompressionWitness {
         }
         true
     }
-
 }
 
 #[inline]

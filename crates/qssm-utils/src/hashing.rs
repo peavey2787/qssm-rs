@@ -1,5 +1,10 @@
 //! Single source of truth for protocol domain strings (v1.0 hygiene).
 
+/// **Bump when** `qssm-le` `fs_challenge_bytes` input order or `public_binding_fs_bytes` serialization
+/// changes anything that gadget `TranscriptMap` / Engine A package JSON must mirror. Shared by `qssm-le`
+/// and `qssm-gadget` via this crate.
+pub const LE_FS_PUBLIC_BINDING_LAYOUT_VERSION: u32 = 1;
+
 pub const DOMAIN_MS: &str = "QSSM-MS-v1.0";
 pub const DOMAIN_LE: &str = "QSSM-LE-v1.0";
 pub const DOMAIN_LE_REF_STUB: &str = "QSSM-LE-REF-STUB-v1.0";

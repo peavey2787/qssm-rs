@@ -22,7 +22,10 @@ fn sampled_digest_embeddings_are_unique() {
             .current();
         let coeffs = digest_coeff_vector_from_sovereign_digest(&digest);
         // Statistical evidence: sampled collisions should be negligible at this scale.
-        assert!(seen.insert(coeffs), "collision found for sampled digest embedding");
+        assert!(
+            seen.insert(coeffs),
+            "collision found for sampled digest embedding"
+        );
     }
 }
 

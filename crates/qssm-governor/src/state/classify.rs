@@ -45,7 +45,11 @@ pub(crate) fn classify_from(
     PeerState::Healthy
 }
 
-pub(crate) fn try_recover_with(cfg: &GovernorConfig, stats: &PeerStats, global_avg: Decimal) -> bool {
+pub(crate) fn try_recover_with(
+    cfg: &GovernorConfig,
+    stats: &PeerStats,
+    global_avg: Decimal,
+) -> bool {
     if stats.scores_len() < cfg.n_rec {
         return false;
     }

@@ -2,3 +2,4 @@
 
 pub mod lattice_bridge;
 pub mod predicate;
+pub mod predicate_templates;

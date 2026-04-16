@@ -26,7 +26,10 @@ pub(crate) fn derive_salts(seed: [u8; 32]) -> Salts {
     for i in 0u32..64 {
         for b in 0u8..=1u8 {
             let idx = (2 * i + b as u32) as usize;
-            salts[idx] = hash_domain(DOMAIN_MS, &[b"salt", seed.as_slice(), &i.to_le_bytes(), &[b]]);
+            salts[idx] = hash_domain(
+                DOMAIN_MS,
+                &[b"salt", seed.as_slice(), &i.to_le_bytes(), &[b]],
+            );
         }
     }
     salts

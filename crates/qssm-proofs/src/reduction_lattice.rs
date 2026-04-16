@@ -40,7 +40,8 @@ impl LatticeSoundnessModel {
     /// Heuristic repetition-amplified soundness proxy.
     #[must_use]
     pub fn amplified_soundness_error(&self) -> f64 {
-        self.single_run_soundness_error().powi(self.repetitions as i32)
+        self.single_run_soundness_error()
+            .powi(self.repetitions as i32)
     }
 }
 
@@ -76,4 +77,3 @@ mod tests {
         assert!(m.single_run_soundness_error() > 0.0);
     }
 }
-

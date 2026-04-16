@@ -1,4 +1,6 @@
-use qssm_le::{prove_arithmetic, verify_lattice, LeError, PublicInstance, VerifyingKey, Witness, N};
+use qssm_le::{
+    prove_arithmetic, verify_lattice, LeError, PublicInstance, VerifyingKey, Witness, N,
+};
 use qssm_utils::hashing::{hash_domain, DOMAIN_LE, DOMAIN_MS};
 
 const DST_LE_COMMIT: [u8; 32] = *b"QSSM-LE-V1-COMMIT...............";

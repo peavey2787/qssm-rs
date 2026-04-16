@@ -80,7 +80,10 @@ impl MockKaspaAdapter {
     fn refresh_qrng_digest(&mut self) {
         self.qrng_value = hash_domain(
             DOMAIN_MOCK_QRNG,
-            &[self.qrng_epoch.to_le_bytes().as_slice(), self.genesis.as_slice()],
+            &[
+                self.qrng_epoch.to_le_bytes().as_slice(),
+                self.genesis.as_slice(),
+            ],
         );
     }
 

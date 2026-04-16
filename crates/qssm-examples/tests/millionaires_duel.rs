@@ -221,7 +221,8 @@ fn bad_signature_rejects() {
     let ctx = rollup_context_from_l1(&anchor);
     let d = ctx.digest();
     let (mut tx, cands) = build_duel_tx(&anchor, d, 1000, 500, [0x72u8; 32]);
-    let mut bundle = decode_millionaires_proof(&tx.payload[MILLIONAIRES_WIRE_PAYLOAD_OFFSET..]).unwrap();
+    let mut bundle =
+        decode_millionaires_proof(&tx.payload[MILLIONAIRES_WIRE_PAYLOAD_OFFSET..]).unwrap();
     if !bundle.attestation.signature.is_empty() {
         bundle.attestation.signature[0] ^= 0xFF;
     }

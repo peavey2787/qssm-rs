@@ -30,16 +30,11 @@ pub enum PredicateBlock {
         rhs: Value,
     },
     /// Inclusive numeric range **`min <= field <= max`**.
-    Range {
-        field: String,
-        min: i64,
-        max: i64,
-    },
+    Range { field: String, min: i64, max: i64 },
     /// Numeric membership: field must equal one of **`values`**.
-    InSet {
-        field: String,
-        values: Vec<i64>,
-    },
+    InSet { field: String, values: Vec<i64> },
+    /// Inclusive numeric floor **`field >= min`** (“at least” / min‑threshold proofs).
+    AtLeast { field: String, min: i64 },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -50,6 +45,7 @@ pub enum PredicateError {
     OutOfRange,
     NotInSet,
     CompareFalse,
+    BelowMin,
 }
 
 impl std::fmt::Display for PredicateError {
@@ -61,6 +57,7 @@ impl std::fmt::Display for PredicateError {
             Self::OutOfRange => write!(f, "range: value outside [min,max]"),
             Self::NotInSet => write!(f, "set: value not in allowed set"),
             Self::CompareFalse => write!(f, "compare: relation is false"),
+            Self::BelowMin => write!(f, "at_least: value below minimum"),
         }
     }
 }
@@ -80,7 +77,8 @@ pub fn json_at_path<'a>(root: &'a Value, path: &str) -> Option<&'a Value> {
 }
 
 fn as_i64_at(claim: &Value, field: &str) -> Result<i64, PredicateError> {
-    let v = json_at_path(claim, field).ok_or_else(|| PredicateError::MissingField(field.to_string()))?;
+    let v = json_at_path(claim, field)
+        .ok_or_else(|| PredicateError::MissingField(field.to_string()))?;
     v.as_i64()
         .ok_or_else(|| PredicateError::NotANumber(field.to_string()))
 }
@@ -89,7 +87,8 @@ fn as_i64_at(claim: &Value, field: &str) -> Result<i64, PredicateError> {
 pub fn eval_predicate(claim: &Value, pred: &PredicateBlock) -> Result<(), PredicateError> {
     match pred {
         PredicateBlock::Compare { field, op, rhs } => {
-            let lhs = json_at_path(claim, field).ok_or_else(|| PredicateError::MissingField(field.clone()))?;
+            let lhs = json_at_path(claim, field)
+                .ok_or_else(|| PredicateError::MissingField(field.clone()))?;
             let ok = match (lhs, rhs) {
                 (Value::Number(a), Value::Number(b)) => {
                     let ai = a.as_i64().ok_or(PredicateError::CompareType)?;
@@ -137,6 +136,14 @@ pub fn eval_predicate(claim: &Value, pred: &PredicateBlock) -> Result<(), Predic
                 Err(PredicateError::NotInSet)
             }
         }
+        PredicateBlock::AtLeast { field, min } => {
+            let n = as_i64_at(claim, field)?;
+            if n >= *min {
+                Ok(())
+            } else {
+                Err(PredicateError::BelowMin)
+            }
+        }
     }
 }
 
@@ -147,6 +154,30 @@ pub fn eval_all_predicates(claim: &Value, preds: &[PredicateBlock]) -> Result<()
         eval_predicate(claim, p)?;
     }
     Ok(())
+}
+
+/// Parse a template JSON value into predicate blocks.
+///
+/// Accepts either a bare JSON array of [`PredicateBlock`] objects, or an object with a **`predicates`** array
+/// (optional **`template_id`** is ignored here; use [`crate::predicate_templates::standard_library_script`] for ids).
+pub fn predicate_blocks_from_template_value(v: &Value) -> Result<Vec<PredicateBlock>, String> {
+    let arr = if let Some(a) = v.as_array() {
+        a
+    } else if let Some(a) = v.get("predicates").and_then(Value::as_array) {
+        a
+    } else {
+        return Err(
+            "template_script: expected top-level JSON array or object with \"predicates\" array"
+                .into(),
+        );
+    };
+    let mut out = Vec::with_capacity(arr.len());
+    for (i, item) in arr.iter().enumerate() {
+        let b: PredicateBlock = serde_json::from_value(item.clone())
+            .map_err(|e| format!("predicates[{i}]: {e}"))?;
+        out.push(b);
+    }
+    Ok(out)
 }
 
 /// Proof‑of‑age style template: **`claim.age_years` ∈ [21, 150]** (inclusive).
@@ -194,5 +225,31 @@ mod tests {
             values: vec![1, 2, 3],
         };
         assert!(eval_predicate(&claim, &p).is_ok());
+    }
+
+    #[test]
+    fn at_least_ok_and_fail() {
+        let claim = json!({ "claim": { "account_age_years": 30 } });
+        let p = PredicateBlock::AtLeast {
+            field: "claim.account_age_years".into(),
+            min: 21,
+        };
+        assert!(eval_predicate(&claim, &p).is_ok());
+        let young = json!({ "claim": { "account_age_years": 12 } });
+        assert!(eval_predicate(&young, &p).is_err());
+    }
+
+    #[test]
+    fn predicate_blocks_from_template_object() {
+        let v = json!({
+            "template_id": "t",
+            "predicates": [
+                { "kind": "range", "field": "n", "min": 0, "max": 5 }
+            ]
+        });
+        let blocks = predicate_blocks_from_template_value(&v).unwrap();
+        assert_eq!(blocks.len(), 1);
+        let claim = json!({ "n": 3 });
+        assert!(eval_all_predicates(&claim, &blocks).is_ok());
     }
 }

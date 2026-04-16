@@ -192,9 +192,13 @@ mod tests {
 
     #[test]
     fn timestamp_anchor_leg_deterministic() {
-        let a = EntropyAnchor::TimestampUnixSecs { unix_secs: 1_700_000_000 };
+        let a = EntropyAnchor::TimestampUnixSecs {
+            unix_secs: 1_700_000_000,
+        };
         assert_eq!(a.entropy_leg(), a.entropy_leg());
-        let b = EntropyAnchor::TimestampUnixSecs { unix_secs: 1_700_000_001 };
+        let b = EntropyAnchor::TimestampUnixSecs {
+            unix_secs: 1_700_000_001,
+        };
         assert_ne!(a.entropy_leg(), b.entropy_leg());
     }
 

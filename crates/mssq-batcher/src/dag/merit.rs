@@ -14,11 +14,7 @@ pub struct MeritState {
 }
 
 #[must_use]
-pub fn merit_maturation(
-    now_secs: u64,
-    first_seen_secs: u64,
-    last_online_secs: u64,
-) -> MeritState {
+pub fn merit_maturation(now_secs: u64, first_seen_secs: u64, last_online_secs: u64) -> MeritState {
     let age = now_secs.saturating_sub(first_seen_secs);
     let offline_gap = now_secs.saturating_sub(last_online_secs);
     if age < 4 * HOUR {

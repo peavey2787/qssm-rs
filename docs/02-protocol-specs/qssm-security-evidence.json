@@ -1,6 +1,0 @@
-{
-  "effective_security_bits": 128.0,
-  "challenge_model": "polynomial",
-  "digest_binding": "coeff_vector",
-  "notes": "Structured evidence input for qssm-proofs CI gate. Update with estimator-backed values as models evolve."
-}

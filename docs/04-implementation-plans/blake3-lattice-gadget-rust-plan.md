@@ -341,7 +341,7 @@ Let **`D = SovereignDigest`** be **`[u8; 32]`** (**256** bits).
 | File | Responsibility |
 |------|----------------|
 | [`crates/qssm-gadget/Cargo.toml`](crates/qssm-gadget/Cargo.toml) | Crate manifest; `qssm-utils`, `ureq`, `thiserror`; feature **`lattice-bridge`** → optional **`qssm-le`**; `blake3` dev for vectors. |
-| [`crates/qssm-gadget/src/lib.rs`](crates/qssm-gadget/src/lib.rs) | `bits`, `merkle`, `binding`, `blake3_native`, **`entropy`**, **`r1cs`**, **`lattice_bridge`**, `error`; re‑exports **`ConstraintSystem`**, **`MockProver`**, **`Blake3Gadget`**, **`verify_limb_binding_json`**. |
+| [`crates/qssm-gadget/src/lib.rs`](crates/qssm-gadget/src/lib.rs) | `bits`, `merkle`, `binding`, `blake3_native`, **`entropy`**, **`r1cs`**, **`poly_ops`**, **`lattice_bridge`**, `error`; re‑exports **`ConstraintSystem`**, **`MockProver`**, **`Blake3Gadget`**, **`ProverPackageBuilder`**, **`verify_limb_binding_json`**. |
 | [`crates/qssm-gadget/src/bits.rs`](crates/qssm-gadget/src/bits.rs) | Degree‑2 XOR, **`FullAdder`**, ripple + **`XorWitness` / `RippleCarryWitness`** from **day one**; LE only. |
 | [`crates/qssm-gadget/src/merkle.rs`](crates/qssm-gadget/src/merkle.rs) | **Phase 0** LE path ↔ orientation; **`recompute_root`**. |
 | [`crates/qssm-gadget/src/binding.rs`](crates/qssm-gadget/src/binding.rs) | **Phase 3+8**: **`hash_domain(DOMAIN_SOVEREIGN_LIMB_V2, [root‖rollup‖metadata_v2])`**, LE **30‑bit** limb, **`SovereignWitness`** (**`nist_included`**, **`sovereign_entropy`**). |
@@ -351,8 +351,9 @@ Let **`D = SovereignDigest`** be **`[u8; 32]`** (**256** bits).
 | [`crates/qssm-gadget/src/r1cs.rs`](crates/qssm-gadget/src/r1cs.rs) | **Phase 4–5**: **`ConstraintSystem`**, **`MockProver`**, **`Blake3Gadget::synthesize_g`**, **`synthesize_compress`**, **`synthesize_merkle_parent_hash`**. |
 | [`crates/qssm-gadget/src/lattice_bridge.rs`](crates/qssm-gadget/src/lattice_bridge.rs) | **Phase 7**: **`BRIDGE_Q`**, **`verify_limb_binding_json`** (+ **`nist_beacon_included`** vs **`public.nist_included`**), **`verify_handshake_with_le`** (feature **`lattice-bridge`**). |
 | [`crates/qssm-gadget/src/error.rs`](crates/qssm-gadget/src/error.rs) | **`GadgetError`** variants. |
-| [`crates/qssm-gadget/examples/l2_handshake.rs`](crates/qssm-gadget/examples/l2_handshake.rs) | **Phase 6+8** demo; Phase 8 NIST up/down simulation + production **`EntropyProvider::default()`**; **`nist_beacon_included`** in package; **`verify_limb_binding_json`**; optional **`verify_handshake_with_le`** with **`--features lattice-bridge`**. |
-| [`crates/qssm-gadget/tests/`](crates/qssm-gadget/tests/) | MS + digest golden + **`full_merkle_parent_parity`** (Merkle parent **bit** parity + constraint count). |
+| [`crates/qssm-gadget/examples/l2_handshake.rs`](crates/qssm-gadget/examples/l2_handshake.rs) | **Phase 6+8** demo via **`poly_ops::ProverPackageBuilder`** + **`L2MerkleSovereignPipe`** (no manual package `json!`); Phase 8 NIST up/down simulation + production **`EntropyProvider::default()`**; **`verify_limb_binding_json`**; optional **`verify_handshake_with_le`** with **`--features lattice-bridge`**. |
+| [`crates/qssm-gadget/src/circuit/poly_ops.rs`](crates/qssm-gadget/src/circuit/poly_ops.rs) | **Poly‑Ops:** context/degree rails, reservoir, transcript map, builder, generic **`OpPipe<A,B>`** (one **`ConstraintSystem`** + cumulative **`PolyOpContext`**), **`LatticePolyOp::synthesize_with_context(input, cs, ctx)`**, lazy **`public_binding_requirements_for_input`**, **`PublicBindingContract::merge`**, **`EntropyInjectionOp`**, optional **`MsGhostMirrorOp`** (feature **`ms-engine-b`**), **`EngineABindingOp`** stub seam. |
+| [`crates/qssm-gadget/tests/`](crates/qssm-gadget/tests/) | MS + digest golden + **`full_merkle_parent_parity`** + **`l2_polyops_package`** (golden **`engine_a_public`** vs direct bind); **`ms_ghost_mirror_polyop`** with **`--features ms-engine-b`**. |
 
 ---
 
@@ -372,6 +373,29 @@ Let **`D = SovereignDigest`** be **`[u8; 32]`** (**256** bits).
 
 ---
 
+## Poly‑Ops composition layer (typed pipes)
+
+**Goal:** keep the **bit / R1CS “assembly”** (`bits.rs`, `Blake3Gadget`, `ConstraintSystem`) while making **composition** and **`prover_package.json`** emission **safe** for integrators.
+
+| Piece | Location / role |
+|------|------------------|
+| **`LE_FS_PUBLIC_BINDING_LAYOUT_VERSION`** | [`crates/qssm-utils/src/hashing.rs`](../../crates/qssm-utils/src/hashing.rs) — **bump** when `qssm-le` [`public_binding_fs_bytes`](../../crates/qssm-le/src/protocol/commit.rs) or `fs_challenge_bytes` **order** changes; re-exported from **`qssm-le`** and asserted against **`TRANSCRIPT_MAP_LAYOUT_VERSION`** in **`poly_ops`**. |
+| **`PolyOpContext` / `DegreeExceeded`** | Tracks XOR **and**-gate multiplicative depth; errors include **`VarId`**s + segment label so authors can insert a **fresh witness segment** after a violation. |
+| **`PolyOpTracingCs`** | Wraps any **`ConstraintSystem`** and records depth on **`enforce_xor`**. Optional **auto‑refresh**: when both XOR AND inputs have depth **≥ 1**, inserts **`enforce_equal`** copy per normative [**gadget spec §3.4**](../02-protocol-specs/blake3-lattice-gadget-spec.md) (deepest operand, else **left**). |
+| **`refresh_boolean_wire_copy` / `CopyRefreshMeta`** | Sound R1CS copy (new private wire + **`equal`**); **`refresh_metadata`** + witness **`r1cs_refresh_private_wires`** in package / Merkle JSON (**Index‑Append**); **`L2BuildOptions::auto_refresh_merkle_xor`**; **15%** default **high degree pressure** warning (`refresh_count` / R1CS lines). |
+| **`BindingReservoir` / `BindingPhase`** | Phased nominations; within a phase, **`BTreeMap<BindingLabel, …>`** gives deterministic **`Ord`** order. |
+| **`TranscriptMap`** | **`ENGINE_A_PUBLIC_KEYS_IN_ORDER`** + **`EngineAPublicJson`** custom **`Serialize`** (canonical **`message_limb_u30`** then **`digest_coeff_vector_u4`**); **`serde_json`** **`preserve_order`** is enabled for **`qssm-gadget`** so merged JSON objects keep key order. |
+| **`ProverPackageBuilder::build_l2_handshake_v1`** | Writes **`prover_package.json`**, witness JSON, R1CS manifest — replaces manual `json!` in the example. |
+| **`L2MerkleSovereignPipe`** | Type alias **`OpPipe<MerkleParentBlake3Op, SovereignLimbV2Stage>`**; typed **`StateRoot32`** handoff; build via **`l2_merkle_sovereign_pipe`** or **`MerkleParentBlake3Op::pipe_sovereign`**. |
+| **`SovereignLimbV2Params::device_entropy_link`** | Optional **32**‑byte digest (e.g. BLAKE3 of device raw bytes). Normative mix into the sovereign floor: **`effective_entropy = sovereign_entropy XOR link`** (via **`effective_sovereign_entropy`**) **before** **`SovereignWitness::bind`** so the value in **`ProofMetadata_v2`** matches digest binding. |
+| **`qssm_utils::validate_entropy_distribution`** | Byte histogram χ² vs uniform (**df = 255**), critical ≈ **340** (**p ≈ 0.001**), plus minimum **distinct** byte count; sub‑256‑byte buffers **skip** (no false reject). Wired as **`PolyOpError::WeakEntropy`** from **`EntropyInjectionOp`** when enabled; optional **`L2BuildOptions::reject_weak_entropy_sample`**. |
+| **`ms-engine-b` + `MsGhostMirrorOp`** | Wraps **`qssm_ms::verify`**; **`public_binding_requirements_for_input`** nominates **`ms_fs_v2_challenge`**. **`qssm_ms::verify`** remains **public‑input**; cleartext MS is **not** a ZK privacy claim — see **`EngineABindingOp`** for the planned LE‑only public surface. |
+| **Black‑box + golden tests** | [`crates/qssm-gadget/tests/l2_polyops_package.rs`](../../crates/qssm-gadget/tests/l2_polyops_package.rs) (large stack thread); compares **`engine_a_public`** to direct **`SovereignWitness::bind`** (same floor bytes when **`device_entropy_link`** is **`None`**). |
+
+**`l2_handshake` example:** uses only **`ProverPackageBuilder`** + pipe (no hand-built package JSON).
+
+---
+
 ## Implementation todos (aligned — no split “structs later”)
 
 1. Scaffold **`qssm-gadget`** + workspace + **`error`**.  
@@ -387,7 +411,8 @@ Let **`D = SovereignDigest`** be **`[u8; 32]`** (**256** bits).
 7. **Phase 5 (done — compression engine):** **`blake3_compress.rs`** — **`MSG_SCHEDULE` / `MSG_PERMUTATION`**, **`CompressionWitness`**, **`hash_merkle_parent_witness`** (two compresses = **`merkle_parent`** path); **`r1cs`**: **`synthesize_compress`**, **`synthesize_merkle_parent_hash`**; **`tests/full_merkle_parent_parity.rs`** locks **65 184** **`MockProver`** units and **bit-for-bit** digest parity vs **`qssm_utils`**.  
 8. **Phase 6 (done):** **`prover_json`** + **`l2_handshake`** + deployment manifest — artifact JSON + **`prover_package.json`** + R1CS manifest path.  
 9. **Phase 7 (done):** **`lattice_bridge.rs`** — **`verify_limb_binding_json`**; feature **`lattice-bridge`**: **`verify_handshake_with_le`**, **`BRIDGE_Q`**, **`RqPoly::embed_constant`** **coeff₀ = m** check; tests + example PATH A line.  
-10. **Phase 8 (done):** **`entropy.rs`** — Kaspa ‖ local floor, **500 ms** NIST beacon fetch, XOR booster; **`encode_proof_metadata_v2`** + **`SovereignWitness`** **`nist_included`**; **`l2_handshake`** + **`verify_limb_binding_json`** **`nist_beacon_included`** check.
+10. **Phase 8 (done):** **`entropy.rs`** — Kaspa ‖ local floor, **500 ms** NIST beacon fetch, XOR booster; **`encode_proof_metadata_v2`** + **`SovereignWitness`** **`nist_included`**; **`l2_handshake`** + **`verify_limb_binding_json`** **`nist_beacon_included`** check.  
+11. **Poly‑Ops (done):** **`circuit/poly_ops.rs`** — **`PolyOpContext`**, **`ProverPackageBuilder`**, **`L2MerkleSovereignPipe`**, shared **`LE_FS_PUBLIC_BINDING_LAYOUT_VERSION`**, tests + example refactor.
 
 ---
 
@@ -411,7 +436,7 @@ Let **`D = SovereignDigest`** be **`[u8; 32]`** (**256** bits).
 
 **Normative pipeline:**
 
-1. **Compute** **`sovereign_entropy`** (**Phase 8**): **`Floor = BLAKE3(Kaspa_Hash ‖ Local_Entropy)`**; if NIST beacon returns in time, **`Final = Floor ⊕ NIST_Pulse`**, else **`Final = Floor`**.  
+1. **Compute** **`sovereign_entropy`** (**Phase 8**): **`Floor = BLAKE3(Kaspa_Hash ‖ Local_Entropy)`**; if NIST beacon returns in time, **`Final = Floor ⊕ NIST_Pulse`**, else **`Final = Floor`**. Optionally XOR a **32**‑byte **`device_entropy_link`** into that floor **before** metadata encoding when binding a device leg (**`effective_sovereign_entropy`** in **`poly_ops`**).  
 2. **Compute** **`SovereignDigest = H(domain_tag ‖ Root ‖ RollupContext ‖ ProofMetadata_v2)`** using domain‑separated hashing (**`DOMAIN_SOVEREIGN_LIMB_V2`**); **`ProofMetadata_v2`** includes **`sovereign_entropy`** and **`nist_included`** (**Phase 3+8**).  
 3. **Only then** extract **`m`**: **first 30 bits** of **`SovereignDigest`** in **LE** order via **bit decomposition**; **`SovereignWitness`** holds digest + limb + entropy flags for **`validate()`**.  
 4. **Forbidden:** **`m`** from raw root truncation or **mod‑only** reduction **without** this hash.

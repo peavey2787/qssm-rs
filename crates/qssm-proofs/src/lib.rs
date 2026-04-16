@@ -4,9 +4,9 @@ pub mod benchmarks;
 pub mod reduction_blake3;
 pub mod reduction_lattice;
 
-use std::path::Path;
 use qssm_gadget::DIGEST_COEFF_VECTOR_SIZE;
 use qssm_le::{BETA, C_POLY_SIZE, N, Q};
+use std::path::Path;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum HardnessStatus {
@@ -187,7 +187,8 @@ mod tests {
 
     #[test]
     fn hardness_assessment_structured_status_exists() {
-        let assessment = assess_hardness(None, None).expect("assessment should load from system audit");
+        let assessment =
+            assess_hardness(None, None).expect("assessment should load from system audit");
         assert!(assessment.structural_ok);
         match assessment.status {
             HardnessStatus::Meets128BitTarget | HardnessStatus::Below128BitTarget => {}
@@ -198,7 +199,10 @@ mod tests {
     #[test]
     fn ci_security_floor_112_bits() {
         let assessment = assess_hardness(None, None).expect("must read current security estimate");
-        assert!(assessment.structural_ok, "structural checks must pass before bit checks");
+        assert!(
+            assessment.structural_ok,
+            "structural checks must pass before bit checks"
+        );
         assert!(
             assessment.effective_security_bits >= CI_FLOOR_BITS,
             "effective security {:.2} bits below CI floor {:.2} bits (source: {})",
@@ -243,9 +247,15 @@ mod tests {
 
         for _ in 0..MONTE_CARLO_CASES {
             let n = perturb_pm_10_percent(N as f64, &mut rng).round().max(64.0) as usize;
-            let q = perturb_pm_10_percent(Q as f64, &mut rng).round().max(1024.0) as u32;
-            let beta = perturb_pm_10_percent(BETA as f64, &mut rng).round().max(1.0) as u32;
-            let c_poly = perturb_pm_10_percent(C_POLY_SIZE as f64, &mut rng).round().max(8.0) as usize;
+            let q = perturb_pm_10_percent(Q as f64, &mut rng)
+                .round()
+                .max(1024.0) as u32;
+            let beta = perturb_pm_10_percent(BETA as f64, &mut rng)
+                .round()
+                .max(1.0) as u32;
+            let c_poly = perturb_pm_10_percent(C_POLY_SIZE as f64, &mut rng)
+                .round()
+                .max(8.0) as usize;
             let bits = estimated_bits_of_security(n, q, beta, c_poly);
 
             assert!(

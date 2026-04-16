@@ -162,8 +162,8 @@ fn run() -> Result<(), String> {
     let witness = Witness {
         r: [0i32; qssm_le::N],
     };
-    let (commitment, proof) =
-        prove_arithmetic(&vk, &public, &witness, &ctx_digest).map_err(|e| format!("Prover failed: {e:?}"))?;
+    let (commitment, proof) = prove_arithmetic(&vk, &public, &witness, &ctx_digest)
+        .map_err(|e| format!("Prover failed: {e:?}"))?;
 
     let att = sign_attestation(sk_winner, &anchor, winner, ctx_digest);
     let wire = encode_millionaires_proof(&att, vk.crs_seed, public_m, &commitment, &proof);

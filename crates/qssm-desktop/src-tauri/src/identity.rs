@@ -160,8 +160,10 @@ pub fn decrypt_identity(
         .map_err(|e| format!("aes init: {e}"))?
         .decrypt(Nonce::from_slice(&nonce), cipher.as_ref())
         .map_err(|_| "password check failed".to_string())?;
-    let mut mnemonic = String::from_utf8(plain.clone()).map_err(|_| "decryption failed".to_string())?;
-    let parsed = Mnemonic::parse(mnemonic.trim()).map_err(|_| "password check failed".to_string())?;
+    let mut mnemonic =
+        String::from_utf8(plain.clone()).map_err(|_| "decryption failed".to_string())?;
+    let parsed =
+        Mnemonic::parse(mnemonic.trim()).map_err(|_| "password check failed".to_string())?;
 
     let out = DecryptedIdentity {
         id: rec.id.clone(),
@@ -209,8 +211,8 @@ fn deterministic_peer_id(entropy: &[u8]) -> Result<String, String> {
     let seed = seed_hasher.finalize();
     let mut sk = [0u8; 32];
     sk.copy_from_slice(&seed.as_bytes()[..32]);
-    let secret = ed25519::SecretKey::try_from_bytes(&mut sk)
-        .map_err(|e| format!("ed25519 secret: {e}"))?;
+    let secret =
+        ed25519::SecretKey::try_from_bytes(&mut sk).map_err(|e| format!("ed25519 secret: {e}"))?;
     let keypair = ed25519::Keypair::from(secret);
     let peer_id = PeerId::from_public_key(&keypair.public().into());
     sk.zeroize();

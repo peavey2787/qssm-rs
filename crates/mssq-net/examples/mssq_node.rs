@@ -74,15 +74,20 @@ fn draw_dashboard(frame: &mut ratatui::Frame<'_>, snap: &NodeSnapshot) {
         snap.network_label,
         snap.peer_id,
         snap.nat_status,
-        snap.public_addr
-            .clone()
-            .unwrap_or_else(|| "-".to_string())
+        snap.public_addr.clone().unwrap_or_else(|| "-".to_string())
     ))
-    .block(Block::default().title("PeerID & Status").borders(Borders::ALL));
+    .block(
+        Block::default()
+            .title("PeerID & Status")
+            .borders(Borders::ALL),
+    );
     frame.render_widget(status, chunks[0]);
 
-    let transports = Paragraph::new(snap.active_transports.join(", "))
-        .block(Block::default().title("Transports Active").borders(Borders::ALL));
+    let transports = Paragraph::new(snap.active_transports.join(", ")).block(
+        Block::default()
+            .title("Transports Active")
+            .borders(Borders::ALL),
+    );
     frame.render_widget(transports, chunks[1]);
 
     let mesh = Paragraph::new(format!(
@@ -105,7 +110,11 @@ fn draw_dashboard(frame: &mut ratatui::Frame<'_>, snap: &NodeSnapshot) {
         (snap.current_t_min_milli.abs() % 1000),
         immune_top
     ))
-    .block(Block::default().title("Immune System").borders(Borders::ALL));
+    .block(
+        Block::default()
+            .title("Immune System")
+            .borders(Borders::ALL),
+    );
     frame.render_widget(immune, chunks[3]);
 
     let pulse_items: Vec<ListItem<'_>> = snap

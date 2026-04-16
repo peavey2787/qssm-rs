@@ -36,28 +36,44 @@ pub enum MeshEvent {
 }
 
 impl From<gossipsub::Event> for MeshEvent {
-    fn from(v: gossipsub::Event) -> Self { Self::Gossipsub(v) }
+    fn from(v: gossipsub::Event) -> Self {
+        Self::Gossipsub(v)
+    }
 }
 impl From<kad::Event> for MeshEvent {
-    fn from(v: kad::Event) -> Self { Self::Kademlia(v) }
+    fn from(v: kad::Event) -> Self {
+        Self::Kademlia(v)
+    }
 }
 impl From<mdns::Event> for MeshEvent {
-    fn from(v: mdns::Event) -> Self { Self::Mdns(v) }
+    fn from(v: mdns::Event) -> Self {
+        Self::Mdns(v)
+    }
 }
 impl From<autonat::Event> for MeshEvent {
-    fn from(v: autonat::Event) -> Self { Self::AutoNat(v) }
+    fn from(v: autonat::Event) -> Self {
+        Self::AutoNat(v)
+    }
 }
 impl From<dcutr::Event> for MeshEvent {
-    fn from(v: dcutr::Event) -> Self { Self::Dcutr(v) }
+    fn from(v: dcutr::Event) -> Self {
+        Self::Dcutr(v)
+    }
 }
 impl From<relay::client::Event> for MeshEvent {
-    fn from(v: relay::client::Event) -> Self { Self::Relay(v) }
+    fn from(v: relay::client::Event) -> Self {
+        Self::Relay(v)
+    }
 }
 impl From<identify::Event> for MeshEvent {
-    fn from(v: identify::Event) -> Self { Self::Identify(v) }
+    fn from(v: identify::Event) -> Self {
+        Self::Identify(v)
+    }
 }
 impl From<ping::Event> for MeshEvent {
-    fn from(v: ping::Event) -> Self { Self::Ping(v) }
+    fn from(v: ping::Event) -> Self {
+        Self::Ping(v)
+    }
 }
 
 pub fn build_behaviour(
@@ -85,8 +101,8 @@ pub fn build_behaviour(
     let mut kademlia = kad::Behaviour::new(local_peer, store);
     kademlia.set_mode(Some(kad::Mode::Server));
 
-    let mdns = mdns::tokio::Behaviour::new(mdns::Config::default(), local_peer)
-        .expect("mdns behaviour");
+    let mdns =
+        mdns::tokio::Behaviour::new(mdns::Config::default(), local_peer).expect("mdns behaviour");
 
     let identify = identify::Behaviour::new(identify::Config::new(
         format!("/mssq-net/net-{network_id}/1.0.0"),

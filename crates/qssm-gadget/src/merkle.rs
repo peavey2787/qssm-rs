@@ -2,8 +2,8 @@
 
 use qssm_utils::merkle_parent;
 
-use crate::primitives::bits::to_le_bits;
 use crate::error::GadgetError;
+use crate::primitives::bits::to_le_bits;
 
 /// Engine B Ghost‑Mirror tree: 128 leaves, depth 7 (`qssm-ms` / `PositionAwareTree`).
 pub const MERKLE_WIDTH_MS: usize = 128;

@@ -1,7 +1,7 @@
 use libp2p::PeerId;
 use serde::{Deserialize, Serialize};
 
-use qssm_he::{harvest, Heartbeat, HarvestConfig};
+use qssm_he::{harvest, HarvestConfig, Heartbeat};
 
 use crate::common::error::NetError;
 

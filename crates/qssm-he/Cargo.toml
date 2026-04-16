@@ -10,7 +10,7 @@ publish = false
 accelerometer.workspace = true
 argon2.workspace = true
 blake3.workspace = true
-rayon.workspace = true
+qssm-utils = { path = "../qssm-utils" }
 smallvec.workspace = true
 thiserror.workspace = true
 

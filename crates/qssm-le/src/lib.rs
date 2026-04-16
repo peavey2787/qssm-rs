@@ -19,17 +19,20 @@ mod crs;
 mod error;
 mod protocol;
 
-pub use algebra::ring::{encode_rq_coeffs_le, short_vec_to_rq, short_vec_to_rq_bound, RqPoly, ScrubbedPoly};
+pub use algebra::ring::{
+    encode_rq_coeffs_le, short_vec_to_rq, short_vec_to_rq_bound, RqPoly, ScrubbedPoly,
+};
 pub use crs::VerifyingKey;
 pub use error::LeError;
 pub use protocol::commit::{
-    commit_mlwe, prove_with_witness, verify_lattice_algebraic, Commitment, LatticeProof, PublicBinding,
-    PublicInstance, Witness, SecretKey, CommitmentRandomness,
+    commit_mlwe, prove_with_witness, verify_lattice_algebraic, Commitment, CommitmentRandomness,
+    LatticeProof, PublicBinding, PublicInstance, SecretKey, Witness,
 };
 pub use protocol::params::{
     BETA, C_POLY_SIZE, C_POLY_SPAN, C_SPAN_LEGACY, ETA, GAMMA, MAX_MESSAGE_LEGACY, N,
-    PUBLIC_DIGEST_COEFF_MAX, PUBLIC_DIGEST_COEFFS, Q,
+    PUBLIC_DIGEST_COEFFS, PUBLIC_DIGEST_COEFF_MAX, Q,
 };
+pub use qssm_utils::LE_FS_PUBLIC_BINDING_LAYOUT_VERSION;
 
 /// Witness-free verifier (includes `rollup_context_digest` in FS challenge).
 pub fn verify_lattice(

@@ -94,7 +94,10 @@ fn apply_balance_delta(state: &mut RollupState, tx: &L2Transaction) {
     state.smt.insert(key, cur);
 }
 
-fn apply_storage_lease_create(state: &mut RollupState, tx: &L2Transaction) -> Result<(), BatcherError> {
+fn apply_storage_lease_create(
+    state: &mut RollupState,
+    tx: &L2Transaction,
+) -> Result<(), BatcherError> {
     if tx.payload.len() < 1 + 32 + 32 + 8 + 32 {
         return Err(BatcherError::InvalidStorageLeasePayload);
     }
@@ -125,7 +128,10 @@ fn apply_storage_lease_create(state: &mut RollupState, tx: &L2Transaction) -> Re
     Ok(())
 }
 
-fn apply_storage_lease_por(state: &mut RollupState, tx: &L2Transaction) -> Result<(), BatcherError> {
+fn apply_storage_lease_por(
+    state: &mut RollupState,
+    tx: &L2Transaction,
+) -> Result<(), BatcherError> {
     if tx.payload.len() < 1 + 32 + 2 {
         return Err(BatcherError::InvalidStorageLeasePayload);
     }
@@ -184,7 +190,10 @@ fn apply_storage_lease_por(state: &mut RollupState, tx: &L2Transaction) -> Resul
     Ok(())
 }
 
-fn apply_storage_lease_slash(state: &mut RollupState, tx: &L2Transaction) -> Result<(), BatcherError> {
+fn apply_storage_lease_slash(
+    state: &mut RollupState,
+    tx: &L2Transaction,
+) -> Result<(), BatcherError> {
     if tx.payload.len() < 1 + 32 {
         return Err(BatcherError::InvalidStorageLeasePayload);
     }

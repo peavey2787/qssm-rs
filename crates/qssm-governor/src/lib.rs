@@ -11,12 +11,12 @@ use std::collections::HashMap;
 use rust_decimal::Decimal;
 
 use engine::MetabolicEngine;
-pub use state::{GovernorState, PeerAction, PeerState};
 use state::{classify_from, classify_peek, try_recover_with};
+pub use state::{GovernorState, PeerAction, PeerState};
 use tracker::entropy::EntropyTracker;
 use tracker::peer_stats::PeerStats;
-use utils::{d, milli};
 pub use utils::verify_metabolic_gate;
+use utils::{d, milli};
 
 #[derive(Debug, Clone)]
 pub struct GovernorConfig {
@@ -123,14 +123,19 @@ impl Governor {
 
     pub fn observe_pulse(&mut self, peer_id: &str, density_ok: bool, _timestamp_ns: u64) {
         self.tick = self.tick.saturating_add(1);
-        let score = if density_ok { Decimal::ONE } else { Decimal::ZERO };
+        let score = if density_ok {
+            Decimal::ONE
+        } else {
+            Decimal::ZERO
+        };
         self.entropy.push_score(score, self.cfg.n);
         let entry = self.peers.entry(peer_id.to_string()).or_default();
         entry.push(score, density_ok, self.cfg.n);
     }
 
     pub fn update_pressure(&mut self, pulses_in_window: u32, window_secs: u32) {
-        self.metabolic.update_pressure(pulses_in_window, window_secs);
+        self.metabolic
+            .update_pressure(pulses_in_window, window_secs);
     }
 
     pub fn current_t_min_milli(&self) -> i64 {
@@ -193,12 +198,17 @@ impl Governor {
                 state: classify_peek(&self.cfg, tick, stats, global_avg),
             })
             .collect();
-        rows.sort_by(|a, b| b.deficit_milli.cmp(&a.deficit_milli).then(a.peer_id.cmp(&b.peer_id)));
+        rows.sort_by(|a, b| {
+            b.deficit_milli
+                .cmp(&a.deficit_milli)
+                .then(a.peer_id.cmp(&b.peer_id))
+        });
         rows.into_iter().take(limit).collect()
     }
 
     fn global_density_avg(&self, connected_peers: usize) -> Decimal {
-        if connected_peers <= self.cfg.bootstrap_peer_threshold && self.entropy.len() < self.cfg.n_min
+        if connected_peers <= self.cfg.bootstrap_peer_threshold
+            && self.entropy.len() < self.cfg.n_min
         {
             return self.cfg.bootstrap_global_density;
         }

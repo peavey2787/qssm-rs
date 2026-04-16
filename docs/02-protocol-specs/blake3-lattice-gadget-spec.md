@@ -104,6 +104,22 @@ The roadmap **recommends (1)** inside the BLAKE3 **G**‑function scheduling: fi
 
 Standard **ripple carry**: bits **\(a_i,b_i,c_i^{\text{in}},s_i,c_i^{\text{out}}\)** with **full‑adder** constraints (each **degree 2**). **Chained depth** is **\(O(32)\)** in **constraint layers**, not **multiplicative degree** in a single polynomial.
 
+### 3.4 Degree‑2 copy refresh (normative for `PolyOpTracingCs` auto‑refresh)
+
+The **gadget** tracks a **multiplicative depth** per boolean wire for **XOR** rows that expose **`and_xy = x · y`**. When **both** operands already have **depth ≥ 1**, a naive XOR row would exceed the intended **degree‑2** budget.
+
+**Sound fix (R1CS, not tracker‑only):** allocate a **new** private wire **`x'`**, assert **`x' = x`** with an **`enforce_equal`** row, and use **`x'`** (depth **0** for this purpose) in place of **`x`** for the XOR’s AND input. The **`qssm-gadget`** reference records each copy in **`refresh_metadata`** (`new_idx`, `old_idx`, `label`, `segment`, `kind`) and appends witness tail rows for hardware provers (**Index‑Append**).
+
+**Auto‑refresh operand choice (MUST be identical in every implementation):** when auto‑refresh is enabled and a binary XOR product would see **`depth(x) ≥ 1`** and **`depth(y) ≥ 1`**, the synthesizer **must**:
+
+1. If **`depth(x) > depth(y)`**, refresh **`x`** (allocate copy, **`enforce_equal`**, substitute **`x`**).
+2. Else if **`depth(y) > depth(x)`**, refresh **`y`**.
+3. Else (**`depth(x) == depth(y)`**), refresh **`x`** (**left‑hand tie‑break**).
+
+**Rationale (interoperability):** Different provers (Rust, C++, ASIC generators) share the same **R1CS line manifest** and **variable allocation order**. Any deviation in which operand is refreshed first changes **`VarId`** assignment and **`equal` / `xor` rows**, so manifests diverge and cross‑checks fail. **Left tie‑break** is therefore **normative**, not a quality‑of‑implementation detail.
+
+**Manual refresh:** authors may call **`refresh_boolean_wire_copy(old, label, segment)`** at gadget boundaries; **`label`** is required for analytics (e.g. **`Blake3_Round_5`**).
+
 ---
 
 ## 4. BLAKE3 Inside the Constraint System
@@ -145,6 +161,7 @@ Each **`merkle_parent`** invocation expands to **one** **`hash_domain(DOMAIN_MER
 
 ### 5.2 Binding to LE’s public input
 
+- **Rust integration (Poly‑Ops):** [`crates/qssm-gadget/src/circuit/poly_ops.rs`](../../crates/qssm-gadget/src/circuit/poly_ops.rs) implements typed **`L2MerkleSovereignPipe`**, **`ProverPackageBuilder`**, phased **`BindingReservoir`**, and **`TranscriptMap`** keyed to **`qssm_utils::LE_FS_PUBLIC_BINDING_LAYOUT_VERSION`** (must stay in sync with `qssm-le` `public_binding_fs_bytes` / `fs_challenge_bytes`). See the [gadget Rust plan § Poly‑Ops](../04-implementation-plans/blake3-lattice-gadget-rust-plan.md).
 - **Option A (digest embedding):** Compute **\(d = \texttt{BLAKE3}(\text{“MS‑VERIFIED”} \Vert R^\* \Vert \cdots)\)** and embed digest-derived coefficient lanes into **`PublicBinding::DigestCoeffVector`** (see **`qssm-le`** params and commit path).
 - **Option B (multi‑proof):** Multiple **LE** messages or an extended **rollup** statement carry **32‑byte** **root** explicitly in a **batch** verifier (future **`qssm-ref`** trait).
 

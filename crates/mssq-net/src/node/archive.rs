@@ -13,7 +13,11 @@ pub(crate) fn archive_branch(state: &RollupState, key: &[u8; 32], encoded_proof:
         p.push("history_archive_merkle.jsonl");
         if let Ok(s) = serde_json::to_string(&line) {
             use std::io::Write as _;
-            if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open(p) {
+            if let Ok(mut f) = std::fs::OpenOptions::new()
+                .create(true)
+                .append(true)
+                .open(p)
+            {
                 let _ = writeln!(f, "{s}");
             }
         }

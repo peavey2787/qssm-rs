@@ -44,15 +44,17 @@ libp2p = { version = "0.56", default-features = false, features = [
 libp2p-noise.workspace = true
 libp2p-yamux.workspace = true
 qssm-he = { path = "../qssm-he" }
+qssm-le = { path = "../qssm-le" }
 qssm-governor = { path = "../qssm-governor" }
 qssm-utils = { path = "../qssm-utils" }
 qssm-common = { path = "../qssm-common" }
 mssq-batcher = { path = "../mssq-batcher" }
+qssm-gadget = { path = "../qssm-gadget" }
 ratatui = { workspace = true, optional = true }
 crossterm = { workspace = true, optional = true }
 serde.workspace = true
 serde_json.workspace = true
 hex.workspace = true
 thiserror.workspace = true
-tokio.workspace = true
+tokio = { workspace = true, features = ["fs", "io-util"] }
 tracing.workspace = true

@@ -50,7 +50,10 @@ pub fn limb_to_q_coeff0(m: u64) -> Result<u32, LatticeBridgeError> {
     Ok(m as u32)
 }
 
-fn parse_digest_coeff_vector(v: &serde_json::Value, path: &'static str) -> Result<[u32; DIGEST_COEFF_VECTOR_SIZE], LatticeBridgeError> {
+fn parse_digest_coeff_vector(
+    v: &serde_json::Value,
+    path: &'static str,
+) -> Result<[u32; DIGEST_COEFF_VECTOR_SIZE], LatticeBridgeError> {
     let arr = v.as_array().ok_or(LatticeBridgeError::MissingField(path))?;
     if arr.len() != DIGEST_COEFF_VECTOR_SIZE {
         return Err(LatticeBridgeError::MissingField(path));

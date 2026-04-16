@@ -3,7 +3,9 @@
 //! **`bits.rs`** stays witness-only; this module **reads** witness fields and issues IR hooks.
 
 use crate::primitives::bits::{RippleCarryWitness, XorWitness};
-use crate::primitives::blake3_compress::{CompressionWitness, MerkleParentHashWitness, MSG_PERMUTATION};
+use crate::primitives::blake3_compress::{
+    CompressionWitness, MerkleParentHashWitness, MSG_PERMUTATION,
+};
 use crate::primitives::blake3_native::{Add32ChainedWitness, BitRotateWitness, GWitness};
 
 /// Handle to one R1CS variable (witness or public input).

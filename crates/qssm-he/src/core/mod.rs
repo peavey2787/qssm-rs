@@ -1,5 +1,4 @@
-//! Core entropy processing math: density heuristics, harvesting, and PMK derivation.
+//! Core entropy processing math: harvesting and PMK derivation (density lives in `qssm-utils`).
 
-pub mod density;
 pub mod harvest;
 pub mod pmk;

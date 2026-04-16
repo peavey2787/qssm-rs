@@ -5,13 +5,13 @@ use std::fs;
 use std::time::Instant;
 use tauri::Manager;
 
-use qssm_he::HarvestConfig;
 use bip39::Mnemonic;
 use qssm_common::SmtRoot;
 use qssm_gadget::binding::SovereignWitness;
 use qssm_gadget::entropy::{EntropyAnchor, EntropyProvider};
 use qssm_gadget::prover_json::sovereign_witness_value;
 use qssm_gadget::{QssmTemplate, QSSM_TEMPLATE_VERSION};
+use qssm_he::HarvestConfig;
 use qssm_le::BETA;
 use qssm_le::{encode_rq_coeffs_le, prove_arithmetic, PublicInstance, VerifyingKey, Witness};
 use qssm_utils::hashing::blake3_hash;
@@ -142,8 +142,11 @@ pub fn hire_storage_provider(
         "rent_due": "pending_epoch_1024",
         "status": "active",
     }));
-    fs::write(&path, serde_json::to_string_pretty(&cur).map_err(|e| e.to_string())?)
-        .map_err(|e| e.to_string())?;
+    fs::write(
+        &path,
+        serde_json::to_string_pretty(&cur).map_err(|e| e.to_string())?,
+    )
+    .map_err(|e| e.to_string())?;
     Ok(json!({"ok": true, "count": cur.len()}))
 }
 
@@ -229,11 +232,13 @@ impl HandoffFile {
             let label = a.kind_label();
             return Ok((a.to_entropy_anchor()?, label));
         }
-        let hex = self
-            .kaspa_parent_block_id_hex
-            .as_ref()
-            .ok_or_else(|| "missing entropy anchor: set anchor or kaspa_parent_block_id_hex".to_string())?;
-        Ok((EntropyAnchor::KaspaParentBlockHash(hex_to_32(hex)?), "kaspa"))
+        let hex = self.kaspa_parent_block_id_hex.as_ref().ok_or_else(|| {
+            "missing entropy anchor: set anchor or kaspa_parent_block_id_hex".to_string()
+        })?;
+        Ok((
+            EntropyAnchor::KaspaParentBlockHash(hex_to_32(hex)?),
+            "kaspa",
+        ))
     }
 }
 
@@ -371,7 +376,10 @@ pub fn proof_of_age_template_json() -> Result<String, String> {
 }
 
 #[tauri::command]
-pub fn verify_claim_with_template(template_json: String, claim_json: String) -> Result<String, String> {
+pub fn verify_claim_with_template(
+    template_json: String,
+    claim_json: String,
+) -> Result<String, String> {
     let template: QssmTemplate =
         serde_json::from_str(&template_json).map_err(|e| format!("parse template: {e}"))?;
     if template.qssm_template_version != QSSM_TEMPLATE_VERSION {
@@ -380,7 +388,8 @@ pub fn verify_claim_with_template(template_json: String, claim_json: String) -> 
             template.qssm_template_version, QSSM_TEMPLATE_VERSION
         ));
     }
-    let claim: Value = serde_json::from_str(&claim_json).map_err(|e| format!("parse claim JSON: {e}"))?;
+    let claim: Value =
+        serde_json::from_str(&claim_json).map_err(|e| format!("parse claim JSON: {e}"))?;
     match template.verify_public_claim(&claim) {
         Ok(()) => serde_json::to_string(&json!({"ok": true, "detail": "all predicates passed"}))
             .map_err(|e| e.to_string()),

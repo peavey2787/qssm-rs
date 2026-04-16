@@ -7,4 +7,5 @@ description = "BLAKE3 helpers, domain tags, and Merkle utilities for QSSM."
 
 [dependencies]
 blake3.workspace = true
+rayon.workspace = true
 thiserror.workspace = true

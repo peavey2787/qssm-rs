@@ -36,4 +36,3 @@ pub fn default_collision_claim() -> Blake3ReductionClaim {
         notes: "Scaffold value only; replace with audited bound tied to concrete model.".into(),
     }
 }
-

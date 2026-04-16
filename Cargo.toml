@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "crates/qssm-common",
+    "crates/qssm-wrapper",
     "crates/qssm-utils",
     "crates/qssm-gadget",
     "crates/qssm-le",

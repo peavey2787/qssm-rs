@@ -1,24 +1,18 @@
 //! **L2 handshake demo** — simulates a Kaspa L1 block binding, rolls up two state leaves with **`merkle_parent`**, then runs the **Sovereign Digest** path (Phase 8 entropy floor + opportunistic NIST booster) for Engine A.
 //!
-//! Writes to **`crates/qssm-gadget/assets/`**:
-//! - **`prover_package.json`** — sovereign + Merkle witness JSON + metadata for Engine A (**`nist_beacon_included`**).
-//! - **`r1cs_merkle_parent.manifest.txt`** — **65 184** constraint lines (`Blake3Gadget::export_r1cs`).
+//! Writes to **`crates/qssm-gadget/assets/`** via [`ProverPackageBuilder`](qssm_gadget::poly_ops::ProverPackageBuilder) (no manual `prover_package` JSON).
 //!
 //! Run: `cargo run -p qssm-gadget --example l2_handshake`
 //!
 //! Phase 8: **500 ms** NIST beacon timeout — if the server is not ready, the **Kaspa ‖ local** BLAKE3 floor is used alone (**`nist_included = false`**).
 
-use qssm_gadget::binding::SovereignWitness;
-use qssm_gadget::blake3_compress::hash_merkle_parent_witness;
 use qssm_gadget::entropy::EntropyProvider;
 use qssm_gadget::lattice_bridge::verify_limb_binding_json;
-use qssm_gadget::prover_json::{
-    merkle_parent_hash_witness_to_prover_json, merkle_parent_private_wire_count,
-    sovereign_private_wire_count,
+use qssm_gadget::poly_ops::{
+    L2HandshakeArtifacts, MerkleParentBlake3Op, ProverPackageBuilder, SovereignLimbV2Params,
 };
-use qssm_gadget::r1cs::Blake3Gadget;
+use qssm_gadget::prover_json::merkle_parent_private_wire_count;
 use qssm_utils::hashing::{blake3_hash, hash_domain, DOMAIN_MSSQ_ROLLUP_CONTEXT};
-use serde_json::json;
 use std::path::Path;
 
 fn run() {
@@ -30,10 +24,6 @@ fn run() {
 
     let leaf_left = blake3_hash(b"L2_ROLLUP_LEAF_LEFT");
     let leaf_right = blake3_hash(b"L2_ROLLUP_LEAF_RIGHT");
-    let merkle_w = hash_merkle_parent_witness(&leaf_left, &leaf_right);
-    assert!(merkle_w.validate());
-    let state_root = merkle_w.digest();
-
     let rollup_ctx = hash_domain(DOMAIN_MSSQ_ROLLUP_CONTEXT, &[kaspa_block_id.as_slice()]);
     let challenge = blake3_hash(b"L2_FS_CHALLENGE_V1");
     let local_entropy = blake3_hash(b"L2_LOCAL_ENTROPY_V1");
@@ -60,72 +50,34 @@ fn run() {
         prov.generate_sovereign_entropy(kaspa_block_id, local_entropy);
     eprintln!("Phase 8 — Production policy (≤500ms NIST try): nist_included={nist_included}");
 
-    let sovereign = SovereignWitness::bind(
-        state_root,
-        rollup_ctx,
-        7,
-        3,
-        1,
-        challenge,
-        sovereign_entropy,
-        nist_included,
-    );
-    assert!(sovereign.validate());
+    let pipe =
+        MerkleParentBlake3Op::new(leaf_left, leaf_right).pipe_sovereign(SovereignLimbV2Params {
+            rollup_context_digest: rollup_ctx,
+            n: 7,
+            k: 3,
+            bit_at_k: 1,
+            challenge,
+            sovereign_entropy,
+            nist_included,
+            device_entropy_link: None,
+        });
 
-    let r1cs_text = Blake3Gadget::export_r1cs(&merkle_w);
-    assert_eq!(r1cs_text.lines().count(), 65_184);
-
-    let sovereign_json = sovereign.to_prover_json();
-    std::fs::write(assets_dir.join("sovereign_witness.json"), sovereign_json.as_str())
-        .expect("sovereign_witness.json");
-
-    let merkle_json = merkle_parent_hash_witness_to_prover_json(&merkle_w);
-    std::fs::write(assets_dir.join("merkle_parent_witness.json"), merkle_json.as_str())
-        .expect("merkle_parent_witness.json");
-
-    let sovereign_private_wires = sovereign_private_wire_count();
-    let merkle_wires = merkle_parent_private_wire_count(&merkle_w);
-
-    let package = json!({
-        "package_version": "qssm-l2-handshake-v1",
-        "description": "Kaspa-anchored L2 handshake: Merkle parent (BLAKE3 compress witness) + Sovereign limb for Engine A",
-        "sim_kaspa_parent_block_id_hex": hex::encode(kaspa_block_id),
-        "merkle_leaf_left_hex": hex::encode(leaf_left),
-        "merkle_leaf_right_hex": hex::encode(leaf_right),
-        "rollup_state_root_hex": hex::encode(state_root),
-        "nist_beacon_included": nist_included,
-        "engine_a_public": {
-            "message_limb_u30": sovereign.message_limb,
-            "digest_coeff_vector_u4": sovereign.digest_coeff_vector.to_vec(),
+    let out = ProverPackageBuilder::build_l2_handshake_v1(
+        &assets_dir,
+        &pipe,
+        &L2HandshakeArtifacts {
+            kaspa_parent: kaspa_block_id,
+            leaf_left,
+            leaf_right,
+            nist_included,
         },
-        "artifacts": {
-            "sovereign_witness_json": "sovereign_witness.json",
-            "merkle_parent_witness_json": "merkle_parent_witness.json",
-            "r1cs_merkle_manifest_txt": "r1cs_merkle_parent.manifest.txt",
-        },
-        "witness_wire_counts": {
-            "sovereign_private_bit_wires": sovereign_private_wires,
-            "merkle_parent_private_bit_wires": merkle_wires,
-        },
-        "r1cs": {
-            "constraint_line_count": r1cs_text.lines().count(),
-            "manifest_file": "r1cs_merkle_parent.manifest.txt",
-            "line_format": "xor|full_adder|equal with tab-separated var indices",
-        },
-    });
-
-    std::fs::write(
-        assets_dir.join("prover_package.json"),
-        serde_json::to_string_pretty(&package).expect("package json"),
     )
-    .expect("write prover_package.json");
-    std::fs::write(assets_dir.join("r1cs_merkle_parent.manifest.txt"), r1cs_text.as_str())
-        .expect("write r1cs manifest");
+    .expect("build_l2_handshake_v1");
 
     eprintln!(
         "Wrote prover_package.json, sovereign_witness.json, merkle_parent_witness.json, r1cs_merkle_parent.manifest.txt ({} constraints, {} merkle private wires)",
-        r1cs_text.lines().count(),
-        merkle_wires
+        out.merkle.r1cs_text.lines().count(),
+        merkle_parent_private_wire_count(&out.merkle.witness)
     );
 
     verify_limb_binding_json(&assets_dir).expect("verify_limb_binding_json");
@@ -140,7 +92,6 @@ fn run() {
 }
 
 fn main() {
-    // Large compress witnesses + JSON serialization need more than the default Windows stack (1 MiB).
     const STACK: usize = 32 * 1024 * 1024;
     std::thread::Builder::new()
         .stack_size(STACK)

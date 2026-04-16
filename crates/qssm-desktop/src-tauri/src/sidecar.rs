@@ -1,7 +1,7 @@
 //! Background `mssq-net` node + snapshot → Tauri `emit` bridge.
 
-use std::path::PathBuf;
 use std::fs;
+use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::sync::Mutex;
 use std::time::Duration;
@@ -73,7 +73,8 @@ fn save_network_id(app: &AppHandle, network_id: u32) -> Result<(), String> {
         .map_err(|e| format!("app_data_dir: {e}"))?;
     fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
     let path = dir.join(NETWORK_PROFILE_FILE);
-    let s = serde_json::to_string_pretty(&json!({ "network_id": network_id })).map_err(|e| e.to_string())?;
+    let s = serde_json::to_string_pretty(&json!({ "network_id": network_id }))
+        .map_err(|e| e.to_string())?;
     fs::write(path, s).map_err(|e| e.to_string())
 }
 
@@ -324,9 +325,14 @@ fn command_center_payload(snap: &mssq_net::NodeSnapshot, geo: &GeoFix) -> Value 
             json!(current_network_id()),
         );
         // Normalized “fever” 0..1 for UI.
-        let fever_tmin =
-            ((snap.current_t_min_milli.saturating_sub(1000)).max(0) as f64 / 3000.0_f64).clamp(0.0, 1.0);
-        let fever_density = if snap.global_density_avg_milli < 800 { 0.45 } else { 0.0 };
+        let fever_tmin = ((snap.current_t_min_milli.saturating_sub(1000)).max(0) as f64
+            / 3000.0_f64)
+            .clamp(0.0, 1.0);
+        let fever_density = if snap.global_density_avg_milli < 800 {
+            0.45
+        } else {
+            0.0
+        };
         let fever = fever_tmin.max(fever_density);
         map.insert("fever_0_1".to_string(), json!(fever));
     }
@@ -436,7 +442,8 @@ mod tests {
         let liar_root = hex::encode([7u8; 32]); // intentionally mismatched
         let proof_hex = hex::encode(proof);
 
-        let err = persist_repair_to_dir(&dir, "peer-liar", &liar_root, &proof_hex, "TESTNET-1").expect_err("must fail");
+        let err = persist_repair_to_dir(&dir, "peer-liar", &liar_root, &proof_hex, "TESTNET-1")
+            .expect_err("must fail");
         assert!(err.contains("proof"));
         let after = std::fs::read_to_string(&backup).expect("read backup");
         assert_eq!(after, "{\"sentinel\":true}");
