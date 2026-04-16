@@ -1,0 +1,18 @@
+[package]
+name = "qssm-he"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+description = "QSSM-HE: hardware-anchored raw entropy harvest, density checks, sovereign seed, PMK derivation."
+publish = false
+
+[dependencies]
+accelerometer.workspace = true
+argon2.workspace = true
+blake3.workspace = true
+qssm-utils.workspace = true
+smallvec.workspace = true
+thiserror.workspace = true
+
+[target.'cfg(unix)'.dependencies]
+openentropy-core.workspace = true

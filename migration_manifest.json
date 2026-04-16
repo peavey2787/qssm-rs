@@ -1,0 +1,58 @@
+﻿{
+    "qssm-kaspa":  {
+                       "Count":  7,
+                       "Bytes":  7146
+                   },
+    "qssm-proofs":  {
+                        "Count":  6,
+                        "Bytes":  17864
+                    },
+    "qssm-wrapper":  {
+                         "Count":  4,
+                         "Bytes":  38906
+                     },
+    "mssq-batcher":  {
+                         "Count":  15,
+                         "Bytes":  36107
+                     },
+    "qssm-governor":  {
+                          "Count":  11,
+                          "Bytes":  21022
+                      },
+    "qssm-ms":  {
+                    "Count":  9,
+                    "Bytes":  12202
+                },
+    "qssm-integration":  {
+                             "Count":  3,
+                             "Bytes":  1630
+                         },
+    "qssm-gadget":  {
+                        "Count":  33,
+                        "Bytes":  42579441
+                    },
+    "qssm-common":  {
+                        "Count":  7,
+                        "Bytes":  4233
+                    },
+    "qssm-he":  {
+                    "Count":  12,
+                    "Bytes":  20905
+                },
+    "qssm-examples":  {
+                          "Count":  6,
+                          "Bytes":  32781
+                      },
+    "mssq-net":  {
+                     "Count":  26,
+                     "Bytes":  71405
+                 },
+    "qssm-le":  {
+                    "Count":  18,
+                    "Bytes":  1046791
+                },
+    "qssm-utils":  {
+                       "Count":  11,
+                       "Bytes":  28729
+                   }
+}

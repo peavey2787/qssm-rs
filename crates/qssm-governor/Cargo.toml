@@ -1,8 +1,0 @@
-[package]
-name = "qssm-governor"
-version = "0.1.0"
-edition.workspace = true
-license.workspace = true
-
-[dependencies]
-rust_decimal = "1.36"

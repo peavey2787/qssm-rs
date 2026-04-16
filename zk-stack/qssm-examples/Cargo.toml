@@ -1,0 +1,18 @@
+[package]
+name = "qssm-examples"
+version = "0.1.0"
+edition.workspace = true
+publish = false
+
+[dependencies]
+hex.workspace = true
+ml-dsa.workspace = true
+mssq-batcher.workspace = true
+qssm-traits.workspace = true
+qssm-kaspa.workspace = true
+qssm-le.workspace = true
+qssm-utils.workspace = true
+
+[[test]]
+name = "millionaires_duel"
+path = "unit_tests/millionaires_duel.rs"

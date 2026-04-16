@@ -1,0 +1,45 @@
+[package]
+name = "qssm-desktop"
+version = "0.1.0"
+description = "Tauri: Sovereign Command Center + QSSM-LE / .qssm laboratory"
+authors = ["QSSM"]
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[lib]
+name = "qssm_desktop_lib"
+crate-type = ["lib", "cdylib", "staticlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+blake3 = { workspace = true }
+hex = { workspace = true }
+rand = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true, features = ["macros", "rt-multi-thread", "time"] }
+ureq = { workspace = true, features = ["json"] }
+maxminddb.workspace = true
+bip39 = "2.1"
+argon2 = { workspace = true }
+zeroize = "1.8"
+aes-gcm = "0.10"
+libp2p = { workspace = true }
+p2p-net = { workspace = true, optional = true }
+qssm-he = { workspace = true, optional = true }
+qssm-gadget = { workspace = true, features = ["lattice-bridge"], optional = true }
+qssm-traits.workspace = true
+qssm-le = { workspace = true, optional = true }
+qssm-utils.workspace = true
+
+[features]
+default = ["full-stack"]
+zk-only = ["dep:qssm-gadget", "dep:qssm-le"]
+l1-only = ["dep:qssm-he"]
+l2-only = []
+full-stack = ["zk-only", "l1-only", "l2-only", "dep:p2p-net"]

@@ -1,0 +1,6 @@
+[package]
+name = "l1-state-machine"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+description = "NEW scaffold — L1 state transitions."

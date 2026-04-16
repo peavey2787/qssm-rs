@@ -1,0 +1,30 @@
+[package]
+name = "qssm-le"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+description = "QSSM-LE lattice engine facade (reference stub — not LaBRADOR)."
+
+[dependencies]
+blake3.workspace = true
+qssm-utils.workspace = true
+rand.workspace = true
+thiserror.workspace = true
+subtle = "2.6"
+zeroize = { version = "1.8", features = ["derive"] }
+
+[dev-dependencies]
+qssm-ms.workspace = true
+rand.workspace = true
+
+[[test]]
+name = "adversarial_lattice"
+path = "unit_tests/adversarial_lattice.rs"
+
+[[test]]
+name = "cross_domain"
+path = "unit_tests/cross_domain.rs"
+
+[[test]]
+name = "lab_tests"
+path = "unit_tests/lab_tests.rs"

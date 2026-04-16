@@ -1,0 +1,7 @@
+[package]
+name = "mempool-overflow-test"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+description = "NEW scaffold — L2 mempool stress tests."
+publish = false
