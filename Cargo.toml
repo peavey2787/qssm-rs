@@ -8,7 +8,7 @@ members = [
     "zk-stack/predicate_engine/qssm-le",
     "zk-stack/predicate_engine/qssm-ms",
     "l2-rollup/mssq-batcher",
-    "zk-stack/qssm-examples",
+    "integration/zk-examples",
     "shared-libs/kaspa",
     "l1-dag/entropy_engine",
     "shared-libs/p2p-net",
@@ -22,6 +22,7 @@ members = [
     "zk-stack/template_lib",
     "zk-stack/local_verifier",
     "zk-stack/api",
+    "zk-stack/examples",
 
     # L1 DAG
     "l1-dag/dag",
@@ -94,8 +95,11 @@ qssm-kaspa = { path = "shared-libs/kaspa" }
 governor = { path = "l1-dag/governor" }
 mssq-batcher = { path = "l2-rollup/mssq-batcher" }
 p2p-net = { path = "shared-libs/p2p-net" }
-qssm-examples = { path = "zk-stack/qssm-examples" }
+qssm-examples = { path = "integration/zk-examples" }
 e2e-node-flow = { path = "integration/e2e-node-flow" }
+zk-api = { path = "zk-stack/api" }
+template-lib = { path = "zk-stack/template_lib" }
+local-verifier = { path = "zk-stack/local_verifier" }
 
 [profile.dev]
 split-debuginfo = "unpacked"

@@ -1,17 +1,17 @@
 //! Phase 8 — **Opportunistic entropy**: **anchor leg** + local **floor**, optional NIST Randomness Beacon **booster** (strict timeout).
 //!
-//! The first **32** bytes of the floor preimage are an **entropy anchor** (Kaspa parent id, a static root, or a hashed timestamp). Kaspa is one [`EntropyAnchor`] variant, not a hard‑coded primitive.
+//! The first **32** bytes of the floor preimage are an **entropy anchor** (external anchor hash, a static root, or a hashed timestamp). Anchors are one [`EntropyAnchor`] variant, not a hard‑coded primitive.
 
 use std::time::Duration;
 
 use qssm_utils::hashing::blake3_hash;
 
-/// **32‑byte leg** mixed with local entropy for [`entropy_floor`]. Kaspa finalized parent hash is [`Self::KaspaParentBlockHash`].
+/// **32‑byte leg** mixed with local entropy for [`entropy_floor`].
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum EntropyAnchor {
-    /// Kaspa (or other L1) **32‑byte** parent / finalized block id used as today’s floor limb.
-    KaspaParentBlockHash([u8; 32]),
-    /// Fixed **32‑byte** root (no blockchain): e.g. org‑published commitment or app session root.
+    /// External **32‑byte** anchor hash (e.g. finalized block id, DAG parent) used as the floor limb.
+    AnchorHash([u8; 32]),
+    /// Fixed **32‑byte** root (no external chain): e.g. org‑published commitment or app session root.
     StaticRoot([u8; 32]),
     /// Wall‑clock (or agreed) **Unix seconds**; canonicalized to **32** bytes via domain‑separated BLAKE3.
     TimestampUnixSecs { unix_secs: u64 },
@@ -22,7 +22,7 @@ impl EntropyAnchor {
     #[must_use]
     pub fn entropy_leg(&self) -> [u8; 32] {
         match self {
-            Self::KaspaParentBlockHash(h) | Self::StaticRoot(h) => *h,
+            Self::AnchorHash(h) | Self::StaticRoot(h) => *h,
             Self::TimestampUnixSecs { unix_secs } => {
                 let mut buf = [0u8; 8 + 32];
                 buf[..32].copy_from_slice(b"QSSM-ENTROPY-ANCHOR-TIMESTAMP-v1");
@@ -36,7 +36,7 @@ impl EntropyAnchor {
 /// NIST Beacon **2.0** “last pulse” endpoint (JSON with **`pulse.outputValue`** hex, **64** bytes).
 pub const NIST_BEACON_LAST_PULSE_URL: &str = "https://beacon.nist.gov/beacon/2.0/pulse/last";
 
-/// Default ceiling for beacon fetch so high‑BPS Kaspa nodes never stall on a remote server.
+/// Default ceiling for beacon fetch so high‑BPS nodes never stall on a remote server.
 pub const DEFAULT_NIST_TIMEOUT: Duration = Duration::from_millis(500);
 
 /// Configurable opportunistic QRNG / resilience policy.
@@ -106,15 +106,15 @@ impl EntropyProvider {
         }
     }
 
-    /// Same as [`Self::generate_sovereign_entropy_from_anchor`] with a Kaspa **32‑byte** parent id (backward compatible).
+    /// Same as [`Self::generate_sovereign_entropy_from_anchor`] with an **anchor hash** (backward compatible).
     #[must_use]
     pub fn generate_sovereign_entropy(
         &self,
-        kaspa_hash: [u8; 32],
+        anchor_hash: [u8; 32],
         local_bytes: [u8; 32],
     ) -> ([u8; 32], bool) {
         self.generate_sovereign_entropy_from_anchor(
-            &EntropyAnchor::KaspaParentBlockHash(kaspa_hash),
+            &EntropyAnchor::AnchorHash(anchor_hash),
             local_bytes,
         )
     }
@@ -165,8 +165,8 @@ fn pulse_output_value_first_32(hex_str: &str) -> Option<[u8; 32]> {
 
 /// Same as [`EntropyProvider::default().generate_sovereign_entropy`](EntropyProvider::generate_sovereign_entropy).
 #[must_use]
-pub fn generate_sovereign_entropy(kaspa_hash: [u8; 32], local_bytes: [u8; 32]) -> ([u8; 32], bool) {
-    EntropyProvider::default().generate_sovereign_entropy(kaspa_hash, local_bytes)
+pub fn generate_sovereign_entropy(anchor_hash: [u8; 32], local_bytes: [u8; 32]) -> ([u8; 32], bool) {
+    EntropyProvider::default().generate_sovereign_entropy(anchor_hash, local_bytes)
 }
 
 /// Floor + optional NIST with an arbitrary [`EntropyAnchor`].
@@ -207,7 +207,7 @@ mod tests {
         let h = [9u8; 32];
         assert_eq!(
             EntropyAnchor::StaticRoot(h).entropy_leg(),
-            EntropyAnchor::KaspaParentBlockHash(h).entropy_leg()
+            EntropyAnchor::AnchorHash(h).entropy_leg()
         );
     }
 

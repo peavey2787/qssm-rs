@@ -16,7 +16,7 @@ pub use error::MsError;
 
 use commitment::leaves::{build_leaves, derive_salts, ms_leaf};
 use commitment::tree::verify_path_to_root;
-use core::{highest_differing_bit, ledger_rotation, rot_for_nonce};
+use core::{highest_differing_bit, binding_rotation, rot_for_nonce};
 use qssm_utils::PositionAwareTree;
 use transcript::fs_challenge;
 
@@ -38,30 +38,30 @@ pub struct GhostMirrorProof {
 pub fn commit(
     _value: u64,
     seed: [u8; 32],
-    ledger_entropy: [u8; 32],
+    binding_entropy: [u8; 32],
 ) -> Result<(Root, Salts), MsError> {
     let salts = derive_salts(seed);
-    let leaves = build_leaves(&salts, &ledger_entropy);
+    let leaves = build_leaves(&salts, &binding_entropy);
     let tree = PositionAwareTree::new(leaves)?;
     Ok((Root(tree.get_root()), salts))
 }
 
-/// Prove `value > target` under ledger entropy; tries all nonces `n ∈ [0,255]`.
+/// Prove `value > target` under binding entropy; tries all nonces `n ∈ [0,255]`.
 pub fn prove(
     value: u64,
     target: u64,
     salts: &Salts,
-    ledger_entropy: [u8; 32],
+    binding_entropy: [u8; 32],
     context: &[u8],
-    rollup_context_digest: &[u8; 32],
+    binding_context: &[u8; 32],
 ) -> Result<GhostMirrorProof, MsError> {
     if value <= target {
         return Err(MsError::NoValidRotation);
     }
-    let leaves = build_leaves(salts, &ledger_entropy);
+    let leaves = build_leaves(salts, &binding_entropy);
     let tree = PositionAwareTree::new(leaves)?;
     let root = tree.get_root();
-    let r = ledger_rotation(&ledger_entropy);
+    let r = binding_rotation(&binding_entropy);
 
     for n in 0u8..=255 {
         let rot = rot_for_nonce(r, n);
@@ -81,11 +81,11 @@ pub fn prove(
             &root,
             n,
             k,
-            &ledger_entropy,
+            &binding_entropy,
             value,
             target,
             context,
-            rollup_context_digest,
+            binding_context,
         );
         return Ok(GhostMirrorProof {
             n,
@@ -103,11 +103,11 @@ pub fn prove(
 pub fn verify(
     root: Root,
     proof: &GhostMirrorProof,
-    ledger_entropy: [u8; 32],
+    binding_entropy: [u8; 32],
     value: u64,
     target: u64,
     context: &[u8],
-    rollup_context_digest: &[u8; 32],
+    binding_context: &[u8; 32],
 ) -> bool {
     if proof.bit_at_k > 1 {
         return false;
@@ -118,7 +118,7 @@ pub fn verify(
     if ((value >> proof.k) & 1) as u8 != proof.bit_at_k {
         return false;
     }
-    let leaf = ms_leaf(proof.k, proof.bit_at_k, &proof.opened_salt, &ledger_entropy);
+    let leaf = ms_leaf(proof.k, proof.bit_at_k, &proof.opened_salt, &binding_entropy);
     let leaf_idx = 2 * (proof.k as usize) + (proof.bit_at_k as usize);
     if !verify_path_to_root(&root.0, &leaf, leaf_idx, 128, &proof.path) {
         return false;
@@ -127,16 +127,16 @@ pub fn verify(
         &root.0,
         proof.n,
         proof.k,
-        &ledger_entropy,
+        &binding_entropy,
         value,
         target,
         context,
-        rollup_context_digest,
+        binding_context,
     );
     if expect_c != proof.challenge {
         return false;
     }
-    let r = ledger_rotation(&ledger_entropy);
+    let r = binding_rotation(&binding_entropy);
     let rot = rot_for_nonce(r, proof.n);
     let a_p = value.wrapping_add(rot);
     let b_p = target.wrapping_add(rot);

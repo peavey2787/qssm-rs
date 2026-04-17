@@ -1,7 +1,7 @@
 {
-  "kaspa_parent_block_id_hex": "53494d5f4b415350415f504152454e545f563100000000000000000000000000",
+  "anchor_hash_hex": "53494d5f4b415350415f504152454e545f563100000000000000000000000000",
   "state_root_hex": "64e74fcb73ad97f8f5c23ef224fab6eb489c738f51c9722068b0a0405afbe043",
-  "rollup_context_digest_hex": "6a7877de54179de831dc77aab70bce59fc073bc0550b6d073ffbac059c7a17de",
+  "binding_context_hex": "6a7877de54179de831dc77aab70bce59fc073bc0550b6d073ffbac059c7a17de",
   "n": 7,
   "k": 3,
   "bit_at_k": 1,

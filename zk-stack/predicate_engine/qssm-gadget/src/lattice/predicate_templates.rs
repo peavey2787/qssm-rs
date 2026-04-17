@@ -44,11 +44,11 @@ pub fn millionaires_duel_script() -> Value {
     })
 }
 
-/// Age-style gate using an **at-least** numeric floor (Lab binds `claim.account_age_years` to Kaspa‑anchored policy).
+/// Age-style gate using an **at-least** numeric floor (binds `claim.account_age_years` to anchor-based policy).
 #[must_use]
-pub fn age_gate_kaspa_script() -> Value {
+pub fn age_gate_script() -> Value {
     json!({
-        "template_id": "age_gate_kaspa_v1",
+        "template_id": "age_gate_v1",
         "predicates": [
             {
                 "kind": "at_least",
@@ -79,7 +79,7 @@ pub fn simple_math_script() -> Value {
 #[must_use]
 pub fn parametric_age_gate_vk(blinded_limit: [u8; 32]) -> Value {
     json!({
-        "template_id": "age_gate_kaspa_zk_v1",
+        "template_id": "age_gate_zk_v1",
         "constraints": [
             {
                 "kind": "zk_field_comparison",
@@ -112,7 +112,7 @@ pub fn standard_library_script(template_id: &str) -> Option<Value> {
     let parsed = parse_template_id_param(template_id);
     match parsed.base_id.as_str() {
         // ZK families never embed literal parameters.
-        "age_gate_kaspa_zk_v1" => Some(json!({ "template_id": "age_gate_kaspa_zk_v1" })),
+        "age_gate_zk_v1" => Some(json!({ "template_id": "age_gate_zk_v1" })),
         "millionaires_duel_zk_v1" => Some(json!({ "template_id": "millionaires_duel_zk_v1" })),
         "simple_math_zk_v1" => Some(json!({ "template_id": "simple_math_zk_v1" })),
         _ => None,

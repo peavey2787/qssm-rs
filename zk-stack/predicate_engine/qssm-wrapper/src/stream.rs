@@ -36,16 +36,16 @@ pub enum StreamError {
     Json(#[from] serde_json::Error),
     #[error("canonicalization failed writing checkpoint: {0}")]
     CheckpointCanonical(String),
-    #[error("rollup_context_digest mismatch (stream is bound to one context)")]
-    RollupMismatch,
+    #[error("binding_context mismatch (stream is bound to one context)")]
+    BindingContextMismatch,
     #[error("expected step index {expected} got {got}")]
     StepIndexOutOfSequence { expected: u64, got: u64 },
     #[error("context_domain must be {expected:?}, got {got:?}")]
     BadContextDomain { expected: String, got: String },
     #[error("schema_version must be {expected:?}, got {got:?}")]
     BadSchemaVersion { expected: String, got: String },
-    #[error("rollup_context_digest_hex does not decode or does not match stream digest")]
-    RollupHexMismatch,
+    #[error("binding_context_hex does not decode or does not match stream digest")]
+    BindingContextHexMismatch,
     #[error("checkpoint_every must be >= 1, got {0}")]
     InvalidCheckpointEvery(u64),
     #[error("internal: window buffer size {got} expected {expected} at checkpoint")]
@@ -58,7 +58,7 @@ pub enum StreamError {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct AccumulatorCheckpoint {
     pub schema_version: String,
-    pub rollup_context_digest_hex: String,
+    pub binding_context_hex: String,
     pub context_domain: String,
     pub checkpoint_every: u64,
     pub checkpoint_step_index: u64,
@@ -94,7 +94,7 @@ fn now_unix_ms() -> u64 {
 #[derive(Debug)]
 pub struct SovereignStreamManager {
     root_dir: PathBuf,
-    rollup_context_digest: [u8; 32],
+    binding_context: [u8; 32],
     checkpoint_every: u64,
     next_step_index: u64,
     current_accumulator: [u8; 32],
@@ -109,14 +109,14 @@ impl SovereignStreamManager {
     /// `checkpoint_every` defaults to **100** in [`Self::create`].
     pub fn create(
         root_dir: impl AsRef<Path>,
-        rollup_context_digest: [u8; 32],
+        binding_context: [u8; 32],
     ) -> Result<Self, StreamError> {
-        Self::create_with_checkpoint_every(root_dir, rollup_context_digest, 100)
+        Self::create_with_checkpoint_every(root_dir, binding_context, 100)
     }
 
     pub fn create_with_checkpoint_every(
         root_dir: impl AsRef<Path>,
-        rollup_context_digest: [u8; 32],
+        binding_context: [u8; 32],
         checkpoint_every: u64,
     ) -> Result<Self, StreamError> {
         if checkpoint_every < 1 {
@@ -127,10 +127,10 @@ impl SovereignStreamManager {
         fs::create_dir_all(root_dir.join("checkpoints"))?;
         Ok(Self {
             root_dir: root_dir.clone(),
-            rollup_context_digest,
+            binding_context,
             checkpoint_every,
             next_step_index: 0,
-            current_accumulator: accumulator_genesis(rollup_context_digest),
+            current_accumulator: accumulator_genesis(binding_context),
             window_step_hashes: Vec::with_capacity(checkpoint_every as usize),
             secrets_path: root_dir.join("secrets.json"),
         })
@@ -176,7 +176,7 @@ impl SovereignStreamManager {
             "QSSM-WRAP-SALT-v1",
             &[
                 out.wrapper_v1.step_index.to_le_bytes().as_slice(),
-                self.rollup_context_digest.as_slice(),
+                self.binding_context.as_slice(),
                 law.template_id.as_bytes(),
             ],
         );
@@ -186,7 +186,7 @@ impl SovereignStreamManager {
         law.blinded_parameter_hash_hex = Some(hex_lower_prefixed(&blinded));
         if law.template_script.is_none() {
             law.template_script = Some(match parsed.base_id.as_str() {
-                "age_gate_kaspa_zk_v1" => parametric_age_gate_vk(blinded),
+                "age_gate_zk_v1" => parametric_age_gate_vk(blinded),
                 "millionaires_duel_zk_v1" => parametric_millionaires_duel_vk(blinded),
                 "simple_math_zk_v1" => serde_json::json!({
                     "template_id": "simple_math_zk_v1",
@@ -207,13 +207,13 @@ impl SovereignStreamManager {
     fn steps_path(&self) -> PathBuf {
         self.root_dir
             .join("steps")
-            .join(format!("{}.jsonl", rollup_file_stem(&self.rollup_context_digest)))
+            .join(format!("{}.jsonl", rollup_file_stem(&self.binding_context)))
     }
 
     fn checkpoints_path(&self) -> PathBuf {
         self.root_dir.join("checkpoints").join(format!(
             "{}.jsonl",
-            rollup_file_stem(&self.rollup_context_digest)
+            rollup_file_stem(&self.binding_context)
         ))
     }
 
@@ -246,10 +246,10 @@ impl SovereignStreamManager {
                 got: w.schema_version.clone(),
             });
         }
-        let digest_from_envelope = decode_hex32(&w.rollup_context_digest_hex)
-            .map_err(|_| StreamError::RollupHexMismatch)?;
-        if digest_from_envelope != self.rollup_context_digest {
-            return Err(StreamError::RollupMismatch);
+        let digest_from_envelope = decode_hex32(&w.binding_context_hex)
+            .map_err(|_| StreamError::BindingContextHexMismatch)?;
+        if digest_from_envelope != self.binding_context {
+            return Err(StreamError::BindingContextMismatch);
         }
         if w.step_index != self.next_step_index {
             return Err(StreamError::StepIndexOutOfSequence {
@@ -262,7 +262,7 @@ impl SovereignStreamManager {
 
         let sh = step_hash(&step)?;
         self.current_accumulator = accumulator_next(
-            self.rollup_context_digest,
+            self.binding_context,
             w.step_index,
             self.current_accumulator,
             sh,
@@ -289,7 +289,7 @@ impl SovereignStreamManager {
             let window_start = end + 1 - self.checkpoint_every;
             let ckpt = AccumulatorCheckpoint {
                 schema_version: WRAP_SCHEMA_VERSION.into(),
-                rollup_context_digest_hex: hex_lower_prefixed(&self.rollup_context_digest),
+                binding_context_hex: hex_lower_prefixed(&self.binding_context),
                 context_domain: WRAP_CONTEXT_DOMAIN.into(),
                 checkpoint_every: self.checkpoint_every,
                 checkpoint_step_index: end,
@@ -319,8 +319,8 @@ impl SovereignStreamManager {
 mod tests {
     use super::*;
     use crate::{
-        ArtifactHashes, EngineABinding, L2HandshakeProverPackageV1, L2_HANDSHAKE_PACKAGE_VERSION,
-        L2_TRANSCRIPT_MAP_LAYOUT_VERSION, MsBinding, PolyOpsSummaryV1, ProverArtifactsV1,
+        ArtifactHashes, EngineABinding, SovereignHandshakeProverPackageV1, SOVEREIGN_HANDSHAKE_PACKAGE_VERSION,
+        SOVEREIGN_TRANSCRIPT_MAP_LAYOUT_VERSION, MsBinding, PolyOpsSummaryV1, ProverArtifactsV1,
         ProverEngineAPublicV1, R1csManifestSummaryV1, SeamBinding, SovereignLawV1, StepEnvelope,
         WitnessWireCountsV1, WrapperV1,
     };
@@ -338,10 +338,10 @@ mod tests {
     fn fixture_step(step_index: u64, rollup_hex: &str) -> StepEnvelope {
         let digest_coeff = fixture_digest_coeffs();
         StepEnvelope {
-            prover_package: L2HandshakeProverPackageV1 {
-                package_version: L2_HANDSHAKE_PACKAGE_VERSION.into(),
+            prover_package: SovereignHandshakeProverPackageV1 {
+                package_version: SOVEREIGN_HANDSHAKE_PACKAGE_VERSION.into(),
                 description: "fixture".into(),
-                sim_kaspa_parent_block_id_hex: "01020304".into(),
+                sim_anchor_hash_hex: "01020304".into(),
                 merkle_leaf_left_hex: "11".into(),
                 merkle_leaf_right_hex: "22".into(),
                 rollup_state_root_hex: "33".into(),
@@ -365,7 +365,7 @@ mod tests {
                     manifest_file: "r1cs_merkle_parent.manifest.txt".into(),
                 },
                 poly_ops: PolyOpsSummaryV1 {
-                    transcript_map_layout_version: L2_TRANSCRIPT_MAP_LAYOUT_VERSION,
+                    transcript_map_layout_version: SOVEREIGN_TRANSCRIPT_MAP_LAYOUT_VERSION,
                     merkle_depth: 7,
                     refresh_copy_count: 0,
                     auto_refresh_merkle_xor: false,
@@ -374,7 +374,7 @@ mod tests {
                 warnings: vec![],
             },
             wrapper_v1: WrapperV1 {
-                rollup_context_digest_hex: rollup_hex.into(),
+                binding_context_hex: rollup_hex.into(),
                 context_domain: WRAP_CONTEXT_DOMAIN.into(),
                 step_index,
                 ms_binding: MsBinding {
@@ -473,7 +473,7 @@ mod tests {
         let step = fixture_step(0, &hex_lower_prefixed(&[0xabu8; 32]));
         assert!(matches!(
             mgr.append_step(&step),
-            Err(StreamError::RollupMismatch)
+            Err(StreamError::BindingContextMismatch)
         ));
     }
 

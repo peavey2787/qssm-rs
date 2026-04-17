@@ -2,13 +2,13 @@
 
 use qssm_utils::hashing::{hash_domain, DOMAIN_MS};
 
-pub(crate) fn ledger_rotation(ledger_entropy: &[u8; 32]) -> u64 {
+pub(crate) fn binding_rotation(binding_entropy: &[u8; 32]) -> u64 {
     let mut b = [0u8; 8];
-    b.copy_from_slice(&ledger_entropy[..8]);
+    b.copy_from_slice(&binding_entropy[..8]);
     u64::from_le_bytes(b)
 }
 
-/// Ledger-anchored per-nonce rotation: `n ∈ [0,255]` yields 256 full-width `u64` tweaks
+/// Binding-entropy per-nonce rotation: `n ∈ [0,255]` yields 256 full-width `u64` tweaks
 /// (plain `r ⊕ zext(n)` only flips low bits and often cannot straddle `2^63` for small values).
 pub(crate) fn rot_for_nonce(r: u64, n: u8) -> u64 {
     let h = hash_domain(DOMAIN_MS, &[b"rot_nonce", &r.to_le_bytes(), &[n]]);

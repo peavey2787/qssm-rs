@@ -36,11 +36,11 @@ fn baseline_inputs() -> (EngineABindingInput, u64, u64, Vec<u8>) {
         MsGhostMirrorInput {
             root,
             proof: proof.clone(),
-            ledger_entropy: ledger,
+            binding_entropy: ledger,
             value,
             target,
             context: context.clone(),
-            rollup_context_digest: rollup,
+            binding_context: rollup,
         },
         &mut ms_cs,
         &mut ms_ctx,
@@ -52,7 +52,7 @@ fn baseline_inputs() -> (EngineABindingInput, u64, u64, Vec<u8>) {
         ms_root: root.0,
         relation_digest: relation_digest(value, target, proof.challenge),
         ms_fs_v2_challenge: proof.challenge,
-        rollup_context_digest: rollup,
+        binding_context: rollup,
         device_entropy_link: ledger,
         claimed_seam_commitment: [0u8; 32],
     };

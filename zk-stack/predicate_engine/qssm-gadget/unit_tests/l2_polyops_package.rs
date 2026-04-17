@@ -1,10 +1,10 @@
-//! Golden-style check: Poly-Ops builder reproduces the same `engine_a_public` as direct `SovereignWitness::bind`.
+﻿//! Golden-style check: Poly-Ops builder reproduces the same `engine_a_public` as direct `SovereignWitness::bind`.
 //!
-//! Merkle BLAKE3 witness synthesis needs a larger stack than the default test thread (same as `l2_handshake` example).
+//! Merkle BLAKE3 witness synthesis needs a larger stack than the default test thread (same as `handshake` example).
 
 use qssm_gadget::binding::SovereignWitness;
 use qssm_gadget::poly_ops::{
-    l2_merkle_sovereign_pipe, L2HandshakeArtifacts, LatticePolyOp, MerkleParentBlake3Op,
+    merkle_sovereign_pipe, SovereignHandshakeArtifacts, LatticePolyOp, MerkleParentBlake3Op,
     PolyOpContext, ProverPackageBuilder, SovereignLimbV2Params,
 };
 use qssm_gadget::R1csLineExporter;
@@ -12,10 +12,10 @@ use qssm_utils::hashing::{blake3_hash, hash_domain, DOMAIN_MSSQ_ROLLUP_CONTEXT};
 
 fn polyops_engine_a_public_matches_direct_sovereign_bind_inner() {
     let dir = tempfile::tempdir().expect("tempdir");
-    let kaspa = [0xabu8; 32];
+    let anchor = [0xabu8; 32];
     let left = blake3_hash(b"L2_ROLLUP_LEAF_LEFT");
     let right = blake3_hash(b"L2_ROLLUP_LEAF_RIGHT");
-    let rollup = hash_domain(DOMAIN_MSSQ_ROLLUP_CONTEXT, &[kaspa.as_slice()]);
+    let rollup = hash_domain(DOMAIN_MSSQ_ROLLUP_CONTEXT, &[anchor.as_slice()]);
     let challenge = blake3_hash(b"L2_FS_CHALLENGE_V1");
     let entropy = blake3_hash(b"L2_LOCAL_ENTROPY_V1");
 
@@ -30,10 +30,10 @@ fn polyops_engine_a_public_matches_direct_sovereign_bind_inner() {
     let direct = SovereignWitness::bind(state_root.0, rollup, 7, 3, 1, challenge, entropy, false);
     assert!(direct.validate());
 
-    let pipe = l2_merkle_sovereign_pipe(
+    let pipe = merkle_sovereign_pipe(
         MerkleParentBlake3Op::new(left, right),
         SovereignLimbV2Params {
-            rollup_context_digest: rollup,
+            binding_context: rollup,
             n: 7,
             k: 3,
             bit_at_k: 1,
@@ -44,11 +44,11 @@ fn polyops_engine_a_public_matches_direct_sovereign_bind_inner() {
         },
     );
 
-    ProverPackageBuilder::build_l2_handshake_v1(
+    ProverPackageBuilder::build_sovereign_handshake_v1(
         dir.path(),
         &pipe,
-        &L2HandshakeArtifacts {
-            kaspa_parent: kaspa,
+        &SovereignHandshakeArtifacts {
+            anchor_hash: anchor,
             leaf_left: left,
             leaf_right: right,
             nist_included: false,
@@ -84,14 +84,14 @@ fn polyops_engine_a_public_matches_direct_sovereign_bind() {
 
 fn prover_package_refresh_arrays_present_inner() {
     let dir = tempfile::tempdir().expect("tempdir");
-    let kaspa = [2u8; 32];
+    let anchor = [2u8; 32];
     let left = blake3_hash(b"REFRESH_LEFT");
     let right = blake3_hash(b"REFRESH_RIGHT");
-    let rollup = hash_domain(DOMAIN_MSSQ_ROLLUP_CONTEXT, &[kaspa.as_slice()]);
-    let pipe = l2_merkle_sovereign_pipe(
+    let rollup = hash_domain(DOMAIN_MSSQ_ROLLUP_CONTEXT, &[anchor.as_slice()]);
+    let pipe = merkle_sovereign_pipe(
         MerkleParentBlake3Op::new(left, right),
         SovereignLimbV2Params {
-            rollup_context_digest: rollup,
+            binding_context: rollup,
             n: 0,
             k: 0,
             bit_at_k: 0,
@@ -101,11 +101,11 @@ fn prover_package_refresh_arrays_present_inner() {
             device_entropy_link: None,
         },
     );
-    ProverPackageBuilder::build_l2_handshake_v1(
+    ProverPackageBuilder::build_sovereign_handshake_v1(
         dir.path(),
         &pipe,
-        &L2HandshakeArtifacts {
-            kaspa_parent: kaspa,
+        &SovereignHandshakeArtifacts {
+            anchor_hash: anchor,
             leaf_left: left,
             leaf_right: right,
             nist_included: false,
@@ -133,16 +133,16 @@ fn prover_package_refresh_arrays_present() {
 
 fn engine_a_public_key_order_in_package_inner() {
     let dir = tempfile::tempdir().expect("tempdir");
-    let kaspa = [1u8; 32];
+    let anchor = [1u8; 32];
     let left = blake3_hash(b"X");
     let right = blake3_hash(b"Y");
-    let rollup = hash_domain(DOMAIN_MSSQ_ROLLUP_CONTEXT, &[kaspa.as_slice()]);
+    let rollup = hash_domain(DOMAIN_MSSQ_ROLLUP_CONTEXT, &[anchor.as_slice()]);
     let ch = [2u8; 32];
     let ent = [3u8; 32];
-    let pipe = l2_merkle_sovereign_pipe(
+    let pipe = merkle_sovereign_pipe(
         MerkleParentBlake3Op::new(left, right),
         SovereignLimbV2Params {
-            rollup_context_digest: rollup,
+            binding_context: rollup,
             n: 0,
             k: 0,
             bit_at_k: 0,
@@ -152,11 +152,11 @@ fn engine_a_public_key_order_in_package_inner() {
             device_entropy_link: None,
         },
     );
-    ProverPackageBuilder::build_l2_handshake_v1(
+    ProverPackageBuilder::build_sovereign_handshake_v1(
         dir.path(),
         &pipe,
-        &L2HandshakeArtifacts {
-            kaspa_parent: kaspa,
+        &SovereignHandshakeArtifacts {
+            anchor_hash: anchor,
             leaf_left: left,
             leaf_right: right,
             nist_included: false,

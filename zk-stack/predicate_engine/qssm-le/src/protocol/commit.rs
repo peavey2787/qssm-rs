@@ -138,7 +138,7 @@ fn public_binding_fs_bytes(public: &PublicInstance) -> Vec<u8> {
 }
 
 fn fs_challenge_bytes(
-    rollup_context_digest: &[u8; 32],
+    binding_context: &[u8; 32],
     vk: &VerifyingKey,
     public: &PublicInstance,
     commitment: &Commitment,
@@ -152,7 +152,7 @@ fn fs_challenge_bytes(
     h.update(CROSS_PROTOCOL_BINDING_LABEL);
     h.update(DOMAIN_MS.as_bytes());
     h.update(b"fs_v2");
-    h.update(rollup_context_digest);
+    h.update(binding_context);
     h.update(vk.crs_seed.as_slice());
     h.update(&public_binding_fs_bytes(public));
     h.update(&encode_rq_coeffs_le(&commitment.0));
@@ -330,7 +330,7 @@ pub fn prove_with_witness(
     public: &PublicInstance,
     witness: &Witness,
     commitment: &Commitment,
-    rollup_context_digest: &[u8; 32],
+    binding_context: &[u8; 32],
     rng: &mut impl RngCore,
 ) -> Result<LatticeProof, LeError> {
     public.validate()?;
@@ -347,7 +347,7 @@ pub fn prove_with_witness(
         }
         let y_poly = ScrubbedPoly::from_public(&short_vec_to_rq_bound(&nonce.y, ETA)?);
         let t = y_poly.mul_public(&a)?.as_public();
-        let challenge_seed = fs_challenge_bytes(rollup_context_digest, vk, public, commitment, &t);
+        let challenge_seed = fs_challenge_bytes(binding_context, vk, public, commitment, &t);
         let c_poly = challenge_poly(&challenge_seed);
         let c_rq = challenge_poly_to_rq(&c_poly);
         let c_rq_secret = ScrubbedPoly::from_public(&c_rq);
@@ -375,7 +375,7 @@ pub fn verify_lattice_algebraic(
     public: &PublicInstance,
     commitment: &Commitment,
     proof: &LatticeProof,
-    rollup_context_digest: &[u8; 32],
+    binding_context: &[u8; 32],
 ) -> Result<bool, LeError> {
     public.validate()?;
     if !is_canonical_poly(&proof.t) || !is_canonical_poly(&proof.z) {
@@ -388,7 +388,7 @@ pub fn verify_lattice_algebraic(
     let mu = mu_from_public(public);
     let u = commitment.0.sub(&mu);
     let challenge_seed =
-        fs_challenge_bytes(rollup_context_digest, vk, public, commitment, &proof.t);
+        fs_challenge_bytes(binding_context, vk, public, commitment, &proof.t);
     if challenge_seed.ct_eq(&proof.challenge_seed).unwrap_u8() == 0 {
         return Err(LeError::DomainMismatch);
     }

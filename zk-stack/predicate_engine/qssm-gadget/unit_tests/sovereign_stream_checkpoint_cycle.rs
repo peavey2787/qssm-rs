@@ -1,4 +1,4 @@
-//! Full wrapper stream: **101** real `qssm-ms` + `qssm-le` proofs, [`qssm_wrapper::SovereignStreamManager`] through the first checkpoint (step **99**), then one more step.
+﻿//! Full wrapper stream: **101** real `qssm-ms` + `qssm-le` proofs, [`qssm_wrapper::SovereignStreamManager`] through the first checkpoint (step **99**), then one more step.
 #![cfg(all(feature = "ms-engine-b", feature = "lattice-bridge"))]
 
 use blake3::Hasher;
@@ -12,8 +12,8 @@ use qssm_ms::{commit, prove, verify};
 use qssm_utils::hashing::blake3_hash;
 use qssm_wrapper::{
     accumulator_genesis, accumulator_next, hex_lower_prefixed, step_hash, window_step_hashes_digest,
-    ArtifactHashes, EngineABinding, L2HandshakeProverPackageV1, L2_HANDSHAKE_PACKAGE_VERSION,
-    L2_TRANSCRIPT_MAP_LAYOUT_VERSION, MsBinding, PolyOpsSummaryV1, ProverArtifactsV1,
+    ArtifactHashes, EngineABinding, SovereignHandshakeProverPackageV1, SOVEREIGN_HANDSHAKE_PACKAGE_VERSION,
+    SOVEREIGN_TRANSCRIPT_MAP_LAYOUT_VERSION, MsBinding, PolyOpsSummaryV1, ProverArtifactsV1,
     ProverEngineAPublicV1, R1csManifestSummaryV1, SeamBinding, SovereignStreamManager, StepEnvelope,
     WitnessWireCountsV1, WrapperV1, WRAP_CONTEXT_DOMAIN, WRAP_SCHEMA_VERSION,
 };
@@ -85,7 +85,7 @@ fn build_step(
         ms_root: root.0,
         relation_digest: relation_digest(value, target, ms_proof.challenge),
         ms_fs_v2_challenge: ms_proof.challenge,
-        rollup_context_digest: rollup,
+        binding_context: rollup,
         device_entropy_link: ledger,
         claimed_seam_commitment: [0u8; 32],
     };
@@ -101,14 +101,14 @@ fn build_step(
     let merkle_hex = blake3_file_hex(merkle_json);
     let manifest_hex = blake3_file_hex(&manifest_txt);
 
-    let kaspa = blake3_hash(&step_index.to_le_bytes());
+    let anchor = blake3_hash(&step_index.to_le_bytes());
     let leaf_l = blake3_hash(format!("L-{step_index}").as_bytes());
     let leaf_r = blake3_hash(format!("R-{step_index}").as_bytes());
     let rollup_hex = hex_lower_prefixed(&rollup);
-    let prover_package = L2HandshakeProverPackageV1 {
-        package_version: L2_HANDSHAKE_PACKAGE_VERSION.into(),
+    let prover_package = SovereignHandshakeProverPackageV1 {
+        package_version: SOVEREIGN_HANDSHAKE_PACKAGE_VERSION.into(),
         description: "sovereign-stream integration (MS + LE)".into(),
-        sim_kaspa_parent_block_id_hex: hex::encode(kaspa),
+        sim_anchor_hash_hex: hex::encode(anchor),
         merkle_leaf_left_hex: hex::encode(leaf_l),
         merkle_leaf_right_hex: hex::encode(leaf_r),
         rollup_state_root_hex: hex::encode(sw.root),
@@ -132,7 +132,7 @@ fn build_step(
             line_format: "xor|full_adder|equal with tab-separated var indices".into(),
         },
         poly_ops: PolyOpsSummaryV1 {
-            transcript_map_layout_version: L2_TRANSCRIPT_MAP_LAYOUT_VERSION,
+            transcript_map_layout_version: SOVEREIGN_TRANSCRIPT_MAP_LAYOUT_VERSION,
             merkle_depth: MERKLE_DEPTH_MS as u32,
             refresh_copy_count: 0,
             auto_refresh_merkle_xor: false,
@@ -144,7 +144,7 @@ fn build_step(
     StepEnvelope {
         prover_package,
         wrapper_v1: WrapperV1 {
-            rollup_context_digest_hex: rollup_hex,
+            binding_context_hex: rollup_hex,
             context_domain: WRAP_CONTEXT_DOMAIN.into(),
             step_index,
             ms_binding: MsBinding {
@@ -166,6 +166,7 @@ fn build_step(
                 r1cs_manifest_blake3_hex: manifest_hex,
             },
             schema_version: WRAP_SCHEMA_VERSION.into(),
+            sovereign_law: None,
         },
     }
 }

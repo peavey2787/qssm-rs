@@ -170,7 +170,7 @@ pub fn sovereign_witness_value(w: &SovereignWitness) -> Value {
             "sovereign_entropy_hex": hex::encode(w.sovereign_entropy),
         },
         "private_aux_hex": {
-            "rollup_context_digest": hex::encode(w.rollup_context_digest),
+            "binding_context": hex::encode(w.binding_context),
             "proof_metadata": hex::encode(&w.proof_metadata),
             "challenge_hex": hex::encode(w.challenge),
             "proof_fields": {

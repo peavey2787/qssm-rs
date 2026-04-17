@@ -7,7 +7,7 @@ use blake3::Hasher;
 use serde::{Deserialize, Serialize};
 
 pub use prover_package::{
-    L2HandshakeProverPackageV1, L2_HANDSHAKE_PACKAGE_VERSION, L2_TRANSCRIPT_MAP_LAYOUT_VERSION,
+    SovereignHandshakeProverPackageV1, SOVEREIGN_HANDSHAKE_PACKAGE_VERSION, SOVEREIGN_TRANSCRIPT_MAP_LAYOUT_VERSION,
     PolyOpsSummaryV1, ProverArtifactsV1, ProverEngineAPublicV1, ProverPackageError,
     ProverRefreshMetadataEntryV1, R1csManifestSummaryV1, StepValidationError,
     WitnessWireCountsV1, DIGEST_COEFF_MAX, DIGEST_COEFF_VECTOR_LEN,
@@ -23,12 +23,12 @@ pub const DOMAIN_ACC_GENESIS_V1: &[u8] = b"QSSM-WRAP-ACC-GENESIS-v1";
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct StepEnvelope {
-    pub prover_package: L2HandshakeProverPackageV1,
+    pub prover_package: SovereignHandshakeProverPackageV1,
     pub wrapper_v1: WrapperV1,
 }
 
 impl StepEnvelope {
-    /// Enforce L2 handshake template rules plus Engine A cross-layer consistency.
+    /// Enforce sovereign handshake template rules plus Engine A cross-layer consistency.
     pub fn validate_template_rules(&self) -> Result<(), StepValidationError> {
         self.prover_package.validate()?;
         let ep = &self.prover_package.engine_a_public;
@@ -44,7 +44,7 @@ impl StepEnvelope {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct WrapperV1 {
-    pub rollup_context_digest_hex: String,
+    pub binding_context_hex: String,
     pub context_domain: String,
     pub step_index: u64,
     pub ms_binding: MsBinding,
@@ -118,22 +118,22 @@ pub fn step_hash(step: &StepEnvelope) -> Result<[u8; 32], WrapperError> {
     Ok(*h.finalize().as_bytes())
 }
 
-pub fn accumulator_genesis(rollup_context_digest: [u8; 32]) -> [u8; 32] {
+pub fn accumulator_genesis(binding_context: [u8; 32]) -> [u8; 32] {
     let mut h = Hasher::new();
     h.update(DOMAIN_ACC_GENESIS_V1);
-    h.update(&rollup_context_digest);
+    h.update(&binding_context);
     *h.finalize().as_bytes()
 }
 
 pub fn accumulator_next(
-    rollup_context_digest: [u8; 32],
+    binding_context: [u8; 32],
     step_index: u64,
     prev_acc: [u8; 32],
     step_hash_bytes: [u8; 32],
 ) -> [u8; 32] {
     let mut h = Hasher::new();
     h.update(DOMAIN_ACC_V1);
-    h.update(&rollup_context_digest);
+    h.update(&binding_context);
     h.update(&step_index.to_le_bytes());
     h.update(&prev_acc);
     h.update(&step_hash_bytes);
@@ -176,10 +176,10 @@ mod tests {
     fn fixture_step(step_index: u64) -> StepEnvelope {
         let digest_coeff = fixture_digest_coeffs();
         StepEnvelope {
-            prover_package: L2HandshakeProverPackageV1 {
-                package_version: L2_HANDSHAKE_PACKAGE_VERSION.into(),
+            prover_package: SovereignHandshakeProverPackageV1 {
+                package_version: SOVEREIGN_HANDSHAKE_PACKAGE_VERSION.into(),
                 description: "fixture".into(),
-                sim_kaspa_parent_block_id_hex: "0x01020304".into(),
+                sim_anchor_hash_hex: "0x01020304".into(),
                 merkle_leaf_left_hex: "0x11".into(),
                 merkle_leaf_right_hex: "0x22".into(),
                 rollup_state_root_hex: "0x33".into(),
@@ -203,7 +203,7 @@ mod tests {
                     manifest_file: "r1cs_merkle_parent.manifest.txt".into(),
                 },
                 poly_ops: PolyOpsSummaryV1 {
-                    transcript_map_layout_version: L2_TRANSCRIPT_MAP_LAYOUT_VERSION,
+                    transcript_map_layout_version: SOVEREIGN_TRANSCRIPT_MAP_LAYOUT_VERSION,
                     merkle_depth: 7,
                     refresh_copy_count: 0,
                     auto_refresh_merkle_xor: false,
@@ -212,7 +212,7 @@ mod tests {
                 warnings: vec![],
             },
             wrapper_v1: WrapperV1 {
-                rollup_context_digest_hex:
+                binding_context_hex:
                     "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
                         .into(),
                 context_domain: "QSSM-WRAP-CONTEXT-v1".into(),
@@ -271,7 +271,7 @@ mod tests {
         }
         let acc_99 = hex_lower_prefixed(&acc);
         // Keep this value synchronized with docs/02-protocol-specs/hybrid-wrapper-schema-v1.md.
-        let expected = "0x92ddbe02280dc62d70e6a850aaed596755b8e096889b43f66a4f423f1479a767";
+        let expected = "0xc7fb700b81891b4d7249ca2c0f2dd7cd2ebc76390fb4feed1576289d95e4f5c0";
         assert_eq!(acc_99, expected);
     }
 }

@@ -191,7 +191,7 @@ impl HandoffAnchorJson {
         match self {
             Self::Kaspa {
                 parent_block_id_hex,
-            } => Ok(EntropyAnchor::KaspaParentBlockHash(hex_to_32(
+            } => Ok(EntropyAnchor::AnchorHash(hex_to_32(
                 parent_block_id_hex,
             )?)),
             Self::StaticRoot { root_hex } => Ok(EntropyAnchor::StaticRoot(hex_to_32(root_hex)?)),
@@ -215,9 +215,9 @@ struct HandoffFile {
     #[serde(default)]
     anchor: Option<HandoffAnchorJson>,
     #[serde(default)]
-    kaspa_parent_block_id_hex: Option<String>,
+    anchor_hash_hex: Option<String>,
     state_root_hex: String,
-    rollup_context_digest_hex: String,
+    binding_context_hex: String,
     n: u8,
     k: u8,
     bit_at_k: u8,
@@ -232,12 +232,12 @@ impl HandoffFile {
             let label = a.kind_label();
             return Ok((a.to_entropy_anchor()?, label));
         }
-        let hex = self.kaspa_parent_block_id_hex.as_ref().ok_or_else(|| {
-            "missing entropy anchor: set anchor or kaspa_parent_block_id_hex".to_string()
+        let hex = self.anchor_hash_hex.as_ref().ok_or_else(|| {
+            "missing entropy anchor: set anchor or anchor_hash_hex".to_string()
         })?;
         Ok((
-            EntropyAnchor::KaspaParentBlockHash(hex_to_32(hex)?),
-            "kaspa",
+            EntropyAnchor::AnchorHash(hex_to_32(hex)?),
+            "anchor",
         ))
     }
 }
@@ -292,7 +292,7 @@ fn prove_lattice_demo(
 fn run_pipeline(h: HandoffFile) -> Result<serde_json::Value, String> {
     let (entropy_anchor, anchor_kind) = h.resolve_entropy_anchor()?;
     let state_root = hex_to_32(&h.state_root_hex)?;
-    let rollup_ctx = hex_to_32(&h.rollup_context_digest_hex)?;
+    let rollup_ctx = hex_to_32(&h.binding_context_hex)?;
     let challenge = hex_to_32(&h.challenge_hex)?;
     let smt = SmtRoot(state_root);
 

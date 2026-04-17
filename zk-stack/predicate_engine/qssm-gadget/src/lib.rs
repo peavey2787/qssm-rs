@@ -87,13 +87,13 @@ pub use merkle::{
     assert_ms_leaf_index_matches_opening, MerklePathWitness, MERKLE_DEPTH_MS, MERKLE_WIDTH_MS,
 };
 pub use poly_ops::{
-    effective_sovereign_entropy, l2_merkle_sovereign_pipe,
+    effective_sovereign_entropy, merkle_sovereign_pipe,
     merkle_parent_hash_witness_to_prover_json_with_refresh,
     merkle_parent_hash_witness_value_with_refresh, BindingLabel, BindingPhase, BindingReservoir,
     CopyRefreshMeta, DegreeExceeded, EngineABindingInput, EngineABindingOp, EngineABindingOutput,
-    EngineAPublicJson, EntropyInjectionOp, EntropyInjectionOutput, L2BuildOptions,
-    L2HandshakeArtifacts,
-    L2MerkleSovereignPipe, L2PipeOutput, LatticePolyOp, LatticePolyOpThen, MerkleParentBlake3Op,
+    EngineAPublicJson, EntropyInjectionOp, EntropyInjectionOutput, SovereignBuildOptions,
+    SovereignHandshakeArtifacts,
+    MerkleSovereignPipe, SovereignPipeOutput, LatticePolyOp, LatticePolyOpThen, MerkleParentBlake3Op,
     MerkleParentBlake3Output, Nomination, OpPipe, PolyOpContext, PolyOpError, PolyOpTracingCs,
     ProverPackageBuilder, PublicBindingContract, SovereignLimbV2Op, SovereignLimbV2Params,
     SovereignLimbV2Stage, StateRoot32, DEFAULT_REFRESH_PRESSURE_WARN_RATIO,
@@ -106,7 +106,7 @@ pub use predicate::{
     PredicateBlock, PredicateError,
 };
 pub use predicate_templates::{
-    age_gate_kaspa_script, millionaires_duel_script, parametric_age_gate_vk,
+    age_gate_script, millionaires_duel_script, parametric_age_gate_vk,
     parametric_millionaires_duel_vk, parse_template_id_param, simple_math_script,
     standard_library_script,
 };

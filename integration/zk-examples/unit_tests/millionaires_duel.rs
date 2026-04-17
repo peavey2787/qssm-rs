@@ -191,7 +191,7 @@ fn duel_rejects_impossible_public_message() {
 }
 
 #[test]
-fn wrong_rollup_context_digest_rejects() {
+fn wrong_binding_context_rejects() {
     let anchor = anchor_finalized(5);
     let ctx = rollup_context_from_l1(&anchor);
     let d_good = ctx.digest();

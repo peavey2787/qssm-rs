@@ -11,7 +11,7 @@ pub const QSSM_TEMPLATE_VERSION: u32 = 1;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum TemplateAnchorKind {
-    KaspaParentBlock,
+    AnchorHash,
     StaticRoot,
     TimestampUnixSecs,
 }
@@ -45,7 +45,7 @@ impl QssmTemplate {
                 "Public claim must include claim.age_years between 21 and 150 (inclusive).".into(),
             ),
             allowed_anchor_kinds: vec![
-                TemplateAnchorKind::KaspaParentBlock,
+                TemplateAnchorKind::AnchorHash,
                 TemplateAnchorKind::StaticRoot,
                 TemplateAnchorKind::TimestampUnixSecs,
             ],

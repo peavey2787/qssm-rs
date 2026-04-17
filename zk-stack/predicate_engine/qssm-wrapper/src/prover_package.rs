@@ -1,4 +1,4 @@
-//! Strongly typed **`qssm-l2-handshake-v1`** `prover_package` mirror (ZK template surface).
+//! Strongly typed **`qssm-sovereign-handshake-v1`** `prover_package` mirror (ZK template surface).
 //!
 //! Field names and nesting match `ProverPackageBuilder` JSON so JCS step hashing stays stable.
 
@@ -7,10 +7,10 @@ use std::convert::TryFrom;
 use serde::{Deserialize, Serialize};
 
 /// Package discriminator written by [`crate::StepEnvelope`] producers.
-pub const L2_HANDSHAKE_PACKAGE_VERSION: &str = "qssm-l2-handshake-v1";
+pub const SOVEREIGN_HANDSHAKE_PACKAGE_VERSION: &str = "qssm-sovereign-handshake-v1";
 
 /// Must stay aligned with `qssm-gadget` / `qssm-utils` transcript map (`LE_FS_PUBLIC_BINDING_LAYOUT_VERSION`).
-pub const L2_TRANSCRIPT_MAP_LAYOUT_VERSION: u32 = 1;
+pub const SOVEREIGN_TRANSCRIPT_MAP_LAYOUT_VERSION: u32 = 1;
 
 /// Engine A digest coefficient count (4-bit nibbles; same as `qssm_le::PUBLIC_DIGEST_COEFFS`).
 pub const DIGEST_COEFF_VECTOR_LEN: usize = 64;
@@ -87,13 +87,13 @@ pub struct ProverRefreshMetadataEntryV1 {
     pub kind: String,
 }
 
-/// Typed `prover_package` for **`qssm-l2-handshake-v1`**.
+/// Typed `prover_package` for **`qssm-sovereign-handshake-v1`**.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(deny_unknown_fields)]
-pub struct L2HandshakeProverPackageV1 {
+pub struct SovereignHandshakeProverPackageV1 {
     pub package_version: String,
     pub description: String,
-    pub sim_kaspa_parent_block_id_hex: String,
+    pub sim_anchor_hash_hex: String,
     pub merkle_leaf_left_hex: String,
     pub merkle_leaf_right_hex: String,
     pub rollup_state_root_hex: String,
@@ -107,18 +107,18 @@ pub struct L2HandshakeProverPackageV1 {
     pub warnings: Vec<String>,
 }
 
-impl L2HandshakeProverPackageV1 {
-    /// Structural rules for the L2 handshake template (catch drift before hashing).
+impl SovereignHandshakeProverPackageV1 {
+    /// Structural rules for the sovereign handshake template (catch drift before hashing).
     pub fn validate(&self) -> Result<(), ProverPackageError> {
-        if self.package_version != L2_HANDSHAKE_PACKAGE_VERSION {
+        if self.package_version != SOVEREIGN_HANDSHAKE_PACKAGE_VERSION {
             return Err(ProverPackageError::WrongPackageVersion {
-                expected: L2_HANDSHAKE_PACKAGE_VERSION,
+                expected: SOVEREIGN_HANDSHAKE_PACKAGE_VERSION,
                 got: self.package_version.clone(),
             });
         }
-        if self.poly_ops.transcript_map_layout_version != L2_TRANSCRIPT_MAP_LAYOUT_VERSION {
+        if self.poly_ops.transcript_map_layout_version != SOVEREIGN_TRANSCRIPT_MAP_LAYOUT_VERSION {
             return Err(ProverPackageError::WrongTranscriptMapVersion {
-                expected: L2_TRANSCRIPT_MAP_LAYOUT_VERSION,
+                expected: SOVEREIGN_TRANSCRIPT_MAP_LAYOUT_VERSION,
                 got: self.poly_ops.transcript_map_layout_version,
             });
         }
@@ -146,7 +146,7 @@ impl L2HandshakeProverPackageV1 {
     }
 }
 
-impl TryFrom<serde_json::Value> for L2HandshakeProverPackageV1 {
+impl TryFrom<serde_json::Value> for SovereignHandshakeProverPackageV1 {
     type Error = serde_json::Error;
 
     fn try_from(value: serde_json::Value) -> Result<Self, Self::Error> {

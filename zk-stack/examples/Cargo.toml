@@ -1,0 +1,25 @@
+[package]
+name = "zk-examples"
+version = "0.1.0"
+edition.workspace = true
+publish = false
+
+[dependencies]
+zk-api = { path = "../api" }
+template-lib = { path = "../template_lib" }
+qssm-utils = { workspace = true }
+serde_json = { workspace = true }
+hex = { workspace = true }
+tempfile = "3"
+
+[[bin]]
+name = "simple_proof"
+path = "src/bin/simple_proof.rs"
+
+[[bin]]
+name = "age_gate"
+path = "src/bin/age_gate.rs"
+
+[[bin]]
+name = "proof_stream"
+path = "src/bin/proof_stream.rs"

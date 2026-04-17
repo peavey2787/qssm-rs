@@ -480,10 +480,10 @@ impl MerkleParentBlake3Op {
         }
     }
 
-    /// Convenience: Merkle compress then sovereign limb (see [`L2MerkleSovereignPipe`]).
+    /// Convenience: Merkle compress then sovereign limb (see [`MerkleSovereignPipe`]).
     #[must_use]
-    pub fn pipe_sovereign(self, sovereign_params: SovereignLimbV2Params) -> L2MerkleSovereignPipe {
-        l2_merkle_sovereign_pipe(self, sovereign_params)
+    pub fn pipe_sovereign(self, sovereign_params: SovereignLimbV2Params) -> MerkleSovereignPipe {
+        merkle_sovereign_pipe(self, sovereign_params)
     }
 
     pub fn public_binding_contract(&self) -> PublicBindingContract {
@@ -503,7 +503,7 @@ impl MerkleParentBlake3Op {
 
 #[derive(Debug, Clone)]
 pub struct SovereignLimbV2Params {
-    pub rollup_context_digest: [u8; 32],
+    pub binding_context: [u8; 32],
     pub n: u8,
     pub k: u8,
     pub bit_at_k: u8,
@@ -516,12 +516,12 @@ pub struct SovereignLimbV2Params {
 }
 
 impl SovereignLimbV2Params {
-    /// MS Fiat–Shamir **ledger entropy** (`qssm_ms` transcript `entropy`): raw **device link** digest when set.
+    /// MS Fiat–Shamir **binding entropy** (`qssm_ms` transcript `entropy`): raw **device link** digest when set.
     ///
     /// Sovereign bind uses [`effective_sovereign_entropy`] (`sovereign_entropy XOR link`). MS must use the
     /// **same** `link` bytes here—never XOR the link with the floor again.
     #[must_use]
-    pub fn ms_ledger_entropy_digest(&self, fallback: [u8; 32]) -> [u8; 32] {
+    pub fn ms_binding_entropy_digest(&self, fallback: [u8; 32]) -> [u8; 32] {
         self.device_entropy_link.unwrap_or(fallback)
     }
 }
@@ -540,7 +540,7 @@ pub fn effective_sovereign_entropy(params: &SovereignLimbV2Params) -> [u8; 32] {
     }
 }
 
-/// Second stage of the L2 handshake: sovereign limb parameters only; input is the Merkle **state root**.
+/// Second stage of the sovereign handshake: sovereign limb parameters only; input is the Merkle **state root**.
 #[derive(Debug, Clone)]
 pub struct SovereignLimbV2Stage {
     pub params: SovereignLimbV2Params,
@@ -562,7 +562,7 @@ impl SovereignLimbV2Stage {
         let ent = effective_sovereign_entropy(&self.params);
         let w = SovereignWitness::bind(
             state_root.0,
-            self.params.rollup_context_digest,
+            self.params.binding_context,
             self.params.n,
             self.params.k,
             self.params.bit_at_k,
@@ -616,7 +616,7 @@ pub struct EngineABindingInput {
     pub ms_root: [u8; 32],
     pub relation_digest: [u8; 32],
     pub ms_fs_v2_challenge: [u8; 32],
-    pub rollup_context_digest: [u8; 32],
+    pub binding_context: [u8; 32],
     pub device_entropy_link: [u8; 32],
     /// Commitment provided by the proving side and opened by recomputation.
     pub claimed_seam_commitment: [u8; 32],
@@ -636,7 +636,7 @@ pub struct EngineABindingOp;
 
 impl EngineABindingOp {
     /// Commit digest:
-    /// `H(DOMAIN_SEAM_COMMIT_V1 || state_root || ms_root || relation_digest || device_entropy_link || rollup_context_digest)`.
+    /// `H(DOMAIN_SEAM_COMMIT_V1 || state_root || ms_root || relation_digest || device_entropy_link || binding_context)`.
     #[must_use]
     pub fn commitment_digest(input: &EngineABindingInput) -> [u8; 32] {
         hash_domain(
@@ -646,7 +646,7 @@ impl EngineABindingOp {
                 input.ms_root.as_slice(),
                 input.relation_digest.as_slice(),
                 input.device_entropy_link.as_slice(),
-                input.rollup_context_digest.as_slice(),
+                input.binding_context.as_slice(),
             ],
         )
     }
@@ -658,7 +658,7 @@ impl EngineABindingOp {
             &[
                 seam_commitment.as_slice(),
                 input.ms_fs_v2_challenge.as_slice(),
-                input.rollup_context_digest.as_slice(),
+                input.binding_context.as_slice(),
             ],
         )
     }
@@ -686,19 +686,19 @@ pub struct MsGhostMirrorOp;
 pub struct MsGhostMirrorInput {
     pub root: MsRoot,
     pub proof: GhostMirrorProof,
-    pub ledger_entropy: [u8; 32],
+    pub binding_entropy: [u8; 32],
     pub value: u64,
     pub target: u64,
     pub context: Vec<u8>,
-    pub rollup_context_digest: [u8; 32],
+    pub binding_context: [u8; 32],
 }
 
 #[cfg(feature = "ms-engine-b")]
 impl MsGhostMirrorInput {
-    /// Same 32-byte digest as [`SovereignLimbV2Params::ms_ledger_entropy_digest`] for `ledger_entropy` wiring.
+    /// Same 32-byte digest as [`SovereignLimbV2Params::ms_binding_entropy_digest`] for `binding_entropy` wiring.
     #[must_use]
-    pub fn ledger_entropy_from_sovereign(params: &SovereignLimbV2Params, fallback: [u8; 32]) -> [u8; 32] {
-        params.ms_ledger_entropy_digest(fallback)
+    pub fn binding_entropy_from_sovereign(params: &SovereignLimbV2Params, fallback: [u8; 32]) -> [u8; 32] {
+        params.ms_binding_entropy_digest(fallback)
     }
 }
 
@@ -762,11 +762,11 @@ impl LatticePolyOp for MsGhostMirrorOp {
         let ok = ms_verify(
             input.root,
             &input.proof,
-            input.ledger_entropy,
+            input.binding_entropy,
             input.value,
             input.target,
             &input.context,
-            &input.rollup_context_digest,
+            &input.binding_context,
         );
         if !ok {
             return Err(PolyOpError::Binding(
@@ -842,7 +842,7 @@ impl LatticePolyOp for SovereignLimbV2Stage {
         let ent = effective_sovereign_entropy(&self.params);
         let w = SovereignWitness::bind(
             state_root.0,
-            self.params.rollup_context_digest,
+            self.params.binding_context,
             self.params.n,
             self.params.k,
             self.params.bit_at_k,
@@ -918,7 +918,7 @@ impl LatticePolyOp for EngineABindingOp {
             BindingPhase::PublicBinding,
             BindingLabel("engine_a_seam_context_digest".into()),
             Nomination {
-                bytes: input.rollup_context_digest.to_vec(),
+                bytes: input.binding_context.to_vec(),
             },
         ));
         c
@@ -998,26 +998,26 @@ pub trait LatticePolyOpThen: LatticePolyOp + Sized {
 
 impl<T: LatticePolyOp + Sized> LatticePolyOpThen for T {}
 
-/// L2 handshake: Merkle parent BLAKE3 compress witness → sovereign limb (typed root handoff).
-pub type L2MerkleSovereignPipe = OpPipe<MerkleParentBlake3Op, SovereignLimbV2Stage>;
+/// Sovereign handshake: Merkle parent BLAKE3 compress witness → sovereign limb (typed root handoff).
+pub type MerkleSovereignPipe = OpPipe<MerkleParentBlake3Op, SovereignLimbV2Stage>;
 
 #[must_use]
-pub fn l2_merkle_sovereign_pipe(
+pub fn merkle_sovereign_pipe(
     merkle: MerkleParentBlake3Op,
     sovereign_params: SovereignLimbV2Params,
-) -> L2MerkleSovereignPipe {
+) -> MerkleSovereignPipe {
     OpPipe::new(merkle, SovereignLimbV2Stage::new(sovereign_params))
 }
 
 impl OpPipe<MerkleParentBlake3Op, SovereignLimbV2Stage> {
-    /// Ledger entropy for MS `fs_challenge` when mirroring this pipe: raw [`device_entropy_link`](SovereignLimbV2Params::device_entropy_link) or `fallback`.
+    /// Binding entropy for MS `fs_challenge` when mirroring this pipe: raw [`device_entropy_link`](SovereignLimbV2Params::device_entropy_link) or `fallback`.
     #[must_use]
-    pub fn ms_ledger_entropy_for_fs_challenge(&self, fallback: [u8; 32]) -> [u8; 32] {
-        self.second.params.ms_ledger_entropy_digest(fallback)
+    pub fn ms_binding_entropy_for_fs_challenge(&self, fallback: [u8; 32]) -> [u8; 32] {
+        self.second.params.ms_binding_entropy_digest(fallback)
     }
 
     /// Runs Merkle then sovereign on **one** constraint exporter and **one** cumulative context.
-    pub fn run(&self, ctx: &mut PolyOpContext) -> Result<L2PipeOutput, PolyOpError> {
+    pub fn run(&self, ctx: &mut PolyOpContext) -> Result<SovereignPipeOutput, PolyOpError> {
         let mut exporter = R1csLineExporter::new();
         let merkle_out = self.first.synthesize_with_context((), &mut exporter, ctx)?;
         let c_merged = self
@@ -1039,7 +1039,7 @@ impl OpPipe<MerkleParentBlake3Op, SovereignLimbV2Stage> {
             debug_assert_eq!(merkle_out.r1cs_text.lines().count(), 65_184);
         }
         let refresh_metadata = ctx.take_refresh_metadata();
-        Ok(L2PipeOutput {
+        Ok(SovereignPipeOutput {
             merkle: merkle_out,
             sovereign,
             reservoir,
@@ -1049,7 +1049,7 @@ impl OpPipe<MerkleParentBlake3Op, SovereignLimbV2Stage> {
 }
 
 #[derive(Debug)]
-pub struct L2PipeOutput {
+pub struct SovereignPipeOutput {
     pub merkle: MerkleParentBlake3Output,
     pub sovereign: SovereignWitness,
     pub reservoir: BindingReservoir,
@@ -1118,16 +1118,16 @@ impl EngineAPublicJson {
 }
 
 #[derive(Debug, Clone)]
-pub struct L2HandshakeArtifacts {
-    pub kaspa_parent: [u8; 32],
+pub struct SovereignHandshakeArtifacts {
+    pub anchor_hash: [u8; 32],
     pub leaf_left: [u8; 32],
     pub leaf_right: [u8; 32],
     pub nist_included: bool,
 }
 
-/// Optional gates for [`ProverPackageBuilder::build_l2_handshake_v1_with_options`].
+/// Optional gates for [`ProverPackageBuilder::build_sovereign_handshake_v1_with_options`].
 #[derive(Debug, Clone, Default)]
-pub struct L2BuildOptions {
+pub struct SovereignBuildOptions {
     /// Raw bytes whose BLAKE3 digest may match [`SovereignLimbV2Params::device_entropy_link`].
     ///
     /// When `device_entropy_link` is **Some**, this sample is **required**: it must hash to that digest
@@ -1147,20 +1147,20 @@ pub struct ProverPackageBuilder;
 
 impl ProverPackageBuilder {
     /// Writes `prover_package.json`, witness JSON files, and R1CS manifest under `assets_dir`.
-    pub fn build_l2_handshake_v1(
+    pub fn build_sovereign_handshake_v1(
         assets_dir: &Path,
-        pipe: &L2MerkleSovereignPipe,
-        meta: &L2HandshakeArtifacts,
-    ) -> Result<L2PipeOutput, PolyOpError> {
-        Self::build_l2_handshake_v1_with_options(assets_dir, pipe, meta, &L2BuildOptions::default())
+        pipe: &MerkleSovereignPipe,
+        meta: &SovereignHandshakeArtifacts,
+    ) -> Result<SovereignPipeOutput, PolyOpError> {
+        Self::build_sovereign_handshake_v1_with_options(assets_dir, pipe, meta, &SovereignBuildOptions::default())
     }
 
-    pub fn build_l2_handshake_v1_with_options(
+    pub fn build_sovereign_handshake_v1_with_options(
         assets_dir: &Path,
-        pipe: &L2MerkleSovereignPipe,
-        meta: &L2HandshakeArtifacts,
-        opts: &L2BuildOptions,
-    ) -> Result<L2PipeOutput, PolyOpError> {
+        pipe: &MerkleSovereignPipe,
+        meta: &SovereignHandshakeArtifacts,
+        opts: &SovereignBuildOptions,
+    ) -> Result<SovereignPipeOutput, PolyOpError> {
         if let Some(expected) = pipe.second.params.device_entropy_link {
             let raw = opts.entropy_sample_for_audit.as_deref().ok_or_else(|| {
                 PolyOpError::Binding(
@@ -1180,7 +1180,7 @@ impl ProverPackageBuilder {
             }
         }
         fs::create_dir_all(assets_dir)?;
-        let mut ctx = PolyOpContext::new("l2_handshake_v1");
+        let mut ctx = PolyOpContext::new("sovereign_handshake_v1");
         ctx.set_auto_refresh_enabled(opts.auto_refresh_merkle_xor);
         let out = pipe.run(&mut ctx)?;
         let engine_public = EngineAPublicJson::from_sovereign(&out.sovereign);
@@ -1228,9 +1228,9 @@ impl ProverPackageBuilder {
         let warnings_value = serde_json::to_value(&warnings)?;
 
         let package = json!({
-            "package_version": "qssm-l2-handshake-v1",
-            "description": "Kaspa-anchored L2 handshake: Merkle parent (BLAKE3 compress witness) + Sovereign limb for Engine A",
-            "sim_kaspa_parent_block_id_hex": hex::encode(meta.kaspa_parent),
+            "package_version": "qssm-sovereign-handshake-v1",
+            "description": "Sovereign handshake: Merkle parent (BLAKE3 compress witness) + Sovereign limb for Engine A",
+            "sim_anchor_hash_hex": hex::encode(meta.anchor_hash),
             "merkle_leaf_left_hex": hex::encode(meta.leaf_left),
             "merkle_leaf_right_hex": hex::encode(meta.leaf_right),
             "rollup_state_root_hex": hex::encode(out.merkle.state_root.0),
@@ -1373,14 +1373,14 @@ mod tests {
         assert!(a.merge(&b).is_err());
     }
 
-    fn l2_pipe_shared_ctx_merkle_then_sovereign_ok_inner() {
+    fn sovereign_pipe_shared_ctx_merkle_then_sovereign_ok_inner() {
         let left = blake3_hash(b"L");
         let right = blake3_hash(b"R");
         let rollup = [5u8; 32];
-        let pipe = l2_merkle_sovereign_pipe(
+        let pipe = merkle_sovereign_pipe(
             MerkleParentBlake3Op::new(left, right),
             SovereignLimbV2Params {
-                rollup_context_digest: rollup,
+                binding_context: rollup,
                 n: 1,
                 k: 0,
                 bit_at_k: 0,
@@ -1397,11 +1397,11 @@ mod tests {
     }
 
     #[test]
-    fn l2_pipe_shared_ctx_merkle_then_sovereign_ok() {
+    fn sovereign_pipe_shared_ctx_merkle_then_sovereign_ok() {
         const STACK: usize = 32 * 1024 * 1024;
         std::thread::Builder::new()
             .stack_size(STACK)
-            .spawn(l2_pipe_shared_ctx_merkle_then_sovereign_ok_inner)
+            .spawn(sovereign_pipe_shared_ctx_merkle_then_sovereign_ok_inner)
             .expect("spawn")
             .join()
             .expect("join panicked");
@@ -1418,7 +1418,7 @@ mod tests {
         let root = merkle
             .clone()
             .pipe_sovereign(SovereignLimbV2Params {
-                rollup_context_digest: rollup,
+                binding_context: rollup,
                 n: 0,
                 k: 0,
                 bit_at_k: 0,
@@ -1432,7 +1432,7 @@ mod tests {
             .sovereign;
         let with_link = merkle
             .pipe_sovereign(SovereignLimbV2Params {
-                rollup_context_digest: rollup,
+                binding_context: rollup,
                 n: 0,
                 k: 0,
                 bit_at_k: 0,
@@ -1459,13 +1459,13 @@ mod tests {
     }
 
     #[test]
-    fn ms_ledger_entropy_for_fs_challenge_is_raw_device_link() {
+    fn ms_binding_entropy_for_fs_challenge_is_raw_device_link() {
         let floor = [3u8; 32];
         let link = [0xABu8; 32];
-        let pipe = l2_merkle_sovereign_pipe(
+        let pipe = merkle_sovereign_pipe(
             MerkleParentBlake3Op::new([1u8; 32], [2u8; 32]),
             SovereignLimbV2Params {
-                rollup_context_digest: [0u8; 32],
+                binding_context: [0u8; 32],
                 n: 0,
                 k: 0,
                 bit_at_k: 0,
@@ -1476,8 +1476,8 @@ mod tests {
             },
         );
         let fallback = [9u8; 32];
-        assert_eq!(pipe.ms_ledger_entropy_for_fs_challenge(fallback), link);
-        assert_eq!(pipe.second.params.ms_ledger_entropy_digest(fallback), link);
+        assert_eq!(pipe.ms_binding_entropy_for_fs_challenge(fallback), link);
+        assert_eq!(pipe.second.params.ms_binding_entropy_digest(fallback), link);
         assert_eq!(effective_sovereign_entropy(&pipe.second.params), xor32(floor, link));
     }
 
@@ -1486,10 +1486,10 @@ mod tests {
         let dir = tempdir().expect("tempdir");
         let left = blake3_hash(b"x");
         let right = blake3_hash(b"y");
-        let pipe = l2_merkle_sovereign_pipe(
+        let pipe = merkle_sovereign_pipe(
             MerkleParentBlake3Op::new(left, right),
             SovereignLimbV2Params {
-                rollup_context_digest: [1u8; 32],
+                binding_context: [1u8; 32],
                 n: 0,
                 k: 0,
                 bit_at_k: 0,
@@ -1499,16 +1499,16 @@ mod tests {
                 device_entropy_link: Some([7u8; 32]),
             },
         );
-        let r = ProverPackageBuilder::build_l2_handshake_v1_with_options(
+        let r = ProverPackageBuilder::build_sovereign_handshake_v1_with_options(
             dir.path(),
             &pipe,
-            &L2HandshakeArtifacts {
-                kaspa_parent: [0u8; 32],
+            &SovereignHandshakeArtifacts {
+                anchor_hash: [0u8; 32],
                 leaf_left: left,
                 leaf_right: right,
                 nist_included: false,
             },
-            &L2BuildOptions::default(),
+            &SovereignBuildOptions::default(),
         );
         match r {
             Err(PolyOpError::Binding(s)) => assert!(
@@ -1529,10 +1529,10 @@ mod tests {
         let left = blake3_hash(b"L_AUDIT");
         let right = blake3_hash(b"R_AUDIT");
         let rollup = [5u8; 32];
-        let pipe = l2_merkle_sovereign_pipe(
+        let pipe = merkle_sovereign_pipe(
             MerkleParentBlake3Op::new(left, right),
             SovereignLimbV2Params {
-                rollup_context_digest: rollup,
+                binding_context: rollup,
                 n: 0,
                 k: 0,
                 bit_at_k: 0,
@@ -1542,16 +1542,16 @@ mod tests {
                 device_entropy_link: Some(link),
             },
         );
-        ProverPackageBuilder::build_l2_handshake_v1_with_options(
+        ProverPackageBuilder::build_sovereign_handshake_v1_with_options(
             dir.path(),
             &pipe,
-            &L2HandshakeArtifacts {
-                kaspa_parent: [8u8; 32],
+            &SovereignHandshakeArtifacts {
+                anchor_hash: [8u8; 32],
                 leaf_left: left,
                 leaf_right: right,
                 nist_included: false,
             },
-            &L2BuildOptions {
+            &SovereignBuildOptions {
                 entropy_sample_for_audit: Some(raw),
                 ..Default::default()
             },

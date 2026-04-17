@@ -21,11 +21,11 @@ fn ms_ghost_mirror_polyop_synthesize_after_prove() {
             MsGhostMirrorInput {
                 root,
                 proof,
-                ledger_entropy: ledger,
+                binding_entropy: ledger,
                 value: 100,
                 target: 50,
                 context: b"ctx".to_vec(),
-                rollup_context_digest: rollup,
+                binding_context: rollup,
             },
             &mut cs,
             &mut ctx,

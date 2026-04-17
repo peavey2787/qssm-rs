@@ -11,7 +11,7 @@ pub(crate) fn fs_challenge(
     value: u64,
     target: u64,
     context: &[u8],
-    rollup_context_digest: &[u8; 32],
+    binding_context: &[u8; 32],
 ) -> [u8; 32] {
     hash_domain(
         DOMAIN_MS,
@@ -24,7 +24,7 @@ pub(crate) fn fs_challenge(
             &value.to_le_bytes(),
             &target.to_le_bytes(),
             context,
-            rollup_context_digest.as_slice(),
+            binding_context.as_slice(),
         ],
     )
 }

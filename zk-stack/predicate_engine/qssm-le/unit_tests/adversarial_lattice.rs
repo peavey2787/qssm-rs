@@ -12,7 +12,7 @@ const DST_LE_COMMIT: [u8; 32] = *b"QSSM-LE-V1-COMMIT...............";
 const DST_MS_VERIFY: [u8; 32] = *b"QSSM-MS-V1-VERIFY...............";
 
 fn fs_seed_for_legacy_public(
-    rollup_context_digest: &[u8; 32],
+    binding_context: &[u8; 32],
     vk: &VerifyingKey,
     public_message: u64,
     commitment: &Commitment,
@@ -25,7 +25,7 @@ fn fs_seed_for_legacy_public(
     h.update(CROSS_PROTOCOL_BINDING_LABEL);
     h.update(DOMAIN_MS.as_bytes());
     h.update(b"fs_v2");
-    h.update(rollup_context_digest);
+    h.update(binding_context);
     h.update(vk.crs_seed.as_slice());
     h.update(&[0u8]);
     h.update(&public_message.to_le_bytes());

@@ -398,7 +398,7 @@ Rust and JS pipelines must match all vectors byte-for-byte before deployment.
 Golden vector fixture (for the canonical fixture in `qssm-wrapper` test):
 
 - `rollup_context_digest_hex` = `0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa`
-- `acc_99` = `0x92ddbe02280dc62d70e6a850aaed596755b8e096889b43f66a4f423f1479a767`
+- `acc_99` = `0xc7fb700b81891b4d7249ca2c0f2dd7cd2ebc76390fb4feed1576289d95e4f5c0`
 
 ### 8.5 Additional determinism constraints
 

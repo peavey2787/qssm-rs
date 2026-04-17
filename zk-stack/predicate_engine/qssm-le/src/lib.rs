@@ -34,15 +34,15 @@ pub use protocol::params::{
 };
 pub use qssm_utils::LE_FS_PUBLIC_BINDING_LAYOUT_VERSION;
 
-/// Witness-free verifier (includes `rollup_context_digest` in FS challenge).
+/// Witness-free verifier (includes `binding_context` in FS challenge).
 pub fn verify_lattice(
     vk: &VerifyingKey,
     public: &PublicInstance,
     commitment: &Commitment,
     proof: &LatticeProof,
-    rollup_context_digest: &[u8; 32],
+    binding_context: &[u8; 32],
 ) -> Result<bool, LeError> {
-    verify_lattice_algebraic(vk, public, commitment, proof, rollup_context_digest)
+    verify_lattice_algebraic(vk, public, commitment, proof, binding_context)
 }
 
 /// Prove: commit + FS proof (uses OS RNG for masking / rejection).
@@ -50,7 +50,7 @@ pub fn prove_arithmetic(
     vk: &VerifyingKey,
     public: &PublicInstance,
     witness: &Witness,
-    rollup_context_digest: &[u8; 32],
+    binding_context: &[u8; 32],
 ) -> Result<(Commitment, LatticeProof), LeError> {
     let commitment = commit_mlwe(vk, public, witness)?;
     let mut rng = rand::thread_rng();
@@ -59,7 +59,7 @@ pub fn prove_arithmetic(
         public,
         witness,
         &commitment,
-        rollup_context_digest,
+        binding_context,
         &mut rng,
     )?;
     Ok((commitment, proof))

@@ -5,16 +5,16 @@ use qssm_utils::hashing::{hash_domain, DOMAIN_MS};
 /// Per-leaf salts: index `2 * i + b` binds bit `b ∈ {0,1}` at position `i` (0..64).
 pub type Salts = [[u8; 32]; 128];
 
-pub(crate) fn ms_leaf(i: u8, bit: u8, salt: &[u8; 32], ledger: &[u8; 32]) -> [u8; 32] {
-    hash_domain(DOMAIN_MS, &[b"leaf", &[i], &[bit], salt.as_slice(), ledger])
+pub(crate) fn ms_leaf(i: u8, bit: u8, salt: &[u8; 32], binding_ent: &[u8; 32]) -> [u8; 32] {
+    hash_domain(DOMAIN_MS, &[b"leaf", &[i], &[bit], salt.as_slice(), binding_ent])
 }
 
-pub(crate) fn build_leaves(salts: &Salts, ledger: &[u8; 32]) -> Vec<[u8; 32]> {
+pub(crate) fn build_leaves(salts: &Salts, binding_ent: &[u8; 32]) -> Vec<[u8; 32]> {
     let mut leaves = Vec::with_capacity(128);
     for i in 0u8..64 {
         for b in 0u8..=1u8 {
             let idx = 2 * (i as usize) + (b as usize);
-            leaves.push(ms_leaf(i, b, &salts[idx], ledger));
+            leaves.push(ms_leaf(i, b, &salts[idx], binding_ent));
         }
     }
     leaves

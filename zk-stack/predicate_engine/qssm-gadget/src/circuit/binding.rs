@@ -1,6 +1,6 @@
 //! Phase 3 / **8** — Sovereign Digest → public binding payload for **`qssm-le`**.
 //!
-//! Preimage order (normative, **v2.0**): **`hash_domain(DOMAIN_SOVEREIGN_LIMB_V2, &[root32, rollup32, metadata])`**  
+//! Preimage order (normative, **v2.0**): **`hash_domain(DOMAIN_SOVEREIGN_LIMB_V2, &[root32, binding_ctx32, metadata])`**  
 //! where **`metadata`** = **`encode_proof_metadata_v2`** = v1 fields **`‖ sovereign_entropy[32] ‖ nist_flag`**.  
 //! Limb: first **30** bits of the digest in **LE** order via [`crate::primitives::bits::to_le_bits`] / [`crate::primitives::bits::from_le_bits`] only — **no** `& ((1<<30)-1)` or **`% 2^30`** on the public witness path.
 
@@ -46,18 +46,18 @@ pub fn encode_proof_metadata_v2(
     v
 }
 
-/// **`SovereignDigest = hash_domain(DOMAIN_SOVEREIGN_LIMB_V2, &[root, rollup, metadata])`**.
+/// **`SovereignDigest = hash_domain(DOMAIN_SOVEREIGN_LIMB_V2, &[root, binding_context, metadata])`**.
 #[must_use]
 pub fn sovereign_digest(
     root: &[u8; 32],
-    rollup_context_digest: &[u8; 32],
+    binding_context: &[u8; 32],
     proof_metadata: &[u8],
 ) -> SovereignDigest {
     hash_domain(
         DOMAIN_SOVEREIGN_LIMB_V2,
         &[
             root.as_slice(),
-            rollup_context_digest.as_slice(),
+            binding_context.as_slice(),
             proof_metadata,
         ],
     )
@@ -113,7 +113,7 @@ pub fn digest_coeff_vector_from_sovereign_digest(
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SovereignWitness {
     pub root: [u8; 32],
-    pub rollup_context_digest: [u8; 32],
+    pub binding_context: [u8; 32],
     pub n: u8,
     pub k: u8,
     pub bit_at_k: u8,
@@ -138,7 +138,7 @@ impl SovereignWitness {
     #[must_use]
     pub fn bind(
         root: [u8; 32],
-        rollup_context_digest: [u8; 32],
+        binding_context: [u8; 32],
         n: u8,
         k: u8,
         bit_at_k: u8,
@@ -154,12 +154,12 @@ impl SovereignWitness {
             &sovereign_entropy,
             nist_included,
         );
-        let digest = sovereign_digest(&root, &rollup_context_digest, &proof_metadata);
+        let digest = sovereign_digest(&root, &binding_context, &proof_metadata);
         let digest_coeff_vector = digest_coeff_vector_from_sovereign_digest(&digest);
         let (limb_bits, message_limb) = message_limb_from_sovereign_digest_normative(&digest);
         Self {
             root,
-            rollup_context_digest,
+            binding_context,
             n,
             k,
             bit_at_k,
@@ -193,7 +193,7 @@ impl SovereignWitness {
         }
         let recomputed = sovereign_digest(
             &self.root,
-            &self.rollup_context_digest,
+            &self.binding_context,
             &self.proof_metadata,
         );
         if recomputed != self.digest {
@@ -216,10 +216,10 @@ impl SovereignWitness {
 #[must_use]
 pub fn sovereign_message_limb_v1(
     root: &[u8; 32],
-    rollup_context_digest: &[u8; 32],
+    binding_context: &[u8; 32],
     proof_metadata: &[u8],
 ) -> u64 {
-    let digest = sovereign_digest(root, rollup_context_digest, proof_metadata);
+    let digest = sovereign_digest(root, binding_context, proof_metadata);
     message_limb_from_sovereign_digest_normative(&digest).1
 }
 
