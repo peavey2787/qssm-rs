@@ -43,7 +43,7 @@ impl LatticePolyOp for MsGhostMirrorOp {
             BindingPhase::PublicBinding,
             BindingLabel("ms_fs_v2_challenge".into()),
             Nomination {
-                bytes: input.proof.challenge.to_vec(),
+                bytes: input.proof.challenge().to_vec(),
             },
         ));
         Ok(contract)
@@ -71,8 +71,8 @@ impl LatticePolyOp for MsGhostMirrorOp {
             ));
         }
         Ok(MsGhostMirrorOutput {
-            fs_v2_challenge: input.proof.challenge,
-            root: input.root.0,
+            fs_v2_challenge: *input.proof.challenge(),
+            root: *input.root.as_bytes(),
         })
     }
 }
@@ -115,7 +115,7 @@ mod tests {
         let seed = [3u8; 32];
         let ledger = [4u8; 32];
         let rollup = [5u8; 32];
-        let (root, salts) = commit(10, seed, ledger).expect("commit");
+        let (root, salts) = commit(seed, ledger).expect("commit");
         let proof = prove(100, 50, &salts, ledger, b"ctx", &rollup).expect("prove");
         let op = MsGhostMirrorOp;
         let mut ctx = PolyOpContext::new("ms");
@@ -136,6 +136,6 @@ mod tests {
             )
             .expect("synthesize");
         assert_eq!(out.fs_v2_challenge.len(), 32);
-        assert_eq!(out.root, root.0);
+        assert_eq!(out.root, *root.as_bytes());
     }
 }

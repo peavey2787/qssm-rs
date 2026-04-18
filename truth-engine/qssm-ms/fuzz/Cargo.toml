@@ -1,0 +1,24 @@
+[package]
+name = "qssm-ms-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2021"
+
+[package.metadata]
+cargo-fuzz = true
+
+[workspace]
+members = ["."]
+
+[dependencies]
+libfuzzer-sys = "0.4"
+
+[dependencies.qssm-ms]
+path = ".."
+
+[[bin]]
+name = "verify_mirror_shift"
+path = "fuzz_targets/verify_mirror_shift.rs"
+test = false
+doc = false
+bench = false

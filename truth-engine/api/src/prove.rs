@@ -45,7 +45,7 @@ pub fn prove(
     let binding_entropy = blake3_hash(&binding_ctx);
 
     // 3. MS: commit + prove inequality.
-    let (root, salts) = qssm_ms::commit(value, ms_seed, binding_entropy)
+    let (root, salts) = qssm_ms::commit(ms_seed, binding_entropy)
         .map_err(ZkError::MsCommit)?;
     let context = b"qssm-sdk-v1".to_vec();
     let ms_proof = qssm_ms::prove(value, target, &salts, binding_entropy, &context, &binding_ctx)
@@ -59,12 +59,12 @@ pub fn prove(
     );
     let external_entropy_included = false;
     let tw = TruthWitness::bind(
-        root.0,
+        *root.as_bytes(),
         binding_ctx,
-        ms_proof.n,
-        ms_proof.k,
-        ms_proof.bit_at_k,
-        ms_proof.challenge,
+        ms_proof.n(),
+        ms_proof.k(),
+        ms_proof.bit_at_k(),
+        *ms_proof.challenge(),
         external_entropy,
         external_entropy_included,
     );
@@ -85,7 +85,7 @@ pub fn prove(
     ).map_err(ZkError::LeProve)?;
 
     Ok(Proof {
-        ms_root: root.0,
+        ms_root: *root.as_bytes(),
         ms_proof,
         le_commitment,
         le_proof,

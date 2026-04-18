@@ -5,7 +5,7 @@ use qssm_gadget::{
     ConstraintSystem, EngineABindingInput, EngineABindingOp, LatticePolyOp, PolyOpContext, VarId,
     VarKind,
 };
-use qssm_ms::{commit, prove, verify, Root};
+use qssm_ms::{commit, prove, verify};
 use qssm_utils::blake3_hash;
 
 /// A constraint system that counts allocations and constraint invocations.
@@ -61,15 +61,15 @@ fn baseline_inputs() -> EngineABindingInput {
     let target = 50u64;
     let context = b"ctx".to_vec();
 
-    let (root, salts) = commit(10, seed, ledger).expect("commit");
+    let (root, salts) = commit(seed, ledger).expect("commit");
     let proof = prove(value, target, &salts, ledger, &context, &rollup).expect("prove");
-    assert!(verify(Root(root.0), &proof, ledger, value, target, &context, &rollup));
+    assert!(verify(root, &proof, ledger, value, target, &context, &rollup));
 
     let mut input = EngineABindingInput {
         state_root,
-        ms_root: root.0,
-        relation_digest: relation_digest(value, target, proof.challenge),
-        ms_fs_v2_challenge: proof.challenge,
+        ms_root: *root.as_bytes(),
+        relation_digest: relation_digest(value, target, *proof.challenge()),
+        ms_fs_v2_challenge: *proof.challenge(),
         binding_context: rollup,
         device_entropy_link: ledger,
         truth_digest: blake3_hash(b"truth-digest-conformance"),

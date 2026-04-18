@@ -1,6 +1,7 @@
 //! Merkle-specific commitment verification helpers.
 
 use qssm_utils::merkle_parent;
+use subtle::ConstantTimeEq;
 
 pub(crate) fn verify_path_to_root(
     root: &[u8; 32],
@@ -23,5 +24,5 @@ pub(crate) fn verify_path_to_root(
         acc = merkle_parent(left, right);
         idx /= 2;
     }
-    idx == 0 && acc == *root && proof.len() == width.ilog2() as usize
+    idx == 0 && acc.ct_eq(root).unwrap_u8() == 1 && proof.len() == width.ilog2() as usize
 }

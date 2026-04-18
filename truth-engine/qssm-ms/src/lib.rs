@@ -18,32 +18,108 @@ use commitment::leaves::{build_leaves, derive_salts, ms_leaf};
 use commitment::tree::verify_path_to_root;
 use core::{highest_differing_bit, binding_rotation, rot_for_nonce};
 use qssm_utils::PositionAwareTree;
+use subtle::ConstantTimeEq;
 use transcript::fs_challenge;
+
+/// Expected Merkle path length for the 128-leaf tree.
+const MERKLE_PATH_LEN: usize = 7;
 
 /// Merkle root over 128 position-aware leaves.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Root(pub [u8; 32]);
+pub struct Root([u8; 32]);
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+impl Root {
+    /// Construct a `Root` from raw bytes.
+    #[inline]
+    pub fn new(bytes: [u8; 32]) -> Self {
+        Self(bytes)
+    }
+
+    /// Read-only access to the underlying hash.
+    #[inline]
+    pub fn as_bytes(&self) -> &[u8; 32] {
+        &self.0
+    }
+}
+
+/// A succinct Ghost-Mirror inequality proof.
+///
+/// All fields are private.  Use the accessor methods to read individual
+/// components, or [`GhostMirrorProof::new`] to reconstruct from wire data.
+#[cfg_attr(test, derive(PartialEq, Eq))]
+#[derive(Clone)]
 pub struct GhostMirrorProof {
-    pub n: u8,
-    pub k: u8,
-    pub bit_at_k: u8,
-    pub opened_salt: [u8; 32],
-    pub path: Vec<[u8; 32]>,
-    pub challenge: [u8; 32],
+    pub(crate) n: u8,
+    pub(crate) k: u8,
+    pub(crate) bit_at_k: u8,
+    pub(crate) opened_salt: [u8; 32],
+    pub(crate) path: Vec<[u8; 32]>,
+    pub(crate) challenge: [u8; 32],
+}
+
+impl GhostMirrorProof {
+    /// Construct a proof from deserialized components, with validation.
+    ///
+    /// Returns `Err(MsError::InvalidProofField)` if any field is out of range:
+    /// - `bit_at_k` must be 0 or 1
+    /// - `k` must be ≤ 63
+    /// - `path` must contain exactly 7 sibling hashes
+    pub fn new(
+        n: u8,
+        k: u8,
+        bit_at_k: u8,
+        opened_salt: [u8; 32],
+        path: Vec<[u8; 32]>,
+        challenge: [u8; 32],
+    ) -> Result<Self, MsError> {
+        if bit_at_k > 1 {
+            return Err(MsError::InvalidProofField("bit_at_k must be 0 or 1"));
+        }
+        if k > 63 {
+            return Err(MsError::InvalidProofField("k must be <= 63"));
+        }
+        if path.len() != MERKLE_PATH_LEN {
+            return Err(MsError::InvalidProofField("path must contain exactly 7 sibling hashes"));
+        }
+        Ok(Self { n, k, bit_at_k, opened_salt, path, challenge })
+    }
+
+    /// Nonce used for this proof.
+    #[inline] pub fn n(&self) -> u8 { self.n }
+    /// Bit position of the crossing.
+    #[inline] pub fn k(&self) -> u8 { self.k }
+    /// The bit of the *original* value at position `k`.
+    #[inline] pub fn bit_at_k(&self) -> u8 { self.bit_at_k }
+    /// The opened salt for the leaf at `(k, bit_at_k)`.
+    #[inline] pub fn opened_salt(&self) -> &[u8; 32] { &self.opened_salt }
+    /// Merkle siblings (length 7).
+    #[inline] pub fn path(&self) -> &[[u8; 32]] { &self.path }
+    /// Fiat-Shamir challenge digest.
+    #[inline] pub fn challenge(&self) -> &[u8; 32] { &self.challenge }
+}
+
+impl std::fmt::Debug for GhostMirrorProof {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("GhostMirrorProof")
+            .field("n", &self.n)
+            .field("k", &self.k)
+            .field("bit_at_k", &self.bit_at_k)
+            .field("opened_salt", &"[REDACTED]")
+            .field("path", &format_args!("[{} siblings]", self.path.len()))
+            .field("challenge", &"[REDACTED]")
+            .finish()
+    }
 }
 
 /// Deterministic salts from `seed` (reproducible CI / demos).
 pub fn commit(
-    _value: u64,
     seed: [u8; 32],
     binding_entropy: [u8; 32],
 ) -> Result<(Root, Salts), MsError> {
     let salts = derive_salts(seed);
     let leaves = build_leaves(&salts, &binding_entropy);
     let tree = PositionAwareTree::new(leaves)?;
-    Ok((Root(tree.get_root()), salts))
+    Ok((Root::new(tree.get_root()), salts))
 }
 
 /// Prove `value > target` under binding entropy; tries all nonces `n ∈ [0,255]`.
@@ -100,6 +176,14 @@ pub fn prove(
 }
 
 /// Verify opening + Merkle path + Fiat–Shamir binding + crossing predicate.
+///
+/// # Security
+///
+/// This is a **succinct predicate proof**, not a zero-knowledge proof.
+/// Both `value` and `target` must be known to the verifier — the protocol
+/// proves `value > target` without revealing magnitude information beyond
+/// the binary predicate result.  Do **not** use this function in contexts
+/// where the values themselves must remain hidden from the verifier.
 pub fn verify(
     root: Root,
     proof: &GhostMirrorProof,
@@ -120,11 +204,11 @@ pub fn verify(
     }
     let leaf = ms_leaf(proof.k, proof.bit_at_k, &proof.opened_salt, &binding_entropy);
     let leaf_idx = 2 * (proof.k as usize) + (proof.bit_at_k as usize);
-    if !verify_path_to_root(&root.0, &leaf, leaf_idx, 128, &proof.path) {
+    if !verify_path_to_root(root.as_bytes(), &leaf, leaf_idx, 128, &proof.path) {
         return false;
     }
     let expect_c = fs_challenge(
-        &root.0,
+        root.as_bytes(),
         proof.n,
         proof.k,
         &binding_entropy,
@@ -133,7 +217,7 @@ pub fn verify(
         context,
         binding_context,
     );
-    if expect_c != proof.challenge {
+    if expect_c.ct_eq(&proof.challenge).unwrap_u8() == 0 {
         return false;
     }
     let r = binding_rotation(&binding_entropy);

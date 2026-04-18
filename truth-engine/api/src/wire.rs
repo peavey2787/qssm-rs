@@ -68,6 +68,8 @@ pub enum WireFormatError {
         expected: usize,
         got: usize,
     },
+    #[error("invalid MS proof field: {0}")]
+    InvalidMsProofField(#[from] qssm_ms::MsError),
 }
 
 impl ProofBundle {
@@ -78,12 +80,12 @@ impl ProofBundle {
             version: PROOF_BUNDLE_VERSION,
             protocol_version: PROTOCOL_VERSION,
             ms_root_hex: hex::encode(p.ms_root),
-            ms_n: p.ms_proof.n,
-            ms_k: p.ms_proof.k,
-            ms_bit_at_k: p.ms_proof.bit_at_k,
-            ms_opened_salt_hex: hex::encode(p.ms_proof.opened_salt),
-            ms_path_hex: p.ms_proof.path.iter().map(hex::encode).collect(),
-            ms_challenge_hex: hex::encode(p.ms_proof.challenge),
+            ms_n: p.ms_proof.n(),
+            ms_k: p.ms_proof.k(),
+            ms_bit_at_k: p.ms_proof.bit_at_k(),
+            ms_opened_salt_hex: hex::encode(p.ms_proof.opened_salt()),
+            ms_path_hex: p.ms_proof.path().iter().map(hex::encode).collect(),
+            ms_challenge_hex: hex::encode(p.ms_proof.challenge()),
             le_commitment_coeffs: p.le_commitment.0 .0.to_vec(),
             le_proof_t_coeffs: p.le_proof.t.0.to_vec(),
             le_proof_z_coeffs: p.le_proof.z.0.to_vec(),
@@ -106,19 +108,19 @@ impl ProofBundle {
         }
         Ok(Proof {
             ms_root: decode_hash(&self.ms_root_hex, "ms_root_hex")?,
-            ms_proof: GhostMirrorProof {
-                n: self.ms_n,
-                k: self.ms_k,
-                bit_at_k: self.ms_bit_at_k,
-                opened_salt: decode_hash(&self.ms_opened_salt_hex, "ms_opened_salt_hex")?,
-                path: self
+            ms_proof: GhostMirrorProof::new(
+                self.ms_n,
+                self.ms_k,
+                self.ms_bit_at_k,
+                decode_hash(&self.ms_opened_salt_hex, "ms_opened_salt_hex")?,
+                self
                     .ms_path_hex
                     .iter()
                     .enumerate()
                     .map(|(_i, h)| decode_hash(h, "ms_path_hex"))
                     .collect::<Result<Vec<_>, _>>()?,
-                challenge: decode_hash(&self.ms_challenge_hex, "ms_challenge_hex")?,
-            },
+                decode_hash(&self.ms_challenge_hex, "ms_challenge_hex")?,
+            )?,
             le_commitment: Commitment(RqPoly(
                 vec_to_poly(&self.le_commitment_coeffs, "le_commitment_coeffs")?,
             )),

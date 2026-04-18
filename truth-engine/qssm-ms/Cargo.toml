@@ -1,13 +1,15 @@
 [package]
 name = "qssm-ms"
-version = "0.1.0"
+version = "1.0.0"
 edition.workspace = true
 license.workspace = true
 description = "QSSM-MS (Mirror-Shift) succinct predicate proofs."
 
 [dependencies]
 qssm-utils.workspace = true
+subtle = "2.6"
 thiserror.workspace = true
+zeroize = { version = "1.8", features = ["derive"] }
 
 [[test]]
 name = "mirror_shift_adversarial"

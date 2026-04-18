@@ -5230,10 +5230,12 @@ dependencies = [
 
 [[package]]
 name = "qssm-ms"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "qssm-utils",
+ "subtle",
  "thiserror 1.0.69",
+ "zeroize",
 ]
 
 [[package]]

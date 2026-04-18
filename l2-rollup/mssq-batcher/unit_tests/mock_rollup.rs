@@ -62,8 +62,8 @@ fn test_egalitarian_sequencing() {
     let ctx_d = ctx.digest();
     let demo_ctx = b"mssq-demo-v1";
     let entropy = anchor.get_ledger_entropy();
-    let (root_alice, salts_alice) = commit(10_000u64, [7u8; 32], entropy).unwrap();
-    let (_, salts_bob) = commit(5_000u64, [9u8; 32], entropy).unwrap();
+    let (root_alice, salts_alice) = commit([7u8; 32], entropy).unwrap();
+    let (_, salts_bob) = commit([9u8; 32], entropy).unwrap();
     let proof_alice = prove(10_000, 5_000, &salts_alice, entropy, demo_ctx, &ctx_d).unwrap();
     assert!(verify(
         root_alice,

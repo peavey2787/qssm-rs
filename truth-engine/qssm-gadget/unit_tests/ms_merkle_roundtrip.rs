@@ -4,7 +4,7 @@ use qssm_gadget::{
     assert_ms_leaf_index_matches_opening, MerklePathWitness, MERKLE_DEPTH_MS,
 };
 use qssm_gadget::GadgetError;
-use qssm_ms::{commit, prove, Root};
+use qssm_ms::{commit, prove};
 use qssm_utils::hashing::{hash_domain, DOMAIN_MS};
 
 fn ms_leaf(i: u8, bit: u8, salt: &[u8; 32], ledger: &[u8; 32]) -> [u8; 32] {
@@ -18,18 +18,19 @@ fn merkle_witness_matches_qssm_ms_root() {
     let ctx = b"ctx";
     let rollup = [0x55u8; 32];
 
-    let (Root(expected_root), salts) = commit(0, seed, ledger).expect("commit");
+    let (root, salts) = commit(seed, ledger).expect("commit");
+    let expected_root = *root.as_bytes();
     let proof = prove(100u64, 50u64, &salts, ledger, ctx, &rollup).expect("prove");
 
-    let leaf_index = (2usize * (proof.k as usize) + (proof.bit_at_k as usize)) as u8;
-    assert_ms_leaf_index_matches_opening(proof.k, proof.bit_at_k, leaf_index).expect("opening");
+    let leaf_index = (2usize * (proof.k() as usize) + (proof.bit_at_k() as usize)) as u8;
+    assert_ms_leaf_index_matches_opening(proof.k(), proof.bit_at_k(), leaf_index).expect("opening");
 
-    let leaf = ms_leaf(proof.k, proof.bit_at_k, &proof.opened_salt, &ledger);
-    assert_eq!(proof.path.len(), MERKLE_DEPTH_MS);
+    let leaf = ms_leaf(proof.k(), proof.bit_at_k(), proof.opened_salt(), &ledger);
+    assert_eq!(proof.path().len(), MERKLE_DEPTH_MS);
 
     let mut siblings = [[0u8; 32]; MERKLE_DEPTH_MS];
     for i in 0..MERKLE_DEPTH_MS {
-        siblings[i] = proof.path[i];
+        siblings[i] = proof.path()[i];
     }
 
     let w = MerklePathWitness {

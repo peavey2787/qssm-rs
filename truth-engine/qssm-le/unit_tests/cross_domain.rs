@@ -19,7 +19,7 @@ fn ms_salt_expansion_differs_from_le_crs_row() {
 fn ms_commitment_root_differs_from_mlwe_commitment() {
     let seed = [3u8; 32];
     let ledger = [4u8; 32];
-    let (root_ms, _) = commit(12345u64, seed, ledger).unwrap();
+    let (root_ms, _) = commit(seed, ledger).unwrap();
     let vk = VerifyingKey::from_seed(seed);
     let w = Witness::new([0i32; qssm_le::N]);
     let public = PublicInstance::from_u64_nibbles(12345);
@@ -28,5 +28,5 @@ fn ms_commitment_root_differs_from_mlwe_commitment() {
     for i in 0..8 {
         le_prefix[i * 4..(i + 1) * 4].copy_from_slice(&c.0 .0[i].to_le_bytes());
     }
-    assert_ne!(root_ms.0, le_prefix);
+    assert_ne!(*root_ms.as_bytes(), le_prefix);
 }

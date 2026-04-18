@@ -28,7 +28,7 @@ pub fn verify(
 
     // 2. MS: verify the inequality proof.
     let context = b"qssm-sdk-v1".to_vec();
-    let root = Root(proof.ms_root);
+    let root = Root::new(proof.ms_root);
     if !qssm_ms::verify(
         root,
         &proof.ms_proof,
@@ -45,10 +45,10 @@ pub fn verify(
     //    Recompute truth digest from MS proof metadata + external entropy.
     //    The prover CANNOT lie about the LE public instance.
     let metadata = encode_proof_metadata_v2(
-        proof.ms_proof.n,
-        proof.ms_proof.k,
-        proof.ms_proof.bit_at_k,
-        &proof.ms_proof.challenge,
+        proof.ms_proof.n(),
+        proof.ms_proof.k(),
+        proof.ms_proof.bit_at_k(),
+        proof.ms_proof.challenge(),
         &proof.external_entropy,
         proof.external_entropy_included,
     );
