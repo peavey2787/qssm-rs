@@ -4,36 +4,36 @@
 //! cargo run -p zk-examples --bin simple_proof
 //! ```
 
-use serde_json::json;
-use zk_examples::{hex_short, SdkSetup};
+use qssm_api::{compile, commit, prove, verify, open};
+use zk_examples::hex_short;
 
 fn main() {
     println!("=== QSSM Simple Proof Demo ===\n");
 
-    // 1. Create SDK context from hardware entropy.
-    let setup = SdkSetup::from_label(b"simple-proof-demo-binding");
-    println!("[1] ProofContext created (seed: {})", hex_short(&setup.ctx.seed()));
+    // 1. Compile a template into a blueprint (byte array).
+    let blueprint = compile("age-gate-21").expect("compile failed");
+    println!("[1] Blueprint compiled: age-gate-21");
 
-    // 2. Load a template.
-    let template = qssm_templates::resolve("age-gate-21")
-        .expect("age-gate-21 template should exist");
-    println!("[2] Template loaded: age-gate-21");
+    // 2. Commit a secret for later reveal (32 bytes).
+    let secret = b"my-secret-data";
+    let salt = [42u8; 32];
+    let commitment = commit(secret, &salt);
+    println!("[2] Commitment: {}", hex_short(&commitment));
 
-    // 3. Build the public claim.
-    let claim = json!({ "claim": { "age_years": 30 } });
-    println!("[3] Claim: age_years = 30");
+    // 3. Prove a claim (returns a proof byte array).
+    let claim = br#"{"claim":{"age_years":30}}"#;
+    let proof = prove(claim, &salt, &blueprint).expect("prove failed");
+    println!("[3] Proof generated ({} bytes)", proof.len());
 
-    // 4. Prove.
-    let entropy_seed = setup.fresh_entropy();
-    let proof = qssm_local_prover::prove(&setup.ctx, &template, &claim, 100, 50, setup.binding_ctx, entropy_seed)
-        .expect("prove failed");
-    println!("[4] Proof generated (MS root: {})", hex_short(proof.ms_root()));
-
-    // 5. Verify.
-    let ok = qssm_api::verify(&setup.ctx, &template, &claim, &proof, setup.binding_ctx)
-        .expect("verify failed");
-    println!("[5] Verified: {ok}");
+    // 4. Verify.
+    let ok = verify(&proof, &blueprint);
+    println!("[4] Verified: {ok}");
     assert!(ok, "proof should verify");
+
+    // 5. Open — simple reveal. Compare with == .
+    let revealed = open(secret, &salt);
+    assert_eq!(revealed, commitment, "reveal must match commitment");
+    println!("[5] Reveal matches commitment");
 
     println!("\n=== Done ===");
 }

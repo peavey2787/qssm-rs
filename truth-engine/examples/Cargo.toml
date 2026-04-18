@@ -6,14 +6,7 @@ publish = false
 
 [dependencies]
 qssm-api = { path = "../qssm-api" }
-qssm-local-prover = { path = "../qssm-local-prover" }
-qssm-templates = { path = "../qssm-templates" }
-# qssm-entropy: intentional for examples only — not part of the frozen institutional API surface.
-qssm-entropy.workspace = true
-qssm-utils = { workspace = true }
-serde_json = { workspace = true }
 hex = { workspace = true }
-tempfile = "3"
 
 [[bin]]
 name = "simple_proof"

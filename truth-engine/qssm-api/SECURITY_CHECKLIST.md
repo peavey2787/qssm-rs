@@ -1,82 +1,139 @@
-# qssm-api v1.0.0 — Security Checklist
+qssm‑api — Security Checklist (Façade Edition)
+Crate: qssm-api (Layer 6 — The Façade)
+Revision: 3 (byte-array-only public surface)
 
-**Crate:** `qssm-api` (Layer 5 — The API)
-**Revision:** 1
+Public Surface (Façade Contract)
+[x] #![forbid(unsafe_code)] — crate‑wide
 
----
+[x] Exactly 5 public functions — nothing else
 
-## Public Surface
+compile(template_id: &str) -> Result<Vec<u8>, String>
 
-- [x] `#![forbid(unsafe_code)]` — crate-wide
-- [x] Minimal public API — `prove`, `verify`, `ProofContext`, `Proof`, `ProofBundle`, `WireFormatError`, `ZkError`, `PROTOCOL_VERSION`, `qssm_templates` re-export
-- [x] `ZkError` is `#[non_exhaustive]` — new variants can be added without semver break
-- [x] `WireFormatError` is `#[non_exhaustive]` — new variants can be added without semver break
-- [x] `Proof` is `#[non_exhaustive]` — prevents external struct-literal construction
-- [x] `ProofBundle` is `#[non_exhaustive]` — prevents external struct-literal construction
-- [x] `ProofContext.vk` is `pub(crate)` — only accessible via `vk()` accessor
+commit(secret: &[u8], salt: &[u8; 32]) -> Vec<u8>
 
-## Architectural Purity
+prove(secret: &[u8], salt: &[u8; 32], blueprint: &[u8]) -> Result<Vec<u8>, String>
 
-- [x] No Layer 1/2/3 types in the public API — all lower-layer types are encapsulated
-- [x] `prove()` orchestrates the deterministic pipeline: predicate → MS → truth binding → LE
-- [x] `verify()` delegates entirely: predicate → MS verify → cross-engine rebinding → LE verify
-- [x] `derive_le_witness()` is SDK-level key schedule (not protocol logic) — domain tag `DOMAIN_SDK_LE_WITNESS`
-- [x] No entropy re-exports — `qssm-entropy` removed from dependencies; callers depend on it directly
-- [x] `SovereignProofBundle` alias removed — single canonical type `ProofBundle`
-- [x] Shared `MS_CONTEXT_TAG` const — no duplicated magic strings between prove and verify
+verify(proof: &[u8], blueprint: &[u8]) -> bool
 
-## Error Handling
+open(secret: &[u8], salt: &[u8; 32]) -> Vec<u8>
 
-- [x] All failures return typed `ZkError` or `WireFormatError` — no panics
-- [x] No `unwrap()` or `expect()` in production code
-- [x] `#[from]` only on `PredicateError` — all other error mappings are explicit
+[x] Zero public types — no structs, enums, or traits exported
 
-## Wire Format
+[x] No re‑exports of any kind from any engine crate
 
-- [x] `ProofBundle` versioned — `version` + `protocol_version` fields, checked on deserialization
-- [x] `#[serde(deny_unknown_fields)]` — rejects JSON with unknown fields (security)
-- [x] All hex fields validated on deserialization (length, encoding)
-- [x] Polynomial coefficient counts validated (must be exactly `N = 256`)
-- [x] MS proof fields validated via `GhostMirrorProof::new`
+[x] All engine types (ProofContext, Proof, ProofBundle, ZkError, etc.) are completely invisible to consumers
 
-## Security Model
+[x] All data exchanged via byte arrays (Vec<u8> / &[u8]) and primitives (bool, String)
 
-- [x] No secrets held — `ProofContext` contains only public key material
-- [x] Deterministic pipeline — same inputs always produce same outputs (no internal RNG)
-- [x] Cross-engine binding enforced in `verify()` — recomputes truth digest from MS transcript
+Architectural Purity (Façade Pattern)
+[x] qssm-api contains no prover or verifier logic
 
-## Secrets & Zeroization
+[x] All 5 façade functions delegate internally to engine crates
 
-- [x] `ProofContext` derives `Zeroize`/`ZeroizeOnDrop` — internal seed is zeroed on drop
-- [x] `ProofContext` has redacted `Debug` impl — `[REDACTED]`
-- [x] `ProofContext` does not implement `Clone` — prevents accidental duplication
-- **Concession:** `ProofContext::seed()` returns a caller-owned `[u8; 32]` copy. Only the internal copy inside `ProofContext` is zeroized on drop. Callers are responsible for handling their own copies securely.
+[x] No Layer 1/2/3/4/5 types appear in the public API
 
-## Test Coverage
+[x] Engine crates remain fully internal:
 
-- [x] **18 unit tests** — round-trip, 5 adversarial, 6 wire format, 2 injectivity/preservation, 1 JSON schema, 1 witness derivation, 1 accessor
-- [x] **3 compile-fail tests** (trybuild) — non-exhaustive `ZkError`, non-exhaustive `WireFormatError`, entropy not re-exported
-- [x] **1 doc-test** — quick start example compiles
+qssm-le
 
-## Dependencies (pinned at freeze)
+qssm-ms
 
-| Crate | Purpose |
-|-------|---------|
-| `qssm-le` | Layer 1 lattice engine |
-| `qssm-ms` | Layer 2 mirror-shift engine |
-| `qssm-gadget` | Layer 3 truth binding gadgets |
-| `qssm-utils` | Hashing utilities, domain separators |
-| `qssm-templates` | Predicate template gallery |
-| `serde` | Serialization |
-| `serde_json` | JSON claim type |
-| `thiserror` | Error derive |
-| `hex` | Hex encoding for wire format |
+qssm-gadget
 
-Dev-only: `trybuild` (compile-fail tests).
+qssm-local-prover
 
-## Final Certification
+qssm-local-verifier
 
-- [x] All boxes above checked
-- [x] `cargo test -p qssm-api` — 22/22 passed (18 unit + 3 compile-fail + 1 doc-test)
-- [x] `cargo check` — clean compilation
-- [x] Ready for institutional freeze at v1.0.0
+qssm-entropy
+
+qssm-utils
+
+[x] Façade signatures are stable and human‑friendly
+
+[x] Engine signatures are hidden and free to evolve
+
+Error Handling
+[x] compile() and prove() return Result<Vec<u8>, String> — never panic
+
+[x] verify() returns bool — all internal errors collapse to false
+
+[x] No public error types — internal ZkError is mapped to String
+
+[x] No WireFormatError or engine error enums are public
+
+Proof Artifact (Wire Format Encapsulation)
+[x] The proof is an opaque byte array (Vec<u8>)
+
+Developers cannot inspect or construct it manually
+
+[x] The blueprint is an opaque byte array (Vec<u8>)
+
+[x] Internally, proof encoding is:
+
+versioned
+
+validated
+
+JSON-serialized (ProofBundle)
+
+[x] All wire‑format validation happens inside engine crates
+
+[x] No public JSON schema, hex fields, or polynomial counts
+
+Security Model
+[x] Façade holds no secrets beyond the lifetime of a call
+
+[x] All secret handling occurs in engine crates
+
+[x] No RNG implemented in façade — entropy is delegated to qssm-entropy
+
+[x] Cross‑engine binding enforced internally
+
+[x] Façade does not expose protocol version or internal constants
+
+Secrets & Zeroization
+[x] No public types exist — nothing for consumers to mishandle
+
+[x] All zeroization guarantees live in engine crates (ProofContext uses ZeroizeOnDrop)
+
+[x] Façade does not persist secrets beyond the lifetime of a call; long‑lived secret handling is in engine crates
+
+[x] Blueprint byte array contains seed material — consumers are responsible for protecting it at rest
+
+Test Coverage
+[x] Unit tests for the 5 façade functions
+
+[x] compile() returns Err for unknown templates
+
+[x] commit/open round-trip via == comparison
+
+[x] Proof byte array round-trips through prove → verify
+
+[x] No engine types leak into public API — there are no public types at all
+
+Dependencies (Façade Only)
+Crate	Purpose
+qssm-local-prover	Internal proof generation + wire format
+qssm-local-verifier	Internal verification
+qssm-templates	Internal predicate templates
+qssm-entropy	Internal hardware entropy harvesting
+qssm-utils	Internal hashing utilities
+serde	Internal serialization
+serde_json	Internal JSON handling
+hex	Internal hex encoding for wire format
+None of these are re‑exported. qssm-api does NOT depend on qssm-le, qssm-ms, or qssm-gadget.
+
+Final Certification
+[x] Public API surface = exactly 5 functions + byte arrays
+
+[x] Zero public types
+
+[x] No re‑exports
+
+[x] No engine types exposed
+
+[x] Proof artifact is an opaque byte array
+
+[x] All engine logic internal
+
+[x] Façade is stable, sealed, and safe

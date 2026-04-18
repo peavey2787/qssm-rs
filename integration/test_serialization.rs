@@ -3,8 +3,8 @@
 //! These tests verify that `ProofBundle` serialization is stable, round-trips
 //! correctly, and rejects malformed input at the boundary.
 
-use qssm_api::{ProofBundle, ProofContext, WireFormatError, PROTOCOL_VERSION};
-use qssm_local_prover::prove;
+use qssm_local_prover::{prove, ProofBundle, ProofContext, WireFormatError, PROTOCOL_VERSION};
+use qssm_local_verifier::verify;
 use qssm_templates::QssmTemplate;
 use qssm_utils::hashing::blake3_hash;
 use serde_json::json;
@@ -22,8 +22,8 @@ fn binding() -> [u8; 32] {
 }
 
 fn make_bundle() -> ProofBundle {
-    let ctx = ProofContext::new(seed());
     let template = QssmTemplate::proof_of_age("age-gate-21");
+    let ctx = ProofContext::new(seed());
     let claim = json!({ "claim": { "age_years": 30 } });
     let proof = prove(&ctx, &template, &claim, 100, 50, binding(), entropy())
         .expect("prove");
@@ -47,9 +47,11 @@ fn pretty_json_round_trip() {
     let pretty = serde_json::to_string_pretty(&bundle).expect("pretty");
     let recovered: ProofBundle = serde_json::from_str(&pretty).expect("parse pretty");
     let proof = recovered.to_proof().expect("to_proof");
-    let ok = qssm_api::verify(
-        &ProofContext::new(seed()),
-        &QssmTemplate::proof_of_age("age-gate-21"),
+    let template = QssmTemplate::proof_of_age("age-gate-21");
+    let ctx = ProofContext::new(seed());
+    let ok = verify(
+        &ctx,
+        &template,
         &json!({ "claim": { "age_years": 30 } }),
         &proof,
         binding(),

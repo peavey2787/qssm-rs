@@ -1,17 +1,21 @@
 [package]
 name = "qssm-local-verifier"
-version = "1.0.0"
+version = "2.0.0"
 edition.workspace = true
 license.workspace = true
-description = "Offline proof verification without network access."
+description = "Layer 5 — offline proof verification for QSSM ZK proofs."
 
 [dependencies]
-qssm-api = { path = "../qssm-api" }
+qssm-le.workspace = true
+qssm-ms.workspace = true
+qssm-gadget.workspace = true
+qssm-utils.workspace = true
 qssm-templates = { path = "../qssm-templates" }
-serde_json = { workspace = true }
-thiserror = { workspace = true }
+qssm-local-prover = { path = "../qssm-local-prover" }
+serde_json.workspace = true
+thiserror.workspace = true
 
 [dev-dependencies]
-hex = { workspace = true }
-qssm-local-prover = { path = "../qssm-local-prover" }
-qssm-utils = { workspace = true }
+hex.workspace = true
+qssm-utils.workspace = true
+qssm-templates = { path = "../qssm-templates" }

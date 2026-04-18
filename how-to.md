@@ -1,169 +1,425 @@
 # QSSM Developer How-To
 
-This guide is a command-first reference for common developer tasks in this workspace.
+This is the detailed command reference for working in this repository.
+
+Use it as the "what do I actually run from the repo root?" document.
+
+Related guide: [CONTRIBUTING.md](CONTRIBUTING.md)
+
+## Scope
+
+This file covers:
+
+- exact package names in the current workspace
+- how to run all tests
+- how to run one crate's tests
+- how to run one named test target
+- how to run the dedicated cross-crate integration test package
+- how to build and run the desktop app
+- how to run the example binaries that actually exist today
+- how to run common verification gates
+
+Repository root for all commands unless noted otherwise:
+
+```powershell
+Set-Location C:\rust\qssm-rs
+```
+
+## Current workspace members
+
+These are the workspace packages defined in the root `Cargo.toml` right now:
+
+- `qssm-utils`
+- `qssm-entropy`
+- `qssm-gadget`
+- `qssm-le`
+- `qssm-ms`
+- `qssm-proofs`
+- `qssm-local-prover`
+- `qssm-templates`
+- `qssm-local-verifier`
+- `qssm-api`
+- `zk-examples`
+- `qssm-integration`
+- `qssm-desktop`
+
+Important naming reminders:
+
+- the examples package name is `zk-examples`, not `qssm-examples`
+- the desktop frontend lives in `desktop/`
+- the desktop Rust/Tauri backend lives in `desktop/src-tauri/`
+- the dedicated cross-crate integration package is `qssm-integration`
 
 ## Prerequisites
 
-- Rust toolchain installed (`cargo`, `rustc`)
-- Node.js + npm installed (required for `qssm-desktop`)
-- Run all commands from repo root unless otherwise noted: `C:/rust/qssm-rs`
+Minimum practical requirements:
 
-## Run All Tests (Workspace)
+- Rust toolchain installed and on `PATH`
+- `cargo` and `rustc` working
+- Node.js and npm installed for the desktop app
+- Python available if you want to run `scripts/verify_ct_asm.py`
 
-Run every test in every workspace crate in release mode:
+Quick sanity checks:
 
-```bash
-cargo test --release --workspace
+```powershell
+rustc --version
+cargo --version
+node --version
+npm --version
+python --version
 ```
 
-Run tests for one crate only:
+## Build commands
 
-```bash
-cargo test -p mssq-batcher
-```
+### Build the full workspace
 
-Run a specific integration test target:
+Debug build:
 
-```bash
-cargo test -p qssm-examples --test millionaires_duel
-```
-
-## Build All Crates or One Crate
-
-Build the entire workspace:
-
-```bash
+```powershell
 cargo build --workspace
 ```
 
-Release build for entire workspace:
+Release build:
 
-```bash
+```powershell
 cargo build --release --workspace
 ```
 
-Build only one crate:
+### Build one crate
 
-```bash
+Examples:
+
+```powershell
 cargo build -p qssm-le
+cargo build -p qssm-api
+cargo build -p qssm-desktop
 ```
 
 Release build for one crate:
 
-```bash
+```powershell
 cargo build --release -p qssm-le
 ```
 
-## Run qssm-desktop (Dev and Release)
+## Test commands
 
-`qssm-desktop` is a Tauri app with frontend assets in `crates/qssm-desktop`.
+## Run every test in the workspace
 
-1) Install frontend dependencies (first time, or after dependency changes):
+This is the normal full test command:
 
-```bash
-cd crates/qssm-desktop
-npm install
+```powershell
+cargo test --workspace
 ```
 
-2) Run desktop app in dev mode (hot reload):
+This runs the test suites for all workspace members, including crate-local unit tests and any package test targets.
 
-```bash
-npx --prefix crates/qssm-desktop tauri dev
+If you specifically want a release-mode full test run:
+
+```powershell
+cargo test --release --workspace
 ```
 
-3) Build desktop app in release mode:
+Use release mode only when you intentionally want the slower, heavier full pass.
 
-```bash
-npx --prefix crates/qssm-desktop tauri build
+## Run tests for one crate
+
+General form:
+
+```powershell
+cargo test -p <package-name>
 ```
 
-Optional: run only the web frontend dev server (without Tauri shell):
+Examples:
 
-```bash
-npm --prefix crates/qssm-desktop run dev
+```powershell
+cargo test -p qssm-le
+cargo test -p qssm-ms
+cargo test -p qssm-api
+cargo test -p qssm-local-prover
+cargo test -p qssm-local-verifier
+cargo test -p qssm-entropy
+cargo test -p qssm-utils
+cargo test -p qssm-gadget
+cargo test -p qssm-templates
+cargo test -p qssm-proofs
+cargo test -p zk-examples
+cargo test -p qssm-integration
 ```
 
-Equivalent commands if you prefer to `cd` first:
+## Run one specific test by name
 
-```bash
-cd crates/qssm-desktop
-npx tauri dev
-npx tauri build
+General form:
+
+```powershell
+cargo test -p <package-name> <test-name-substring>
 ```
 
-## Run Millionaires Duel
+Examples:
 
-The Millionaires Duel binary lives in `qssm-examples`.
-
-Run in debug mode:
-
-```bash
-cargo run -p qssm-examples --bin millionaires_duel
+```powershell
+cargo test -p qssm-proofs ci_security_floor_112_bits
+cargo test -p qssm-entropy to_seed_determinism
+cargo test -p qssm-api wire_format
 ```
 
-Run in release mode:
+Use this when you know the test function name or a stable substring of it.
 
-```bash
-cargo run --release -p qssm-examples --bin millionaires_duel
+## Run one named integration test target
+
+General form:
+
+```powershell
+cargo test -p <package-name> --test <target-name>
 ```
 
-Run its integration test suite:
+This is for explicit test target files, not individual `#[test]` functions.
 
-```bash
-cargo test -p qssm-examples --test millionaires_duel
+### Dedicated cross-crate integration tests
+
+The repository has a dedicated integration package at `integration/` with package name `qssm-integration`.
+
+Run the entire integration package:
+
+```powershell
+cargo test -p qssm-integration
 ```
 
-## Useful Verification Commands
+Run all its named integration test targets one by one:
 
-Check all crates compile without running tests:
-
-```bash
-cargo check --workspace
+```powershell
+cargo test -p qssm-integration --test adversarial_replay
+cargo test -p qssm-integration --test test_roundtrip
+cargo test -p qssm-integration --test test_negative
+cargo test -p qssm-integration --test test_serialization
+cargo test -p qssm-integration --test test_entropy
+cargo test -p qssm-integration --test test_template_resolution
 ```
 
-Format check:
+If you want every cross-crate integration file to run, `cargo test -p qssm-integration` is the easiest command and should be your default.
 
-```bash
-cargo fmt --all -- --check
+## Run all integration-style test targets across the workspace
+
+If you want Cargo's `--tests` pass across all workspace members:
+
+```powershell
+cargo test --workspace --tests
 ```
 
-Lint check (Clippy):
+Use this when you want package test targets only and do not want a full "everything" pass.
 
-```bash
-cargo clippy --workspace --all-targets -- -D warnings
-```
+For this repository, the dedicated cross-crate package `qssm-integration` is still the main integration suite to remember.
 
-## Run and Use qssm-proofs
+## qssm-proofs specific commands
 
-`qssm-proofs` lives at `crates/qssm-proofs` and provides formal invariant scaffolding, benchmark-target tracking, and a CI hardness floor test.
+`qssm-proofs` is the internal analysis crate.
 
-Build the crate:
+Run all its tests:
 
-```bash
-cargo build -p qssm-proofs
-```
-
-Run only qssm-proofs tests:
-
-```bash
+```powershell
 cargo test -p qssm-proofs
 ```
 
-Run the CI hardness floor test directly (`>= 112` bits required):
+Run the explicit parameter sync test target:
 
-```bash
+```powershell
+cargo test -p qssm-proofs --test parameter_sync
+```
+
+Run the CI hardness floor test directly:
+
+```powershell
 cargo test -p qssm-proofs ci_security_floor_112_bits
 ```
 
-What this test does:
+What this is checking:
 
-- Reads the effective security estimate from:
-  - an estimator JSON artifact (if wired by caller), or
-  - fallback audit ledger: `docs/02-protocol-specs/qssm-le-concrete-security-audit-2026-04-15.md`
-- Fails if effective security is below 112 bits.
+- the effective security floor encoded in `qssm-proofs`
+- whether the current parameter set stays above the enforced CI minimum
 
-Quick compile check including qssm-proofs:
+## Example binaries that actually exist today
 
-```bash
+The examples package is `zk-examples` under `truth-engine/examples`.
+
+The currently defined binaries are:
+
+- `simple_proof`
+- `age_gate`
+
+Run them like this:
+
+```powershell
+cargo run -p zk-examples --bin simple_proof
+cargo run -p zk-examples --bin age_gate
+```
+
+Release mode:
+
+```powershell
+cargo run --release -p zk-examples --bin simple_proof
+cargo run --release -p zk-examples --bin age_gate
+```
+
+## Desktop app: install, run, build
+
+The desktop app frontend is in `desktop/` and the Tauri backend crate is `desktop/src-tauri/` with package name `qssm-desktop`.
+
+### First-time setup
+
+Install frontend dependencies:
+
+```powershell
+npm --prefix desktop install
+```
+
+You only need to repeat this after dependency changes or if `node_modules` is removed.
+
+### Run the desktop app in dev mode
+
+From repo root:
+
+```powershell
+npm --prefix desktop run tauri:dev
+```
+
+This starts the Vite frontend and the Tauri shell together.
+
+Equivalent if you want to `cd` first:
+
+```powershell
+Set-Location .\desktop
+npm install
+npm run tauri:dev
+```
+
+### Build the desktop app
+
+From repo root:
+
+```powershell
+npm --prefix desktop run tauri:build
+```
+
+Equivalent from inside `desktop/`:
+
+```powershell
+Set-Location .\desktop
+npm run tauri:build
+```
+
+### Run only the web frontend without the Tauri shell
+
+```powershell
+npm --prefix desktop run dev
+```
+
+### Build only the frontend assets
+
+```powershell
+npm --prefix desktop run build
+```
+
+### Optional desktop utility script
+
+Fetch the DBIP MaxMind-style database used by the desktop app:
+
+```powershell
+npm --prefix desktop run geo:fetch-dbip
+```
+
+## Compile / verification commands you will actually use
+
+Check everything compiles without running tests:
+
+```powershell
 cargo check --workspace
 ```
+
+Check one crate only:
+
+```powershell
+cargo check -p qssm-api
+cargo check -p qssm-entropy
+```
+
+Format the workspace:
+
+```powershell
+cargo fmt --all
+```
+
+Format check without rewriting files:
+
+```powershell
+cargo fmt --all -- --check
+```
+
+Run Clippy across the workspace:
+
+```powershell
+cargo clippy --workspace --all-targets -- -D warnings
+```
+
+## Constant-time verification helper
+
+The root `scripts/verify_ct_asm.py` script is still part of the security/tooling path.
+
+Run it from repo root:
+
+```powershell
+python scripts/verify_ct_asm.py
+```
+
+This script is referenced by:
+
+- `SECURITY.md`
+- `.github/workflows/ct-assembly-gate.yml`
+- the `qssm-le` freeze/security artifacts
+
+## Common command patterns to remember
+
+Run everything:
+
+```powershell
+cargo test --workspace
+```
+
+Run one crate:
+
+```powershell
+cargo test -p qssm-api
+```
+
+Run one named integration target:
+
+```powershell
+cargo test -p qssm-integration --test test_roundtrip
+```
+
+Run one named test function or filtered subset:
+
+```powershell
+cargo test -p qssm-entropy to_seed_determinism
+```
+
+Run desktop app:
+
+```powershell
+npm --prefix desktop install
+npm --prefix desktop run tauri:dev
+```
+
+Build desktop app:
+
+```powershell
+npm --prefix desktop run tauri:build
+```
+
+## If a command from an old doc fails
+
+Check these first:
+
+- old docs may still say `crates/...`; current paths are `truth-engine/...` and `desktop/...`
+- old docs may still say `qssm-examples`; current package name is `zk-examples`
+- old docs may still mention `millionaires_duel`; that binary is not currently defined in `truth-engine/examples/Cargo.toml`
+- the dedicated integration package is `qssm-integration`
+- the desktop app is `desktop/`, not `crates/qssm-desktop`

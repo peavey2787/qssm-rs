@@ -3,9 +3,8 @@
 //! Every test here must **fail** in the expected way — these verify that the
 //! SDK correctly rejects tampered proofs, wrong claims, and domain mismatches.
 
-use qssm_api::{ProofBundle, ProofContext, ZkError};
-use qssm_local_prover::prove;
-use qssm_local_verifier::{verify_proof_offline, verify_proof_with_template, VerifyError};
+use qssm_local_prover::{prove, Proof, ProofBundle, ProofContext, ZkError};
+use qssm_local_verifier::{verify, verify_proof_offline, verify_proof_with_template, VerifyError};
 use qssm_templates::QssmTemplate;
 use qssm_utils::hashing::blake3_hash;
 use serde_json::json;
@@ -22,9 +21,9 @@ fn binding() -> [u8; 32] {
     blake3_hash(b"E2E-NEGATIVE-BINDING")
 }
 
-fn make_proof() -> (ProofContext, QssmTemplate, serde_json::Value, qssm_api::Proof, [u8; 32]) {
-    let ctx = ProofContext::new(seed());
+fn make_proof() -> (ProofContext, QssmTemplate, serde_json::Value, Proof, [u8; 32]) {
     let template = QssmTemplate::proof_of_age("age-gate-21");
+    let ctx = ProofContext::new(seed());
     let claim = json!({ "claim": { "age_years": 30 } });
     let binding_ctx = binding();
     let proof = prove(&ctx, &template, &claim, 100, 50, binding_ctx, entropy())
@@ -36,8 +35,8 @@ fn make_proof() -> (ProofContext, QssmTemplate, serde_json::Value, qssm_api::Pro
 
 #[test]
 fn underage_claim_rejected_at_prove() {
-    let ctx = ProofContext::new(seed());
     let template = QssmTemplate::proof_of_age("age-gate-21");
+    let ctx = ProofContext::new(seed());
     let claim = json!({ "claim": { "age_years": 17 } });
     let err = prove(&ctx, &template, &claim, 100, 50, binding(), entropy())
         .unwrap_err();
@@ -46,8 +45,8 @@ fn underage_claim_rejected_at_prove() {
 
 #[test]
 fn missing_claim_field_rejected() {
-    let ctx = ProofContext::new(seed());
     let template = QssmTemplate::proof_of_age("age-gate-21");
+    let ctx = ProofContext::new(seed());
     let claim = json!({ "claim": { "name": "Alice" } });
     let err = prove(&ctx, &template, &claim, 100, 50, binding(), entropy())
         .unwrap_err();
@@ -64,7 +63,7 @@ fn tampered_ms_root_rejected_via_api() {
     root[0] ^= 0xFF;
     bundle.ms_root_hex = hex::encode(root);
     let tampered = bundle.to_proof().unwrap();
-    let err = qssm_api::verify(&ctx, &template, &claim, &tampered, binding_ctx)
+    let err = verify(&ctx, &template, &claim, &tampered, binding_ctx)
         .unwrap_err();
     assert!(matches!(err, ZkError::MsVerifyFailed));
 }
@@ -87,7 +86,7 @@ fn tampered_ms_root_rejected_via_local_verifier() {
 fn wrong_binding_context_rejected() {
     let (ctx, template, claim, proof, _) = make_proof();
     let wrong_ctx = blake3_hash(b"WRONG-BINDING-CONTEXT");
-    let err = qssm_api::verify(&ctx, &template, &claim, &proof, wrong_ctx)
+    let err = verify(&ctx, &template, &claim, &proof, wrong_ctx)
         .unwrap_err();
     assert!(matches!(err, ZkError::MsVerifyFailed));
 }
@@ -98,7 +97,7 @@ fn wrong_binding_context_rejected() {
 fn wrong_claim_rejected_at_verify() {
     let (ctx, template, _claim, proof, binding_ctx) = make_proof();
     let wrong_claim = json!({ "claim": { "age_years": 15 } });
-    let err = qssm_api::verify(&ctx, &template, &wrong_claim, &proof, binding_ctx)
+    let err = verify(&ctx, &template, &wrong_claim, &proof, binding_ctx)
         .unwrap_err();
     assert!(matches!(err, ZkError::PredicateFailed(_)));
 }
@@ -113,7 +112,7 @@ fn tampered_binding_entropy_rejected() {
     ent[0] ^= 0xFF;
     bundle.binding_entropy_hex = hex::encode(ent);
     let tampered = bundle.to_proof().unwrap();
-    let result = qssm_api::verify(&ctx, &template, &claim, &tampered, binding_ctx);
+    let result = verify(&ctx, &template, &claim, &tampered, binding_ctx);
     assert!(result.is_err());
 }
 
@@ -125,7 +124,7 @@ fn swapped_value_target_rejected() {
     let mut bundle = ProofBundle::from_proof(&proof);
     std::mem::swap(&mut bundle.value, &mut bundle.target);
     let tampered = bundle.to_proof().unwrap();
-    let err = qssm_api::verify(&ctx, &template, &claim, &tampered, binding_ctx)
+    let err = verify(&ctx, &template, &claim, &tampered, binding_ctx)
         .unwrap_err();
     assert!(matches!(err, ZkError::MsVerifyFailed));
 }
@@ -134,7 +133,7 @@ fn swapped_value_target_rejected() {
 
 #[test]
 fn unknown_template_rejected_offline() {
-    let (ctx, _, claim, proof, binding_ctx) = make_proof();
+    let (ctx, _template, claim, proof, binding_ctx) = make_proof();
     let result = verify_proof_offline(&ctx, "nonexistent-template-xyz", &claim, &proof, binding_ctx);
     assert!(matches!(result, Err(VerifyError::UnknownTemplate(_))));
 }
@@ -143,8 +142,8 @@ fn unknown_template_rejected_offline() {
 
 #[test]
 fn proof_from_one_seed_rejected_under_different_seed() {
-    let (_, template, claim, proof, binding_ctx) = make_proof();
+    let (_ctx, template, claim, proof, binding_ctx) = make_proof();
     let different_ctx = ProofContext::new(blake3_hash(b"DIFFERENT-SEED"));
-    let result = qssm_api::verify(&different_ctx, &template, &claim, &proof, binding_ctx);
+    let result = verify(&different_ctx, &template, &claim, &proof, binding_ctx);
     assert!(result.is_err(), "proof under seed A must not verify under seed B");
 }

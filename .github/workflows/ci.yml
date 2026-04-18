@@ -1,0 +1,121 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # ── Fast gates (Ubuntu only) ──────────────────────────────────
+  fmt:
+    name: Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - run: cargo fmt --all -- --check
+
+  clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo clippy --workspace --all-targets --exclude qssm-desktop -- -D warnings
+
+  # ── Cross-platform build + test ───────────────────────────────
+  check:
+    name: Check (${{ matrix.os }})
+    needs: [fmt, clippy]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.os }}
+      - run: cargo check --workspace --exclude qssm-desktop
+
+  test:
+    name: Test (${{ matrix.os }})
+    needs: [check]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.os }}
+      - run: cargo test --workspace --exclude qssm-desktop
+
+  # ── Explicit invariant checks (Ubuntu, after tests pass) ──────
+  invariants:
+    name: Invariants
+    needs: [test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: qssm-api tests
+        run: cargo test -p qssm-api
+
+      - name: qssm-integration tests
+        run: cargo test -p qssm-integration
+
+      - name: qssm-proofs parameter sync
+        run: cargo test -p qssm-proofs --test parameter_sync
+
+      - name: qssm-proofs security floor (112 bits)
+        run: cargo test -p qssm-proofs ci_security_floor_112_bits
+
+      - name: qssm-templates (all features)
+        run: cargo test -p qssm-templates --all-features
+
+      - name: qssm-utils (all features)
+        run: cargo test -p qssm-utils --all-features
+
+      - name: qssm-gadget check
+        run: cargo check -p qssm-gadget --all-targets
+
+      - name: qssm-gadget tests
+        run: cargo test -p qssm-gadget
+
+  # ── MSRV gate (documented Rust 1.78 minimum) ─────────────────
+  msrv:
+    name: MSRV (Rust 1.78)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.78"
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: msrv
+      - run: cargo check --workspace --exclude qssm-desktop

@@ -140,18 +140,17 @@ fn eval_predicate_individually() {
 
 #[test]
 fn template_used_in_full_prove_verify_pipeline() {
-    use qssm_api::ProofContext;
     use qssm_utils::hashing::blake3_hash;
 
-    let ctx = ProofContext::new(blake3_hash(b"TEMPLATE-PIPELINE-SEED"));
     let t = resolve("age-gate-21").unwrap();
+    let ctx = qssm_local_prover::ProofContext::new(blake3_hash(b"TEMPLATE-PIPELINE-SEED"));
     let claim = json!({ "claim": { "age_years": 30 } });
     let binding = blake3_hash(b"TEMPLATE-PIPELINE-BINDING");
     let entropy = blake3_hash(b"TEMPLATE-PIPELINE-ENTROPY");
 
     let proof = qssm_local_prover::prove(&ctx, &t, &claim, 100, 50, binding, entropy)
         .expect("prove");
-    let ok = qssm_api::verify(&ProofContext::new(blake3_hash(b"TEMPLATE-PIPELINE-SEED")), &t, &claim, &proof, binding)
+    let ok = qssm_local_verifier::verify(&ctx, &t, &claim, &proof, binding)
         .expect("verify");
     assert!(ok);
 }

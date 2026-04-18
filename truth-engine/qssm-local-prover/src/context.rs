@@ -78,10 +78,6 @@ pub struct Proof {
 
 impl Proof {
     /// Construct a proof from all constituent artifacts.
-    ///
-    /// This is the only way to build a [`Proof`] from outside `qssm-api`.
-    /// The [`qssm-local-prover`] crate uses this; application code should
-    /// call `qssm_local_prover::prove` instead.
     #[must_use]
     #[allow(clippy::too_many_arguments)]
     pub fn new(
