@@ -2,13 +2,13 @@
 
 * [README](../../README.md) — Project home
 * [Gadget Phase 8 (floor & NIST)](../03-crate-guides/qssm-gadget.md)
-* **This document** — QSSM-HE: hardware entropy and raw harvest
+* **This document** — QSSM-Entropy: hardware entropy and raw harvest
 
 ---
 
-# QSSM-HE — hardware entropy (`qssm-he`)
+# QSSM-Entropy — hardware entropy (`qssm-entropy`)
 
-Crate: `crates/qssm-he`. This specification matches the **current Rust implementation** (`src/lib.rs`, `src/core/{harvest,density,pmk}.rs`, `src/backend/{sensor,time,windows_tsc}.rs`, `src/filter/harvest_gate.rs`).
+Crate: `crates/qssm-entropy`. This specification matches the **current Rust implementation** (`src/lib.rs`, `src/core/{harvest,density,pmk}.rs`, `src/backend/{sensor,time,windows_tsc}.rs`, `src/filter/harvest_gate.rs`).
 
 ## Purpose
 

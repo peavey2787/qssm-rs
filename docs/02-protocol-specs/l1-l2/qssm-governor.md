@@ -1,11 +1,11 @@
 ### Documentation map
 
-* [README](../../README.md) ù Project home
+* [README](../../README.md) ÔøΩ Project home
 * [Architecture overview](../01-architecture/architecture-overview.md)
-* [MSSQ ù Egalitarian rollup](./mssq.md)
-* [QSSM-LE ù Engine A](./qssm-le-engine-a.md)
-* [QSSM-MS ù Engine B](./qssm-ms-engine-b.md)
-* **This document** ù QSSM Governor (Metabolic DAA)
+* [MSSQ ÔøΩ Egalitarian rollup](./mssq.md)
+* [QSSM-LE ÔøΩ Engine A](./qssm-le-engine-a.md)
+* [QSSM-MS ÔøΩ Engine B](./qssm-ms-engine-b.md)
+* **This document** ÔøΩ QSSM Governor (Metabolic DAA)
 
 ---
 
@@ -16,7 +16,7 @@
 
 ## Abstract
 
-`qssm-governor` defines the policy layer that adapts network pressure and peer merit using hardware-anchored entropy quality from `qssm-he`. It formalizes four core functions:
+`qssm-governor` defines the policy layer that adapts network pressure and peer merit using hardware-anchored entropy quality from `qssm-entropy`. It formalizes four core functions:
 
 1. **Entropy density tracking** over a moving horizon of recent pulses/blocks.
 2. **Metabolic DAA** that raises minimum work difficulty \(T_{min}\) when pulse throughput exceeds metabolic capacity.
@@ -33,7 +33,7 @@ Let:
 
 - \(p_i\): i-th pulse observed by a node.
 - \(t_i\): local receive timestamp for pulse \(p_i\), in nanoseconds.
-- \(d_i \in \{0,1\}\): pulse density verdict from `qssm_he::verify_density(raw_jitter)`.
+- \(d_i \in \{0,1\}\): pulse density verdict from `qssm_entropy::verify_density(raw_jitter)`.
 - \(s_i \in [0,1]\): scalar density score (normative mapping below).
 - \(peer_i\): originating PeerID of pulse \(p_i\).
 - \(N\): moving window length for density tracking.
@@ -47,7 +47,7 @@ Baseline (`verify_density` is boolean in current code):
 - If `verify_density(raw_jitter) == true`, set \(s_i = 1.0\).
 - Else set \(s_i = 0.0\).
 
-Forward-compatible extension (if qssm-he later emits a continuous score) may replace the mapping, but MUST preserve \(s_i=0\) for synthetic/rejected entropy.
+Forward-compatible extension (if qssm-entropy later emits a continuous score) may replace the mapping, but MUST preserve \(s_i=0\) for synthetic/rejected entropy.
 
 ---
 
@@ -282,7 +282,7 @@ Planned crate responsibilities:
 
 ## 9. Security posture
 
-- **Primary signal:** hardware entropy density from `qssm-he`.
+- **Primary signal:** hardware entropy density from `qssm-entropy`.
 - **Primary objective:** suppress synthetic/Sybil pulse floods before they saturate gossip mesh.
 - **Failure mode:** if global entropy quality degrades, governor raises \(T_{min}\) and tightens ingress budgets until conditions normalize.
 

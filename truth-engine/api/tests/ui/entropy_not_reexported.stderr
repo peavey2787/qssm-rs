@@ -1,5 +1,0 @@
-error[E0425]: cannot find function `harvest_entropy_seed` in crate `zk_api`
- --> tests/ui/entropy_not_reexported.rs:3:21
-  |
-3 |     let _ = zk_api::harvest_entropy_seed();
-  |                     ^^^^^^^^^^^^^^^^^^^^ not found in `zk_api`

@@ -3,10 +3,48 @@
 pub mod benchmarks;
 pub mod reduction_blake3;
 pub mod reduction_lattice;
+pub mod reduction_ms;
+pub mod reduction_rejection;
+pub mod reduction_witness_hiding;
 
 use qssm_gadget::DIGEST_COEFF_VECTOR_SIZE;
 use qssm_le::{BETA, C_POLY_SIZE, N, Q};
+use serde::{Deserialize, Serialize};
 use std::path::Path;
+
+// ---------------------------------------------------------------------------
+// Cross-cutting: ClaimType taxonomy
+// ---------------------------------------------------------------------------
+
+/// Every `*Claim` / `*Theorem` struct carries this field, making explicit
+/// whether the claim is a formal reduction, a bounded-leakage argument,
+/// or a heuristic numeric estimate.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum ClaimType {
+    /// Formal reduction to a named hard problem (MSIS, collision resistance).
+    Soundness,
+    /// Formal reduction showing cross-engine forgery implies hash collision.
+    Binding,
+    /// Bounded-leakage argument. Explicitly NOT full HVZK simulation.
+    WitnessHiding,
+    /// Numeric bound from a cited model; heuristic until backed by external estimator.
+    Estimation,
+}
+
+// ---------------------------------------------------------------------------
+// Cross-cutting: Estimate source taxonomy
+// ---------------------------------------------------------------------------
+
+/// Where a security-bit estimate came from.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum EstimateSource {
+    /// Compiled-in APS15 / formal bound only.
+    Formal,
+    /// External estimator JSON only (not currently used alone).
+    External,
+    /// min(formal, external overlay).
+    Combined,
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum HardnessStatus {
@@ -56,6 +94,10 @@ impl StructuralEvidence {
 pub enum HardnessError {
     #[error("structural precondition failed: {0}")]
     StructuralPreconditionFailed(String),
+    #[error("I/O error: {0}")]
+    Io(String),
+    #[error("parse error: {0}")]
+    Parse(String),
 }
 
 const TARGET_BITS: f64 = 128.0;
@@ -63,37 +105,116 @@ pub const CI_FLOOR_BITS: f64 = 112.0;
 pub const MIN_C_POLY_SIZE: usize = 64;
 pub const MIN_DIGEST_COEFF_VECTOR_SIZE: usize = 64;
 
-fn root_hermite_factor_for_blocksize(block_size: usize) -> f64 {
-    let beta = block_size as f64;
-    if beta <= 2.0 {
-        return 1.0219;
-    }
-    let numerator = beta / (2.0 * std::f64::consts::PI * std::f64::consts::E);
-    (numerator.powf(1.0 / (2.0 * (beta - 1.0)))).max(1.0001)
+// ---------------------------------------------------------------------------
+// Phase 2.1 — Formal Security Estimator
+// ---------------------------------------------------------------------------
+
+/// Combined security estimate using formal MSIS + FS bounds.
+///
+/// Delegates to [`reduction_lattice::LeCommitmentSoundnessTheorem`] for the
+/// formal classical/quantum bits.  For rank-1 ring-SIS with invertible CRS,
+/// MSIS is perfectly binding (∞ bits), so the estimate is FS-dominated.
+///
+/// Ref: \[APS15\] §4.2 (MSIS), \[KLS18\] Theorem 1 (FS)
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SecurityEstimate {
+    pub claim_type: ClaimType,
+    /// Effective classical security bits = min(MSIS classical, −FS advantage).
+    pub formal_classical_bits: f64,
+    /// Effective quantum security bits = min(MSIS quantum, −FS advantage).
+    pub formal_quantum_bits: f64,
+    /// External classical overlay (from JSON file, if present).
+    pub overlay_classical_bits: Option<f64>,
+    /// External quantum overlay (from JSON file, if present).
+    pub overlay_quantum_bits: Option<f64>,
+    /// Which source(s) drove this estimate.
+    pub source: EstimateSource,
+    /// Human-readable model description.
+    pub model_description: &'static str,
 }
 
-fn target_root_hermite_factor(n: usize, q: u32, beta: u32) -> f64 {
-    (f64::from(q) / f64::from(beta)).powf(1.0 / (2.0 * n as f64))
-}
-
-fn bkz_blocksize_estimate(n: usize, q: u32, beta: u32) -> usize {
-    let target = target_root_hermite_factor(n, q, beta);
-    for b in 40usize..=1024usize {
-        if root_hermite_factor_for_blocksize(b) <= target {
-            return b;
+impl SecurityEstimate {
+    /// Compute from formal MSIS + FS bounds for (n, q, β).
+    #[must_use]
+    pub fn compute(n: usize, q: u32, beta: u32) -> Self {
+        use crate::reduction_lattice::LeCommitmentSoundnessTheorem;
+        let thm = LeCommitmentSoundnessTheorem::compute(
+            n,
+            q,
+            beta,
+            C_POLY_SIZE,
+            qssm_le::C_POLY_SPAN,
+        );
+        Self {
+            claim_type: ClaimType::Estimation,
+            formal_classical_bits: thm.security_bits(),
+            formal_quantum_bits: thm.quantum_security_bits(),
+            overlay_classical_bits: None,
+            overlay_quantum_bits: None,
+            source: EstimateSource::Formal,
+            model_description: "min(MSIS-APS15, FS-KLS18): rank-1 ring-SIS + Fiat-Shamir ROM",
         }
     }
-    1024
+
+    /// Compute for the frozen qssm-le parameters.
+    #[must_use]
+    pub fn for_current_params() -> Self {
+        Self::compute(N, Q, BETA)
+    }
+
+    /// Effective classical bits = min(formal, overlay if present).
+    #[must_use]
+    pub fn effective_classical_bits(&self) -> f64 {
+        match self.overlay_classical_bits {
+            Some(ov) => self.formal_classical_bits.min(ov),
+            None => self.formal_classical_bits,
+        }
+    }
+
+    /// Effective quantum bits = min(formal, overlay if present).
+    #[must_use]
+    pub fn effective_quantum_bits(&self) -> f64 {
+        match self.overlay_quantum_bits {
+            Some(ov) => self.formal_quantum_bits.min(ov),
+            None => self.formal_quantum_bits,
+        }
+    }
 }
 
-fn estimated_bits_of_security(n: usize, q: u32, beta: u32, c_poly_size: usize) -> f64 {
-    let block = bkz_blocksize_estimate(n, q, beta) as f64;
-    let base_cost = 0.292 * block;
-    let challenge_scale = (c_poly_size as f64 / 64.0).max(1.0);
-    // Simplified BKZ pipeline scaling: larger module dimensions raise workfactor materially.
-    let dimension_scale = (n as f64 / 24.0).max(1.0);
-    let modulus_scale = (f64::from(q).log2() / 23.0).max(0.5);
-    base_cost * challenge_scale * dimension_scale * modulus_scale
+// ---------------------------------------------------------------------------
+// Phase 3.2 — Effective Security Bits (formal + overlay)
+// ---------------------------------------------------------------------------
+
+/// Combined security-bit result with formal and optional overlay sources.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct EffectiveSecurityBits {
+    pub formal_classical_bits: f64,
+    pub formal_quantum_bits: f64,
+    pub overlay_classical_bits: Option<f64>,
+    pub overlay_quantum_bits: Option<f64>,
+    /// min(formal_classical, overlay_classical.unwrap_or(formal_classical))
+    pub effective_classical_bits: f64,
+    /// min(formal_quantum, overlay_quantum.unwrap_or(formal_quantum))
+    pub effective_quantum_bits: f64,
+    pub source: EstimateSource,
+}
+
+/// JSON schema for external estimator overlay file.
+#[derive(Debug, Deserialize)]
+struct ExternalEstimate {
+    classical_bits: f64,
+    quantum_bits: f64,
+    #[allow(dead_code)]
+    source: Option<String>,
+    #[allow(dead_code)]
+    date: Option<String>,
+}
+
+/// Compute formal security bits for the given lattice parameters.
+///
+/// Uses the composed `LeCommitmentSoundnessTheorem` (min of MSIS + FS).
+fn estimated_bits_of_security(n: usize, q: u32, beta: u32) -> f64 {
+    SecurityEstimate::compute(n, q, beta).formal_classical_bits
 }
 
 #[must_use]
@@ -108,7 +229,7 @@ pub fn structural_evidence() -> StructuralEvidence {
 
 #[must_use]
 pub fn system_audit() -> SystemAudit {
-    let bits = estimated_bits_of_security(N, Q, BETA, C_POLY_SIZE);
+    let bits = estimated_bits_of_security(N, Q, BETA);
     SystemAudit {
         n: N,
         q: Q,
@@ -121,12 +242,57 @@ pub fn system_audit() -> SystemAudit {
     }
 }
 
+/// Compute effective security bits, optionally overlaying an external
+/// estimator JSON file.
+///
+/// JSON schema: `{ "classical_bits": f64, "quantum_bits": f64, "source": String, "date": String }`
+///
+/// Returns `EffectiveSecurityBits` with `effective_*` = min(formal, overlay).
+/// Falls back to formal-only when path is `None` or file is missing/malformed.
+pub fn compute_effective_security(
+    estimator_json_path: Option<&Path>,
+) -> Result<EffectiveSecurityBits, HardnessError> {
+    let formal = SecurityEstimate::for_current_params();
+
+    let overlay = estimator_json_path.and_then(|p| {
+        let data = std::fs::read_to_string(p).ok()?;
+        serde_json::from_str::<ExternalEstimate>(&data).ok()
+    });
+
+    let (ov_c, ov_q, source) = match &overlay {
+        Some(ext) => (
+            Some(ext.classical_bits),
+            Some(ext.quantum_bits),
+            EstimateSource::Combined,
+        ),
+        None => (None, None, EstimateSource::Formal),
+    };
+
+    let eff_c = formal.formal_classical_bits.min(ov_c.unwrap_or(f64::INFINITY));
+    let eff_q = formal.formal_quantum_bits.min(ov_q.unwrap_or(f64::INFINITY));
+
+    Ok(EffectiveSecurityBits {
+        formal_classical_bits: formal.formal_classical_bits,
+        formal_quantum_bits: formal.formal_quantum_bits,
+        overlay_classical_bits: ov_c,
+        overlay_quantum_bits: ov_q,
+        effective_classical_bits: eff_c,
+        effective_quantum_bits: eff_q,
+        source,
+    })
+}
+
 pub fn current_effective_security_bits(
-    _estimator_json_path: Option<&Path>,
+    estimator_json_path: Option<&Path>,
     _audit_ledger_path: Option<&Path>,
 ) -> Result<(f64, String), HardnessError> {
-    let audit = system_audit();
-    Ok((audit.bits_of_security, "compiled-system-audit".to_string()))
+    let eff = compute_effective_security(estimator_json_path)?;
+    let source = match eff.source {
+        EstimateSource::Formal => "formal-aps15".to_string(),
+        EstimateSource::External => "external-estimator".to_string(),
+        EstimateSource::Combined => "combined-formal+overlay".to_string(),
+    };
+    Ok((eff.effective_classical_bits, source))
 }
 
 pub fn assess_hardness(
@@ -238,11 +404,12 @@ mod tests {
 
     #[test]
     fn test_estimator_sensitivity() {
+        // Security is FS-dominated for rank-1 ring-SIS (perfectly binding).
+        // Perturbing lattice parameters (n, q, β) should not drop below
+        // CI_FLOOR_BITS because the FS bound is independent of them.
         const MONTE_CARLO_CASES: usize = 512;
-        const MIN_SPREAD_BITS: f64 = 8.0;
 
         let mut min_bits = f64::INFINITY;
-        let mut max_bits = f64::NEG_INFINITY;
         let mut rng = 0xC0FFEE1234u64;
 
         for _ in 0..MONTE_CARLO_CASES {
@@ -253,24 +420,106 @@ mod tests {
             let beta = perturb_pm_10_percent(BETA as f64, &mut rng)
                 .round()
                 .max(1.0) as u32;
-            let c_poly = perturb_pm_10_percent(C_POLY_SIZE as f64, &mut rng)
-                .round()
-                .max(8.0) as usize;
-            let bits = estimated_bits_of_security(n, q, beta, c_poly);
-
-            assert!(
-                bits >= CI_FLOOR_BITS,
-                "monte-carlo case below CI floor: bits={bits:.2}, n={n}, q={q}, beta={beta}, c_poly={c_poly}"
-            );
+            let bits = estimated_bits_of_security(n, q, beta);
 
             min_bits = min_bits.min(bits);
-            max_bits = max_bits.max(bits);
+            assert!(
+                bits >= CI_FLOOR_BITS,
+                "perturbed params (n={n}, q={q}, β={beta}) gave {bits:.1} bits < CI floor"
+            );
         }
 
-        let spread = max_bits - min_bits;
         assert!(
-            spread >= MIN_SPREAD_BITS,
-            "estimator insufficiently sensitive: spread {spread:.2} < {MIN_SPREAD_BITS:.2}"
+            min_bits >= CI_FLOOR_BITS,
+            "minimum bits {min_bits:.2} across all perturbations < CI floor {CI_FLOOR_BITS:.2}"
         );
+    }
+
+    // --- Phase 2.1 tests ---
+
+    #[test]
+    fn security_estimate_for_current_params() {
+        let est = SecurityEstimate::for_current_params();
+        assert_eq!(est.claim_type, ClaimType::Estimation);
+        assert_eq!(est.source, EstimateSource::Formal);
+        assert!(
+            est.formal_classical_bits >= 128.0,
+            "formal classical bits {:.1} < 128",
+            est.formal_classical_bits
+        );
+        assert!(
+            est.formal_quantum_bits >= 100.0,
+            "formal quantum bits {:.1} < 100",
+            est.formal_quantum_bits
+        );
+        assert!(est.overlay_classical_bits.is_none());
+        assert!(est.overlay_quantum_bits.is_none());
+        assert!(
+            (est.effective_classical_bits() - est.formal_classical_bits).abs() < 0.001,
+            "effective should equal formal when no overlay"
+        );
+    }
+
+    // --- Phase 3.2 tests ---
+
+    #[test]
+    fn effective_security_formal_only() {
+        let eff = compute_effective_security(None).unwrap();
+        assert_eq!(eff.source, EstimateSource::Formal);
+        assert!(eff.overlay_classical_bits.is_none());
+        assert!(
+            (eff.effective_classical_bits - eff.formal_classical_bits).abs() < 0.001
+        );
+    }
+
+    #[test]
+    fn effective_security_fallback_on_missing_file() {
+        let eff = compute_effective_security(Some(Path::new("nonexistent.json"))).unwrap();
+        assert_eq!(eff.source, EstimateSource::Formal);
+        assert!(eff.overlay_classical_bits.is_none());
+    }
+
+    #[test]
+    fn effective_security_with_overlay_file() {
+        let dir = std::env::temp_dir().join("qssm_proofs_test");
+        let _ = std::fs::create_dir_all(&dir);
+        let path = dir.join("overlay.json");
+        std::fs::write(
+            &path,
+            r#"{"classical_bits": 120.0, "quantum_bits": 110.0, "source": "test", "date": "2026-01-01"}"#,
+        )
+        .unwrap();
+
+        let eff = compute_effective_security(Some(&path)).unwrap();
+        assert_eq!(eff.source, EstimateSource::Combined);
+        assert_eq!(eff.overlay_classical_bits, Some(120.0));
+        assert_eq!(eff.overlay_quantum_bits, Some(110.0));
+        // effective = min(formal, overlay)
+        assert!(eff.effective_classical_bits <= 120.0);
+        assert!(eff.effective_quantum_bits <= 110.0);
+
+        let _ = std::fs::remove_file(&path);
+    }
+
+    #[test]
+    fn effective_security_min_of_logic() {
+        // When overlay is higher than formal, formal wins
+        let dir = std::env::temp_dir().join("qssm_proofs_test_min");
+        let _ = std::fs::create_dir_all(&dir);
+        let path = dir.join("high_overlay.json");
+        std::fs::write(
+            &path,
+            r#"{"classical_bits": 999.0, "quantum_bits": 999.0}"#,
+        )
+        .unwrap();
+
+        let eff = compute_effective_security(Some(&path)).unwrap();
+        assert_eq!(eff.source, EstimateSource::Combined);
+        // formal < 999, so effective = formal
+        assert!(
+            (eff.effective_classical_bits - eff.formal_classical_bits).abs() < 0.001
+        );
+
+        let _ = std::fs::remove_file(&path);
     }
 }

@@ -59,7 +59,7 @@ pub fn verify_lattice(
 /// are driven entirely by the BLAKE3-XOF keyed with `rng_seed`.
 ///
 /// `rng_seed` must come from the sovereign entropy pipeline
-/// (`qssm-he::Heartbeat::to_seed()` → domain-separated derivation).
+/// (`qssm_entropy::Heartbeat::to_seed()` → domain-separated derivation).
 pub fn prove_arithmetic(
     vk: &VerifyingKey,
     public: &PublicInstance,
@@ -96,8 +96,9 @@ struct Blake3Rng {
 }
 
 impl Blake3Rng {
-    fn new(seed: [u8; 32]) -> Self {
+    fn new(mut seed: [u8; 32]) -> Self {
         let h = blake3::Hasher::new_keyed(&seed);
+        zeroize::Zeroize::zeroize(&mut seed);
         Self {
             reader: h.finalize_xof(),
         }

@@ -132,7 +132,7 @@ Cross-Crate Invariants
 
 [x] `LE_FS_PUBLIC_BINDING_LAYOUT_VERSION = 1` (defined in `qssm_utils::hashing`) — anchored in `public_binding_fs_bytes()` via `let _ = LE_FS_PUBLIC_BINDING_LAYOUT_VERSION;`. Cross-checked in `qssm-gadget` via `const_assert!(TRANSCRIPT_MAP_LAYOUT_VERSION == LE_FS_PUBLIC_BINDING_LAYOUT_VERSION)`. — Evidence: `commit.rs`, `qssm-gadget/src/circuit/handshake.rs`.
 
-**WARNING:** Any change to LE transcript layout, domain tags, or binding labels requires synchronized updates in `qssm-gadget` and `local-verifier`, or verification will silently fail. The `LE_FS_PUBLIC_BINDING_LAYOUT_VERSION` compile-time check catches LE↔gadget drift, but LE↔local-verifier drift must be caught by integration tests.
+**WARNING:** Any change to LE transcript layout, domain tags, or binding labels requires synchronized updates in `qssm-gadget` and `qssm-local-verifier`, or verification will silently fail. The `LE_FS_PUBLIC_BINDING_LAYOUT_VERSION` compile-time check catches LE↔gadget drift, but LE↔qssm-local-verifier drift must be caught by integration tests.
 
 5. REJECTION SAMPLING & WITNESS HIDING
 
@@ -299,7 +299,7 @@ Error Safety
 
 [x] `Blake3Rng` — BLAKE3-keyed XOF as deterministic CSPRNG. Construction: `blake3::Hasher::new_keyed(&seed).finalize_xof()`. No OS entropy, no hardware calls. Proofs are fully reproducible given the same seed. — Evidence: `lib.rs` `Blake3Rng::new()`.
 
-[x] `rng_seed` must come from the sovereign entropy pipeline (`qssm-he::Heartbeat::to_seed()` → domain-separated derivation). Doc comment on `prove_arithmetic` states this requirement explicitly. — Evidence: `lib.rs` doc comment on `prove_arithmetic`.
+[x] `rng_seed` must come from the sovereign entropy pipeline (`qssm-entropy::Heartbeat::to_seed()` → domain-separated derivation). Doc comment on `prove_arithmetic` states this requirement explicitly. — Evidence: `lib.rs` doc comment on `prove_arithmetic`.
 
 [x] `prove_with_witness` restricted to `pub(crate)` — external callers cannot inject a weak or biased `RngCore`. The only public prover entry point is `prove_arithmetic` which constructs `Blake3Rng` internally. — Evidence: `lib.rs` line 35.
 

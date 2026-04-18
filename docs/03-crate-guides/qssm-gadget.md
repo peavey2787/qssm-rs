@@ -2,7 +2,7 @@
 
 * [README](../../README.md) — Project home
 * [Crates overview](../01-architecture/crates-overview.md)
-* [QSSM-HE crate guide](./heart-he.md) (hardware entropy path)
+* [QSSM-Entropy crate guide](./heart-he.md) (hardware entropy path)
 * **This document** — `qssm-gadget`: Phase 8 floor/beacon and related gadgets
 
 ---
@@ -15,7 +15,7 @@ Crate: `crates/qssm-gadget`. Module layout in `src/lib.rs`.
 
 BLAKE3-heavy **gadgets** for templates, predicates, sovereign digest binding, optional **lattice bridge** (`lattice-bridge` feature → `qssm-le`), Merkle/R1CS helpers — and **`entropy`**: Phase 8 **opportunistic** mixing of a **32-byte anchor leg**, **32 bytes of local** material, and an optional **NIST Randomness Beacon** pulse.
 
-> **Scope:** This crate does **not** implement raw hardware harvest; that lives in **`qssm-he`** (see [heart-he.md](./heart-he.md)).
+> **Scope:** This crate does **not** implement raw hardware harvest; that lives in **`qssm-entropy`** (see [heart-he.md](./heart-he.md)).
 
 ## Phase 8 entropy module (`src/primitives/entropy.rs` via `src/lib.rs` re-export `qssm_gadget::entropy`)
 

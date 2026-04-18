@@ -1,0 +1,5 @@
+error[E0425]: cannot find function `harvest_entropy_seed` in crate `qssm_api`
+ --> tests/ui/entropy_not_reexported.rs:3:23
+  |
+3 |     let _ = qssm_api::harvest_entropy_seed();
+  |                       ^^^^^^^^^^^^^^^^^^^^ not found in `qssm_api`

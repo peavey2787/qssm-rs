@@ -32,6 +32,7 @@ fn inv_mod(a: u32) -> u32 {
     pow_mod(a as u64, Q - 2, Q)
 }
 
+#[cfg(test)]
 fn prime_factors(mut n: u32) -> Vec<u32> {
     let mut out = Vec::new();
     let mut p = 2u32;
@@ -50,6 +51,7 @@ fn prime_factors(mut n: u32) -> Vec<u32> {
     out
 }
 
+#[cfg(test)]
 fn find_primitive_root(q: u32) -> Option<u32> {
     if q < 3 {
         return None;
@@ -67,6 +69,7 @@ fn find_primitive_root(q: u32) -> Option<u32> {
     None
 }
 
+#[cfg(test)]
 fn validate_ntt_parameters(q: u32, two_n: u32) {
     assert!(two_n > 0, "two_n must be non-zero");
     assert_eq!(
@@ -76,15 +79,18 @@ fn validate_ntt_parameters(q: u32, two_n: u32) {
     );
 }
 
-/// Primitive `2N`-th root of unity \(\omega\), derived from a discovered generator.
+/// Known smallest primitive root for Q = 8_380_417 (Dilithium prime).
+/// Q-1 = 2^13 × 3 × 11 × 31; smallest g passing all (Q-1)/p tests is 10.
+/// Verified at runtime in `omega_2n()` by the two order-check assertions.
+const PRIMITIVE_ROOT_Q: u32 = 10;
+
+/// Primitive `2N`-th root of unity \(\omega\), derived from the known generator.
 /// Cached via `OnceLock` — computed once, reused for all subsequent NTT calls.
 fn omega_2n() -> u32 {
     static OMEGA: OnceLock<u32> = OnceLock::new();
     *OMEGA.get_or_init(|| {
-        validate_ntt_parameters(Q, TWO_N_U32);
-        let g = find_primitive_root(Q).expect("failed to find primitive root for Q");
         let exp = (Q - 1) / TWO_N_U32;
-        let omega = pow_mod(g as u64, exp, Q);
+        let omega = pow_mod(PRIMITIVE_ROOT_Q as u64, exp, Q);
         assert_eq!(pow_mod(omega as u64, TWO_N_U32, Q), 1);
         assert_ne!(pow_mod(omega as u64, N as u32, Q), 1);
         omega

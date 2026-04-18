@@ -79,7 +79,7 @@ Uses **`global_avg`** (see below), thresholds **`theta_w`**, **`theta_t`**, **`t
 
 ## `verify_metabolic_gate(raw_entropy: &[u8]) -> bool`
 
-Standalone check **used by `mssq-net`** **in addition to** `qssm_he::verify_density`:
+Standalone check **used by `mssq-net`** **in addition to** `qssm_entropy::verify_density`:
 
 - Length **≥ 128**.
 - Byte frequency histogram: require **≥ 64** distinct byte values with non-zero count.
@@ -96,7 +96,7 @@ This is **not** identical to **`verify_density`** (different rules).
 
 ## Integration
 
-**`mssq-net`** (`crates/mssq-net/src/node/`): **`Governor`** is owned by the spawned task in **`node/mod.rs`** (**`observe_pulse`**, **`update_pressure`** on ticker ticks). **`node/events.rs`** calls **`decision_for`** on inbound heartbeats and rejects when action is **`Drop`**; accepted paths require **`verify_metabolic_gate` ∧ `qssm_he::verify_density`** on decoded envelopes.
+**`mssq-net`** (`crates/mssq-net/src/node/`): **`Governor`** is owned by the spawned task in **`node/mod.rs`** (**`observe_pulse`**, **`update_pressure`** on ticker ticks). **`node/events.rs`** calls **`decision_for`** on inbound heartbeats and rejects when action is **`Drop`**; accepted paths require **`verify_metabolic_gate` ∧ `qssm_entropy::verify_density`** on decoded envelopes.
 
 ## Extended prose
 

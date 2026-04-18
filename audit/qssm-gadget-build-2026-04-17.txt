@@ -68,8 +68,8 @@ DOWNSTREAM COMPILATION
 ------------------------------------------------------------
 
 The following crates depend on qssm-gadget and compile clean:
-  - truth-engine/api          (zk-api)
-  - truth-engine/local-verifier
+  - truth-engine/qssm-api          (qssm-api)
+  - truth-engine/qssm-local-verifier
   - desktop/src-tauri         (qssm-desktop)
   - l2-rollup/mssq-sovereign  (qssm-wrapper)
 

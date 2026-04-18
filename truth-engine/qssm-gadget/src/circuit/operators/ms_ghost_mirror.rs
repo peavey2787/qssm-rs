@@ -1,7 +1,7 @@
 //! Ghost-Mirror (`qssm-ms`) verification adapter — wraps [`qssm_ms::verify`]
 //! as a [`LatticePolyOp`] for composition with the gadget operator pipeline.
 //!
-//! This adapter was relocated from `local-verifier` (Layer 4) into `qssm-gadget`
+//! This adapter was relocated from `qssm-local-verifier` (Layer 4) into `qssm-gadget`
 //! (Layer 3) at v1.1.0 to enforce the architectural rule that all `LatticePolyOp`
 //! implementations live alongside the trait definition.
 

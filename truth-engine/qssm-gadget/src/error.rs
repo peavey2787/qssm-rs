@@ -3,6 +3,7 @@
 use thiserror::Error;
 
 #[derive(Debug, Error, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum GadgetError {
     #[error("leaf index {index} is out of range for tree width {width}")]
     LeafIndexOutOfRange { index: usize, width: usize },

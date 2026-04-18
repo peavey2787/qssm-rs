@@ -88,7 +88,7 @@ contact the QSSM project maintainers.
 
 At v1.1.0, `MsGhostMirrorOp` was added — a `LatticePolyOp` adapter that wraps
 `qssm_ms::verify` for composition with the gadget operator pipeline. This was
-relocated from `local-verifier` (Layer 4) to enforce the architectural rule that
+relocated from `qssm-local-verifier` (Layer 4) to enforce the architectural rule that
 all `LatticePolyOp` implementations live alongside the trait definition.
 
 **Why this is allowed under the freeze:**
@@ -120,4 +120,4 @@ may be added post-freeze under these conditions:
 
 | Version | Adapter | Source |
 |---------|---------|--------|
-| 1.1.0 | `MsGhostMirrorOp` | Relocated from `local-verifier/src/ms_verifier.rs`. Wraps `qssm_ms::verify` as a `LatticePolyOp`. 3 tests (synthesize, rejection, binding contract). |
+| 1.1.0 | `MsGhostMirrorOp` | Relocated from `qssm-local-verifier/src/ms_verifier.rs`. Wraps `qssm_ms::verify` as a `LatticePolyOp`. 3 tests (synthesize, rejection, binding contract). |

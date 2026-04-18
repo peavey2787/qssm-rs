@@ -86,7 +86,7 @@ This repository is a Cargo **workspace**. Most functionality lives under `crates
 
 ---
 
-## `qssm-he` (QSSM-HE — hardware heart)
+## `qssm-entropy` (QSSM-Entropy — hardware heart)
 
 **Purpose:** **Raw hardware-anchored entropy**: OpenEntropy **raw** capture on Unix, optional IMU bytes via [`SensorEntropy`], BLAKE3 **sovereign seed**, heuristic **density** screening (rayon), and Argon2id **PMK** derivation for cold backups.
 
@@ -98,6 +98,7 @@ This repository is a Cargo **workspace**. Most functionality lives under `crates
 - **Unix:** `openentropy-core` raw capture. **Windows x86_64:** TSC delta harvester (`_rdtsc`, no OS RNG). **Other targets:** [`HeError::UnsupportedEntropyPlatform`].
 
 **For:** `mssq-net` (pulse generation and validation), `qssm-desktop` (mnemonics and identity flows), and any UI-agnostic entropy consumer; complements Phase 8 flows in `qssm-gadget` where anchor/NIST mixing is required.
+
 
 ---
 
@@ -116,7 +117,7 @@ This repository is a Cargo **workspace**. Most functionality lives under `crates
 
 ## `mssq-net`
 
-**Purpose:** Production-oriented **libp2p** swarm runtime for MSSQ: transport composition, mesh behaviours, pulse gossip with `qssm-he` density checks, and metabolic policy via `qssm-governor`.
+**Purpose:** Production-oriented **libp2p** swarm runtime for MSSQ: transport composition, mesh behaviours, pulse gossip with `qssm-entropy` density checks, and metabolic policy via `qssm-governor`.
 
 **What it provides**
 
@@ -127,7 +128,7 @@ This repository is a Cargo **workspace**. Most functionality lives under `crates
 - Heartbeat topic (`heartbeat_topic`, `HeartbeatEnvelope`) and harvest in `src/protocol/pulse.rs`; inbound density validation and **`ReputationStore`** in `src/protocol/reputation.rs`
 - Optional **`dashboard`** feature: `examples/mssq_node.rs` ratatui dashboard (`cargo run --example mssq_node --features dashboard`)
 
-**Dependencies (workspace):** `qssm-he`, `qssm-governor`, `qssm-utils`, `qssm-common`, `mssq-batcher` (rollup types / batch application paths where the node touches state proofs).
+**Dependencies (workspace):** `qssm-entropy`, `qssm-governor`, `qssm-utils`, `qssm-common`, `mssq-batcher` (rollup types / batch application paths where the node touches state proofs).
 
 **For:** Operators running a live MSSQ networking node; desktop spawns this stack as a background sidecar.
 
@@ -165,7 +166,7 @@ This repository is a Cargo **workspace**. Most functionality lives under `crates
 
 ## `qssm-desktop`
 
-**Purpose:** **Tauri** desktop app (“Sovereign Command Center”): encrypted **identities** (BIP39 mnemonics from `qssm-he`), **libp2p** `PeerId` derivation, optional **MaxMind** geo hints, and a background **`mssq-net`** sidecar that publishes mesh snapshots to the web UI.
+**Purpose:** **Tauri** desktop app (“Sovereign Command Center”): encrypted **identities** (BIP39 mnemonics from `qssm-entropy`), **libp2p** `PeerId` derivation, optional **MaxMind** geo hints, and a background **`mssq-net`** sidecar that publishes mesh snapshots to the web UI.
 
 **What it provides**
 
@@ -174,7 +175,7 @@ This repository is a Cargo **workspace**. Most functionality lives under `crates
 - `sidecar.rs`: Tokio `mssq_net::start_node`, mesh snapshot → UI events, geo + governor telemetry fields, and guarded persistence of `my_merit_proof.json` (SMT root / repair proofs verified with `qssm_utils::SparseMerkleProof` before overwrite)
 - Frontend: `crates/qssm-desktop/src/` (React)
 
-**Dependencies (workspace, selected):** `mssq-net`, `qssm-he`, `qssm-gadget` (with `lattice-bridge`), `qssm-common`, `qssm-le`, `qssm-utils`, `libp2p` (identity types), plus Tauri, crypto, and GeoIP crates per `Cargo.toml`.
+**Dependencies (workspace, selected):** `mssq-net`, `qssm-entropy`, `qssm-gadget` (with `lattice-bridge`), `qssm-common`, `qssm-le`, `qssm-utils`, `libp2p` (identity types), plus Tauri, crypto, and GeoIP crates per `Cargo.toml`.
 
 **For:** Operators who want a packaged UI over the same networking and entropy stack the libraries expose.
 
@@ -198,7 +199,7 @@ qssm-common  ←  mssq-batcher, qssm-kaspa, mssq-net, qssm-desktop, qssm-ref
 qssm-le      ←  qssm-gadget (optional lattice-bridge), qssm-desktop, qssm-ref
 qssm-ms      ←  qssm-gadget (dev), qssm-ref (tests / demos)
 qssm-gadget  ←  qssm-desktop
-qssm-he      ←  mssq-net, qssm-desktop
+qssm-entropy ←  mssq-net, qssm-desktop
 qssm-governor←  mssq-net
 mssq-batcher ←  qssm-ref, mssq-net
 mssq-net     ←  qssm-desktop (sidecar)
@@ -213,7 +214,7 @@ The table below maps **this repository’s crates** to the conceptual stack. Whe
 
 | Stack module | Role in v1.2 | Maps to this repo | Notes |
 |---------------|----------------|-------------------|-------|
-| **QSSM-HE (Heart)** | Entropy that salts proofs (“physical breath”) | **`crates/qssm-he`** (raw harvest + PMK); **`qssm-gadget`** Phase 8 `entropy` for anchor + NIST-style flows; **`qssm-desktop`** and **`mssq-net`** call `qssm-he` directly | Two layers: gadget entropy for handoff/beacon wiring; `qssm-he` for hardware observatory + density + PMK. |
+| **QSSM-Entropy (Heart)** | Entropy that salts proofs ("physical breath") | **`crates/qssm-entropy`** (raw harvest + PMK); **`qssm-gadget`** Phase 8 `entropy` for anchor + NIST-style flows; **`qssm-desktop`** and **`mssq-net`** call `qssm-entropy` directly | Two layers: gadget entropy for handoff/beacon wiring; `qssm-entropy` for hardware observatory + density + PMK. |
 | **QSSM-LE — Engine A** | Lattice proofs for complex anchoring / identity | **`crates/qssm-le`** | Matches. |
 | **QSSM-MS — Engine B** | ~291-byte Ghost-Mirror fast path for inequalities | **`crates/qssm-ms`** | Matches. |
 | **Epistemic Governor (Module 4)** | DAA, reputation, metabolic rate (inflation / difficulty) | **`crates/qssm-governor`** (policy core) + **`mssq-net`** (integration) | Implements metabolic / peer-window policy used by the swarm. **`mssq-batcher`** still does **not** embed consensus DAA—it covers leader lottery, ML-DSA attestations, lex ordering, SMT + lease transitions, merit hooks, and causal-DAG-related seeds. |
@@ -224,8 +225,8 @@ The table below maps **this repository’s crates** to the conceptual stack. Whe
 
 - **Governor (Module 4):** Implemented as **`qssm-governor`**, consumed from **`mssq-net`**. Economic DAA *inside the batcher* remains a separate future if you want it colocated with sequencing.
 - **libp2p-MSSQ:** Implemented as **`mssq-net`**.
-- **QSSM-HE:** Use **`qssm-gadget::entropy`** when you need Phase 8 anchor + NIST beacon mixing; use **`qssm-he`** for raw hardware paths, pulses, and desktop mnemonics.
+- **QSSM-Entropy:** Use **`qssm-gadget::entropy`** when you need Phase 8 anchor + NIST beacon mixing; use **`qssm-entropy`** for raw hardware paths, pulses, and desktop mnemonics.
 
 ---
 
-*Last updated to match workspace `Cargo.toml` members: `qssm-common`, `qssm-utils`, `qssm-gadget`, `qssm-le`, `qssm-ms`, `mssq-batcher`, `qssm-kaspa`, `qssm-he`, `qssm-governor`, `mssq-net`, `qssm-desktop/src-tauri`, and root `qssm-ref`.*
+*Last updated to match workspace `Cargo.toml` members: `qssm-common`, `qssm-utils`, `qssm-gadget`, `qssm-le`, `qssm-ms`, `mssq-batcher`, `qssm-kaspa`, `qssm-entropy`, `qssm-governor`, `mssq-net`, `qssm-desktop/src-tauri`, and root `qssm-ref`.*

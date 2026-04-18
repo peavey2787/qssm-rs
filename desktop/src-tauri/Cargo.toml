@@ -30,17 +30,15 @@ argon2 = { workspace = true }
 zeroize = "1.8"
 aes-gcm = "0.10"
 libp2p = { workspace = true }
-p2p-net = { workspace = true, optional = true }
-qssm-he = { workspace = true, optional = true }
+qssm-entropy = { workspace = true }
 qssm-gadget = { workspace = true, optional = true }
-template-lib = { workspace = true, optional = true }
-qssm-traits.workspace = true
+qssm-templates = { workspace = true, optional = true }
 qssm-le = { workspace = true, optional = true }
 qssm-utils.workspace = true
 
 [features]
-default = ["full-stack"]
-zk-only = ["dep:qssm-gadget", "dep:qssm-le", "dep:template-lib"]
-l1-only = ["dep:qssm-he"]
+default = ["zk-only"]
+zk-only = ["dep:qssm-gadget", "dep:qssm-le", "dep:qssm-templates"]
+l1-only = []
 l2-only = []
-full-stack = ["zk-only", "l1-only", "l2-only", "dep:p2p-net"]
+full-stack = ["zk-only", "l1-only", "l2-only"]

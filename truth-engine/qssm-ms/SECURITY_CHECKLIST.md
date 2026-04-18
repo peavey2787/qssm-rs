@@ -105,7 +105,7 @@ Debug Redaction
 
 Test-Only Traits
 
-[x] `GhostMirrorProof` derives `PartialEq`/`Eq` only under `#[cfg(test)]`. Non-constant-time comparison is absent from production binaries. `Clone` is unconditional (required by downstream `Proof` struct in zk-api). — Evidence: `lib.rs` struct definition.
+[x] `GhostMirrorProof` derives `PartialEq`/`Eq` only under `#[cfg(test)]`. Non-constant-time comparison is absent from production binaries. `Clone` is unconditional (required by downstream `Proof` struct in qssm-api). — Evidence: `lib.rs` struct definition.
 
 Error Safety
 

@@ -26,7 +26,7 @@ This crate is **frozen** at v1.0.0. The following invariants are locked:
 5. **Leaf construction** — `BLAKE3(DOMAIN_MS ‖ "leaf" ‖ k ‖ bit ‖ salt ‖ binding_ent)`.
 6. **Public API surface** — All `pub use` re-exports in `lib.rs` are stable. Additions are allowed; removals require a major version bump.
 
-Any change that violates these invariants requires a new security review, a major version bump, and synchronized updates to `zk-api`, `local-verifier`, `qssm-gadget`, and `mssq-batcher`.
+Any change that violates these invariants requires a new security review, a major version bump, and synchronized updates to `qssm-api`, `qssm-local-verifier`, `qssm-gadget`, and `mssq-batcher`.
 
 ## What Was Hardened for v1.0.0
 
@@ -65,7 +65,7 @@ Added 16 new tests (boundary values, constructor validation, determinism, replay
 | Check | Result |
 |-------|--------|
 | `cargo test -p qssm-ms` | **25/25 passed** (9 adversarial + 5 boundary + 5 constructor + 4 determinism/replay + 2 salt/debug) |
-| `cargo check` on 6 downstream crates | **Clean** (zk-api, local-verifier, qssm-gadget, qssm-le, mssq-batcher, e2e-node-flow) |
+| `cargo check` on 6 downstream crates | **Clean** (qssm-api, qssm-local-verifier, qssm-gadget, qssm-le, mssq-batcher, e2e-node-flow) |
 | `#![forbid(unsafe_code)]` | **1/1 source files** (lib.rs) |
 | `SECURITY_CHECKLIST.md` | **Rev 1 — all boxes checked** |
 | Fuzz harness | Structured 397-byte verifier fuzzing (panic safety + rejection correctness) |
@@ -74,7 +74,7 @@ Added 16 new tests (boundary values, constructor validation, determinism, replay
 
 1. **`binding_rotation()` uses 8/32 entropy bytes** — The rotation is derived from the first 8 bytes of binding entropy. The remaining 24 bytes are unused. Acceptable: rotation is deterministic and public; entropy utilization does not affect security.
 2. **`highest_differing_bit()` is not constant-time** — Branching loop over bit positions. Acceptable: `k` is a public proof field, not secret.
-3. **`GhostMirrorProof` retains unconditional `Clone`** — Required by downstream `Proof` struct in zk-api. The opened salt is intentionally revealed in proofs and is not a persistent secret.
+3. **`GhostMirrorProof` retains unconditional `Clone`** — Required by downstream `Proof` struct in qssm-api. The opened salt is intentionally revealed in proofs and is not a persistent secret.
 
 ## Dependencies (pinned at freeze)
 

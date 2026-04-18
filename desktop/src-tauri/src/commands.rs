@@ -6,21 +6,22 @@ use std::time::Instant;
 use tauri::Manager;
 
 use bip39::Mnemonic;
-use qssm_traits::SmtRoot;
+// SmtRoot: local newtype replacing qssm_traits::SmtRoot (crate removed)
+struct SmtRoot(pub [u8; 32]);
 use qssm_gadget::TruthWitness;
 use qssm_gadget::EntropyAnchor;
-use qssm_he::HarvestConfig;
+use qssm_entropy::HarvestConfig;
 use qssm_le::BETA;
 use qssm_le::{encode_rq_coeffs_le, prove_arithmetic, PublicInstance, VerifyingKey, Witness};
 use qssm_utils::hashing::blake3_hash;
 use rand::{RngCore, SeedableRng};
 use serde::Deserialize;
-use template_lib::{QssmTemplate, QSSM_TEMPLATE_VERSION};
+use qssm_templates::{QssmTemplate, QSSM_TEMPLATE_VERSION};
 
-/// Enable or pause `qssm-he` hardware harvesting (pulse / proofs skip harvest when off).
+/// Enable or pause `qssm-entropy` hardware harvesting (pulse / proofs skip harvest when off).
 #[tauri::command]
 pub fn toggle_hardware_harvest(enabled: bool) -> bool {
-    qssm_he::set_hardware_harvest_enabled(enabled);
+    qssm_entropy::set_hardware_harvest_enabled(enabled);
     enabled
 }
 
@@ -34,7 +35,7 @@ pub fn retry_network_sidecar(app: tauri::AppHandle) -> Result<(), String> {
 /// Generate a BIP39 24-word mnemonic from 256-bit hardware entropy.
 #[tauri::command]
 pub fn generate_mnemonic_24() -> Result<Value, String> {
-    let hb = qssm_he::harvest(&HarvestConfig::default()).map_err(|e| e.to_string())?;
+    let hb = qssm_entropy::harvest(&HarvestConfig::default()).map_err(|e| e.to_string())?;
     let entropy_32 = hb.to_seed();
     let mnemonic =
         Mnemonic::from_entropy(&entropy_32).map_err(|e| format!("bip39 from entropy: {e}"))?;
@@ -380,11 +381,11 @@ pub fn lattice_demo_vk_seed_hex() -> String {
 
 #[tauri::command]
 pub fn proof_of_age_template_json() -> Result<String, String> {
-    let mut t = QssmTemplate::proof_of_age("proof-of-age-21");
-    t.lattice_vk_seed_hex = Some(hex::encode(VK_SEED));
-    t.notes = Some(
-        "Pair with QSSM Helper output: check sovereign_witness.public.digest_coeff_vector_u4 and lattice_proof against qssm-le verifying key from lattice_vk_seed_hex.".into(),
-    );
+    let t = QssmTemplate::proof_of_age("proof-of-age-21")
+        .with_lattice_vk_seed_hex(hex::encode(VK_SEED))
+        .with_notes(
+            "Pair with QSSM Helper output: check sovereign_witness.public.digest_coeff_vector_u4 and lattice_proof against qssm-le verifying key from lattice_vk_seed_hex.",
+        );
     serde_json::to_string_pretty(&t).map_err(|e| e.to_string())
 }
 
@@ -395,10 +396,10 @@ pub fn verify_claim_with_template(
 ) -> Result<String, String> {
     let template: QssmTemplate =
         serde_json::from_str(&template_json).map_err(|e| format!("parse template: {e}"))?;
-    if template.qssm_template_version != QSSM_TEMPLATE_VERSION {
+    if template.qssm_template_version() != QSSM_TEMPLATE_VERSION {
         return Err(format!(
             "unsupported qssm_template_version (got {}, expected {})",
-            template.qssm_template_version, QSSM_TEMPLATE_VERSION
+            template.qssm_template_version(), QSSM_TEMPLATE_VERSION
         ));
     }
     let claim: Value =
@@ -416,10 +417,10 @@ pub fn export_qssm_template(path: String, template_json: String) -> Result<(), S
     let template = QssmTemplate::from_json_slice(template_json.as_bytes()).map_err(|e| {
         format!("invalid .qssm template (must match QssmTemplate + PredicateBlock schema): {e}")
     })?;
-    if template.qssm_template_version != QSSM_TEMPLATE_VERSION {
+    if template.qssm_template_version() != QSSM_TEMPLATE_VERSION {
         return Err(format!(
             "unsupported qssm_template_version (got {}, expected {})",
-            template.qssm_template_version, QSSM_TEMPLATE_VERSION
+            template.qssm_template_version(), QSSM_TEMPLATE_VERSION
         ));
     }
     let pretty = serde_json::to_string_pretty(&template).map_err(|e| e.to_string())?;

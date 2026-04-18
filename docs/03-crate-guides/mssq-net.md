@@ -12,7 +12,7 @@ Crate: `crates/mssq-net`. Library name: `mssq_net` (`src/lib.rs`).
 
 ## Role
 
-Tokio-driven **libp2p** swarm: multi-transport listeners, mesh behaviours (Gossipsub, Kademlia, mDNS, AutoNAT, DCUtR, relay client, Identify, Ping), **heartbeat gossip** with `qssm-he` density checks, **`qssm-governor`** peer policy, and optional **rollup** updates via `mssq_batcher::apply_batch` on validated pulses.
+Tokio-driven **libp2p** swarm: multi-transport listeners, mesh behaviours (Gossipsub, Kademlia, mDNS, AutoNAT, DCUtR, relay client, Identify, Ping), **heartbeat gossip** with `qssm-entropy` density checks, **`qssm-governor`** peer policy, and optional **rollup** updates via `mssq_batcher::apply_batch` on validated pulses.
 
 ## Crate source layout (`src/`)
 
@@ -58,14 +58,14 @@ Gossipsub **subscriptions** are created in **`start_node`** (`crates/mssq-net/sr
 `crates/mssq-net/src/protocol/pulse.rs`:
 
 - **`HeartbeatEnvelope`** (JSON): `peer_id`, `timestamp_ns`, `seed_hex` (hex of `Heartbeat::to_seed()`), `raw_jitter`, `sensor_entropy`.
-- **Local publish**: `collect_local_heartbeat()` → `qssm_he::harvest` → `qssm_he::verify_density(&hb.raw_jitter)` for local governor observation; envelope is gossip-published to the heartbeat topic.
+- **Local publish**: `collect_local_heartbeat()` → `qssm_entropy::harvest` → `qssm_entropy::verify_density(&hb.raw_jitter)` for local governor observation; envelope is gossip-published to the heartbeat topic.
 
 ## Inbound validation
 
 On Gossipsub message (heartbeat topic), before accepting:
 
 1. **`Governor::decision_for`** — if action is **`Drop`**, message is **rejected** (`MessageAcceptance::Reject`).
-2. Decode **`HeartbeatEnvelope`**; validity requires **`verify_metabolic_gate(raw_jitter)`** (`qssm_governor`) **and** **`qssm_he::verify_density(raw_jitter)`**.
+2. Decode **`HeartbeatEnvelope`**; validity requires **`verify_metabolic_gate(raw_jitter)`** (`qssm_governor`) **and** **`qssm_entropy::verify_density(raw_jitter)`**.
 3. **`governor.observe_pulse(peer, valid, ...)`**; accepted messages get **`MessageAcceptance::Accept`**.
 4. If valid, a synthetic **`L2Transaction`** may be built and **`apply_batch`** run with a local **`AllowAllProofs`**-style verifier in `node/events.rs` (`process_inbound_heartbeat`) to advance local `RollupState` / SMT snapshot.
 
@@ -83,4 +83,4 @@ Feature **`dashboard`**: `examples/mssq_node.rs` (ratatui). Build with `--featur
 
 ## Dependencies (workspace)
 
-`qssm-he`, `qssm-governor`, `qssm-utils`, `qssm-common`, `mssq-batcher` — see `crates/mssq-net/Cargo.toml`.
+`qssm-entropy`, `qssm-governor`, `qssm-utils`, `qssm-common`, `mssq-batcher` — see `crates/mssq-net/Cargo.toml`.

@@ -15,7 +15,7 @@ fn main() {
     println!("[1] ProofContext created (seed: {})", hex_short(&setup.ctx.seed()));
 
     // 2. Load a template.
-    let template = template_lib::resolve("age-gate-21")
+    let template = qssm_templates::resolve("age-gate-21")
         .expect("age-gate-21 template should exist");
     println!("[2] Template loaded: age-gate-21");
 
@@ -25,12 +25,12 @@ fn main() {
 
     // 4. Prove.
     let entropy_seed = setup.fresh_entropy();
-    let proof = zk_api::prove(&setup.ctx, &template, &claim, 100, 50, setup.binding_ctx, entropy_seed)
+    let proof = qssm_local_prover::prove(&setup.ctx, &template, &claim, 100, 50, setup.binding_ctx, entropy_seed)
         .expect("prove failed");
-    println!("[4] Proof generated (MS root: {})", hex_short(&proof.ms_root));
+    println!("[4] Proof generated (MS root: {})", hex_short(proof.ms_root()));
 
     // 5. Verify.
-    let ok = zk_api::verify(&setup.ctx, &template, &claim, &proof, setup.binding_ctx)
+    let ok = qssm_api::verify(&setup.ctx, &template, &claim, &proof, setup.binding_ctx)
         .expect("verify failed");
     println!("[5] Verified: {ok}");
     assert!(ok, "proof should verify");

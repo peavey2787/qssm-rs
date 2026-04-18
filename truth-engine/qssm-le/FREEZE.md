@@ -25,7 +25,7 @@ This crate is **frozen** at v1.0.0. The following invariants are locked:
 4. **CRS expansion** — `BLAKE3(DOMAIN_LE ‖ "A_row" ‖ seed ‖ index_le)` with golden values `[7960407, 1320365, 6344295, 2508853]` for seed `[0x42; 32]`.
 5. **Public API surface** — All `pub use` re-exports in `lib.rs` are stable. Additions are allowed; removals require a major version bump.
 
-Any change that violates these invariants requires a new security review, a major version bump, and synchronized updates to `qssm-gadget`, `zk-api`, and `local-verifier`.
+Any change that violates these invariants requires a new security review, a major version bump, and synchronized updates to `qssm-gadget`, `qssm-api`, and `qssm-local-verifier`.
 
 ## What Was Hardened for v1.0.0
 
@@ -67,7 +67,7 @@ The acceptance probability analysis is now documented in `SECURITY_CHECKLIST.md`
 | Check | Result |
 |-------|--------|
 | `cargo test -p qssm-le` | **32/32 passed** (6 internal + 10 adversarial + 2 cross-domain + 13 lab + 1 doctest) |
-| `cargo check` on 8 downstream crates | **Clean** (qssm-gadget, zk-api, qssm-proofs, e2e-node-flow, zk-examples, mssq-batcher, p2p-net, qssm-desktop) |
+| `cargo check` on 8 downstream crates | **Clean** (qssm-gadget, qssm-api, qssm-proofs, e2e-node-flow, zk-examples, mssq-batcher, p2p-net, qssm-desktop) |
 | `verify_ct_asm.py` | **PASSED** — zero jcc in `ct_reject_if_above_gamma` |
 | `#![forbid(unsafe_code)]` | **7/7 source files** |
 | `SECURITY_CHECKLIST.md` | **Rev 5 — all boxes checked** |
