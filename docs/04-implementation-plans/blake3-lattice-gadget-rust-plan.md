@@ -1,3 +1,9 @@
+> **⚠ Historical plan — partially stale.** References to `MockProver` and
+> a public crate API no longer reflect the current implementation.
+> `qssm-gadget` is now an internal `pub(crate)` crate behind a facade;
+> constraint counting uses `CountingConstraintSystem` in tests instead of
+> `MockProver`. Treat this document as design context, not current truth.
+
 ### Documentation map
 
 * [README](../README.md) — Project home

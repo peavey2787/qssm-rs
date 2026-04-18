@@ -62,6 +62,7 @@ qssm-utils.workspace = true
 qssm-traits.workspace = true
 mssq-batcher.workspace = true
 qssm-gadget.workspace = true
+template-lib.workspace = true
 ratatui = { workspace = true, optional = true }
 crossterm = { workspace = true, optional = true }
 serde.workspace = true

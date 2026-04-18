@@ -1,30 +1,27 @@
 [workspace]
 members = [
-    # Existing crates (will be migrated phase by phase)
+    # Shared libs
     "shared-libs/qssm-traits",
-    "zk-stack/predicate_engine/qssm-wrapper",
     "shared-libs/utils",
-    "zk-stack/predicate_engine/qssm-gadget",
-    "zk-stack/predicate_engine/qssm-le",
-    "zk-stack/predicate_engine/qssm-ms",
-    "l2-rollup/mssq-batcher",
-    "integration/zk-examples",
     "shared-libs/kaspa",
-    "l1-dag/entropy_engine",
+    "shared-libs/qssm-he",
     "shared-libs/p2p-net",
-    "l1-dag/governor",
-    "zk-stack/predicate_engine/qssm-proofs",
-    "integration/e2e-node-flow",
-    "desktop/src-tauri",
+    "shared-libs/crypto",
+    "shared-libs/identity-dag",
+    "shared-libs/sovereign-types",
 
-    # ZK stack
-    "zk-stack/predicate_engine",
-    "zk-stack/template_lib",
-    "zk-stack/local_verifier",
-    "zk-stack/api",
-    "zk-stack/examples",
+    # Truth Engine (standalone, no network I/O)
+    "truth-engine/qssm-gadget",
+    "truth-engine/qssm-le",
+    "truth-engine/qssm-ms",
+    "truth-engine/qssm-proofs",
+    "truth-engine/template-lib",
+    "truth-engine/local-verifier",
+    "truth-engine/api",
+    "truth-engine/examples",
 
     # L1 DAG
+    "l1-dag/governor",
     "l1-dag/dag",
     "l1-dag/consensus",
     "l1-dag/mempool",
@@ -34,6 +31,8 @@ members = [
     "l1-dag/node_api",
 
     # L2 Rollup
+    "l2-rollup/mssq-batcher",
+    "l2-rollup/mssq-sovereign",
     "l2-rollup/dag",
     "l2-rollup/state_machine",
     "l2-rollup/sequencer",
@@ -41,22 +40,21 @@ members = [
     "l2-rollup/anchor",
     "l2-rollup/networking",
 
-    # Shared libs
-    "shared-libs/crypto",
-    "shared-libs/qssm-traits",
-    "shared-libs/identity-dag",
-
     # Integration
+    "integration/zk-examples",
+    "integration/e2e-node-flow",
     "integration/l1-dag/l1-sync-tests",
     "integration/zk-stack/zk-benchmarks",
     "integration/l2-rollup/mempool-overflow-test",
-    "integration/e2e-node-flow",
+
+    # Desktop
+    "desktop/src-tauri",
 ]
 resolver = "2"
 
 [workspace.package]
 edition = "2021"
-license = "MIT OR Apache-2.0"
+license = "BUSL-1.1"
 
 [workspace.dependencies]
 crossterm = "0.28"
@@ -85,21 +83,22 @@ maxminddb = "0.24"
 # Internal workspace crates
 qssm-utils = { path = "shared-libs/utils" }
 qssm-traits = { path = "shared-libs/qssm-traits" }
-qssm-le = { path = "zk-stack/predicate_engine/qssm-le" }
-qssm-ms = { path = "zk-stack/predicate_engine/qssm-ms" }
-qssm-gadget = { path = "zk-stack/predicate_engine/qssm-gadget" }
-qssm-wrapper = { path = "zk-stack/predicate_engine/qssm-wrapper" }
-qssm-proofs = { path = "zk-stack/predicate_engine/qssm-proofs" }
-qssm-he = { path = "l1-dag/entropy_engine" }
+qssm-le = { path = "truth-engine/qssm-le" }
+qssm-ms = { path = "truth-engine/qssm-ms" }
+qssm-gadget = { path = "truth-engine/qssm-gadget", version = "=1.0.0" }
+qssm-wrapper = { path = "l2-rollup/mssq-sovereign" }
+qssm-proofs = { path = "truth-engine/qssm-proofs" }
+qssm-he = { path = "shared-libs/qssm-he" }
 qssm-kaspa = { path = "shared-libs/kaspa" }
 governor = { path = "l1-dag/governor" }
 mssq-batcher = { path = "l2-rollup/mssq-batcher" }
 p2p-net = { path = "shared-libs/p2p-net" }
 qssm-examples = { path = "integration/zk-examples" }
 e2e-node-flow = { path = "integration/e2e-node-flow" }
-zk-api = { path = "zk-stack/api" }
-template-lib = { path = "zk-stack/template_lib" }
-local-verifier = { path = "zk-stack/local_verifier" }
+zk-api = { path = "truth-engine/api" }
+template-lib = { path = "truth-engine/template-lib" }
+local-verifier = { path = "truth-engine/local-verifier" }
+sovereign-types = { path = "shared-libs/sovereign-types" }
 
 [profile.dev]
 split-debuginfo = "unpacked"

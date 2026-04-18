@@ -24,7 +24,7 @@ fn replayed_engine_a_proof_rejected_in_ms_domain_context() {
     let witness = Witness { r: [0i32; N] };
 
     let ctx_le = le_context();
-    let (commitment, proof) = prove_arithmetic(&vk, &public, &witness, &ctx_le).expect("le proof");
+    let (commitment, proof) = prove_arithmetic(&vk, &public, &witness, &ctx_le, [0xBB; 32]).expect("le proof");
     assert!(verify_lattice(&vk, &public, &commitment, &proof, &ctx_le).is_ok());
 
     let ctx_ms = ms_context();

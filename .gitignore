@@ -1,27 +1,22 @@
-# --- Rust Specific ---
+# Build output
 /target/
-/target
-target/
-**/*.rs.bk
-Cargo.lock
 
-# NOTE: For libraries, we usually ignore Cargo.lock. 
-# Since QSSM is a protocol/binary workspace, keeping it is okay 
-# for reproducible builds, but many researchers ignore it.
+# WebAssembly artifacts
+*.wasm
 
-# --- IDEs ---
+# IDE
 .idea/
 .vscode/
 *.swp
 *.swo
 
-# --- OS Specific ---
-.DS_Store
+# OS
 Thumbs.db
+.DS_Store
 
-# --- Testing & Logs ---
-*.log
+# Tauri build
+/desktop/src-tauri/target/
 
-# --- qssm-desktop (Tauri + Vite) ---
-crates/qssm-desktop/node_modules/
-crates/qssm-desktop/dist/
+# Node
+node_modules/
+dist/

@@ -7,16 +7,15 @@ use tauri::Manager;
 
 use bip39::Mnemonic;
 use qssm_traits::SmtRoot;
-use qssm_gadget::binding::SovereignWitness;
-use qssm_gadget::entropy::{EntropyAnchor, EntropyProvider};
-use qssm_gadget::prover_json::sovereign_witness_value;
-use qssm_gadget::{QssmTemplate, QSSM_TEMPLATE_VERSION};
+use qssm_gadget::TruthWitness;
+use qssm_gadget::EntropyAnchor;
 use qssm_he::HarvestConfig;
 use qssm_le::BETA;
 use qssm_le::{encode_rq_coeffs_le, prove_arithmetic, PublicInstance, VerifyingKey, Witness};
 use qssm_utils::hashing::blake3_hash;
-use rand::RngCore;
+use rand::{RngCore, SeedableRng};
 use serde::Deserialize;
+use template_lib::{QssmTemplate, QSSM_TEMPLATE_VERSION};
 
 /// Enable or pause `qssm-he` hardware harvesting (pulse / proofs skip harvest when off).
 #[tauri::command]
@@ -269,15 +268,21 @@ fn random_witness(rng: &mut impl RngCore) -> Witness {
 fn prove_lattice_demo(
     digest_coeff_vector: [u32; qssm_le::PUBLIC_DIGEST_COEFFS],
     rollup_ctx: &[u8; 32],
+    rng_seed: [u8; 32],
 ) -> Result<serde_json::Value, String> {
     let vk = VerifyingKey::from_seed(VK_SEED);
     let public = PublicInstance::digest_coeffs(digest_coeff_vector);
     public.validate().map_err(|e| e.to_string())?;
 
-    let mut rng = rand::thread_rng();
-    for _ in 0..24 {
+    let mut rng = rand::rngs::StdRng::from_seed(rng_seed);
+    for attempt in 0..24u8 {
         let witness = random_witness(&mut rng);
-        if let Ok((commitment, proof)) = prove_arithmetic(&vk, &public, &witness, rollup_ctx) {
+        // Derive per-attempt masking seed so each retry is deterministic
+        let mask_seed = qssm_utils::hashing::hash_domain(
+            "QSSM-SDK-LE-MASK-v1",
+            &[&rng_seed, rollup_ctx, &[attempt]],
+        );
+        if let Ok((commitment, proof)) = prove_arithmetic(&vk, &public, &witness, rollup_ctx, mask_seed) {
             return Ok(json!({
                 "commitment_coeffs_hex": hex::encode(encode_rq_coeffs_le(&commitment.0)),
                 "t_coeffs_hex": hex::encode(encode_rq_coeffs_le(&proof.t)),
@@ -302,28 +307,37 @@ fn run_pipeline(h: HandoffFile) -> Result<serde_json::Value, String> {
     };
 
     let t0 = Instant::now();
-    let prov = EntropyProvider::default();
-    let (sovereign_entropy, nist_included) =
-        prov.generate_sovereign_entropy_from_anchor(&entropy_anchor, local);
+    // Derive external entropy from anchor + local entropy (no network I/O).
+    let anchor_bytes = match &entropy_anchor {
+        EntropyAnchor::AnchorHash(h) => *h,
+        EntropyAnchor::StaticRoot(r) => *r,
+        EntropyAnchor::TimestampUnixSecs { unix_secs } => blake3_hash(&unix_secs.to_le_bytes()),
+    };
+    let external_entropy = blake3_hash(&[anchor_bytes.as_slice(), local.as_slice()].concat());
+    let external_entropy_included = false;
     let limb_ms = t0.elapsed().as_secs_f64() * 1000.0;
 
-    let sovereign = SovereignWitness::bind(
+    let truth_witness = TruthWitness::bind(
         state_root,
         rollup_ctx,
         h.n,
         h.k,
         h.bit_at_k,
         challenge,
-        sovereign_entropy,
-        nist_included,
+        external_entropy,
+        external_entropy_included,
     );
-    if !sovereign.validate() {
-        return Err("SovereignWitness::validate failed".into());
-    }
+    truth_witness.validate().map_err(|e| format!("TruthWitness: {e}"))?;
 
-    let sw = sovereign_witness_value(&sovereign);
-    let lattice = prove_lattice_demo(sovereign.digest_coeff_vector, &rollup_ctx)?;
-    let qrng = if nist_included { "nist" } else { "fallback" };
+    let sw: Value = serde_json::from_str(&truth_witness.to_prover_json()
+        .map_err(|e| format!("truth witness JSON serialization failed: {e}"))?)
+        .map_err(|e| format!("truth witness JSON serialization failed: {e}"))?;
+    let le_rng_seed = qssm_utils::hashing::hash_domain(
+        "QSSM-SDK-LE-MASK-v1",
+        &[&external_entropy, &rollup_ctx],
+    );
+    let lattice = prove_lattice_demo(truth_witness.digest_coeff_vector, &rollup_ctx, le_rng_seed)?;
+    let qrng = if external_entropy_included { "external" } else { "fallback" };
     let l1_sync = match anchor_kind {
         "kaspa" => L1_HUD,
         "static_root" => "Generic mode - static root anchor (no L1)",
@@ -335,7 +349,7 @@ fn run_pipeline(h: HandoffFile) -> Result<serde_json::Value, String> {
         "l1_sync": l1_sync,
         "entropy_anchor_kind": anchor_kind,
         "qrng_status": qrng,
-        "nist_included": nist_included,
+        "nist_included": external_entropy_included,
         "prover_latency_ms": limb_ms,
         "state_root_commitment": hex::encode(smt.0),
         "sovereign_witness": sw,

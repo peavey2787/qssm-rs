@@ -24,7 +24,12 @@ pub const DOMAIN_MERKLE_PARENT: &str = "QSSM-MERKLE-PARENT-v1.0";
 pub const DOMAIN_MSSQ_ROLLUP_CONTEXT: &str = "MSSQ-ROLLUP-CONTEXT-v1.0";
 /// SMT key for Millionaire’s Duel leaderboard leaf (`hash_domain(DOMAIN ‖ "MSSQ_DUEL_LEADERBOARD_V1")`).
 pub const DOMAIN_MSSQ_DUEL_LEADERBOARD: &str = "MSSQ-DUEL-LEADERBOARD-V1.0";
-
+/// SDK layer: derive MS seed from entropy seed + binding context.
+pub const DOMAIN_SDK_MS_SEED: &str = "QSSM-SDK-MS-SEED-v1";
+/// SDK layer: derive LE witness coefficients from entropy seed + binding context.
+pub const DOMAIN_SDK_LE_WITNESS: &str = "QSSM-SDK-LE-WITNESS-v1";
+/// SDK layer: derive LE masking CSPRNG seed from entropy seed + binding context.
+pub const DOMAIN_SDK_LE_MASK: &str = "QSSM-SDK-LE-MASK-v1";
 /// Cryptographic [`[u8; 32]`](https://doc.rust-lang.org/std/primitive.array.html) SMT slot for duel prestige state.
 #[must_use]
 pub fn duel_leaderboard_key() -> [u8; 32] {

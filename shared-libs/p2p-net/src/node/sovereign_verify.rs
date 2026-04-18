@@ -2,12 +2,12 @@
 
 use std::borrow::Cow;
 
-use qssm_gadget::{
+use qssm_le::{verify_lattice, Commitment, LatticeProof, PublicInstance, RqPoly, VerifyingKey, N};
+use serde_json::Value;
+use template_lib::{
     eval_all_predicates, parse_template_id_param, predicate_blocks_from_template_value,
     standard_library_script,
 };
-use qssm_le::{verify_lattice, Commitment, LatticeProof, PublicInstance, RqPoly, VerifyingKey, N};
-use serde_json::Value;
 
 /// Claim field used when gossip omits `template_script` and the Lab names a standard library entry.
 pub const VERIFIER_TEMPLATE_ID_FIELD: &str = "verifier_template_id";
@@ -177,7 +177,7 @@ mod tests {
         };
         let msg = u64::from_le_bytes(blinded[..8].try_into().unwrap()) & ((1u64 << 30) - 1);
         let public = PublicInstance::legacy_message(msg);
-        let (c, p) = prove_arithmetic(&vk, &public, &witness, &rollup).unwrap();
+        let (c, p) = prove_arithmetic(&vk, &public, &witness, &rollup, [0xBB; 32]).unwrap();
         let claim = serde_json::json!({
             "verifier_template_id": "simple_math_zk_v1",
             "claim": { "answer": 42 },
@@ -207,7 +207,7 @@ mod tests {
             b
         };
         let public = PublicInstance::legacy_message(committed_answer);
-        let (c, p) = prove_arithmetic(&vk, &public, &witness, &rollup).unwrap();
+        let (c, p) = prove_arithmetic(&vk, &public, &witness, &rollup, [0xBB; 32]).unwrap();
         let mut claim = serde_json::json!({
             "verifier_template_id": "simple_math_zk_v1",
             "claim": { "answer": 42 },

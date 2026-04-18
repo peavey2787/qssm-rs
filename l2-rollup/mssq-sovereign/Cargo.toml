@@ -1,0 +1,21 @@
+[package]
+name = "mssq-sovereign"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+description = "L2 sovereign stream manager, StepEnvelope, and NIST entropy for MSSQ rollup."
+
+[dependencies]
+blake3.workspace = true
+hex.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+serde_jcs = "0.1.0"
+qssm-gadget = { workspace = true, features = ["diagnostic"] }
+qssm-utils.workspace = true
+sovereign-types.workspace = true
+template-lib.workspace = true
+
+[dev-dependencies]
+tempfile = "3"

@@ -1,0 +1,68 @@
+[package]
+name = "qssm-gadget"
+version = "1.0.0"
+edition.workspace = true
+license.workspace = true
+description = "BLAKE3–lattice gadgets: degree-2 bit witnesses and MS Merkle helpers (QSSM integration)."
+publish = false
+
+[features]
+default = []
+diagnostic = []
+
+[dependencies]
+hex.workspace = true
+qssm-utils.workspace = true
+serde.workspace = true
+serde_json = { workspace = true, features = ["preserve_order"] }
+subtle = "2"
+thiserror.workspace = true
+zeroize = { version = "1", features = ["derive"] }
+
+[dev-dependencies]
+blake3.workspace = true
+qssm-le.workspace = true
+qssm-ms.workspace = true
+proptest = "1.6"
+tempfile = "3"
+criterion = { version = "0.5", features = ["html_reports"] }
+
+[[test]]
+name = "engine_b_binding_tests"
+path = "unit_tests/engine_b_binding_tests.rs"
+
+[[test]]
+name = "full_merkle_parent_parity"
+path = "unit_tests/full_merkle_parent_parity.rs"
+
+[[test]]
+name = "ms_merkle_roundtrip"
+path = "unit_tests/ms_merkle_roundtrip.rs"
+
+[[test]]
+name = "property_tests"
+path = "unit_tests/property_tests.rs"
+
+[[test]]
+name = "truth_digest_golden"
+path = "unit_tests/sovereign_digest_golden.rs"
+
+[[test]]
+name = "merkle_adversarial_tests"
+path = "unit_tests/merkle_adversarial_tests.rs"
+
+[[test]]
+name = "entropy_adversarial_tests"
+path = "unit_tests/entropy_adversarial_tests.rs"
+
+[[test]]
+name = "backend_conformance_tests"
+path = "unit_tests/backend_conformance_tests.rs"
+
+[[test]]
+name = "adversarial_expanded_tests"
+path = "unit_tests/adversarial_expanded_tests.rs"
+
+[[bench]]
+name = "gadget_benches"
+harness = false

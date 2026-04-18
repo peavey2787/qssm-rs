@@ -1,0 +1,108 @@
+============================================================
+QSSM-GADGET REPRODUCIBLE BUILD RECORD
+============================================================
+
+Date:       2026-04-17
+Crate:      qssm-gadget
+Version:    1.0.0
+Tag:        qssm-gadget-v1.0.0-frozen
+
+------------------------------------------------------------
+GIT STATE
+------------------------------------------------------------
+
+Commit:     ca4e24ded46888e7c4d4a899b7a359df60263726
+Branch:     dev
+Note:       Freeze commit will be tagged after this artifact
+            is generated. The final freeze commit includes
+            this file, FREEZE.md, and version bump.
+
+------------------------------------------------------------
+TOOLCHAIN
+------------------------------------------------------------
+
+rustc:      1.91.1 (ed61e7d7e 2025-11-07)
+cargo:      1.91.1 (ea2d97820 2025-10-10)
+host:       x86_64-pc-windows-msvc
+LLVM:       21.1.2
+profile:    release [optimized]
+
+------------------------------------------------------------
+BUILD COMMAND
+------------------------------------------------------------
+
+cargo build -p qssm-gadget --release
+
+------------------------------------------------------------
+ARTIFACT
+------------------------------------------------------------
+
+File:       target/release/deps/libqssm_gadget-69813697e4e8b676.rlib
+SHA256:     D27C94C5BC6477053E4F3B741C2A023DB79C90442F54D12A7287B0D45CF234BB
+Size:       930328 bytes
+
+------------------------------------------------------------
+TEST RESULTS
+------------------------------------------------------------
+
+Command:    cargo test -p qssm-gadget
+Result:     99 passed, 0 failed, 0 ignored
+Suites:     11 test binaries (lib + 9 integration + 1 doc)
+Duration:   < 1s total
+
+Breakdown:
+  lib tests .................. 45 passed
+  engine_b_binding_tests .....  7 passed
+  full_merkle_parent_parity ..  4 passed
+  adversarial_expanded_tests . 18 passed
+  merkle_adversarial_tests ...  8 passed
+  ms_merkle_roundtrip ........  1 passed
+  property_tests .............  9 passed
+  entropy_adversarial_tests ..  2 passed
+  sovereign_digest_golden ....  2 passed
+  backend_conformance_tests ..  3 passed
+  doc tests ..................  0 passed
+
+------------------------------------------------------------
+DOWNSTREAM COMPILATION
+------------------------------------------------------------
+
+The following crates depend on qssm-gadget and compile clean:
+  - truth-engine/api          (zk-api)
+  - truth-engine/local-verifier
+  - desktop/src-tauri         (qssm-desktop)
+  - l2-rollup/mssq-sovereign  (qssm-wrapper)
+
+------------------------------------------------------------
+SECURITY CHECKLIST
+------------------------------------------------------------
+
+Location:   truth-engine/qssm-gadget/SECURITY_CHECKLIST.md
+Status:     All 12 sections complete, all items [x]
+Sections:   Public Surface & Boundary Safety,
+            Commitment & Binding Correctness,
+            Seam / Engine Boundary Verification,
+            Backend Conformance,
+            Adversarial Test Coverage,
+            Transcript & Canonicalization,
+            Entropy & Randomness Safety,
+            Memory Safety & Secret Handling,
+            Documentation Alignment,
+            Repo & Build Hygiene,
+            Performance & Regression Gates,
+            Final Bank-Grade Certification
+
+------------------------------------------------------------
+FREEZE DECLARATION
+------------------------------------------------------------
+
+This crate is frozen at this tag. The security checklist is
+complete. The audit is complete. All invariants are locked.
+The version is stable. The code is safe for institutional use.
+
+No changes to truth-engine/qssm-gadget/ are permitted after
+this tag without a full re-audit, new version, and new tag.
+
+============================================================
+END OF BUILD RECORD
+============================================================

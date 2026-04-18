@@ -85,7 +85,7 @@ fn build_duel_tx(
     let witness = Witness {
         r: [0i32; qssm_le::N],
     };
-    let (commitment, proof) = prove_arithmetic(&vk, &public, &witness, &ctx_digest).expect("prove");
+    let (commitment, proof) = prove_arithmetic(&vk, &public, &witness, &ctx_digest, crs).expect("prove");
 
     let att = sign_att(sk_winner, anchor, winner, ctx_digest);
     let wire = encode_millionaires_proof(&att, vk.crs_seed, public_m, &commitment, &proof);
@@ -166,7 +166,7 @@ fn duel_rejects_impossible_public_message() {
     let witness = Witness {
         r: [0i32; qssm_le::N],
     };
-    let (commitment, proof) = prove_arithmetic(&vk, &public, &witness, &d).expect("prove");
+    let (commitment, proof) = prove_arithmetic(&vk, &public, &witness, &d, [0xBB; 32]).expect("prove");
     let att = sign_att(sk_winner, &anchor, winner, d);
     let wire = encode_millionaires_proof(&att, vk.crs_seed, public_m, &commitment, &proof);
     let lb = leaderboard_key();
@@ -255,7 +255,7 @@ fn verify_lattice_latency_release_god_mode() {
         r: [0i32; qssm_le::N],
     };
     let ctx = [0xEEu8; 32];
-    let (c, p) = prove_arithmetic(&vk, &public, &witness, &ctx).expect("prove");
+    let (c, p) = prove_arithmetic(&vk, &public, &witness, &ctx, [0xBB; 32]).expect("prove");
     let t0 = Instant::now();
     let ok = verify_lattice(&vk, &public, &c, &p, &ctx).expect("verify");
     let latency = t0.elapsed();

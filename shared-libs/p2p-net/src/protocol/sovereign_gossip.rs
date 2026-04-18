@@ -21,7 +21,7 @@ pub enum GossipMessage {
         jsonl_line: String,
         primary_targets: Vec<String>,
         emitted_unix_ms: u64,
-        /// Optional predicate law: JSON array of [`qssm_gadget::PredicateBlock`] or `{ "predicates": [...] }`.
+        /// Optional predicate law: JSON array of `PredicateBlock` (see `template-lib`) or `{ "predicates": [...] }`.
         /// When set, verifiers run these rules on **`jsonl_line`**; when absent, inbound uses [`crate::node::sovereign_verify::VERIFIER_TEMPLATE_ID_FIELD`] + standard library.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         template_script: Option<Value>,

@@ -1,7 +1,3 @@
-// Copyright (c) 2026 Peavey Koding. All rights reserved.
-// Licensed under the Business Source License 1.1 (BSL-1.1).
-// See the LICENSE file in the repository root for full license text.
-
 //! PQ-friendly MSSQ leader lottery + ML-DSA-bound attestations.
 #![forbid(unsafe_code)]
 

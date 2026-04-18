@@ -162,7 +162,7 @@ fn run() -> Result<(), String> {
     let witness = Witness {
         r: [0i32; qssm_le::N],
     };
-    let (commitment, proof) = prove_arithmetic(&vk, &public, &witness, &ctx_digest)
+    let (commitment, proof) = prove_arithmetic(&vk, &public, &witness, &ctx_digest, [0xBB; 32])
         .map_err(|e| format!("Prover failed: {e:?}"))?;
 
     let att = sign_attestation(sk_winner, &anchor, winner, ctx_digest);
