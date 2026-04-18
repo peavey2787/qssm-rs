@@ -14,6 +14,7 @@ qssm-ms.workspace = true
 qssm-utils.workspace = true
 qssm-templates = { path = "../qssm-templates" }
 serde_json.workspace = true
+zeroize = { version = "1.8", features = ["derive"] }
 
 [dev-dependencies]
 hex.workspace = true

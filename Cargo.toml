@@ -14,8 +14,7 @@ members = [
     "truth-engine/examples",
 
     # Integration
-    "integration/e2e-node-flow",
-    "integration/zk-stack/zk-benchmarks",
+    "integration",
 
     # Desktop (needs refactoring — kept for now)
     "desktop/src-tauri",
@@ -25,6 +24,7 @@ resolver = "2"
 [workspace.package]
 edition = "2021"
 license = "BUSL-1.1"
+categories = ["cryptography", "zero-knowledge", "security"]
 
 [workspace.dependencies]
 # External — truth-engine + shared-libs
@@ -59,11 +59,10 @@ qssm-le = { path = "truth-engine/qssm-le" }
 qssm-ms = { path = "truth-engine/qssm-ms" }
 qssm-gadget = { path = "truth-engine/qssm-gadget", version = "=1.1.0" }
 qssm-proofs = { path = "truth-engine/qssm-proofs" }
-qssm-local-prover = { path = "truth-engine/qssm-local-prover" }
+qssm-local-prover = { path = "truth-engine/qssm-local-prover", version = "=1.0.0" }
 qssm-api = { path = "truth-engine/qssm-api" }
 qssm-templates = { path = "truth-engine/qssm-templates" }
 qssm-local-verifier = { path = "truth-engine/qssm-local-verifier" }
-e2e-node-flow = { path = "integration/e2e-node-flow" }
 
 [profile.dev]
 split-debuginfo = "unpacked"

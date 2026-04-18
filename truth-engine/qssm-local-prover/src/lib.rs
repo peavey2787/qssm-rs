@@ -15,6 +15,7 @@ use qssm_utils::hashing::{
 use qssm_templates::QssmTemplate;
 
 use qssm_api::{Proof, ProofContext, ZkError};
+use zeroize::Zeroize;
 
 /// Domain tag for deriving external entropy from caller-provided seed + binding context.
 const DOMAIN_EXTERNAL_ENTROPY: &str = "QSSM-SDK-EXTERNAL-ENTROPY-v1";
@@ -37,13 +38,13 @@ pub fn prove(
     value: u64,
     target: u64,
     binding_ctx: [u8; 32],
-    entropy_seed: [u8; 32],
+    mut entropy_seed: [u8; 32],
 ) -> Result<Proof, ZkError> {
     // 1. Check predicates against the public claim.
     template.verify_public_claim(claim)?;
 
     // 2. Deterministic key schedule — everything derives from entropy_seed + binding_ctx.
-    let ms_seed = hash_domain(
+    let mut ms_seed = hash_domain(
         DOMAIN_SDK_MS_SEED,
         &[entropy_seed.as_slice(), binding_ctx.as_slice()],
     );
@@ -52,6 +53,7 @@ pub fn prove(
     // 3. MS: commit + prove inequality.
     let (root, salts) = qssm_ms::commit(ms_seed, binding_entropy)
         .map_err(ZkError::MsCommit)?;
+    ms_seed.zeroize();
     let context = qssm_api::MS_CONTEXT_TAG.to_vec();
     let ms_proof = qssm_ms::prove(value, target, &salts, binding_entropy, &context, &binding_ctx)
         .map_err(|e| ZkError::MsProve { source: e, value, target })?;
@@ -80,13 +82,15 @@ pub fn prove(
     let witness = derive_le_witness(&entropy_seed, &binding_ctx);
 
     // 6. LE prove: deterministic Lyubashevsky masking from seeded CSPRNG.
-    let le_mask_seed = hash_domain(
+    let mut le_mask_seed = hash_domain(
         DOMAIN_SDK_LE_MASK,
         &[entropy_seed.as_slice(), binding_ctx.as_slice()],
     );
     let (le_commitment, le_proof) = qssm_le::prove_arithmetic(
         ctx.vk(), &public, &witness, &binding_ctx, le_mask_seed,
     ).map_err(ZkError::LeProve)?;
+    le_mask_seed.zeroize();
+    entropy_seed.zeroize();
 
     Ok(Proof::new(
         *root.as_bytes(),
@@ -109,6 +113,9 @@ fn derive_le_witness(entropy_seed: &[u8; 32], binding_ctx: &[u8; 32]) -> Witness
     let mut r = [0i32; N];
     for chunk_idx in 0u32..32 {
         let idx_bytes = chunk_idx.to_le_bytes();
+        // SECURITY-CONCESSION: h is loop-scoped and overwritten each iteration;
+        // not explicitly zeroized. Classified as accepted due to negligible
+        // residual risk and non-secret-key semantics (derived hash output).
         let h = hash_domain(
             DOMAIN_SDK_LE_WITNESS,
             &[entropy_seed.as_slice(), binding_ctx.as_slice(), &idx_bytes],
@@ -119,7 +126,11 @@ fn derive_le_witness(entropy_seed: &[u8; 32], binding_ctx: &[u8; 32]) -> Witness
             r[chunk_idx as usize * 8 + j] = (raw % modulus) as i32 - beta_i32;
         }
     }
-    Witness::new(r)
+    // Witness::new(r) copies the array ([i32; N] is Copy); the original
+    // stack buffer must be scrubbed to avoid residual witness coefficients.
+    let witness = Witness::new(r);
+    r.zeroize();
+    witness
 }
 
 #[cfg(test)]

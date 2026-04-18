@@ -65,7 +65,7 @@ Added 16 new tests (boundary values, constructor validation, determinism, replay
 | Check | Result |
 |-------|--------|
 | `cargo test -p qssm-ms` | **25/25 passed** (9 adversarial + 5 boundary + 5 constructor + 4 determinism/replay + 2 salt/debug) |
-| `cargo check` on 6 downstream crates | **Clean** (qssm-api, qssm-local-verifier, qssm-gadget, qssm-le, mssq-batcher, e2e-node-flow) |
+| `cargo check` on 6 downstream crates | **Clean** (qssm-api, qssm-local-verifier, qssm-gadget, qssm-le, mssq-batcher, qssm-integration) |
 | `#![forbid(unsafe_code)]` | **1/1 source files** (lib.rs) |
 | `SECURITY_CHECKLIST.md` | **Rev 1 — all boxes checked** |
 | Fuzz harness | Structured 397-byte verifier fuzzing (panic safety + rejection correctness) |

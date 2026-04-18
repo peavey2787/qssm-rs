@@ -11,12 +11,9 @@
 ### Documentation map
 
 * [Architecture overview](docs/architecture-overview.md)
-* [MSSQ — Egalitarian rollup](docs/mssq-rollup.md)
 * [QSSM-LE — Engine A](docs/qssm-le-engine-a.md)
 * [QSSM-MS — Engine B](docs/qssm-ms-engine-b.md)
 * [BLAKE3–lattice gadget spec](docs/blake3-lattice-gadget-spec.md)
-* [BLAKE3–lattice gadget — Rust plan](docs/blake3-lattice-gadget-rust-plan.md)
-* [Kaspa L2 core deployment manifest](docs/l2-kaspa-core-deployment-manifest.md)
 
 ## ⚡ Core Performance
 
@@ -30,7 +27,6 @@
 
 * [`crates/qssm-le`](crates/qssm-le) — Core lattice linear engine (receipts for the ~0.026 ms claim).
 * [`crates/qssm-desktop`](crates/qssm-desktop) — Tauri desktop helper (“Lab” UI).
-* [`crates/mssq-batcher`](crates/mssq-batcher) — Mirror-Shift Sovereign Queue sequencer.
 * [`crates/qssm-gadget`](crates/qssm-gadget) — Human-readable sugar blocks and predicate logic.
 
 ## ⚖️ License and sovereignty
@@ -42,7 +38,3 @@ This project is licensed under the **Business Source License 1.1 (BSL-1.1)**. Se
 * **Change date:** April 13, 2029 (then **GPLv3** or later, per `LICENSE`).
 
 *Math is law. Sovereignty is non-negotiable.*
-
-<p align="center">
-  <img width="280" alt="miss-q" src="https://github.com/user-attachments/assets/40a9f10f-5968-426d-8eb0-c8666bfe9771" />
-</p>

@@ -1082,15 +1082,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d0881ea181b1df73ff77ffaaf9c7544ecc11e82fba9b5f27b262a3c73a332555"
 
 [[package]]
-name = "e2e-node-flow"
-version = "0.1.0"
-dependencies = [
- "qssm-le",
- "qssm-ms",
- "qssm-utils",
-]
-
-[[package]]
 name = "ecdsa"
 version = "0.16.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3609,6 +3600,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "qssm-integration"
+version = "0.1.0"
+dependencies = [
+ "hex",
+ "qssm-api",
+ "qssm-entropy",
+ "qssm-le",
+ "qssm-local-prover",
+ "qssm-local-verifier",
+ "qssm-ms",
+ "qssm-templates",
+ "qssm-utils",
+ "serde_json",
+]
+
+[[package]]
 name = "qssm-le"
 version = "1.0.0"
 dependencies = [
@@ -3633,6 +3640,7 @@ dependencies = [
  "qssm-templates",
  "qssm-utils",
  "serde_json",
+ "zeroize",
 ]
 
 [[package]]
@@ -6644,10 +6652,6 @@ dependencies = [
  "quote",
  "syn 2.0.117",
 ]
-
-[[package]]
-name = "zk-benchmarks"
-version = "0.1.0"
 
 [[package]]
 name = "zk-examples"

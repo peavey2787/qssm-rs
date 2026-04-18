@@ -10,6 +10,10 @@
 
 ---
 
+<p align="center">
+  <img width="280" alt="miss-q" src="https://github.com/user-attachments/assets/40a9f10f-5968-426d-8eb0-c8666bfe9771" />
+</p>
+
 # MSSQ v1.0 — The Mirror‑Shift Sovereign Queue  
 ### MEV-Zero Autonomous Ordering & Verifiable Work-based Rollups
 

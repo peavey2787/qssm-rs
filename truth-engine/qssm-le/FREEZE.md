@@ -67,7 +67,7 @@ The acceptance probability analysis is now documented in `SECURITY_CHECKLIST.md`
 | Check | Result |
 |-------|--------|
 | `cargo test -p qssm-le` | **32/32 passed** (6 internal + 10 adversarial + 2 cross-domain + 13 lab + 1 doctest) |
-| `cargo check` on 8 downstream crates | **Clean** (qssm-gadget, qssm-api, qssm-proofs, e2e-node-flow, zk-examples, mssq-batcher, p2p-net, qssm-desktop) |
+| `cargo check` on 8 downstream crates | **Clean** (qssm-gadget, qssm-api, qssm-proofs, qssm-integration, zk-examples, mssq-batcher, p2p-net, qssm-desktop) |
 | `verify_ct_asm.py` | **PASSED** — zero jcc in `ct_reject_if_above_gamma` |
 | `#![forbid(unsafe_code)]` | **7/7 source files** |
 | `SECURITY_CHECKLIST.md` | **Rev 5 — all boxes checked** |

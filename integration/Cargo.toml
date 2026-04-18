@@ -1,0 +1,44 @@
+[package]
+name = "qssm-integration"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+description = "Cross-crate integration tests for QSSM protocol boundaries."
+
+[dependencies]
+qssm-le.workspace = true
+qssm-utils.workspace = true
+
+[dev-dependencies]
+qssm-ms.workspace = true
+qssm-api.workspace = true
+qssm-local-prover.workspace = true
+qssm-local-verifier.workspace = true
+qssm-templates.workspace = true
+qssm-entropy.workspace = true
+serde_json.workspace = true
+hex.workspace = true
+
+[[test]]
+name = "adversarial_replay"
+path = "adversarial_replay.rs"
+
+[[test]]
+name = "test_roundtrip"
+path = "test_roundtrip.rs"
+
+[[test]]
+name = "test_negative"
+path = "test_negative.rs"
+
+[[test]]
+name = "test_serialization"
+path = "test_serialization.rs"
+
+[[test]]
+name = "test_entropy"
+path = "test_entropy.rs"
+
+[[test]]
+name = "test_template_resolution"
+path = "test_template_resolution.rs"
