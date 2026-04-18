@@ -7,6 +7,7 @@ publish = false
 [dependencies]
 zk-api = { path = "../api" }
 template-lib = { path = "../template-lib" }
+qssm-he.workspace = true
 qssm-utils = { workspace = true }
 serde_json = { workspace = true }
 hex = { workspace = true }

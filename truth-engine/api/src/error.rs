@@ -2,6 +2,7 @@
 
 /// Errors from the SDK prove/verify calls.
 #[derive(Debug, thiserror::Error)]
+#[non_exhaustive]
 pub enum ZkError {
     #[error("template predicate check failed: {0}")]
     PredicateFailed(#[from] template_lib::PredicateError),

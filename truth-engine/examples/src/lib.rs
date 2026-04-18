@@ -14,8 +14,9 @@ impl SdkSetup {
     /// Harvest hardware entropy, derive a [`ProofContext`] and a binding context
     /// from `binding_label` (BLAKE3 of the label bytes).
     pub fn from_label(binding_label: &[u8]) -> Self {
-        let seed = zk_api::harvest_entropy_seed()
-            .expect("hardware entropy unavailable — cannot produce sovereign proofs");
+        let seed = qssm_he::harvest(&qssm_he::HarvestConfig::default())
+            .expect("hardware entropy unavailable — cannot produce sovereign proofs")
+            .to_seed();
         Self {
             ctx: ProofContext::new(seed),
             binding_ctx: qssm_utils::hashing::blake3_hash(binding_label),
@@ -24,8 +25,9 @@ impl SdkSetup {
 
     /// Harvest a fresh 32-byte entropy seed for a single prove call.
     pub fn fresh_entropy(&self) -> [u8; 32] {
-        zk_api::harvest_entropy_seed()
+        qssm_he::harvest(&qssm_he::HarvestConfig::default())
             .expect("hardware entropy unavailable — cannot produce sovereign proofs")
+            .to_seed()
     }
 }
 

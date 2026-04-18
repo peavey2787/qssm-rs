@@ -27,7 +27,7 @@ pub fn verify(
     template.verify_public_claim(claim)?;
 
     // 2. MS: verify the inequality proof.
-    let context = b"qssm-sdk-v1".to_vec();
+    let context = crate::MS_CONTEXT_TAG.to_vec();
     let root = Root::new(proof.ms_root);
     if !qssm_ms::verify(
         root,

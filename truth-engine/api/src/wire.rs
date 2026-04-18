@@ -18,6 +18,8 @@ pub(crate) const PROOF_BUNDLE_VERSION: u32 = 1;
 /// Use [`ProofBundle::from_proof`] / [`ProofBundle::to_proof`]
 /// for lossless round-trip conversion.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
 pub struct ProofBundle {
     pub version: u32,
     pub protocol_version: u32,
@@ -43,11 +45,9 @@ pub struct ProofBundle {
     pub binding_entropy_hex: String,
 }
 
-/// Backward-compatible alias.
-pub type SovereignProofBundle = ProofBundle;
-
 /// Errors when deserializing a [`ProofBundle`] back into a [`Proof`].
 #[derive(Debug, thiserror::Error)]
+#[non_exhaustive]
 pub enum WireFormatError {
     #[error("unsupported bundle version {0} (expected {PROOF_BUNDLE_VERSION})")]
     UnsupportedVersion(u32),

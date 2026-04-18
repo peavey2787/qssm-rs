@@ -47,7 +47,7 @@ pub fn prove(
     // 3. MS: commit + prove inequality.
     let (root, salts) = qssm_ms::commit(ms_seed, binding_entropy)
         .map_err(ZkError::MsCommit)?;
-    let context = b"qssm-sdk-v1".to_vec();
+    let context = crate::MS_CONTEXT_TAG.to_vec();
     let ms_proof = qssm_ms::prove(value, target, &salts, binding_entropy, &context, &binding_ctx)
         .map_err(|e| ZkError::MsProve { source: e, value, target })?;
 
@@ -99,7 +99,7 @@ pub fn prove(
 
 /// Deterministic LE witness: `r[i] ∈ [-BETA, BETA]` from
 /// `BLAKE3("QSSM-SDK-LE-WITNESS-v1" ‖ entropy_seed ‖ binding_ctx ‖ chunk_idx)`.
-fn derive_le_witness(entropy_seed: &[u8; 32], binding_ctx: &[u8; 32]) -> Witness {
+pub(crate) fn derive_le_witness(entropy_seed: &[u8; 32], binding_ctx: &[u8; 32]) -> Witness {
     let beta_i32 = BETA as i32;
     let modulus = 2 * BETA + 1; // 17
     let mut r = [0i32; N];

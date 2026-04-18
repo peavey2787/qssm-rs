@@ -6,7 +6,7 @@ use qssm_ms::GhostMirrorProof;
 /// Verification / proving context seeded from a 32-byte key.
 #[derive(Debug, Clone)]
 pub struct ProofContext {
-    pub vk: VerifyingKey,
+    pub(crate) vk: VerifyingKey,
     seed: [u8; 32],
 }
 
@@ -27,6 +27,12 @@ impl ProofContext {
     pub fn seed(&self) -> [u8; 32] {
         self.seed
     }
+
+    /// The verifying key derived from this context's seed.
+    #[must_use]
+    pub fn vk(&self) -> &VerifyingKey {
+        &self.vk
+    }
 }
 
 /// Bundle of all proof artifacts needed for verification.
@@ -34,6 +40,7 @@ impl ProofContext {
 /// Verifier recomputes the truth digest and LE public instance from the
 /// MS transcript — the cross-engine binding is enforced, not trusted.
 #[derive(Debug, Clone)]
+#[non_exhaustive]
 pub struct Proof {
     /// Ghost-Mirror inequality proof.
     pub ms_root: [u8; 32],
