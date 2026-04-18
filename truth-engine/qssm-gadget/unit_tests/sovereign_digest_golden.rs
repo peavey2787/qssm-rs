@@ -71,7 +71,6 @@ fn golden_truth_digest_and_limb() {
     assert_eq!(w.message_limb, EXPECTED_LIMB);
 
     PublicInstance::digest_coeffs(w.digest_coeff_vector)
-        .validate()
         .expect("PublicInstance accepts truth digest coefficient vector");
 }
 

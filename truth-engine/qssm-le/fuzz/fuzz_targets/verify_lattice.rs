@@ -9,7 +9,7 @@ use qssm_le::{
 const U32_BYTES: usize = 4;
 const POLY_BYTES: usize = N * U32_BYTES;
 const DIGEST_COEFF_BYTES: usize = PUBLIC_DIGEST_COEFFS * U32_BYTES;
-const FIXED_SIZE: usize = 32 + 1 + DIGEST_COEFF_BYTES + POLY_BYTES * 3 + 32 + 32;
+const FIXED_SIZE: usize = 32 + DIGEST_COEFF_BYTES + POLY_BYTES * 3 + 32 + 32;
 
 fn read_u32_le(input: &[u8], offset: &mut usize) -> u32 {
     let i = *offset;
@@ -36,17 +36,13 @@ fuzz_target!(|data: &[u8]| {
     o += 32;
     let vk = VerifyingKey::from_seed(seed);
 
-    let binding_selector = data[o];
-    o += 1;
-
     let mut digest_coeffs = [0u32; PUBLIC_DIGEST_COEFFS];
     for c in &mut digest_coeffs {
         *c = read_u32_le(data, &mut o) & 0x0f;
     }
-    let public = if binding_selector & 1 == 0 {
-        PublicInstance::legacy_message(read_u32_le(data, &mut o) as u64)
-    } else {
-        PublicInstance::digest_coeffs(digest_coeffs)
+    let public = match PublicInstance::digest_coeffs(digest_coeffs) {
+        Ok(p) => p,
+        Err(_) => return,
     };
 
     let commitment = Commitment(read_poly(data, &mut o));

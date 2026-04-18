@@ -129,7 +129,7 @@ fn verify_lattice_zk_family(claim: &Value, template_id: &str) -> Result<(), Stri
         challenge_seed,
     };
     let vk = VerifyingKey::from_seed(crs_seed);
-    let public = PublicInstance::legacy_message(public_message);
+    let public = PublicInstance::from_u64_nibbles(public_message);
     let ok = verify_lattice(&vk, &public, &commitment, &proof, &rollup).map_err(|e| e.to_string())?;
     if ok {
         Ok(())
@@ -168,7 +168,7 @@ mod tests {
         use qssm_le::{prove_arithmetic, PublicInstance, Witness};
         let rollup = [7u8; 32];
         let vk = VerifyingKey::from_seed([9u8; 32]);
-        let witness = Witness { r: [0i32; N] };
+        let witness = Witness::new([0i32; N]);
         let right_answer = 100u64;
         let blinded = {
             let mut b = [0u8; 32];
@@ -176,7 +176,7 @@ mod tests {
             b
         };
         let msg = u64::from_le_bytes(blinded[..8].try_into().unwrap()) & ((1u64 << 30) - 1);
-        let public = PublicInstance::legacy_message(msg);
+        let public = PublicInstance::from_u64_nibbles(msg);
         let (c, p) = prove_arithmetic(&vk, &public, &witness, &rollup, [0xBB; 32]).unwrap();
         let claim = serde_json::json!({
             "verifier_template_id": "simple_math_zk_v1",
@@ -199,14 +199,14 @@ mod tests {
         use qssm_le::{prove_arithmetic, PublicInstance, Witness};
         let rollup = [8u8; 32];
         let vk = VerifyingKey::from_seed([0x55; 32]);
-        let witness = Witness { r: [0i32; N] };
+        let witness = Witness::new([0i32; N]);
         let committed_answer = 42u64;
         let blinded = {
             let mut b = [0u8; 32];
             b[..8].copy_from_slice(&committed_answer.to_le_bytes());
             b
         };
-        let public = PublicInstance::legacy_message(committed_answer);
+        let public = PublicInstance::from_u64_nibbles(committed_answer);
         let (c, p) = prove_arithmetic(&vk, &public, &witness, &rollup, [0xBB; 32]).unwrap();
         let mut claim = serde_json::json!({
             "verifier_template_id": "simple_math_zk_v1",

@@ -81,10 +81,10 @@ fn build_duel_tx(
     assert!(valid_duel_public_message(public_m));
 
     let vk = VerifyingKey::from_seed(crs);
-    let public = PublicInstance::legacy_message(public_m);
-    let witness = Witness {
-        r: [0i32; qssm_le::N],
-    };
+    let public = PublicInstance::from_u64_nibbles(public_m);
+    let witness = Witness::new(
+        [0i32; qssm_le::N],
+    );
     let (commitment, proof) = prove_arithmetic(&vk, &public, &witness, &ctx_digest, crs).expect("prove");
 
     let att = sign_att(sk_winner, anchor, winner, ctx_digest);
@@ -162,10 +162,10 @@ fn duel_rejects_impossible_public_message() {
     let sk_winner = if winner == id_a { &sk_alice } else { &sk_bob };
 
     let vk = VerifyingKey::from_seed([0x3Du8; 32]);
-    let public = PublicInstance::legacy_message(public_m);
-    let witness = Witness {
-        r: [0i32; qssm_le::N],
-    };
+    let public = PublicInstance::from_u64_nibbles(public_m);
+    let witness = Witness::new(
+        [0i32; qssm_le::N],
+    );
     let (commitment, proof) = prove_arithmetic(&vk, &public, &witness, &d, [0xBB; 32]).expect("prove");
     let att = sign_att(sk_winner, &anchor, winner, d);
     let wire = encode_millionaires_proof(&att, vk.crs_seed, public_m, &commitment, &proof);
@@ -250,10 +250,10 @@ fn bad_signature_rejects() {
 #[test]
 fn verify_lattice_latency_release_god_mode() {
     let vk = VerifyingKey::from_seed([0x99; 32]);
-    let public = PublicInstance::legacy_message(public_message_for_duel(1000, 500).unwrap());
-    let witness = Witness {
-        r: [0i32; qssm_le::N],
-    };
+    let public = PublicInstance::from_u64_nibbles(public_message_for_duel(1000, 500).unwrap());
+    let witness = Witness::new(
+        [0i32; qssm_le::N],
+    );
     let ctx = [0xEEu8; 32];
     let (c, p) = prove_arithmetic(&vk, &public, &witness, &ctx, [0xBB; 32]).expect("prove");
     let t0 = Instant::now();

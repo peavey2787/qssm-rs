@@ -158,10 +158,10 @@ fn run() -> Result<(), String> {
         .map_err(|e| format!("Invalid balances for demo encoding: {e:?}"))?;
 
     let vk = VerifyingKey::from_seed([0xDD; 32]);
-    let public = PublicInstance::legacy_message(public_m);
-    let witness = Witness {
-        r: [0i32; qssm_le::N],
-    };
+    let public = PublicInstance::from_u64_nibbles(public_m);
+    let witness = Witness::new(
+        [0i32; qssm_le::N],
+    );
     let (commitment, proof) = prove_arithmetic(&vk, &public, &witness, &ctx_digest, [0xBB; 32])
         .map_err(|e| format!("Prover failed: {e:?}"))?;
 

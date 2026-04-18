@@ -13,7 +13,7 @@ use crate::algebra::ring::{
 };
 use crate::crs::VerifyingKey;
 use crate::protocol::params::{
-    BETA, C_POLY_SIZE, C_POLY_SPAN, ETA, GAMMA, MAX_MESSAGE_LEGACY, MAX_PROVER_ATTEMPTS, N,
+    BETA, C_POLY_SIZE, C_POLY_SPAN, ETA, GAMMA, MAX_PROVER_ATTEMPTS, N,
     PUBLIC_DIGEST_COEFFS, PUBLIC_DIGEST_COEFF_MAX, Q,
 };
 use crate::LeError;
@@ -26,46 +26,53 @@ const DST_MS_VERIFY: [u8; 32] = *b"QSSM-MS-V1-VERIFY...............";
 
 /// Public inputs visible to all verifiers (no secret witness).
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum PublicBinding {
-    /// Legacy compatibility path only.
-    LegacySingleLimb { message: u64 },
-    /// Secure path: bind digest-derived coefficient vector.
+    /// Bind digest-derived coefficient vector (4-bit lanes, each ≤ 15).
     DigestCoeffVector { coeffs: [u32; PUBLIC_DIGEST_COEFFS] },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PublicInstance {
-    pub binding: PublicBinding,
+    binding: PublicBinding,
 }
 
 impl PublicInstance {
     #[must_use]
-    pub fn legacy_message(message: u64) -> Self {
-        Self {
-            binding: PublicBinding::LegacySingleLimb { message },
-        }
+    pub fn binding(&self) -> &PublicBinding {
+        &self.binding
     }
 
+    /// Construct from digest coefficients. Validates all ≤ `PUBLIC_DIGEST_COEFF_MAX`.
+    pub fn digest_coeffs(coeffs: [u32; PUBLIC_DIGEST_COEFFS]) -> Result<Self, LeError> {
+        for &c in &coeffs {
+            if c > PUBLIC_DIGEST_COEFF_MAX {
+                return Err(LeError::OversizedInput);
+            }
+        }
+        Ok(Self {
+            binding: PublicBinding::DigestCoeffVector { coeffs },
+        })
+    }
+
+    /// Encode a `u64` scalar as 4-bit nibble coefficients (16 nibbles, rest zero).
+    /// Standard migration path from the removed legacy single-limb message mode.
     #[must_use]
-    pub fn digest_coeffs(coeffs: [u32; PUBLIC_DIGEST_COEFFS]) -> Self {
+    pub fn from_u64_nibbles(value: u64) -> Self {
+        let mut coeffs = [0u32; PUBLIC_DIGEST_COEFFS];
+        for i in 0..16 {
+            coeffs[i] = ((value >> (i * 4)) & 0x0f) as u32;
+        }
         Self {
             binding: PublicBinding::DigestCoeffVector { coeffs },
         }
     }
 
     pub fn validate(&self) -> Result<(), LeError> {
-        match &self.binding {
-            PublicBinding::LegacySingleLimb { message } => {
-                if *message >= MAX_MESSAGE_LEGACY {
-                    return Err(LeError::MessageOutOfRange);
-                }
-            }
-            PublicBinding::DigestCoeffVector { coeffs } => {
-                for &c in coeffs {
-                    if c > PUBLIC_DIGEST_COEFF_MAX {
-                        return Err(LeError::OversizedInput);
-                    }
-                }
+        let PublicBinding::DigestCoeffVector { coeffs } = &self.binding;
+        for &c in coeffs {
+            if c > PUBLIC_DIGEST_COEFF_MAX {
+                return Err(LeError::OversizedInput);
             }
         }
         Ok(())
@@ -73,12 +80,33 @@ impl PublicInstance {
 }
 
 /// Secret witness (prover-only).
-#[derive(Debug, Clone, PartialEq, Eq, Zeroize, ZeroizeOnDrop)]
+#[derive(Zeroize, ZeroizeOnDrop)]
+#[cfg_attr(test, derive(PartialEq, Eq))]
 pub struct Witness {
-    pub r: [i32; N],
+    r: [i32; N],
+}
+
+impl core::fmt::Debug for Witness {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("Witness")
+            .field("r", &"[REDACTED]")
+            .finish()
+    }
 }
 
 impl Witness {
+    /// Construct a new witness from short coefficients.
+    #[must_use]
+    pub fn new(r: [i32; N]) -> Self {
+        Self { r }
+    }
+
+    /// Read-only access to witness coefficients.
+    #[must_use]
+    pub fn coeffs(&self) -> &[i32; N] {
+        &self.r
+    }
+
     pub fn validate(&self) -> Result<(), LeError> {
         for &v in &self.r {
             if v.unsigned_abs() > BETA {
@@ -90,15 +118,48 @@ impl Witness {
 }
 
 /// Secret witness key material (alias wrapper for forward-compatible APIs).
-#[derive(Debug, Clone, PartialEq, Eq, Zeroize, ZeroizeOnDrop)]
-pub struct SecretKey {
-    pub r: [i32; N],
+#[derive(Zeroize, ZeroizeOnDrop)]
+#[cfg_attr(test, derive(PartialEq, Eq))]
+#[allow(dead_code)]
+pub(crate) struct SecretKey {
+    pub(crate) r: [i32; N],
+}
+
+impl core::fmt::Debug for SecretKey {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("SecretKey")
+            .field("r", &"[REDACTED]")
+            .finish()
+    }
 }
 
 /// Prover masking randomness sampled per-attempt.
-#[derive(Debug, Clone, PartialEq, Eq, Zeroize, ZeroizeOnDrop)]
+#[derive(Zeroize, ZeroizeOnDrop)]
+#[cfg_attr(test, derive(PartialEq, Eq))]
 pub struct CommitmentRandomness {
-    pub y: [i32; N],
+    y: [i32; N],
+}
+
+impl CommitmentRandomness {
+    /// Construct a new commitment randomness from nonce coefficients.
+    #[must_use]
+    pub fn new(y: [i32; N]) -> Self {
+        Self { y }
+    }
+
+    /// Read-only access to nonce coefficients.
+    #[must_use]
+    pub fn coeffs(&self) -> &[i32; N] {
+        &self.y
+    }
+}
+
+impl core::fmt::Debug for CommitmentRandomness {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("CommitmentRandomness")
+            .field("y", &"[REDACTED]")
+            .finish()
+    }
 }
 
 /// Commitment as a full ring element (canonical coeffs mod \(q\)).
@@ -119,22 +180,13 @@ pub struct LatticeProof {
 /// and the gadget `TranscriptMap` / `TRANSCRIPT_MAP_LAYOUT_VERSION` in `qssm-gadget`.
 fn public_binding_fs_bytes(public: &PublicInstance) -> Vec<u8> {
     let _ = LE_FS_PUBLIC_BINDING_LAYOUT_VERSION;
-    match &public.binding {
-        PublicBinding::LegacySingleLimb { message } => {
-            let mut out = Vec::with_capacity(1 + 8);
-            out.push(0);
-            out.extend_from_slice(&message.to_le_bytes());
-            out
-        }
-        PublicBinding::DigestCoeffVector { coeffs } => {
-            let mut out = Vec::with_capacity(1 + coeffs.len() * 4);
-            out.push(1);
-            for &c in coeffs {
-                out.extend_from_slice(&c.to_le_bytes());
-            }
-            out
-        }
+    let PublicBinding::DigestCoeffVector { coeffs } = &public.binding;
+    let mut out = Vec::with_capacity(1 + coeffs.len() * 4);
+    out.push(1);
+    for &c in coeffs {
+        out.extend_from_slice(&c.to_le_bytes());
     }
+    out
 }
 
 fn fs_challenge_bytes(
@@ -300,14 +352,10 @@ fn is_canonical_poly(poly: &RqPoly) -> bool {
 }
 
 fn mu_from_public(public: &PublicInstance) -> RqPoly {
-    match &public.binding {
-        PublicBinding::LegacySingleLimb { message } => RqPoly::embed_constant(*message),
-        PublicBinding::DigestCoeffVector { coeffs } => {
-            let mut out = [0u32; N];
-            out[..PUBLIC_DIGEST_COEFFS].copy_from_slice(coeffs);
-            RqPoly(out)
-        }
-    }
+    let PublicBinding::DigestCoeffVector { coeffs } = &public.binding;
+    let mut out = [0u32; N];
+    out[..PUBLIC_DIGEST_COEFFS].copy_from_slice(coeffs);
+    RqPoly(out)
 }
 
 /// \(C = A r + \mu(public)\).
@@ -341,11 +389,12 @@ pub fn prove_with_witness(
     let u = ScrubbedPoly::from_public(&commitment.0.sub(&mu));
 
     for _ in 0..MAX_PROVER_ATTEMPTS {
-        let mut nonce = CommitmentRandomness { y: [0i32; N] };
-        for coeff in &mut nonce.y {
+        let mut y_arr = [0i32; N];
+        for coeff in &mut y_arr {
             *coeff = (rng.next_u32() % (2 * ETA + 1)) as i32 - ETA as i32;
         }
-        let y_poly = ScrubbedPoly::from_public(&short_vec_to_rq_bound(&nonce.y, ETA)?);
+        let y_poly = ScrubbedPoly::from_public(&short_vec_to_rq_bound(&y_arr, ETA)?);
+        y_arr.zeroize();
         let t = y_poly.mul_public(&a)?.as_public();
         let challenge_seed = fs_challenge_bytes(binding_context, vk, public, commitment, &t);
         let c_poly = challenge_poly(&challenge_seed);
@@ -378,7 +427,10 @@ pub fn verify_lattice_algebraic(
     binding_context: &[u8; 32],
 ) -> Result<bool, LeError> {
     public.validate()?;
-    if !is_canonical_poly(&proof.t) || !is_canonical_poly(&proof.z) {
+    if !is_canonical_poly(&commitment.0)
+        || !is_canonical_poly(&proof.t)
+        || !is_canonical_poly(&proof.z)
+    {
         return Err(LeError::OversizedInput);
     }
     if ct_reject_if_above_gamma(&proof.z).unwrap_u8() == 0 {

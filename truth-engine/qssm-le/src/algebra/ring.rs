@@ -9,9 +9,18 @@ use zeroize::{Zeroize, ZeroizeOnDrop};
 pub struct RqPoly(pub [u32; N]);
 
 /// Secret-bearing polynomial wrapper that guarantees drop-time zeroization.
-#[derive(Debug, Clone, PartialEq, Eq, Zeroize, ZeroizeOnDrop)]
+#[derive(Zeroize, ZeroizeOnDrop)]
+#[cfg_attr(test, derive(Clone, PartialEq, Eq))]
 pub struct ScrubbedPoly {
     coeffs: [u32; N],
+}
+
+impl core::fmt::Debug for ScrubbedPoly {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("ScrubbedPoly")
+            .field("coeffs", &"[REDACTED]")
+            .finish()
+    }
 }
 
 impl ScrubbedPoly {
@@ -150,10 +159,15 @@ fn reduce_i64_mod_q(v: i64, q: i64) -> u32 {
 }
 
 /// Concatenate coefficients (LE u32) for Fiat–Shamir binding.
+///
+/// # Precondition
+/// All coefficients must be in canonical form `[0, Q)`. Non-canonical inputs
+/// would produce ambiguous FS transcripts (soundness concern).
 #[must_use]
 pub fn encode_rq_coeffs_le(p: &RqPoly) -> [u8; N * 4] {
     let mut out = [0u8; N * 4];
     for (i, c) in p.0.iter().enumerate() {
+        debug_assert!(c < &Q, "encode_rq_coeffs_le: non-canonical coefficient at index {i}");
         out[i * 4..(i + 1) * 4].copy_from_slice(&c.to_le_bytes());
     }
     out

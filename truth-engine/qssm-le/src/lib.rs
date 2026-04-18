@@ -4,10 +4,11 @@
 //! ```
 //! use qssm_le::{
 //!     commit_mlwe, prove_arithmetic, verify_lattice, PublicInstance, VerifyingKey, Witness,
+//!     PUBLIC_DIGEST_COEFFS,
 //! };
 //! let vk = VerifyingKey::from_seed([9u8; 32]);
-//! let public = PublicInstance::legacy_message(12345);
-//! let witness = Witness { r: [0i32; qssm_le::N] };
+//! let public = PublicInstance::digest_coeffs([0u32; PUBLIC_DIGEST_COEFFS]).unwrap();
+//! let witness = Witness::new([0i32; qssm_le::N]);
 //! let ctx = [7u8; 32];
 //! let rng_seed = [42u8; 32]; // deterministic masking seed (from entropy pipeline)
 //! let (commitment, proof) = prove_arithmetic(&vk, &public, &witness, &ctx, rng_seed).unwrap();
@@ -26,11 +27,15 @@ pub use algebra::ring::{
 pub use crs::VerifyingKey;
 pub use error::LeError;
 pub use protocol::commit::{
-    commit_mlwe, prove_with_witness, verify_lattice_algebraic, Commitment, CommitmentRandomness,
-    LatticeProof, PublicBinding, PublicInstance, SecretKey, Witness,
+    commit_mlwe, verify_lattice_algebraic, Commitment, CommitmentRandomness,
+    LatticeProof, PublicBinding, PublicInstance, Witness,
 };
+// prove_with_witness is intentionally NOT re-exported. It accepts an arbitrary
+// RngCore, which would let external callers inject a weak/biased RNG and defeat
+// the rejection sampling security guarantee. Use prove_arithmetic instead.
+pub(crate) use protocol::commit::prove_with_witness;
 pub use protocol::params::{
-    BETA, C_POLY_SIZE, C_POLY_SPAN, C_SPAN_LEGACY, ETA, GAMMA, MAX_MESSAGE_LEGACY, N,
+    BETA, C_POLY_SIZE, C_POLY_SPAN, ETA, GAMMA, N,
     PUBLIC_DIGEST_COEFFS, PUBLIC_DIGEST_COEFF_MAX, Q,
 };
 pub use qssm_utils::LE_FS_PUBLIC_BINDING_LAYOUT_VERSION;
@@ -79,6 +84,13 @@ pub fn prove_arithmetic(
 ///
 /// Construction: `BLAKE3-XOF(key = rng_seed)`, streaming output.
 /// No OS entropy, no hardware calls — purely deterministic.
+//
+// SECURITY-CONCESSION: `blake3::OutputReader` is opaque and cannot be
+// zeroized on drop. The XOF internal state (derived from rng_seed) may
+// persist on the stack after this struct is dropped. Acceptable because:
+// (1) rng_seed is a domain-separated derived value, not a master secret,
+// (2) Blake3Rng is short-lived (created and consumed within prove_arithmetic),
+// (3) the OutputReader holds streaming state, not the original key bytes.
 struct Blake3Rng {
     reader: blake3::OutputReader,
 }

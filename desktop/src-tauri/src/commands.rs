@@ -258,7 +258,7 @@ fn random_witness(rng: &mut impl RngCore) -> Witness {
         for x in &mut r {
             *x = (rng.next_u32() % (2 * BETA + 1)) as i32 - BETA as i32;
         }
-        let w = Witness { r };
+        let w = Witness::new(r);
         if w.validate().is_ok() {
             return w;
         }
@@ -271,8 +271,7 @@ fn prove_lattice_demo(
     rng_seed: [u8; 32],
 ) -> Result<serde_json::Value, String> {
     let vk = VerifyingKey::from_seed(VK_SEED);
-    let public = PublicInstance::digest_coeffs(digest_coeff_vector);
-    public.validate().map_err(|e| e.to_string())?;
+    let public = PublicInstance::digest_coeffs(digest_coeff_vector).map_err(|e| e.to_string())?;
 
     let mut rng = rand::rngs::StdRng::from_seed(rng_seed);
     for attempt in 0..24u8 {

@@ -71,7 +71,8 @@ pub fn prove(
     tw.validate().map_err(|_| ZkError::TruthWitnessInvalid)?;
 
     // 5. LE witness: deterministic short vector r ∈ [-BETA, BETA]^N.
-    let public = PublicInstance::digest_coeffs(tw.digest_coeff_vector);
+    let public = PublicInstance::digest_coeffs(tw.digest_coeff_vector)
+        .map_err(|_| ZkError::TruthWitnessInvalid)?;
     let witness = derive_le_witness(&entropy_seed, &binding_ctx);
 
     // 6. LE prove: deterministic Lyubashevsky masking from seeded CSPRNG.
@@ -115,5 +116,5 @@ fn derive_le_witness(entropy_seed: &[u8; 32], binding_ctx: &[u8; 32]) -> Witness
             r[chunk_idx as usize * 8 + j] = (raw % modulus) as i32 - beta_i32;
         }
     }
-    Witness { r }
+    Witness::new(r)
 }

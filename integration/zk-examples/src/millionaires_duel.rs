@@ -17,7 +17,7 @@ use mssq_batcher::{verify_leader_attestation_ctx, LeaderAttestation, ProofError,
 use qssm_traits::L2Transaction;
 use qssm_le::{
     verify_lattice, Commitment, LatticeProof, PublicInstance, RqPoly, VerifyingKey,
-    MAX_MESSAGE_LEGACY, N,
+    N,
 };
 use qssm_utils::RollupContext;
 
@@ -28,6 +28,9 @@ pub const WEALTHIEST_KNIGHT_TAG: &[u8] = b"WealthiestKnight";
 pub const DUEL_SHIFT: u64 = 1 << 20;
 /// Maximum allowed balance for demo participants (`v_A`, `v_B` must be `< MAX_DEMO_BALANCE`).
 pub const MAX_DEMO_BALANCE: u64 = 1 << 19;
+
+/// Upper bound on the public duel message (local replacement for removed `MAX_MESSAGE_LEGACY`).
+const DUEL_MESSAGE_MAX: u64 = 1 << 30;
 
 const PROOF_MAGIC: &[u8] = b"MDUEL\x01";
 
@@ -51,7 +54,7 @@ pub fn public_message_for_duel(v_a: u64, v_b: u64) -> Result<u64, MillionairesDu
     let m = diff
         .checked_add(DUEL_SHIFT as i128)
         .ok_or(MillionairesDuelError::MessageOutOfRange)?;
-    if m < 0 || m >= MAX_MESSAGE_LEGACY as i128 {
+    if m < 0 || m >= DUEL_MESSAGE_MAX as i128 {
         return Err(MillionairesDuelError::MessageOutOfRange);
     }
     Ok(m as u64)
@@ -67,7 +70,7 @@ pub fn duel_holds(public_m: u64) -> bool {
 /// (covers Alice ahead, Bob ahead, and ties). Used by the verifier instead of [`duel_holds`] alone.
 #[must_use]
 pub fn valid_duel_public_message(m: u64) -> bool {
-    if m >= MAX_MESSAGE_LEGACY {
+    if m >= DUEL_MESSAGE_MAX {
         return false;
     }
     let m = i128::from(m);
@@ -316,7 +319,7 @@ mod tests {
 
     #[test]
     fn valid_duel_public_message_rejects_out_of_band() {
-        assert!(!valid_duel_public_message(MAX_MESSAGE_LEGACY));
+        assert!(!valid_duel_public_message(DUEL_MESSAGE_MAX));
         assert!(!valid_duel_public_message(DUEL_SHIFT + MAX_DEMO_BALANCE));
         // One more than max negative gap: |v_a - v_b| would need to be MAX_DEMO_BALANCE.
         assert!(!valid_duel_public_message(DUEL_SHIFT - MAX_DEMO_BALANCE));
@@ -344,7 +347,7 @@ impl TxProofVerifier for MillionairesDuelVerifier {
             return Err(ProofError::Invalid);
         }
         let vk = VerifyingKey::from_seed(bundle.crs_seed);
-        let public = PublicInstance::legacy_message(bundle.public_message);
+        let public = PublicInstance::from_u64_nibbles(bundle.public_message);
         let digest = ctx.digest();
         match verify_lattice(&vk, &public, &bundle.commitment, &bundle.proof, &digest) {
             Ok(true) => Ok(()),

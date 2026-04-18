@@ -1,13 +1,14 @@
 use thiserror::Error;
 
 #[derive(Debug, Error)]
+#[non_exhaustive]
 pub enum LeError {
     #[error("R1CS or witness input exceeds allowed size")]
     OversizedInput,
-    #[error("public message out of embeddable range")]
-    MessageOutOfRange,
     #[error("shortness / rejection sampling bound violated")]
     RejectedSample,
+    /// Reserved for future proving backends where ring multiplication may fail.
+    #[allow(dead_code)]
     #[error("ring multiplication failed")]
     RingMul,
     #[error("prover rejected too many times (Lyubashevsky aborts)")]

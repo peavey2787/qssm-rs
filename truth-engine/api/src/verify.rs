@@ -56,7 +56,8 @@ pub fn verify(
     let recomputed_coeffs = digest_coeff_vector_from_truth_digest(&recomputed_digest);
 
     // 4. LE: verify the lattice proof against the RECOMPUTED public instance.
-    let public = PublicInstance::digest_coeffs(recomputed_coeffs);
+    let public = PublicInstance::digest_coeffs(recomputed_coeffs)
+        .map_err(ZkError::LeVerify)?;
     let ok = qssm_le::verify_lattice(
         &ctx.vk, &public, &proof.le_commitment, &proof.le_proof, &binding_ctx,
     ).map_err(ZkError::LeVerify)?;

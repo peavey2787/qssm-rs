@@ -1,7 +1,10 @@
 //! Length-`2N` NTT mod `Q` for negacyclic convolution mod \(X^N+1\).
 #![forbid(unsafe_code)]
 
+use std::sync::OnceLock;
+
 use crate::protocol::params::{N, Q};
+use zeroize::Zeroize;
 
 const TWO_N_U32: u32 = (2 * N) as u32;
 const _: () = assert!(TWO_N_U32 > 0, "2N must be non-zero");
@@ -74,14 +77,18 @@ fn validate_ntt_parameters(q: u32, two_n: u32) {
 }
 
 /// Primitive `2N`-th root of unity \(\omega\), derived from a discovered generator.
+/// Cached via `OnceLock` — computed once, reused for all subsequent NTT calls.
 fn omega_2n() -> u32 {
-    validate_ntt_parameters(Q, TWO_N_U32);
-    let g = find_primitive_root(Q).expect("failed to find primitive root for Q");
-    let exp = (Q - 1) / TWO_N_U32;
-    let omega = pow_mod(g as u64, exp, Q);
-    assert_eq!(pow_mod(omega as u64, TWO_N_U32, Q), 1);
-    assert_ne!(pow_mod(omega as u64, N as u32, Q), 1);
-    omega
+    static OMEGA: OnceLock<u32> = OnceLock::new();
+    *OMEGA.get_or_init(|| {
+        validate_ntt_parameters(Q, TWO_N_U32);
+        let g = find_primitive_root(Q).expect("failed to find primitive root for Q");
+        let exp = (Q - 1) / TWO_N_U32;
+        let omega = pow_mod(g as u64, exp, Q);
+        assert_eq!(pow_mod(omega as u64, TWO_N_U32, Q), 1);
+        assert_ne!(pow_mod(omega as u64, N as u32, Q), 1);
+        omega
+    })
 }
 
 fn ntt_inplace(a: &mut [u32], invert: bool) {
@@ -99,12 +106,13 @@ fn ntt_inplace(a: &mut [u32], invert: bool) {
             a.swap(i, j);
         }
     }
+    let omega = omega_2n();
     let mut len = 2usize;
     while len <= n {
         let wlen = if invert {
-            inv_mod(pow_mod(omega_2n() as u64, TWO_N_U32 / (len as u32), Q))
+            inv_mod(pow_mod(omega as u64, TWO_N_U32 / (len as u32), Q))
         } else {
-            pow_mod(omega_2n() as u64, TWO_N_U32 / (len as u32), Q)
+            pow_mod(omega as u64, TWO_N_U32 / (len as u32), Q)
         };
         let mut i = 0usize;
         while i < n {
@@ -139,11 +147,15 @@ pub(crate) fn negacyclic_mul(a: &[u32; N], b: &[u32; N]) -> [u32; N] {
     for i in 0..(2 * N) {
         fa[i] = ((fa[i] as u64 * fb[i] as u64) % Q as u64) as u32;
     }
+    // Volatile-zero fb — it held NTT-domain secret data.
+    fb.zeroize();
     ntt_inplace(&mut fa, true);
     let mut out = [0u32; N];
     for i in 0..N {
         out[i] = (fa[i] + Q - fa[i + N]) % Q;
     }
+    // Volatile-zero fa — it held inverse-NTT-domain secret data.
+    fa.zeroize();
     out
 }
 
