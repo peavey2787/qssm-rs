@@ -5,11 +5,10 @@
 //! This crate wraps [`zk_api::verify`] and [`template_lib::resolve`] to provide
 //! a single-call entry point that does not require network access.
 
-mod ms_verifier;
+#![forbid(unsafe_code)]
 
 pub use zk_api::{Proof, ProofContext, ZkError};
 pub use template_lib::QssmTemplate;
-pub use ms_verifier::{MsGhostMirrorInput, MsGhostMirrorOp, MsGhostMirrorOutput};
 
 /// Verify a proof offline using the standard template gallery.
 ///
@@ -48,6 +47,7 @@ pub fn verify_proof_with_template(
 
 /// Errors from offline verification.
 #[derive(Debug, thiserror::Error)]
+#[non_exhaustive]
 pub enum VerifyError {
     #[error("unknown template: {0}")]
     UnknownTemplate(String),
@@ -97,6 +97,62 @@ mod tests {
 
         let result = verify_proof_offline(&ctx, "nonexistent-template", &claim, &proof, binding_ctx);
         assert!(matches!(result, Err(VerifyError::UnknownTemplate(_))));
+    }
+
+    // ── Hardening tests ───────────────────────────────────────────────
+
+    fn make_proof(binding_ctx: [u8; 32]) -> (ProofContext, QssmTemplate, serde_json::Value, Proof) {
+        let ctx = ProofContext::new(test_seed());
+        let template = QssmTemplate::proof_of_age("age-gate-21");
+        let claim = json!({ "claim": { "age_years": 25 } });
+        let proof = zk_api::prove(&ctx, &template, &claim, 100, 50, binding_ctx, test_entropy())
+            .expect("prove should succeed");
+        (ctx, template, claim, proof)
+    }
+
+    #[test]
+    fn verify_with_explicit_template_round_trip() {
+        let binding_ctx = blake3_hash(b"test-explicit-template");
+        let (ctx, template, claim, proof) = make_proof(binding_ctx);
+        let ok = verify_proof_with_template(&ctx, &template, &claim, &proof, binding_ctx)
+            .expect("verify with template should succeed");
+        assert!(ok);
+    }
+
+    #[test]
+    fn tampered_ms_root_rejected() {
+        let binding_ctx = blake3_hash(b"test-tampered-root");
+        let (ctx, template, claim, mut proof) = make_proof(binding_ctx);
+        proof.ms_root[0] ^= 0x01;
+        let result = verify_proof_with_template(&ctx, &template, &claim, &proof, binding_ctx);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn wrong_binding_context_rejected() {
+        let binding_ctx = blake3_hash(b"test-wrong-ctx-a");
+        let wrong_ctx = blake3_hash(b"test-wrong-ctx-b");
+        let (ctx, template, claim, proof) = make_proof(binding_ctx);
+        let result = verify_proof_with_template(&ctx, &template, &claim, &proof, wrong_ctx);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn wrong_claim_rejected() {
+        let binding_ctx = blake3_hash(b"test-wrong-claim");
+        let (ctx, template, _claim, proof) = make_proof(binding_ctx);
+        let bad_claim = json!({ "claim": { "age_years": 17 } });
+        let result = verify_proof_with_template(&ctx, &template, &bad_claim, &proof, binding_ctx);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn tampered_binding_entropy_rejected() {
+        let binding_ctx = blake3_hash(b"test-tampered-entropy");
+        let (ctx, template, claim, mut proof) = make_proof(binding_ctx);
+        proof.binding_entropy[0] ^= 0xFF;
+        let result = verify_proof_with_template(&ctx, &template, &claim, &proof, binding_ctx);
+        assert!(result.is_err());
     }
 }
 

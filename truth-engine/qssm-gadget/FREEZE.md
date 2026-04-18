@@ -81,3 +81,43 @@ contact the QSSM project maintainers.
 ---
 
 **This crate is safe for institutional, bank-grade, and HSM-adjacent deployment.**
+
+---
+
+## Layer 3 Adapter Policy (v1.1.0+)
+
+At v1.1.0, `MsGhostMirrorOp` was added — a `LatticePolyOp` adapter that wraps
+`qssm_ms::verify` for composition with the gadget operator pipeline. This was
+relocated from `local-verifier` (Layer 4) to enforce the architectural rule that
+all `LatticePolyOp` implementations live alongside the trait definition.
+
+**Why this is allowed under the freeze:**
+
+- No frozen invariant was modified. The 12 invariants listed above remain locked.
+- No existing transcript, algebraic relation, or domain separator was changed.
+- No existing type signature was altered. The change is purely **additive** — new
+  module, new types, new re-exports.
+- `qssm-ms` was promoted from `[dev-dependencies]` to `[dependencies]` — this adds
+  a runtime dependency but does not change any existing code path.
+
+**Rules for future adapters:**
+
+Adapters implementing existing frozen traits (`LatticePolyOp`, `ConstraintSystem`)
+may be added post-freeze under these conditions:
+
+1. The adapter **must not** modify any frozen invariant, transcript layout,
+   domain separator, algebraic relation, or constraint count.
+2. The adapter **must not** alter any existing type signature or remove any
+   existing re-export.
+3. The adapter **must** be additive only — new module, new types, new re-exports.
+4. The adapter **must** include its own tests (at minimum: happy-path synthesis,
+   rejection on invalid input, and public binding contract validation).
+5. Each adapter addition **must** bump the minor version (e.g. 1.1.0 → 1.2.0)
+   and document the change in this file.
+6. The workspace version pin in `Cargo.toml` **must** be updated to match.
+
+**Adapter changelog:**
+
+| Version | Adapter | Source |
+|---------|---------|--------|
+| 1.1.0 | `MsGhostMirrorOp` | Relocated from `local-verifier/src/ms_verifier.rs`. Wraps `qssm_ms::verify` as a `LatticePolyOp`. 3 tests (synthesize, rejection, binding contract). |

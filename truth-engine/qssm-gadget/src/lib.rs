@@ -52,6 +52,11 @@ pub use circuit::operators::{
 };
 pub use circuit::operators::truth_limb::{effective_external_entropy, xor32};
 
+// circuit::operators::ms_ghost_mirror (v1.1.0 — post-freeze adapter)
+pub use circuit::operators::ms_ghost_mirror::{
+    MsGhostMirrorInput, MsGhostMirrorOp, MsGhostMirrorOutput,
+};
+
 // primitives::entropy
 pub use primitives::entropy::EntropyAnchor;
 

@@ -4,11 +4,13 @@ pub mod merkle_parent_blake3;
 pub mod truth_limb;
 pub mod entropy_injection;
 pub mod engine_a_binding;
+pub mod ms_ghost_mirror;
 
 pub use merkle_parent_blake3::*;
 pub use truth_limb::*;
 pub use entropy_injection::*;
 pub use engine_a_binding::*;
+pub use ms_ghost_mirror::*;
 
 use super::binding_contract::BindingReservoir;
 use super::context::{PolyOpContext, PolyOpError};
