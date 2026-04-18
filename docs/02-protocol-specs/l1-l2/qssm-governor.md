@@ -33,7 +33,7 @@ Let:
 
 - \(p_i\): i-th pulse observed by a node.
 - \(t_i\): local receive timestamp for pulse \(p_i\), in nanoseconds.
-- \(d_i \in \{0,1\}\): pulse density verdict from `qssm_entropy::verify_density(raw_jitter)`.
+- \(d_i \in \{0,1\}\): pulse density verdict from `qssm_utils::verify_density(raw_jitter)`.
 - \(s_i \in [0,1]\): scalar density score (normative mapping below).
 - \(peer_i\): originating PeerID of pulse \(p_i\).
 - \(N\): moving window length for density tracking.

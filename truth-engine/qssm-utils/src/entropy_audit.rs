@@ -8,6 +8,7 @@ use crate::entropy_density::verify_density;
 use crate::entropy_stats::{validate_entropy_distribution, EntropyStatsError};
 
 /// Failure from the combined [`validate_entropy_full`] gate (density heuristics + distribution test).
+#[non_exhaustive]
 #[derive(Debug, Clone, PartialEq, Error)]
 pub enum EntropyAuditError {
     #[error("hardware-style density screen failed (too short or pathological pattern)")]

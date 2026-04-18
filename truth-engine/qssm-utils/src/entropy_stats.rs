@@ -8,42 +8,16 @@ const CHI2_CRITICAL_P001: f64 = 340.0;
 /// Reject if fewer than this many distinct byte values appear (repeating / narrow alphabet).
 const MIN_DISTINCT_BYTES: usize = 16;
 
-#[derive(Debug, Clone, PartialEq)]
+#[non_exhaustive]
+#[derive(Debug, Clone, PartialEq, thiserror::Error)]
 pub enum EntropyStatsError {
+    #[error("need at least {need} bytes for entropy stats (have {have})")]
     TooShort { have: usize, need: usize },
+    #[error("chi-square vs uniform failed: statistic={statistic:.2} (critical {critical:.2})")]
     ChiSquareUniform { statistic: f64, critical: f64 },
+    #[error("too few distinct byte values: {distinct} (minimum {min} for non-degenerate source)")]
     LowDistinctCount { distinct: usize, min: usize },
 }
-
-impl std::fmt::Display for EntropyStatsError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::TooShort { have, need } => {
-                write!(
-                    f,
-                    "need at least {need} bytes for entropy stats (have {have})"
-                )
-            }
-            Self::ChiSquareUniform {
-                statistic,
-                critical,
-            } => {
-                write!(
-                    f,
-                    "chi-square vs uniform failed: statistic={statistic:.2} (critical {critical:.2})"
-                )
-            }
-            Self::LowDistinctCount { distinct, min } => {
-                write!(
-                    f,
-                    "too few distinct byte values: {distinct} (minimum {min} for non-degenerate source)"
-                )
-            }
-        }
-    }
-}
-
-impl std::error::Error for EntropyStatsError {}
 
 /// Pearson χ² test for **256** byte categories vs uniform; also rejects very low **distinct** counts.
 ///

@@ -73,10 +73,134 @@ impl PositionAwareTree {
     }
 }
 
+#[non_exhaustive]
 #[derive(Debug, Clone, Copy, thiserror::Error)]
 pub enum MerkleError {
     #[error("merkle tree requires at least one leaf")]
     EmptyLeaves,
     #[error("leaf index out of bounds")]
     IndexOutOfBounds,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::hashing::blake3_hash;
+
+    fn leaf(n: u8) -> [u8; 32] {
+        blake3_hash(&[n])
+    }
+
+    /// Helper: manually verify a proof by walking siblings up to the root.
+    fn verify_proof(root: &[u8; 32], leaf: &[u8; 32], mut index: usize, proof: &[[u8; 32]]) -> bool {
+        let mut cur = *leaf;
+        for sib in proof {
+            cur = if index % 2 == 0 {
+                merkle_parent(&cur, sib)
+            } else {
+                merkle_parent(sib, &cur)
+            };
+            index /= 2;
+        }
+        cur == *root
+    }
+
+    #[test]
+    fn single_leaf_root_is_leaf() {
+        let l = leaf(42);
+        let tree = PositionAwareTree::new(vec![l]).unwrap();
+        assert_eq!(tree.get_root(), l);
+        let proof = tree.get_proof(0).unwrap();
+        assert!(proof.is_empty());
+    }
+
+    #[test]
+    fn two_leaf_roundtrip() {
+        let leaves = vec![leaf(0), leaf(1)];
+        let tree = PositionAwareTree::new(leaves.clone()).unwrap();
+        let expected_root = merkle_parent(&leaves[0], &leaves[1]);
+        assert_eq!(tree.get_root(), expected_root);
+        for i in 0..2 {
+            let proof = tree.get_proof(i).unwrap();
+            assert!(verify_proof(&tree.get_root(), &leaves[i], i, &proof));
+        }
+    }
+
+    #[test]
+    fn three_leaf_pads_to_four() {
+        let leaves = vec![leaf(0), leaf(1), leaf(2)];
+        let tree = PositionAwareTree::new(leaves.clone()).unwrap();
+        // Should pad to 4 leaves; proof length = log2(4) = 2
+        let proof = tree.get_proof(0).unwrap();
+        assert_eq!(proof.len(), 2);
+        for i in 0..3 {
+            let proof = tree.get_proof(i).unwrap();
+            assert!(verify_proof(&tree.get_root(), &leaves[i], i, &proof));
+        }
+    }
+
+    #[test]
+    fn five_leaf_pads_to_eight() {
+        let leaves: Vec<[u8; 32]> = (0u8..5).map(leaf).collect();
+        let tree = PositionAwareTree::new(leaves.clone()).unwrap();
+        // Should pad to 8 leaves; proof length = log2(8) = 3
+        let proof = tree.get_proof(0).unwrap();
+        assert_eq!(proof.len(), 3);
+        for i in 0..5 {
+            let proof = tree.get_proof(i).unwrap();
+            assert!(verify_proof(&tree.get_root(), &leaves[i], i, &proof));
+        }
+    }
+
+    #[test]
+    fn determinism() {
+        let leaves: Vec<[u8; 32]> = (0u8..7).map(leaf).collect();
+        let t1 = PositionAwareTree::new(leaves.clone()).unwrap();
+        let t2 = PositionAwareTree::new(leaves).unwrap();
+        assert_eq!(t1.get_root(), t2.get_root());
+    }
+
+    #[test]
+    fn empty_leaves_error() {
+        let err = PositionAwareTree::new(vec![]).unwrap_err();
+        assert!(matches!(err, MerkleError::EmptyLeaves));
+    }
+
+    #[test]
+    fn index_out_of_bounds_error() {
+        let tree = PositionAwareTree::new(vec![leaf(0), leaf(1)]).unwrap();
+        let err = tree.get_proof(2).unwrap_err();
+        assert!(matches!(err, MerkleError::IndexOutOfBounds));
+    }
+
+    #[test]
+    fn parent_non_commutativity() {
+        let a = leaf(0);
+        let b = leaf(1);
+        assert_ne!(merkle_parent(&a, &b), merkle_parent(&b, &a));
+    }
+
+    #[test]
+    fn power_of_two_no_padding() {
+        let leaves: Vec<[u8; 32]> = (0u8..4).map(leaf).collect();
+        let tree = PositionAwareTree::new(leaves.clone()).unwrap();
+        // proof length = log2(4) = 2
+        let proof = tree.get_proof(3).unwrap();
+        assert_eq!(proof.len(), 2);
+        assert!(verify_proof(&tree.get_root(), &leaves[3], 3, &proof));
+    }
+
+    #[test]
+    fn large_tree_128_leaves() {
+        let leaves: Vec<[u8; 32]> = (0u8..128).map(leaf).collect();
+        let tree = PositionAwareTree::new(leaves.clone()).unwrap();
+        // proof length = log2(128) = 7
+        let proof = tree.get_proof(0).unwrap();
+        assert_eq!(proof.len(), 7);
+        // spot-check a few indices
+        for &i in &[0, 1, 63, 64, 127] {
+            let proof = tree.get_proof(i).unwrap();
+            assert!(verify_proof(&tree.get_root(), &leaves[i], i, &proof));
+        }
+    }
 }

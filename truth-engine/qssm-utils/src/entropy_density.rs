@@ -114,3 +114,46 @@ fn is_square_wave_bytes(buf: &[u8]) -> bool {
     let thresh = (buf.len() - 1) * 9 / 10;
     diff255 >= thresh
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn too_short_rejected() {
+        assert!(!verify_density(&[0xAA; MIN_RAW_BYTES - 1]));
+    }
+
+    #[test]
+    fn exact_min_boundary_constant_rejected() {
+        assert!(!verify_density(&[0x00; MIN_RAW_BYTES]));
+    }
+
+    #[test]
+    fn all_0xff_rejected() {
+        assert!(!verify_density(&[0xFF; 512]));
+    }
+
+    #[test]
+    fn square_wave_rejected() {
+        let v: Vec<u8> = (0..512).map(|i| if i % 2 == 0 { 0x00 } else { 0xFF }).collect();
+        assert!(!verify_density(&v));
+    }
+
+    #[test]
+    fn pseudo_random_accepted() {
+        // Knuth multiplicative hash — produces well-distributed byte values
+        let v: Vec<u8> = (0u32..512)
+            .map(|i| (i.wrapping_mul(2_654_435_761) >> 8) as u8)
+            .collect();
+        assert!(verify_density(&v));
+    }
+
+    #[test]
+    fn exact_min_boundary_good_data_accepted() {
+        let v: Vec<u8> = (0u32..MIN_RAW_BYTES as u32)
+            .map(|i| (i.wrapping_mul(2_654_435_761) >> 8) as u8)
+            .collect();
+        assert!(verify_density(&v));
+    }
+}

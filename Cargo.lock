@@ -3569,15 +3569,15 @@ dependencies = [
 
 [[package]]
 name = "qssm-entropy"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "accelerometer",
- "argon2",
  "blake3",
  "openentropy-core",
  "qssm-utils",
  "smallvec",
  "thiserror 1.0.69",
+ "zeroize",
 ]
 
 [[package]]
@@ -3690,7 +3690,7 @@ dependencies = [
 
 [[package]]
 name = "qssm-utils"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "blake3",
  "rayon",

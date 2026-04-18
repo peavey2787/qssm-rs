@@ -13,12 +13,12 @@ use smallvec::SmallVec;
 use crate::backend::sensor::{SensorEntropy, SENSOR_INLINE_CAP};
 use crate::backend::time::unix_timestamp_ns;
 use qssm_utils::MIN_RAW_BYTES;
-use crate::filter::harvest_gate::guard_harvest_enabled;
 use crate::HeError;
 use crate::Heartbeat;
 
 /// Configuration for how many raw bytes to request from the hardware observatory.
 #[derive(Debug, Clone)]
+#[non_exhaustive]
 pub struct HarvestConfig {
     /// Target byte count (Unix: [`EntropyPool::get_raw_bytes`]; Windows x86_64: TSC collector).
     pub raw_bytes: usize,
@@ -55,7 +55,6 @@ fn harvest_inner(
     config: &HarvestConfig,
     sensor_entropy: SensorEntropy,
 ) -> Result<Heartbeat, HeError> {
-    guard_harvest_enabled()?;
     let raw_jitter = platform_raw_jitter(config.raw_bytes)?;
     if raw_jitter.len() < MIN_RAW_BYTES {
         return Err(HeError::InsufficientRawBytes {
@@ -63,11 +62,11 @@ fn harvest_inner(
             min: MIN_RAW_BYTES,
         });
     }
-    Ok(Heartbeat {
+    Ok(Heartbeat::new(
         raw_jitter,
         sensor_entropy,
-        timestamp: unix_timestamp_ns(),
-    })
+        unix_timestamp_ns(),
+    ))
 }
 
 #[cfg(unix)]

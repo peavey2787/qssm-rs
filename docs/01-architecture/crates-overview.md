@@ -88,13 +88,12 @@ This repository is a Cargo **workspace**. Most functionality lives under `crates
 
 ## `qssm-entropy` (QSSM-Entropy — hardware heart)
 
-**Purpose:** **Raw hardware-anchored entropy**: OpenEntropy **raw** capture on Unix, optional IMU bytes via [`SensorEntropy`], BLAKE3 **sovereign seed**, heuristic **density** screening (rayon), and Argon2id **PMK** derivation for cold backups.
+**Purpose:** **Pure harvesting + `to_seed()`**: platform-specific **raw jitter** collection, optional **accelerometer** payload via [`SensorEntropy`], and BLAKE3 **sovereign seed** from a **`Heartbeat`** — **distinct** from `qssm-gadget::entropy` (anchor + NIST HTTP), which is software/web beacon mixing. Density screening is owned by `qssm-utils`; PMK derivation has been removed from this crate.
 
 **What it provides**
 
 - `harvest` / `harvest_with_sensor`, `poll_raw_accelerometer_i16`
-- `Heartbeat`, `verify_density`, `to_seed`, `generate_pmk`
-- Harvest gate: `set_hardware_harvest_enabled` / `hardware_harvest_enabled` (used by desktop to pause harvesting)
+- `Heartbeat` (protected carrier with private fields), `to_seed`
 - **Unix:** `openentropy-core` raw capture. **Windows x86_64:** TSC delta harvester (`_rdtsc`, no OS RNG). **Other targets:** [`HeError::UnsupportedEntropyPlatform`].
 
 **For:** `mssq-net` (pulse generation and validation), `qssm-desktop` (mnemonics and identity flows), and any UI-agnostic entropy consumer; complements Phase 8 flows in `qssm-gadget` where anchor/NIST mixing is required.

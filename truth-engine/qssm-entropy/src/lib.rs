@@ -1,4 +1,6 @@
-//! # qssm-entropy — hardware-anchored entropy
+//! # qssm-entropy — hardware-anchored entropy harvesting
+//!
+//! Pure harvesting + `to_seed()` crate for device- and user-origin entropy only.
 //!
 //! **Harvest (Unix):** OpenEntropy [`EntropyPool::get_raw_bytes`] preserves XOR-combined **raw**
 //! hardware noise (no SHA-256 / DRBG in that mode—see upstream docs).
@@ -9,46 +11,63 @@
 //!
 //! [`EntropyPool::get_raw_bytes`]: https://docs.rs/openentropy-core/latest/openentropy_core/pool/struct.EntropyPool.html#method.get_raw_bytes
 //!
-//! **Density:** [`verify_density`] is a **heuristic** screen (bit bias, dominant byte, alternation
-//! patterns)—not a full NIST SP 800-90B certification.
-//!
-//! **Threading:** [`harvest`] and [`verify_density`] run synchronously; OpenEntropy may block during
+//! **Threading:** [`harvest`] runs synchronously; OpenEntropy may block during
 //! collection. Offload to a worker thread or `spawn_blocking` (Tokio) so UI / network I/O stay responsive.
-//!
-//! **PMK:** [`generate_pmk`] uses Argon2id with a BLAKE3-derived salt/password binding; same mnemonic +
-//! same [`Heartbeat`] yields deterministic output for reproducible backups.
-//!
 
 mod backend;
 mod core;
 mod error;
-mod filter;
 
-pub use backend::sensor::{SensorEntropy, SENSOR_INLINE_CAP};
-pub use backend::time::unix_timestamp_ns;
-pub use qssm_utils::{verify_density, MIN_RAW_BYTES};
+pub use backend::sensor::SensorEntropy;
 pub use core::harvest::{harvest, harvest_with_sensor, poll_raw_accelerometer_i16, HarvestConfig};
-pub use core::pmk::{generate_pmk, PMK_BYTES, PMK_M_COST_KIB, PMK_P_COST, PMK_T_COST};
 pub use error::HeError;
-pub use filter::harvest_gate::{hardware_harvest_enabled, set_hardware_harvest_enabled};
 
 use blake3::Hasher;
+use std::fmt;
+use zeroize::Zeroize;
 
 /// Domain tag for [`Heartbeat::to_seed`] (sovereign seed / BLAKE3 preimage).
-pub const DOMAIN_HEARTBEAT_SEED_V1: &[u8] = b"QSSM-HE-HEARTBEAT-SEED-v1";
+pub(crate) const DOMAIN_HEARTBEAT_SEED_V1: &[u8] = b"QSSM-HE-HEARTBEAT-SEED-v1";
 
 /// One hardware snapshot: raw jitter, optional IMU bytes, wall-clock binding.
-#[derive(Debug, Clone, PartialEq, Eq)]
+///
+/// Fields are private; use the accessor methods to inspect contents.
+/// `Heartbeat` zeroizes sensitive bytes (jitter and sensor payload) on drop.
+#[derive(PartialEq, Eq)]
 pub struct Heartbeat {
-    /// Raw buffer from OpenEntropy [`get_raw_bytes`](openentropy_core::pool::EntropyPool::get_raw_bytes).
-    pub raw_jitter: Vec<u8>,
-    /// Optional motion/accelerometer payload; [`SensorEntropy::none`] on typical desktops.
-    pub sensor_entropy: SensorEntropy,
-    /// Nanoseconds since Unix epoch (see [`unix_timestamp_ns`]).
-    pub timestamp: u64,
+    raw_jitter: Vec<u8>,
+    sensor_entropy: SensorEntropy,
+    timestamp: u64,
 }
 
 impl Heartbeat {
+    /// Create a new `Heartbeat` (crate-internal only).
+    pub(crate) fn new(raw_jitter: Vec<u8>, sensor_entropy: SensorEntropy, timestamp: u64) -> Self {
+        Self {
+            raw_jitter,
+            sensor_entropy,
+            timestamp,
+        }
+    }
+
+    /// Raw jitter bytes from the hardware entropy source.
+    #[must_use]
+    pub fn raw_jitter(&self) -> &[u8] {
+        &self.raw_jitter
+    }
+
+    /// Optional motion/accelerometer payload; empty on typical desktops.
+    #[must_use]
+    pub fn sensor_entropy(&self) -> &SensorEntropy {
+        &self.sensor_entropy
+    }
+
+    /// Nanoseconds since Unix epoch captured at harvest time.
+    #[must_use]
+    pub fn timestamp(&self) -> u64 {
+        self.timestamp
+    }
+
     /// Consolidate fields into a 32-byte **Sovereign Seed** (BLAKE3).
     #[must_use]
     pub fn to_seed(&self) -> [u8; 32] {
@@ -61,11 +80,23 @@ impl Heartbeat {
         h.update(&self.timestamp.to_le_bytes());
         *h.finalize().as_bytes()
     }
+}
 
-    /// Statistical density gate on [`Self::raw_jitter`] (see [`verify_density`]).
-    #[must_use]
-    pub fn verify_density(&self) -> bool {
-        verify_density(&self.raw_jitter)
+impl fmt::Debug for Heartbeat {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Heartbeat")
+            .field("raw_jitter", &format_args!("[{} bytes]", self.raw_jitter.len()))
+            .field("sensor_entropy", &self.sensor_entropy)
+            .field("timestamp", &self.timestamp)
+            .finish()
+    }
+}
+
+impl Drop for Heartbeat {
+    fn drop(&mut self) {
+        self.raw_jitter.zeroize();
+        self.sensor_entropy.zeroize_inner();
+        self.timestamp = 0;
     }
 }
 
@@ -89,53 +120,27 @@ mod tests {
         let cfg = HarvestConfig { raw_bytes: 2048 };
         let h1 = harvest(&cfg).expect("tsc harvest");
         assert!(
-            h1.verify_density(),
+            qssm_utils::verify_density(h1.raw_jitter()),
             "TSC raw jitter must satisfy verify_density heuristics"
         );
         let h2 = harvest(&cfg).expect("tsc harvest 2");
-        assert!(h2.verify_density());
+        assert!(qssm_utils::verify_density(h2.raw_jitter()));
         assert_ne!(h1.to_seed(), h2.to_seed());
     }
 
     #[test]
     fn test_entropy_uniqueness_synthetic() {
-        let a = Heartbeat {
-            raw_jitter: vec![1u8; 1024],
-            sensor_entropy: SensorEntropy::none(),
-            timestamp: 1,
-        };
-        let b = Heartbeat {
-            raw_jitter: vec![2u8; 1024],
-            sensor_entropy: SensorEntropy::none(),
-            timestamp: 1,
-        };
+        let a = Heartbeat::new(
+            vec![1u8; 1024],
+            SensorEntropy::none(),
+            1,
+        );
+        let b = Heartbeat::new(
+            vec![2u8; 1024],
+            SensorEntropy::none(),
+            1,
+        );
         assert_ne!(a.to_seed(), b.to_seed());
-    }
-
-    #[test]
-    fn test_density_rejection() {
-        let zeros = vec![0u8; 1024];
-        assert!(!verify_density(&zeros));
-
-        let mut alt = vec![0u8; 1024];
-        for i in (0..1024).step_by(2) {
-            alt[i] = 0xff;
-        }
-        assert!(!verify_density(&alt));
-    }
-
-    #[test]
-    fn test_pmk_derivation() {
-        let mnemonic = b"test mnemonic seed bytes";
-        let hb = Heartbeat {
-            raw_jitter: (0u8..200).collect::<Vec<_>>(),
-            sensor_entropy: SensorEntropy::none(),
-            timestamp: 42,
-        };
-        let p1 = generate_pmk(mnemonic, &hb).expect("pmk");
-        let p2 = generate_pmk(mnemonic, &hb).expect("pmk");
-        assert_eq!(p1, p2);
-        assert_eq!(p1.len(), PMK_BYTES);
     }
 
     #[test]
@@ -150,5 +155,95 @@ mod tests {
         let v = smallvec![1u8, 2, 3];
         let s = SensorEntropy::from_smallvec(v);
         assert_eq!(s.as_ref(), &[1, 2, 3]);
+    }
+
+    // --- Phase 3 freeze tests ---
+
+    #[test]
+    fn to_seed_determinism() {
+        let a = Heartbeat::new(vec![42u8; 512], SensorEntropy::none(), 999);
+        let b = Heartbeat::new(vec![42u8; 512], SensorEntropy::none(), 999);
+        assert_eq!(a.to_seed(), b.to_seed(), "same fields must produce the same seed");
+    }
+
+    #[test]
+    fn to_seed_binds_timestamp() {
+        let a = Heartbeat::new(vec![1u8; 512], SensorEntropy::none(), 1);
+        let b = Heartbeat::new(vec![1u8; 512], SensorEntropy::none(), 2);
+        assert_ne!(a.to_seed(), b.to_seed(), "different timestamp must yield different seed");
+    }
+
+    #[test]
+    fn to_seed_binds_sensor() {
+        let a = Heartbeat::new(vec![1u8; 512], SensorEntropy::none(), 1);
+        let b = Heartbeat::new(vec![1u8; 512], SensorEntropy::from_slice(&[0xAA; 16]), 1);
+        assert_ne!(a.to_seed(), b.to_seed(), "different sensor payload must yield different seed");
+    }
+
+    #[test]
+    fn accessor_raw_jitter() {
+        let jitter = vec![7u8; 64];
+        let hb = Heartbeat::new(jitter.clone(), SensorEntropy::none(), 10);
+        assert_eq!(hb.raw_jitter(), &jitter[..]);
+    }
+
+    #[test]
+    fn accessor_sensor_entropy() {
+        let se = SensorEntropy::from_slice(&[1, 2, 3]);
+        let hb = Heartbeat::new(vec![0u8; 64], se.clone(), 10);
+        assert_eq!(hb.sensor_entropy().as_ref(), &[1, 2, 3]);
+    }
+
+    #[test]
+    fn accessor_timestamp() {
+        let hb = Heartbeat::new(vec![0u8; 64], SensorEntropy::none(), 42);
+        assert_eq!(hb.timestamp(), 42);
+    }
+
+    #[test]
+    fn debug_redacts_raw_jitter() {
+        let hb = Heartbeat::new(vec![0xDE, 0xAD], SensorEntropy::none(), 1);
+        let dbg = format!("{hb:?}");
+        assert!(
+            !dbg.contains("222") && !dbg.contains("0xDE") && !dbg.contains("dead"),
+            "Debug must not leak raw jitter bytes: {dbg}"
+        );
+        assert!(dbg.contains("[2 bytes]"), "Debug must show byte count: {dbg}");
+    }
+
+    #[test]
+    fn debug_redacts_sensor_bytes() {
+        let hb = Heartbeat::new(vec![0u8; 8], SensorEntropy::from_slice(&[0xBE, 0xEF]), 1);
+        let dbg = format!("{hb:?}");
+        assert!(
+            !dbg.contains("190") && !dbg.contains("0xBE") && !dbg.contains("beef"),
+            "Debug must not leak sensor bytes: {dbg}"
+        );
+        assert!(dbg.contains("2 bytes"), "Debug must show sensor byte count: {dbg}");
+    }
+
+    #[test]
+    fn sensor_entropy_from_slice_non_empty() {
+        let s = SensorEntropy::from_slice(&[10, 20, 30]);
+        assert_eq!(s.as_ref(), &[10, 20, 30]);
+        assert!(!s.is_empty());
+    }
+
+    #[test]
+    fn sensor_entropy_from_slice_empty() {
+        let s = SensorEntropy::from_slice(&[]);
+        assert!(s.is_empty());
+    }
+
+    #[test]
+    fn sensor_entropy_default_is_none() {
+        let s = SensorEntropy::default();
+        assert!(s.is_empty());
+    }
+
+    #[test]
+    fn harvest_config_default_raw_bytes() {
+        let cfg = HarvestConfig::default();
+        assert_eq!(cfg.raw_bytes, 8192);
     }
 }

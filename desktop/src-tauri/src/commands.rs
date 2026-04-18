@@ -2,6 +2,7 @@
 
 use serde_json::{json, Value};
 use std::fs;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Instant;
 use tauri::Manager;
 
@@ -18,10 +19,13 @@ use rand::{RngCore, SeedableRng};
 use serde::Deserialize;
 use qssm_templates::{QssmTemplate, QSSM_TEMPLATE_VERSION};
 
-/// Enable or pause `qssm-entropy` hardware harvesting (pulse / proofs skip harvest when off).
+/// Application-level harvest gate (moved from `qssm-entropy`; this is UI/policy, not harvesting).
+static HARDWARE_HARVEST_ENABLED: AtomicBool = AtomicBool::new(true);
+
+/// Enable or pause hardware harvesting (pulse / proofs skip harvest when off).
 #[tauri::command]
 pub fn toggle_hardware_harvest(enabled: bool) -> bool {
-    qssm_entropy::set_hardware_harvest_enabled(enabled);
+    HARDWARE_HARVEST_ENABLED.store(enabled, Ordering::SeqCst);
     enabled
 }
 
@@ -35,6 +39,9 @@ pub fn retry_network_sidecar(app: tauri::AppHandle) -> Result<(), String> {
 /// Generate a BIP39 24-word mnemonic from 256-bit hardware entropy.
 #[tauri::command]
 pub fn generate_mnemonic_24() -> Result<Value, String> {
+    if !HARDWARE_HARVEST_ENABLED.load(Ordering::SeqCst) {
+        return Err("hardware harvest is paused (UI / policy toggle)".into());
+    }
     let hb = qssm_entropy::harvest(&HarvestConfig::default()).map_err(|e| e.to_string())?;
     let entropy_32 = hb.to_seed();
     let mnemonic =
@@ -42,7 +49,7 @@ pub fn generate_mnemonic_24() -> Result<Value, String> {
     Ok(json!({
         "mnemonic_24": mnemonic.to_string(),
         "entropy_hex": hex::encode(entropy_32),
-        "timestamp_ns": hb.timestamp,
+        "timestamp_ns": hb.timestamp(),
     }))
 }
 

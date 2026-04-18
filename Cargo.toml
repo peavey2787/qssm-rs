@@ -53,8 +53,8 @@ ureq = { version = "2.10", features = ["json"] }
 maxminddb = "0.24"
 
 # Internal workspace crates
-qssm-utils = { path = "truth-engine/qssm-utils" }
-qssm-entropy = { path = "truth-engine/qssm-entropy" }
+qssm-utils = { path = "truth-engine/qssm-utils", version = "=1.0.0" }
+qssm-entropy = { path = "truth-engine/qssm-entropy", version = "=1.0.0" }
 qssm-le = { path = "truth-engine/qssm-le" }
 qssm-ms = { path = "truth-engine/qssm-ms" }
 qssm-gadget = { path = "truth-engine/qssm-gadget", version = "=1.1.0" }
