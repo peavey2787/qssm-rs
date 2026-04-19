@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Sovereign Command Center",
+  "productName": "QSSM Template Lab",
   "version": "0.1.0",
   "identifier": "com.qssm.desktop",
   "build": {
@@ -13,7 +13,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "Sovereign Command Center",
+        "title": "QSSM Template Lab",
         "width": 1280,
         "height": 840
       }
@@ -27,10 +27,6 @@
     "targets": "app",
     "icon": [
       "icons/icon.ico"
-    ],
-    "resources": [
-      "resources/README_GEOLITE.md",
-      "resources/dbip-city-lite.mmdb"
     ]
   }
 }

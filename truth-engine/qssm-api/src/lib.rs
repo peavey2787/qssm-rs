@@ -8,7 +8,7 @@
 //!
 //! | Function    | Role |
 //! |-------------|------|
-//! | [`compile`] | Resolves a template ID into an opaque byte-array blueprint. |
+//! | [`compile`] | Resolves a built-in template ID or raw template JSON into an opaque byte-array blueprint. |
 //! | [`commit`]  | Locks a secret without revealing it — returns 32 bytes. |
 //! | [`prove`]   | Creates a ZK proof (byte array) that a secret satisfies the blueprint's rules. |
 //! | [`verify`]  | Checks a proof byte array against a blueprint — returns `true` / `false`. |
@@ -38,7 +38,9 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize)]
 struct WireBlueprint {
     seed_hex: String,
-    template_id: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    template_id: Option<String>,
+    template_json: String,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -50,23 +52,23 @@ struct WireZkProof {
 
 // ── The 5 façade functions ───────────────────────────────────────────
 
-/// **The Blueprint.** Resolves a template ID and harvests entropy to produce
-/// an opaque byte-array blueprint.
+/// **The Blueprint.** Resolves a built-in template ID or raw template JSON and
+/// harvests entropy to produce an opaque byte-array blueprint.
 ///
 /// # Errors
 ///
-/// Returns `Err` if `template_id` is not a known built-in template, or if
-/// hardware entropy is unavailable.
+/// Returns `Err` if the input is neither a known built-in template ID nor
+/// valid `QssmTemplate` JSON, or if hardware entropy is unavailable.
 pub fn compile(template_id: &str) -> Result<Vec<u8>, String> {
-    // Validate the template exists (fail fast).
-    let _template = qssm_templates::resolve(template_id)
-        .ok_or_else(|| format!("unknown template: {template_id}"))?;
+    let template = resolve_template_input(template_id)?;
     let seed = qssm_entropy::harvest(&qssm_entropy::HarvestConfig::default())
         .map_err(|e| format!("entropy unavailable: {e}"))?
         .to_seed();
     let wire = WireBlueprint {
         seed_hex: hex::encode(seed),
-        template_id: template_id.to_owned(),
+        template_id: Some(template.id().to_string()),
+        template_json: serde_json::to_string(&template)
+            .map_err(|e| format!("template serialization failed: {e}"))?,
     };
     serde_json::to_vec(&wire).map_err(|e| format!("serialization failed: {e}"))
 }
@@ -95,8 +97,7 @@ pub fn prove(secret: &[u8], salt: &[u8; 32], blueprint: &[u8]) -> Result<Vec<u8>
     let wire_bp: WireBlueprint =
         serde_json::from_slice(blueprint).map_err(|e| format!("invalid blueprint: {e}"))?;
     let seed = decode_hex_32(&wire_bp.seed_hex, "blueprint seed")?;
-    let template = qssm_templates::resolve(&wire_bp.template_id)
-        .ok_or_else(|| format!("unknown template: {}", wire_bp.template_id))?;
+    let template = template_from_blueprint(&wire_bp)?;
     let ctx = ProofContext::new(seed);
 
     let claim: serde_json::Value =
@@ -151,8 +152,7 @@ fn verify_inner(proof: &[u8], blueprint: &[u8]) -> Result<bool, String> {
     let wire_bp: WireBlueprint =
         serde_json::from_slice(blueprint).map_err(|e| format!("invalid blueprint: {e}"))?;
     let seed = decode_hex_32(&wire_bp.seed_hex, "blueprint seed")?;
-    let template = qssm_templates::resolve(&wire_bp.template_id)
-        .ok_or_else(|| format!("unknown template: {}", wire_bp.template_id))?;
+    let template = template_from_blueprint(&wire_bp)?;
     let ctx = ProofContext::new(seed);
 
     let wire_proof: WireZkProof =
@@ -179,6 +179,28 @@ fn decode_hex_32(hex_str: &str, field: &str) -> Result<[u8; 32], String> {
         .map_err(|_| format!("{field}: expected 32 bytes, got {}", bytes.len()))
 }
 
+fn resolve_template_input(raw: &str) -> Result<qssm_templates::QssmTemplate, String> {
+    if let Some(template) = qssm_templates::resolve(raw.trim()) {
+        return Ok(template);
+    }
+    qssm_templates::QssmTemplate::from_json_slice(raw.as_bytes())
+        .map_err(|_| format!("unknown template or invalid template JSON: {raw}"))
+}
+
+fn template_from_blueprint(wire_bp: &WireBlueprint) -> Result<qssm_templates::QssmTemplate, String> {
+    if !wire_bp.template_json.trim().is_empty() {
+        return qssm_templates::QssmTemplate::from_json_slice(wire_bp.template_json.as_bytes())
+            .map_err(|e| format!("invalid blueprint template: {e}"));
+    }
+
+    if let Some(template_id) = &wire_bp.template_id {
+        return qssm_templates::resolve(template_id)
+            .ok_or_else(|| format!("unknown template: {template_id}"));
+    }
+
+    Err("blueprint is missing template payload".to_string())
+}
+
 // ── Internal helpers ─────────────────────────────────────────────────
 
 /// Extract (value, target) from claim + template predicates.
@@ -192,12 +214,14 @@ fn extract_value_target(
         match pred {
             PredicateBlock::Range { field, min, .. } => {
                 if let Some(val) = json_at_path(claim, field).and_then(|v| v.as_u64()) {
-                    return (val, *min as u64);
+                    // MS prover checks strict `value > target`, so pass
+                    // min-1 to get `value > (min-1)` ≡ `value >= min`.
+                    return (val, (*min as u64).saturating_sub(1));
                 }
             }
             PredicateBlock::AtLeast { field, min } => {
                 if let Some(val) = json_at_path(claim, field).and_then(|v| v.as_u64()) {
-                    return (val, *min as u64);
+                    return (val, (*min as u64).saturating_sub(1));
                 }
             }
             PredicateBlock::Compare {
@@ -245,7 +269,8 @@ mod tests {
         let claim = serde_json::json!({ "claim": { "age_years": 25 } });
         let (v, t) = extract_value_target(&claim, &template);
         assert_eq!(v, 25);
-        assert_eq!(t, 21);
+        // target is min-1 (20) so the strict > prover checks 25 > 20
+        assert_eq!(t, 20);
     }
 
     #[test]
@@ -253,5 +278,55 @@ mod tests {
         let result = compile("nonexistent-template-xyz");
         assert!(result.is_err());
         assert!(result.unwrap_err().contains("unknown template"));
+    }
+
+    #[test]
+    fn prove_value_equals_min_passes() {
+        let blueprint = compile("age-gate-21").unwrap();
+        let claim = br#"{"claim":{"age_years":21}}"#;
+        let salt = [1u8; 32];
+        let proof = prove(claim, &salt, &blueprint);
+        assert!(proof.is_ok(), "age=21 should pass age-gate-21: {}", proof.unwrap_err());
+        assert!(verify(&proof.unwrap(), &blueprint));
+    }
+
+    #[test]
+    fn prove_value_above_min_passes() {
+        let blueprint = compile("age-gate-21").unwrap();
+        let claim = br#"{"claim":{"age_years":30}}"#;
+        let salt = [2u8; 32];
+        let proof = prove(claim, &salt, &blueprint);
+        assert!(proof.is_ok(), "age=30 should pass: {}", proof.unwrap_err());
+        assert!(verify(&proof.unwrap(), &blueprint));
+    }
+
+    #[test]
+    fn prove_value_below_min_fails() {
+        let blueprint = compile("age-gate-21").unwrap();
+        let claim = br#"{"claim":{"age_years":20}}"#;
+        let salt = [3u8; 32];
+        let proof = prove(claim, &salt, &blueprint);
+        assert!(proof.is_err(), "age=20 should fail age-gate-21");
+    }
+
+    #[test]
+    fn compile_accepts_raw_template_json() {
+        let template = serde_json::json!({
+            "qssm_template_version": 1,
+            "id": "custom-age-gate",
+            "title": "Custom age gate",
+            "allowed_anchor_kinds": ["anchor_hash", "static_root", "timestamp_unix_secs"],
+            "predicates": [
+                {
+                    "kind": "at_least",
+                    "field": "claim.age_years",
+                    "min": 21
+                }
+            ]
+        });
+        let blueprint = compile(&template.to_string()).expect("custom template JSON should compile");
+        let proof = prove(br#"{"claim":{"age_years":30}}"#, &[7u8; 32], &blueprint)
+            .expect("custom template blueprint should prove");
+        assert!(verify(&proof, &blueprint));
     }
 }

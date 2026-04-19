@@ -7,16 +7,13 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "geo:fetch-dbip": "powershell -ExecutionPolicy Bypass -File ./scripts/fetch-dbip-mmdb.ps1",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.1.1",
-    "leaflet": "^1.9.4",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "react-leaflet": "^5.0.0"
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.5.0",
