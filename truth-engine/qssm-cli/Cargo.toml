@@ -1,16 +1,17 @@
 [package]
 name = "qssm-cli"
-version = "2.0.0"
+version = "2.0.1"
 edition = "2021"
 license = "BUSL-1.1"
 description = "QSSM command-line interface for the core proving engine"
 repository = "https://github.com/peavey2787/qssm-rs"
+readme = "README.md"
 
 [[bin]]
 name = "qssm"
 path = "src/main.rs"
 
 [dependencies]
-qssm-core = { path = "../qssm-core", version = "=2.0.0" }
+qssm-core = { path = "../qssm-core", version = "=2.0.1" }
 hex = { workspace = true }
 serde_json = { workspace = true }

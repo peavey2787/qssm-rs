@@ -66,7 +66,7 @@ qssm-gadget = { path = "truth-engine/qssm-gadget", version = "=1.1.0" }
 qssm-proofs = { path = "truth-engine/qssm-proofs", version = "=0.1.0" }
 qssm-local-prover = { path = "truth-engine/qssm-local-prover", version = "=2.0.0" }
 qssm-api = { path = "truth-engine/qssm-api", version = "=2.0.0" }
-qssm-core = { path = "truth-engine/qssm-core", version = "=2.0.0" }
+qssm-core = { path = "truth-engine/qssm-core", version = "=2.0.1" }
 qssm-templates = { path = "truth-engine/qssm-templates", version = "=1.0.0" }
 qssm-local-verifier = { path = "truth-engine/qssm-local-verifier", version = "=2.0.0" }
 

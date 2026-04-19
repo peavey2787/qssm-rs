@@ -1,10 +1,11 @@
 [package]
 name = "qssm-core"
-version = "2.0.0"
+version = "2.0.1"
 edition = "2021"
 license = "BUSL-1.1"
 description = "QSSM core proving engine"
 repository = "https://github.com/peavey2787/qssm-rs"
+readme = "README.md"
 
 [lib]
 crate-type = ["rlib", "cdylib"]

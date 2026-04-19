@@ -2780,7 +2780,7 @@ dependencies = [
 
 [[package]]
 name = "qssm-cli"
-version = "2.0.0"
+version = "2.0.1"
 dependencies = [
  "hex",
  "qssm-core",
@@ -2789,7 +2789,7 @@ dependencies = [
 
 [[package]]
 name = "qssm-core"
-version = "2.0.0"
+version = "2.0.1"
 dependencies = [
  "qssm-api",
  "serde_json",
