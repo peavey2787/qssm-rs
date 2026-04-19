@@ -69,7 +69,7 @@ These are frozen and must not change without a major version bump across the ent
 
 ### Prerequisites
 
-- Rust 1.78+ (install via [rustup](https://rustup.rs/))
+- Rust 1.85+ (install via [rustup](https://rustup.rs/))
 - No C/C++ dependencies — pure Rust, `#![forbid(unsafe_code)]` in all truth-engine crates
 
 ### Build from source

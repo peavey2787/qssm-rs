@@ -6,7 +6,7 @@ Thank you for your interest in contributing to the QSSM project.
 
 ### Prerequisites
 
-- **Rust** 1.78+ (edition 2021, resolver 2)
+- **Rust** 1.85+ (edition 2021, resolver 2)
 - **Windows**, **macOS**, or **Linux** (CI targets all three)
 
 ### Build the workspace

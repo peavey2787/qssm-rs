@@ -3,7 +3,7 @@
 </p>
 
 [![License: BSL-1.1](https://img.shields.io/badge/license-BSL--1.1-blue.svg)](LICENSE)
-[![Rust 1.78+](https://img.shields.io/badge/rust-1.78%2B-orange.svg)](CONTRIBUTING.md)
+[![Rust 1.85+](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](CONTRIBUTING.md)
 [![CI](https://github.com/peavey2787/qssm-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/peavey2787/qssm-rs/actions/workflows/ci.yml)
 [![CI: ct-assembly-gate](https://github.com/peavey2787/qssm-rs/actions/workflows/ct-assembly-gate.yml/badge.svg)](https://github.com/peavey2787/qssm-rs/actions/workflows/ct-assembly-gate.yml)
 
