@@ -3,15 +3,15 @@ name = "qssm-local-prover"
 version = "2.0.0"
 edition.workspace = true
 license.workspace = true
-description = "Layer 4 — deterministic prove pipeline for QSSM ZK proofs."
-publish = false
+repository.workspace = true
+description = "Layer 4 \u2014 deterministic prove pipeline for QSSM ZK proofs."
 
 [dependencies]
 qssm-le.workspace = true
 qssm-ms.workspace = true
 qssm-gadget.workspace = true
 qssm-utils.workspace = true
-qssm-templates = { path = "../qssm-templates" }
+qssm-templates = { path = "../qssm-templates", version = "=1.0.0" }
 serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true
@@ -20,6 +20,6 @@ zeroize = { version = "1.8", features = ["derive"] }
 
 [dev-dependencies]
 qssm-utils.workspace = true
-qssm-templates = { path = "../qssm-templates" }
+qssm-templates = { path = "../qssm-templates", version = "=1.0.0" }
 serde_json.workspace = true
 hex.workspace = true

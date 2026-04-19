@@ -2779,6 +2779,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "qssm-cli"
+version = "2.0.0"
+dependencies = [
+ "hex",
+ "qssm-core",
+ "serde_json",
+]
+
+[[package]]
+name = "qssm-core"
+version = "2.0.0"
+dependencies = [
+ "qssm-api",
+ "serde_json",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "qssm-desktop"
 version = "0.1.0"
 dependencies = [

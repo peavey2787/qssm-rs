@@ -3,6 +3,7 @@ name = "qssm-ms"
 version = "1.0.0"
 edition.workspace = true
 license.workspace = true
+repository.workspace = true
 description = "QSSM-MS (Mirror-Shift) succinct predicate proofs."
 
 [dependencies]

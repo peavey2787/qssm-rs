@@ -3,8 +3,8 @@ name = "qssm-entropy"
 version = "1.0.0"
 edition.workspace = true
 license.workspace = true
+repository.workspace = true
 description = "Hardware-anchored raw entropy harvest, Heartbeat, and sovereign seed (to_seed)."
-publish = false
 
 [dependencies]
 accelerometer.workspace = true

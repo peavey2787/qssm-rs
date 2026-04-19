@@ -11,7 +11,11 @@ members = [
     "truth-engine/qssm-templates",
     "truth-engine/qssm-local-verifier",
     "truth-engine/qssm-api",
+    "truth-engine/qssm-core",
     "truth-engine/examples",
+
+    # CLI
+    "truth-engine/qssm-cli",
 
     # Integration
     "integration",
@@ -24,6 +28,7 @@ resolver = "2"
 [workspace.package]
 edition = "2021"
 license = "BUSL-1.1"
+repository = "https://github.com/peavey2787/qssm-rs"
 categories = ["cryptography", "zero-knowledge", "security"]
 
 [workspace.dependencies]
@@ -55,14 +60,15 @@ maxminddb = "0.24"
 # Internal workspace crates
 qssm-utils = { path = "truth-engine/qssm-utils", version = "=1.0.0" }
 qssm-entropy = { path = "truth-engine/qssm-entropy", version = "=1.0.0" }
-qssm-le = { path = "truth-engine/qssm-le" }
-qssm-ms = { path = "truth-engine/qssm-ms" }
+qssm-le = { path = "truth-engine/qssm-le", version = "=1.0.0" }
+qssm-ms = { path = "truth-engine/qssm-ms", version = "=1.0.0" }
 qssm-gadget = { path = "truth-engine/qssm-gadget", version = "=1.1.0" }
-qssm-proofs = { path = "truth-engine/qssm-proofs" }
+qssm-proofs = { path = "truth-engine/qssm-proofs", version = "=0.1.0" }
 qssm-local-prover = { path = "truth-engine/qssm-local-prover", version = "=2.0.0" }
-qssm-api = { path = "truth-engine/qssm-api" }
-qssm-templates = { path = "truth-engine/qssm-templates" }
-qssm-local-verifier = { path = "truth-engine/qssm-local-verifier" }
+qssm-api = { path = "truth-engine/qssm-api", version = "=2.0.0" }
+qssm-core = { path = "truth-engine/qssm-core", version = "=2.0.0" }
+qssm-templates = { path = "truth-engine/qssm-templates", version = "=1.0.0" }
+qssm-local-verifier = { path = "truth-engine/qssm-local-verifier", version = "=2.0.0" }
 
 [profile.dev]
 split-debuginfo = "unpacked"

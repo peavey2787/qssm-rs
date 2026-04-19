@@ -1,0 +1,18 @@
+[package]
+name = "qssm-core"
+version = "2.0.0"
+edition = "2021"
+license = "BUSL-1.1"
+description = "QSSM core proving engine"
+repository = "https://github.com/peavey2787/qssm-rs"
+
+[lib]
+crate-type = ["rlib", "cdylib"]
+
+[dependencies]
+qssm-api = { path = "../qssm-api", version = "=2.0.0" }
+wasm-bindgen = "0.2"
+serde_json = { workspace = true }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen = "0.2"
