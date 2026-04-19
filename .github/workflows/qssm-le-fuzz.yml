@@ -4,8 +4,11 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
-      - "crates/qssm-le/**"
+      - "truth-engine/qssm-le/**"
       - ".github/workflows/qssm-le-fuzz.yml"
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   verifier-fuzz-1h:
@@ -22,11 +25,11 @@ jobs:
         run: cargo install cargo-fuzz --locked
 
       - name: Verify fuzz target exists
-        working-directory: crates/qssm-le
+        working-directory: truth-engine/qssm-le
         run: cargo +nightly fuzz list
 
       - name: Run verifier fuzzing for 1 hour
-        working-directory: crates/qssm-le
+        working-directory: truth-engine/qssm-le
         run: |
           cargo +nightly fuzz run verify_lattice -- \
             -max_total_time=3600 \
@@ -39,6 +42,6 @@ jobs:
         with:
           name: qssm-le-fuzz-artifacts
           path: |
-            crates/qssm-le/fuzz/artifacts
-            crates/qssm-le/fuzz/corpus
+            truth-engine/qssm-le/fuzz/artifacts
+            truth-engine/qssm-le/fuzz/corpus
           if-no-files-found: ignore
