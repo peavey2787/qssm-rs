@@ -6,8 +6,6 @@ use thiserror::Error;
 #[derive(Debug, Error)]
 #[non_exhaustive]
 pub enum HeError {
-    #[error("openentropy: {0}")]
-    OpenEntropy(String),
     #[error("accelerometer sample: {0}")]
     Accelerometer(String),
     #[error("harvest produced insufficient raw bytes ({got}, need at least {min})")]

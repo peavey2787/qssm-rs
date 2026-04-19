@@ -35,6 +35,19 @@ pub use protocol::commit::{
 // RngCore, which would let external callers inject a weak/biased RNG and defeat
 // the rejection sampling security guarantee. Use prove_arithmetic instead.
 pub(crate) use protocol::commit::prove_with_witness;
+
+/// Minimal deterministic byte-stream trait.
+///
+/// This replaces `rand::RngCore` so the crate has **zero** dependency on any
+/// PRNG / CSPRNG / OS-RNG crate. Implementations must be purely deterministic
+/// (seeded by the sovereign entropy pipeline, never by OS randomness).
+pub(crate) trait DeterministicRng {
+    /// Return the next 4 bytes from the deterministic stream as a `u32`.
+    fn next_u32(&mut self) -> u32;
+    /// Fill `dest` from the deterministic stream.
+    fn fill_bytes(&mut self, dest: &mut [u8]);
+}
+
 pub use protocol::params::{
     BETA, C_POLY_SIZE, C_POLY_SPAN, ETA, GAMMA, N, PUBLIC_DIGEST_COEFFS, PUBLIC_DIGEST_COEFF_MAX, Q,
 };
@@ -98,25 +111,14 @@ impl Blake3Rng {
     }
 }
 
-impl rand::RngCore for Blake3Rng {
+impl DeterministicRng for Blake3Rng {
     fn next_u32(&mut self) -> u32 {
         let mut buf = [0u8; 4];
         self.reader.fill(&mut buf);
         u32::from_le_bytes(buf)
     }
 
-    fn next_u64(&mut self) -> u64 {
-        let mut buf = [0u8; 8];
-        self.reader.fill(&mut buf);
-        u64::from_le_bytes(buf)
-    }
-
     fn fill_bytes(&mut self, dest: &mut [u8]) {
         self.reader.fill(dest);
-    }
-
-    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand::Error> {
-        self.reader.fill(dest);
-        Ok(())
     }
 }

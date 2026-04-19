@@ -106,6 +106,189 @@ jobs:
       - name: qssm-gadget tests
         run: cargo test -p qssm-gadget
 
+  # ── Hygiene: dead code, unused deps, stale files ──────────────
+  hygiene:
+    name: Hygiene
+    needs: [fmt, clippy]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: hygiene
+
+      - name: Deny dead code and unused imports (workspace build)
+        run: >
+          RUSTFLAGS="-D dead_code -D unused_imports -D unused_variables
+          -D unused_mut -D unreachable_code" cargo check --workspace
+          --exclude qssm-desktop
+
+      - name: No stale serialport / openentropy / libudev deps
+        run: |
+          if grep -qiE 'serialport|openentropy|libudev' Cargo.lock; then
+            echo "::error::Found stale dependencies (serialport/openentropy/libudev) in Cargo.lock"
+            grep -iE 'serialport|openentropy|libudev' Cargo.lock
+            exit 1
+          fi
+
+      - name: No orphan source files outside declared modules
+        run: |
+          STALE=0
+          for f in $(find truth-engine -name '*.rs' -path '*/src/*' \
+                     ! -name 'lib.rs' ! -name 'main.rs' ! -name 'mod.rs' \
+                     ! -path '*/tests/*' ! -path '*/benches/*' \
+                     ! -path '*/examples/*' ! -path '*/unit_tests/*' \
+                     ! -path '*/bin/*'); do
+            MOD_NAME=$(basename "$f" .rs)
+            PARENT_DIR=$(dirname "$f")
+            if ! grep -rqE "mod\s+${MOD_NAME}\b" "$PARENT_DIR/mod.rs" "$PARENT_DIR/lib.rs" \
+                 "$PARENT_DIR/../lib.rs" 2>/dev/null; then
+              echo "::warning::Possibly orphaned file: $f (no 'mod $MOD_NAME' found)"
+              STALE=$((STALE+1))
+            fi
+          done
+          if [ "$STALE" -gt 0 ]; then
+            echo "::error::Found $STALE potentially orphaned source files"
+            exit 1
+          fi
+
+  # ── Entropy purity: no PRNG/CSPRNG/HWRNG crates or calls ─────
+  entropy-purity:
+    name: Entropy Purity
+    needs: [fmt]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: entropy
+
+      # ── 1. Forbidden crates in the dependency tree ────────────
+      #    Uses `cargo tree --edges normal` so we only scan production
+      #    deps (not dev-deps like proptest which pull in rand/tempfile).
+      #    Desktop app is excluded — enforcement is on truth-engine /
+      #    integration / shared-libs crates only.
+      - name: No forbidden PRNG / CSPRNG / HWRNG crates
+        run: |
+          set -euo pipefail
+          FORBIDDEN=(
+            rand rand_core rand_chacha rand_pcg rand_xorshift rand_xoshiro
+            getrandom fastrand oorandom nanorand wyrand
+            small_rng thread_rng
+            rdrand
+            tempfile
+          )
+          PATTERN=$(IFS='|'; echo "${FORBIDDEN[*]}")
+          echo "Scanning cargo tree (normal deps only) for forbidden crates: $PATTERN"
+          TREE=$(cargo tree --workspace --exclude qssm-desktop \
+                 --prefix none --no-dedupe --edges normal 2>/dev/null || true)
+          FOUND=""
+          for crate in "${FORBIDDEN[@]}"; do
+            if echo "$TREE" | grep -qE "^${crate} v"; then
+              FOUND="$FOUND $crate"
+            fi
+          done
+          if [ -n "$FOUND" ]; then
+            echo "::error::Forbidden PRNG/CSPRNG/HWRNG crates found in production dependency tree:$FOUND"
+            for crate in $FOUND; do
+              echo "--- inverse tree for $crate ---"
+              cargo tree --workspace --exclude qssm-desktop --edges normal -i "$crate" 2>/dev/null || true
+            done
+            exit 1
+          fi
+          echo "✓ No forbidden entropy crates in workspace production dependency tree"
+
+      # ── 2. Forbidden OS-RNG / CSPRNG syscalls in source code ──
+      - name: No OS-RNG or CSPRNG calls in source code
+        run: |
+          set -euo pipefail
+          # Directories to scan (everything except desktop/)
+          SCAN_DIRS="truth-engine shared-libs integration l1-dag l2-rollup scripts"
+          PATTERNS=(
+            '/dev/urandom'
+            '/dev/random'
+            'CryptGenRandom'
+            'RtlGenRandom'
+            'BCryptGenRandom'
+            'SecRandomCopyBytes'
+            'getentropy'
+            'getrandom'
+            'arc4random'
+          )
+          FOUND=0
+          for pat in "${PATTERNS[@]}"; do
+            if grep -rnI --include='*.rs' "$pat" $SCAN_DIRS 2>/dev/null; then
+              echo "::error::Forbidden OS-RNG call '$pat' found in source"
+              FOUND=$((FOUND+1))
+            fi
+          done
+          if [ "$FOUND" -gt 0 ]; then
+            exit 1
+          fi
+          echo "✓ No OS-RNG or CSPRNG calls in source code"
+
+      # ── 3. Forbidden PRNG types / functions in source code ────
+      - name: No PRNG type or function usage in source code
+        run: |
+          set -euo pipefail
+          SCAN_DIRS="truth-engine shared-libs integration l1-dag l2-rollup"
+          PATTERNS=(
+            'StdRng'
+            'OsRng'
+            'ThreadRng'
+            'ChaChaRng'
+            'thread_rng'
+            'from_entropy'
+            'rand::rngs'
+            'use rand'
+            'extern crate rand'
+            'use fastrand'
+            'use getrandom'
+            'use oorandom'
+          )
+          FOUND=0
+          for pat in "${PATTERNS[@]}"; do
+            if grep -rnI --include='*.rs' "$pat" $SCAN_DIRS 2>/dev/null; then
+              echo "::error::Forbidden PRNG usage '$pat' found in source"
+              FOUND=$((FOUND+1))
+            fi
+          done
+          if [ "$FOUND" -gt 0 ]; then
+            exit 1
+          fi
+          echo "✓ No PRNG types or functions in source code"
+
+      # ── 4. No HWRNG instructions (RDRAND/RDSEED) in source ────
+      - name: No hardware RNG instructions in source code
+        run: |
+          set -euo pipefail
+          SCAN_DIRS="truth-engine shared-libs integration l1-dag l2-rollup"
+          PATTERNS=(
+            '_rdrand'
+            '_rdseed'
+            'rdrand'
+            'rdseed'
+            'RDRAND'
+            'RDSEED'
+            'tpm'
+            'Tpm'
+            'TPM'
+          )
+          FOUND=0
+          for pat in "${PATTERNS[@]}"; do
+            # Exact word match to avoid false positives on comments
+            if grep -rnIw --include='*.rs' "$pat" $SCAN_DIRS 2>/dev/null; then
+              echo "::error::Forbidden HWRNG usage '$pat' found in source"
+              FOUND=$((FOUND+1))
+            fi
+          done
+          if [ "$FOUND" -gt 0 ]; then
+            exit 1
+          fi
+          echo "✓ No hardware RNG instructions in source code"
+
   # ── MSRV gate (documented Rust 1.78 minimum) ─────────────────
   msrv:
     name: MSRV (Rust 1.78)

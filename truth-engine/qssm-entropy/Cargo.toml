@@ -13,6 +13,3 @@ qssm-utils.workspace = true
 smallvec.workspace = true
 thiserror.workspace = true
 zeroize = { version = "1.8", features = ["derive"] }
-
-[target.'cfg(unix)'.dependencies]
-openentropy-core.workspace = true

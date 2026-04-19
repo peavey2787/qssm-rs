@@ -1,18 +1,20 @@
 //! # qssm-entropy — hardware-anchored entropy harvesting
 //!
 //! Pure harvesting + `to_seed()` crate for device- and user-origin entropy only.
+//! **All entropy is derived from hardware jitter — no OS RNG, CSPRNG, or pseudorandomness.**
 //!
-//! **Harvest (Unix):** OpenEntropy [`EntropyPool::get_raw_bytes`] preserves XOR-combined **raw**
-//! hardware noise (no SHA-256 / DRBG in that mode—see upstream docs).
+//! **x86 / x86_64 (Windows, Linux, macOS):** Time Stamp Counter (TSC) delta sampling via
+//! `_rdtsc` + spin / yield / short sleeps.
 //!
-//! **Harvest (Windows x86_64):** TSC delta sampling via [`crate::windows_tsc`] (`_rdtsc` + spin /
-//! yield / short sleeps)—**no OS RNG**. Other targets without a harvest path return
-//! [`HeError::UnsupportedEntropyPlatform`].
+//! **aarch64 (Linux, macOS, Windows):** `CNTVCT_EL0` virtual timer counter delta sampling,
+//! same jitter algorithm.
 //!
-//! [`EntropyPool::get_raw_bytes`]: https://docs.rs/openentropy-core/latest/openentropy_core/pool/struct.EntropyPool.html#method.get_raw_bytes
+//! Other architectures return [`HeError::UnsupportedEntropyPlatform`].
 //!
-//! **Threading:** [`harvest`] runs synchronously; OpenEntropy may block during
-//! collection. Offload to a worker thread or `spawn_blocking` (Tokio) so UI / network I/O stay responsive.
+//! See [`backend::jitter`] for the collection algorithm.
+//!
+//! **Threading:** [`harvest`] runs synchronously. Offload to a worker thread or
+//! `spawn_blocking` (Tokio) so UI / network I/O stay responsive.
 
 mod backend;
 mod core;

@@ -33,10 +33,9 @@ blake3 = "1.5"
 cpufeatures = ">=0.2, <0.3"  # pin below 0.3 (edition2024, needs Rust 1.85+)
 accelerometer = "0.12"
 hex = "0.4"
-openentropy-core = "0.12"
+
 rayon = "1.10"
 smallvec = "1.13"
-rand = "0.8"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror = "1.0"

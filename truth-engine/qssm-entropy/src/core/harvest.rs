@@ -1,11 +1,10 @@
-//! Harvest raw jitter from OpenEntropy (`get_raw_bytes`) on **Unix**, TSC deltas on **Windows x86_64**,
-//! and optional IMU payloads.
+//! Harvest raw entropy from hardware performance counters and optional IMU payloads.
 //!
-//! **Windows x86_64:** see [`crate::backend::windows_tsc`]—raw CPU jitter from [`core::arch::x86_64::_rdtsc`],
-//! not OS-provided randomness.
-
-#[cfg(unix)]
-use openentropy_core::EntropyPool;
+//! **x86 / x86_64:** TSC delta sampling via `_rdtsc`.
+//! **aarch64:** `CNTVCT_EL0` virtual timer counter.
+//!
+//! All entropy is derived from hardware jitter — **never** OS RNG, CSPRNG, or pseudorandomness.
+//! See [`crate::backend::jitter`] for the collection algorithm.
 
 use accelerometer::{RawAccelerometer, Vector};
 use smallvec::SmallVec;
@@ -16,11 +15,11 @@ use crate::HeError;
 use crate::Heartbeat;
 use qssm_utils::MIN_RAW_BYTES;
 
-/// Configuration for how many raw bytes to request from the hardware observatory.
+/// Configuration for how many raw bytes to request from the hardware jitter collector.
 #[derive(Debug, Clone)]
 #[non_exhaustive]
 pub struct HarvestConfig {
-    /// Target byte count (Unix: [`EntropyPool::get_raw_bytes`]; Windows x86_64: TSC collector).
+    /// Target byte count from the hardware performance counter jitter collector.
     pub raw_bytes: usize,
 }
 
@@ -32,12 +31,10 @@ impl Default for HarvestConfig {
 
 /// Harvest a [`Heartbeat`] with CPU/DRAM jitter only (`sensor_entropy` empty).
 ///
-/// On **Unix**, uses [`EntropyPool::auto`] and [`EntropyPool::get_raw_bytes`]: XOR-combined raw
-/// source output without SHA-256 conditioning or a DRBG—see OpenEntropy docs.
+/// Uses hardware performance-counter jitter on all supported architectures
+/// (x86, x86_64, aarch64). **No OS RNG or CSPRNG is ever used.**
 ///
-/// On **Windows x86_64**, uses TSC-based hardware jitter (see module docs).
-///
-/// **Threading:** OpenEntropy may block during collection; call from a worker thread or
+/// **Threading:** harvest may block briefly; call from a worker thread or
 /// `spawn_blocking` in async apps to avoid stalling UI/network threads.
 pub fn harvest(config: &HarvestConfig) -> Result<Heartbeat, HeError> {
     harvest_inner(config, SensorEntropy::none())
@@ -69,18 +66,12 @@ fn harvest_inner(
     ))
 }
 
-#[cfg(unix)]
+#[cfg(any(target_arch = "x86_64", target_arch = "x86", target_arch = "aarch64"))]
 fn platform_raw_jitter(n: usize) -> Result<Vec<u8>, HeError> {
-    let pool = EntropyPool::auto();
-    Ok(pool.get_raw_bytes(n))
+    crate::backend::jitter::harvest_hw_jitter(n)
 }
 
-#[cfg(all(windows, target_arch = "x86_64"))]
-fn platform_raw_jitter(n: usize) -> Result<Vec<u8>, HeError> {
-    crate::backend::windows_tsc::harvest_tsc_jitter(n)
-}
-
-#[cfg(all(not(unix), not(all(windows, target_arch = "x86_64"))))]
+#[cfg(not(any(target_arch = "x86_64", target_arch = "x86", target_arch = "aarch64")))]
 fn platform_raw_jitter(n: usize) -> Result<Vec<u8>, HeError> {
     let _ = n;
     Err(HeError::UnsupportedEntropyPlatform)

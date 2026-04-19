@@ -1,10 +1,10 @@
 //! Module-LWE commitment \(C = A r + \mu\) with Lyubashevsky-style Fiat–Shamir + rejection (no witness in proof).
 #![forbid(unsafe_code)]
 
+use crate::DeterministicRng;
 use core::hint::black_box;
 use qssm_utils::hashing::DOMAIN_MS;
 use qssm_utils::LE_FS_PUBLIC_BINDING_LAYOUT_VERSION;
-use rand::RngCore;
 use subtle::{Choice, ConstantTimeEq, ConstantTimeLess};
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
@@ -377,7 +377,7 @@ pub fn prove_with_witness(
     witness: &Witness,
     commitment: &Commitment,
     binding_context: &[u8; 32],
-    rng: &mut impl RngCore,
+    rng: &mut impl DeterministicRng,
 ) -> Result<LatticeProof, LeError> {
     public.validate()?;
     witness.validate()?;

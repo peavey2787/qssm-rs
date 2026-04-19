@@ -1,0 +1,23 @@
+Formatting	Run dtolnay/rust-toolchain@stable	2026-04-19T00:21:24.9535578Z [36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://sh.rustup.rs | sh -s -- --default-toolchain none -y[0m
+Formatting	Run dtolnay/rust-toolchain@stable	2026-04-19T00:21:33.6024549Z ##[group]Run : work around spurious network errors in curl 8.0
+Formatting	Run dtolnay/rust-toolchain@stable	2026-04-19T00:21:33.6024935Z [36;1m: work around spurious network errors in curl 8.0[0m
+Clippy	Run dtolnay/rust-toolchain@stable	2026-04-19T00:21:24.1223594Z [36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://sh.rustup.rs | sh -s -- --default-toolchain none -y[0m
+Clippy	Run dtolnay/rust-toolchain@stable	2026-04-19T00:21:33.4214862Z ##[group]Run : work around spurious network errors in curl 8.0
+Clippy	Run dtolnay/rust-toolchain@stable	2026-04-19T00:21:33.4216445Z [36;1m: work around spurious network errors in curl 8.0[0m
+Clippy	Run cargo clippy --workspace --all-targets --exclude qssm-desktop -- -D warnings	2026-04-19T00:21:35.1910504Z [1m[92m  Downloaded[0m thiserror v2.0.18
+Clippy	Run cargo clippy --workspace --all-targets --exclude qssm-desktop -- -D warnings	2026-04-19T00:21:35.2388992Z [1m[92m  Downloaded[0m quick-error v1.2.3
+Clippy	Run cargo clippy --workspace --all-targets --exclude qssm-desktop -- -D warnings	2026-04-19T00:21:35.6718986Z [1m[92m  Downloaded[0m thiserror v1.0.69
+Clippy	Run cargo clippy --workspace --all-targets --exclude qssm-desktop -- -D warnings	2026-04-19T00:21:35.7016413Z [1m[92m  Downloaded[0m thiserror-impl v2.0.18
+Clippy	Run cargo clippy --workspace --all-targets --exclude qssm-desktop -- -D warnings	2026-04-19T00:21:35.7057874Z [1m[92m  Downloaded[0m thiserror-impl v1.0.69
+Clippy	Run cargo clippy --workspace --all-targets --exclude qssm-desktop -- -D warnings	2026-04-19T00:21:36.6442261Z [1m[92m   Compiling[0m thiserror v1.0.69
+Clippy	Run cargo clippy --workspace --all-targets --exclude qssm-desktop -- -D warnings	2026-04-19T00:21:41.1780120Z [1m[92m   Compiling[0m thiserror-impl v1.0.69
+Clippy	Run cargo clippy --workspace --all-targets --exclude qssm-desktop -- -D warnings	2026-04-19T00:21:44.2399610Z [1m[92m   Compiling[0m thiserror v2.0.18
+Clippy	Run cargo clippy --workspace --all-targets --exclude qssm-desktop -- -D warnings	2026-04-19T00:21:44.5119809Z [1m[91merror[0m: failed to run custom build command for `libudev-sys v0.1.4`
+Clippy	Run cargo clippy --workspace --all-targets --exclude qssm-desktop -- -D warnings	2026-04-19T00:21:44.5157381Z   thread 'main' (3382) panicked at /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libudev-sys-0.1.4/build.rs:38:41:
+Clippy	Run cargo clippy --workspace --all-targets --exclude qssm-desktop -- -D warnings	2026-04-19T00:21:44.5176381Z [1m[33mwarning[0m: build failed, waiting for other jobs to finish...
+Clippy	Run cargo clippy --workspace --all-targets --exclude qssm-desktop -- -D warnings	2026-04-19T00:21:45.6240369Z ##[error]Process completed with exit code 101.
+MSRV (Rust 1.78)	Run dtolnay/rust-toolchain@master	2026-04-19T00:21:24.1883684Z [36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://sh.rustup.rs | sh -s -- --default-toolchain none -y[0m
+MSRV (Rust 1.78)	Run dtolnay/rust-toolchain@master	2026-04-19T00:21:31.1833252Z ##[group]Run : work around spurious network errors in curl 8.0
+MSRV (Rust 1.78)	Run dtolnay/rust-toolchain@master	2026-04-19T00:21:31.1833715Z [36;1m: work around spurious network errors in curl 8.0[0m
+MSRV (Rust 1.78)	Run cargo check --workspace --exclude qssm-desktop	2026-04-19T00:21:33.5217295Z [1m[31merror[0m[1m:[0m failed to parse manifest at `/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/getrandom-0.4.2/Cargo.toml`
+MSRV (Rust 1.78)	Run cargo check --workspace --exclude qssm-desktop	2026-04-19T00:21:33.5366759Z ##[error]Process completed with exit code 101.
