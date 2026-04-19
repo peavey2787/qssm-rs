@@ -1,6 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-const EMPTY_PREDICATE = { kind: "range", field: "claim.", min: 0, max: 150, op: "gt", rhs: "", values: "" };
+const EMPTY_PREDICATE = {
+  kind: "range",
+  field: "claim.",
+  min: 0,
+  max: 150,
+  op: "gt",
+  rhs: "",
+  values: "",
+};
 
 const ANCHOR_KINDS = ["anchor_hash", "static_root", "timestamp_unix_secs"];
 
@@ -8,61 +16,90 @@ function newPredicate() {
   return { ...EMPTY_PREDICATE, _key: crypto.randomUUID() };
 }
 
-export default function TemplateBuilder({ onGenerate }) {
-  const [id, setId] = useState("custom-template");
-  const [title, setTitle] = useState("Custom template");
-  const [description, setDescription] = useState("");
-  const [anchors, setAnchors] = useState(["anchor_hash"]);
-  const [predicates, setPredicates] = useState([newPredicate()]);
+function createDefaultState() {
+  return {
+    id: "custom-template",
+    title: "Custom template",
+    description: "",
+    anchors: ["anchor_hash"],
+    predicates: [newPredicate()],
+  };
+}
+
+function createProofOfAgeState() {
+  return {
+    id: "age-gate-21",
+    title: "Proof of age (21+)",
+    description: "Public claim must include claim.age_years between 21 and 150 inclusive.",
+    anchors: ["anchor_hash", "static_root", "timestamp_unix_secs"],
+    predicates: [
+      {
+        _key: crypto.randomUUID(),
+        kind: "range",
+        field: "claim.age_years",
+        min: 21,
+        max: 150,
+        op: "gt",
+        rhs: "",
+        values: "",
+      },
+    ],
+  };
+}
+
+export default function TemplateBuilder({ onGenerate, onResetAll, resetToken }) {
+  const [builderState, setBuilderState] = useState(createDefaultState);
+
+  const { id, title, description, anchors, predicates } = builderState;
+
+  useEffect(() => {
+    setBuilderState(createDefaultState());
+  }, [resetToken]);
+
+  function updateBuilder(patch) {
+    setBuilderState((prev) => ({ ...prev, ...patch }));
+  }
 
   function toggleAnchor(kind) {
-    setAnchors((prev) =>
-      prev.includes(kind) ? prev.filter((a) => a !== kind) : [...prev, kind],
-    );
+    updateBuilder({
+      anchors: anchors.includes(kind)
+        ? anchors.filter((a) => a !== kind)
+        : [...anchors, kind],
+    });
   }
 
   function updatePred(index, patch) {
-    setPredicates((prev) => prev.map((p, i) => (i === index ? { ...p, ...patch } : p)));
+    updateBuilder({
+      predicates: predicates.map((p, i) => (i === index ? { ...p, ...patch } : p)),
+    });
   }
 
   function removePred(index) {
-    setPredicates((prev) => prev.filter((_, i) => i !== index));
+    updateBuilder({ predicates: predicates.filter((_, i) => i !== index) });
   }
 
   function addPred() {
-    setPredicates((prev) => [...prev, newPredicate()]);
+    updateBuilder({ predicates: [...predicates, newPredicate()] });
+  }
+
+  function resetBuilder() {
+    setBuilderState(createDefaultState());
+  }
+
+  function loadProofOfAgeExample() {
+    const next = createProofOfAgeState();
+    setBuilderState(next);
+    const template = toTemplate(next);
+    if (onGenerate) {
+      onGenerate(
+        JSON.stringify(template, null, 2),
+        buildExampleClaim(template.predicates),
+      );
+    }
   }
 
   function generate() {
-    const template = {
-      qssm_template_version: 1,
-      id: id.trim() || "custom-template",
-      title: title.trim() || "Custom template",
-      ...(description.trim() ? { description: description.trim() } : {}),
-      allowed_anchor_kinds: anchors.length > 0 ? anchors : ["anchor_hash"],
-      predicates: predicates.map(({ kind, field, min, max, op, rhs, values }) => {
-        const f = field.trim() || "claim.value";
-        switch (kind) {
-          case "range":
-            return { kind: "range", field: f, min: Number(min) || 0, max: Number(max) || 150 };
-          case "at_least":
-            return { kind: "at_least", field: f, min: Number(min) || 0 };
-          case "compare":
-            return { kind: "compare", field: f, op, rhs: parseRhs(rhs) };
-          case "in_set":
-            return {
-              kind: "in_set",
-              field: f,
-              values: values
-                .split(",")
-                .map((v) => Number(v.trim()))
-                .filter((v) => !Number.isNaN(v)),
-            };
-          default:
-            return { kind: "range", field: f, min: 0, max: 150 };
-        }
-      }),
-    };
+    const template = toTemplate(builderState);
 
     const json = JSON.stringify(template, null, 2);
 
@@ -80,20 +117,32 @@ export default function TemplateBuilder({ onGenerate }) {
         Click <strong>Generate JSON</strong> to populate the template editor above.
       </p>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+      <div style={{ marginTop: "0.75rem", display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+        <button type="button" className="btn" onClick={loadProofOfAgeExample}>
+          Load proof of age example
+        </button>
+        <button type="button" className="btn btn-ghost" onClick={resetBuilder}>
+          Clear builder
+        </button>
+        <button type="button" className="btn btn-ghost" onClick={onResetAll}>
+          Clear app
+        </button>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem", marginTop: "0.75rem" }}>
         <label className="muted">
           Template id
-          <input value={id} onChange={(e) => setId(e.target.value)} placeholder="custom-template" />
+          <input value={id} onChange={(e) => updateBuilder({ id: e.target.value })} placeholder="custom-template" />
         </label>
         <label className="muted">
           Title
-          <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Custom template" />
+          <input value={title} onChange={(e) => updateBuilder({ title: e.target.value })} placeholder="Custom template" />
         </label>
       </div>
 
       <label className="muted" style={{ display: "block", marginTop: "0.5rem" }}>
         Description (optional)
-        <input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="What this template checks" />
+        <input value={description} onChange={(e) => updateBuilder({ description: e.target.value })} placeholder="What this template checks" />
       </label>
 
       <fieldset style={{ marginTop: "0.75rem", border: "1px solid var(--accent)", padding: "0.5rem 0.75rem", borderRadius: "6px" }}>
@@ -214,6 +263,38 @@ function parseRhs(raw) {
   const trimmed = String(raw).trim();
   const asNum = Number(trimmed);
   return Number.isNaN(asNum) ? trimmed : asNum;
+}
+
+function toTemplate({ id, title, description, anchors, predicates }) {
+  return {
+    qssm_template_version: 1,
+    id: id.trim() || "custom-template",
+    title: title.trim() || "Custom template",
+    ...(description.trim() ? { description: description.trim() } : {}),
+    allowed_anchor_kinds: anchors.length > 0 ? anchors : ["anchor_hash"],
+    predicates: predicates.map(({ kind, field, min, max, op, rhs, values }) => {
+      const f = field.trim() || "claim.value";
+      switch (kind) {
+        case "range":
+          return { kind: "range", field: f, min: Number(min) || 0, max: Number(max) || 150 };
+        case "at_least":
+          return { kind: "at_least", field: f, min: Number(min) || 0 };
+        case "compare":
+          return { kind: "compare", field: f, op, rhs: parseRhs(rhs) };
+        case "in_set":
+          return {
+            kind: "in_set",
+            field: f,
+            values: String(values)
+              .split(",")
+              .map((v) => Number(v.trim()))
+              .filter((v) => !Number.isNaN(v)),
+          };
+        default:
+          return { kind: "range", field: f, min: 0, max: 150 };
+      }
+    }),
+  };
 }
 
 /**

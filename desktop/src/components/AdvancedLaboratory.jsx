@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { open, save } from "@tauri-apps/plugin-dialog";
 import TemplateBuilder from "./TemplateBuilder";
 
 /** Generate a cryptographically random 32-byte hex salt. */
@@ -9,11 +10,10 @@ function generateSaltHex() {
   return Array.from(buf, (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-const DEFAULT_CLAIM_JSON = '{"claim":{"age_years":25}}';
+const DEFAULT_CLAIM_JSON = "";
 
 export default function AdvancedLaboratory() {
   const inTauri = typeof window !== "undefined" && !!window.__TAURI_INTERNALS__?.invoke;
-  const [templatePath, setTemplatePath] = useState("");
   const [templateJson, setTemplateJson] = useState("");
   const [templateOut, setTemplateOut] = useState("(no template operation yet)");
   const [claimCheckOut, setClaimCheckOut] = useState("(no claim check yet)");
@@ -22,6 +22,9 @@ export default function AdvancedLaboratory() {
   const [saltHex, setSaltHex] = useState(() => generateSaltHex());
   const [proofHex, setProofHex] = useState("");
   const [apiOut, setApiOut] = useState("(no action yet)");
+  const [templatePath, setTemplatePath] = useState("");
+  const [showTemplateText, setShowTemplateText] = useState(false);
+  const [resetToken, setResetToken] = useState(0);
   const commitRef = useRef({ hex: "", claimUtf8: "", saltHex: "" });
   const [busy, setBusy] = useState(false);
 
@@ -40,6 +43,21 @@ export default function AdvancedLaboratory() {
     if (exampleClaim) setClaimUtf8(exampleClaim);
   }, []);
 
+  const resetAll = useCallback(() => {
+    setTemplateJson("");
+    setTemplateOut("(no template operation yet)");
+    setClaimCheckOut("(no claim check yet)");
+    setBlueprintHex("");
+    setClaimUtf8(DEFAULT_CLAIM_JSON);
+    setSaltHex(generateSaltHex());
+    setProofHex("");
+    setApiOut("(no action yet)");
+    setTemplatePath("");
+    setShowTemplateText(false);
+    commitRef.current = { hex: "", claimUtf8: "", saltHex: "" };
+    setResetToken((prev) => prev + 1);
+  }, []);
+
   async function runAction(action) {
     if (!inTauri) {
       setApiOut("Rust command bridge unavailable. Launch via npm run tauri:dev.");
@@ -55,42 +73,32 @@ export default function AdvancedLaboratory() {
     }
   }
 
-  async function loadProofOfAgeTemplate() {
-    if (!inTauri) {
-      setTemplateOut("Rust command bridge unavailable. Launch via npm run tauri:dev.");
-      return;
-    }
-    try {
-      const json = await invoke("proof_of_age_template_json");
-      setTemplateJson(json);
-      setClaimUtf8('{"claim":{"age_years":25}}');
-      setTemplateOut("Loaded built-in proof-of-age template JSON.");
-    } catch (error) {
-      setTemplateOut(String(error));
-    }
-  }
-
   async function importTemplate() {
-    if (!templatePath.trim()) {
-      setTemplateOut("Set a template path first.");
-      return;
-    }
     if (!inTauri) {
       setTemplateOut("Rust command bridge unavailable. Launch via npm run tauri:dev.");
       return;
     }
     try {
-      const json = await invoke("import_qssm_template", { path: templatePath.trim() });
+      const path = await open({
+        multiple: false,
+        directory: false,
+        filters: [{ name: "QSSM templates", extensions: ["qssm", "json"] }],
+      });
+      if (!path || Array.isArray(path)) {
+        return;
+      }
+      const json = await invoke("import_qssm_template", { path });
       setTemplateJson(json);
-      setTemplateOut(`Imported ${templatePath.trim()}`);
+      setTemplatePath(path);
+      setTemplateOut(`Imported ${path}`);
     } catch (error) {
       setTemplateOut(String(error));
     }
   }
 
   async function exportTemplate() {
-    if (!templatePath.trim()) {
-      setTemplateOut("Set a template path first.");
+    if (!templateJson.trim()) {
+      setTemplateOut("Build, load, or paste template JSON first.");
       return;
     }
     if (!inTauri) {
@@ -98,11 +106,19 @@ export default function AdvancedLaboratory() {
       return;
     }
     try {
+      const path = await save({
+        defaultPath: parsedTemplate.id !== "—" ? `${parsedTemplate.id}.qssm` : "template.qssm",
+        filters: [{ name: "QSSM templates", extensions: ["qssm"] }],
+      });
+      if (!path) {
+        return;
+      }
       await invoke("export_qssm_template", {
-        path: templatePath.trim(),
+        path,
         templateJson,
       });
-      setTemplateOut(`Exported ${templatePath.trim()}`);
+      setTemplatePath(path);
+      setTemplateOut(`Exported ${path}`);
     } catch (error) {
       setTemplateOut(String(error));
     }
@@ -117,7 +133,7 @@ export default function AdvancedLaboratory() {
       }
       const result = await invoke("compile_blueprint", { templateSource });
       setBlueprintHex(result);
-      setApiOut("Compiled template into opaque blueprint bytes.");
+      setApiOut("Built template into opaque blueprint bytes.");
     });
   }
 
@@ -207,7 +223,7 @@ export default function AdvancedLaboratory() {
 
   return (
     <div className="lab-wrap">
-      <TemplateBuilder onGenerate={onTemplateGenerated} />
+      <TemplateBuilder onGenerate={onTemplateGenerated} onResetAll={resetAll} resetToken={resetToken} />
 
       <div className="panel">
         <h2>Template import and export</h2>
@@ -215,48 +231,36 @@ export default function AdvancedLaboratory() {
           Load a built-in example, import an existing <code>.qssm</code> file,
           edit the JSON directly, and export it back out.
         </p>
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: "0.75rem",
-            alignItems: "end",
-          }}
-        >
-          <label className="muted" style={{ flex: "1 1 20rem" }}>
-            Template path
-            <input
-              value={templatePath}
-              onChange={(event) => setTemplatePath(event.target.value)}
-              placeholder="C:\\path\\template.qssm"
-            />
-          </label>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem", alignItems: "end" }}>
           <button type="button" className="btn btn-ghost" onClick={importTemplate}>
             Import .qssm
           </button>
           <button type="button" className="btn btn-ghost" onClick={exportTemplate}>
             Export .qssm
           </button>
-        </div>
-        <div style={{ marginTop: "0.75rem", display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-          <button type="button" className="btn" onClick={loadProofOfAgeTemplate}>
-            Load proof-of-age example
+          <button
+            type="button"
+            className="btn btn-ghost"
+            onClick={() => setShowTemplateText((prev) => !prev)}
+          >
+            {showTemplateText ? "Hide template text" : "Show template text"}
           </button>
-          <button type="button" className="btn btn-ghost" disabled={busy} onClick={verifyClaimAgainstTemplate}>
-            Claim check
-          </button>
         </div>
-        <textarea
-          style={{ marginTop: "0.75rem", minHeight: "220px", fontFamily: "ui-monospace, monospace", fontSize: "0.78rem" }}
-          value={templateJson}
-          onChange={(event) => setTemplateJson(event.target.value)}
-          placeholder='{"qssm_template_version":1,"id":"age-gate-21"}'
-        />
+        {templatePath ? (
+          <p className="muted" style={{ marginTop: "0.6rem" }}>
+            Last file path: <code>{templatePath}</code>
+          </p>
+        ) : null}
+        {showTemplateText ? (
+          <textarea
+            style={{ marginTop: "0.75rem", minHeight: "220px", fontFamily: "ui-monospace, monospace", fontSize: "0.78rem" }}
+            value={templateJson}
+            onChange={(event) => setTemplateJson(event.target.value)}
+            placeholder='{"qssm_template_version":1,"id":"age-gate-21"}'
+          />
+        ) : null}
         <pre className="pre-log" style={{ marginTop: "0.75rem", maxHeight: "120px" }}>
           {templateOut}
-        </pre>
-        <pre className="pre-log" style={{ marginTop: "0.75rem", maxHeight: "120px" }}>
-          {claimCheckOut}
         </pre>
       </div>
 
@@ -305,7 +309,7 @@ export default function AdvancedLaboratory() {
 
         <div style={{ marginTop: "0.75rem", display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
           <button type="button" className="btn" disabled={busy} onClick={compileBlueprint}>
-            Compile blueprint
+            Build Template
           </button>
           <button type="button" className="btn btn-ghost" disabled={busy} onClick={commitSecret}>
             Commit
@@ -320,6 +324,21 @@ export default function AdvancedLaboratory() {
             Open
           </button>
         </div>
+        <p className="muted" style={{ marginTop: "0.4rem", fontSize: "0.78rem" }}>
+          Build Template first. Commit, prove, verify, and open all use the current blueprint generated from the template.
+        </p>
+        <pre className="pre-log" style={{ marginTop: "0.75rem", maxHeight: "220px" }}>
+          {apiOut}
+        </pre>
+        <button
+          type="button"
+          className="btn btn-ghost"
+          disabled={busy}
+          onClick={verifyClaimAgainstTemplate}
+          style={{ marginTop: "0.75rem" }}
+        >
+          Claim check
+        </button>
         <label className="muted" style={{ display: "block", marginTop: "0.75rem" }}>
           Claim (secret input as JSON)
           <textarea
@@ -328,6 +347,9 @@ export default function AdvancedLaboratory() {
             onChange={(event) => setClaimUtf8(event.target.value)}
           />
         </label>
+        <pre className="pre-log" style={{ marginTop: "0.75rem", maxHeight: "140px" }}>
+          {claimCheckOut}
+        </pre>
         <label className="muted" style={{ display: "block", marginTop: "0.75rem" }}>
           Blueprint hex (read-only after compile)
           <textarea
@@ -344,9 +366,6 @@ export default function AdvancedLaboratory() {
             value={proofHex}
           />
         </label>
-        <pre className="pre-log" style={{ marginTop: "0.75rem", maxHeight: "220px" }}>
-          {apiOut}
-        </pre>
       </div>
     </div>
   );
