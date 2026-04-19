@@ -289,15 +289,15 @@ jobs:
           fi
           echo "✓ No hardware RNG instructions in source code"
 
-  # ── MSRV gate (documented Rust 1.78 minimum) ─────────────────
+  # ── MSRV gate (documented Rust 1.85 minimum) ─────────────────
   msrv:
-    name: MSRV (Rust 1.78)
+    name: MSRV (Rust 1.85)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: "1.78"
+          toolchain: "1.85"
       - uses: Swatinem/rust-cache@v2
         with:
           key: msrv

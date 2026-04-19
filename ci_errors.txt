@@ -1,23 +1,278 @@
-Formatting	Run dtolnay/rust-toolchain@stable	2026-04-19T00:21:24.9535578Z [36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://sh.rustup.rs | sh -s -- --default-toolchain none -y[0m
-Formatting	Run dtolnay/rust-toolchain@stable	2026-04-19T00:21:33.6024549Z ##[group]Run : work around spurious network errors in curl 8.0
-Formatting	Run dtolnay/rust-toolchain@stable	2026-04-19T00:21:33.6024935Z [36;1m: work around spurious network errors in curl 8.0[0m
-Clippy	Run dtolnay/rust-toolchain@stable	2026-04-19T00:21:24.1223594Z [36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://sh.rustup.rs | sh -s -- --default-toolchain none -y[0m
-Clippy	Run dtolnay/rust-toolchain@stable	2026-04-19T00:21:33.4214862Z ##[group]Run : work around spurious network errors in curl 8.0
-Clippy	Run dtolnay/rust-toolchain@stable	2026-04-19T00:21:33.4216445Z [36;1m: work around spurious network errors in curl 8.0[0m
-Clippy	Run cargo clippy --workspace --all-targets --exclude qssm-desktop -- -D warnings	2026-04-19T00:21:35.1910504Z [1m[92m  Downloaded[0m thiserror v2.0.18
-Clippy	Run cargo clippy --workspace --all-targets --exclude qssm-desktop -- -D warnings	2026-04-19T00:21:35.2388992Z [1m[92m  Downloaded[0m quick-error v1.2.3
-Clippy	Run cargo clippy --workspace --all-targets --exclude qssm-desktop -- -D warnings	2026-04-19T00:21:35.6718986Z [1m[92m  Downloaded[0m thiserror v1.0.69
-Clippy	Run cargo clippy --workspace --all-targets --exclude qssm-desktop -- -D warnings	2026-04-19T00:21:35.7016413Z [1m[92m  Downloaded[0m thiserror-impl v2.0.18
-Clippy	Run cargo clippy --workspace --all-targets --exclude qssm-desktop -- -D warnings	2026-04-19T00:21:35.7057874Z [1m[92m  Downloaded[0m thiserror-impl v1.0.69
-Clippy	Run cargo clippy --workspace --all-targets --exclude qssm-desktop -- -D warnings	2026-04-19T00:21:36.6442261Z [1m[92m   Compiling[0m thiserror v1.0.69
-Clippy	Run cargo clippy --workspace --all-targets --exclude qssm-desktop -- -D warnings	2026-04-19T00:21:41.1780120Z [1m[92m   Compiling[0m thiserror-impl v1.0.69
-Clippy	Run cargo clippy --workspace --all-targets --exclude qssm-desktop -- -D warnings	2026-04-19T00:21:44.2399610Z [1m[92m   Compiling[0m thiserror v2.0.18
-Clippy	Run cargo clippy --workspace --all-targets --exclude qssm-desktop -- -D warnings	2026-04-19T00:21:44.5119809Z [1m[91merror[0m: failed to run custom build command for `libudev-sys v0.1.4`
-Clippy	Run cargo clippy --workspace --all-targets --exclude qssm-desktop -- -D warnings	2026-04-19T00:21:44.5157381Z   thread 'main' (3382) panicked at /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libudev-sys-0.1.4/build.rs:38:41:
-Clippy	Run cargo clippy --workspace --all-targets --exclude qssm-desktop -- -D warnings	2026-04-19T00:21:44.5176381Z [1m[33mwarning[0m: build failed, waiting for other jobs to finish...
-Clippy	Run cargo clippy --workspace --all-targets --exclude qssm-desktop -- -D warnings	2026-04-19T00:21:45.6240369Z ##[error]Process completed with exit code 101.
-MSRV (Rust 1.78)	Run dtolnay/rust-toolchain@master	2026-04-19T00:21:24.1883684Z [36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://sh.rustup.rs | sh -s -- --default-toolchain none -y[0m
-MSRV (Rust 1.78)	Run dtolnay/rust-toolchain@master	2026-04-19T00:21:31.1833252Z ##[group]Run : work around spurious network errors in curl 8.0
-MSRV (Rust 1.78)	Run dtolnay/rust-toolchain@master	2026-04-19T00:21:31.1833715Z [36;1m: work around spurious network errors in curl 8.0[0m
-MSRV (Rust 1.78)	Run cargo check --workspace --exclude qssm-desktop	2026-04-19T00:21:33.5217295Z [1m[31merror[0m[1m:[0m failed to parse manifest at `/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/getrandom-0.4.2/Cargo.toml`
-MSRV (Rust 1.78)	Run cargo check --workspace --exclude qssm-desktop	2026-04-19T00:21:33.5366759Z ##[error]Process completed with exit code 101.
+Clippy	Run dtolnay/rust-toolchain@stable	2026-04-19T01:00:24.2019416Z [36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://sh.rustup.rs | sh -s -- --default-toolchain none -y[0m
+Clippy	Run dtolnay/rust-toolchain@stable	2026-04-19T01:00:31.9254566Z ##[group]Run : work around spurious network errors in curl 8.0
+Clippy	Run dtolnay/rust-toolchain@stable	2026-04-19T01:00:31.9254975Z [36;1m: work around spurious network errors in curl 8.0[0m
+Clippy	Run cargo clippy --workspace --all-targets --exclude qssm-desktop -- -D warnings	2026-04-19T01:00:33.4480674Z [1m[92m  Downloaded[0m thiserror-impl v1.0.69
+Clippy	Run cargo clippy --workspace --all-targets --exclude qssm-desktop -- -D warnings	2026-04-19T01:00:33.4546691Z [1m[92m  Downloaded[0m thiserror v1.0.69
+Clippy	Run cargo clippy --workspace --all-targets --exclude qssm-desktop -- -D warnings	2026-04-19T01:00:33.6318225Z [1m[92m  Downloaded[0m quick-error v1.2.3
+Clippy	Run cargo clippy --workspace --all-targets --exclude qssm-desktop -- -D warnings	2026-04-19T01:00:33.9647188Z [1m[92m   Compiling[0m thiserror v1.0.69
+Clippy	Run cargo clippy --workspace --all-targets --exclude qssm-desktop -- -D warnings	2026-04-19T01:00:37.8283800Z [1m[92m   Compiling[0m thiserror-impl v1.0.69
+Clippy	Run cargo clippy --workspace --all-targets --exclude qssm-desktop -- -D warnings	2026-04-19T01:00:41.6023482Z [1m[92m    Checking[0m quick-error v1.2.3
+Formatting	Run dtolnay/rust-toolchain@stable	2026-04-19T01:00:23.9117696Z [36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://sh.rustup.rs | sh -s -- --default-toolchain none -y[0m
+Formatting	Run dtolnay/rust-toolchain@stable	2026-04-19T01:00:32.6145239Z ##[group]Run : work around spurious network errors in curl 8.0
+Formatting	Run dtolnay/rust-toolchain@stable	2026-04-19T01:00:32.6145688Z [36;1m: work around spurious network errors in curl 8.0[0m
+MSRV (Rust 1.78)	Run dtolnay/rust-toolchain@master	2026-04-19T01:00:23.2669873Z [36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://sh.rustup.rs | sh -s -- --default-toolchain none -y[0m
+MSRV (Rust 1.78)	Run dtolnay/rust-toolchain@master	2026-04-19T01:00:30.8033658Z ##[group]Run : work around spurious network errors in curl 8.0
+MSRV (Rust 1.78)	Run dtolnay/rust-toolchain@master	2026-04-19T01:00:30.8034262Z [36;1m: work around spurious network errors in curl 8.0[0m
+MSRV (Rust 1.78)	Run cargo check --workspace --exclude qssm-desktop	2026-04-19T01:00:32.7106892Z [1m[31merror[0m[1m:[0m failed to parse manifest at `/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/cpufeatures-0.3.0/Cargo.toml`
+MSRV (Rust 1.78)	Run cargo check --workspace --exclude qssm-desktop	2026-04-19T01:00:32.7182190Z ##[error]Process completed with exit code 101.
+Entropy Purity	Run dtolnay/rust-toolchain@stable	2026-04-19T01:00:43.0915562Z [36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://sh.rustup.rs | sh -s -- --default-toolchain none -y[0m
+Entropy Purity	Run dtolnay/rust-toolchain@stable	2026-04-19T01:00:51.5774075Z ##[group]Run : work around spurious network errors in curl 8.0
+Entropy Purity	Run dtolnay/rust-toolchain@stable	2026-04-19T01:00:51.5774548Z [36;1m: work around spurious network errors in curl 8.0[0m
+Entropy Purity	No forbidden PRNG / CSPRNG / HWRNG crates	2026-04-19T01:00:52.3078642Z [36;1m  echo "::error::Forbidden PRNG/CSPRNG/HWRNG crates found in production dependency tree:$FOUND"[0m
+Entropy Purity	No OS-RNG or CSPRNG calls in source code	2026-04-19T01:00:53.4952364Z [36;1m    echo "::error::Forbidden OS-RNG call '$pat' found in source"[0m
+Entropy Purity	No PRNG type or function usage in source code	2026-04-19T01:00:53.5288341Z [36;1m    echo "::error::Forbidden PRNG usage '$pat' found in source"[0m
+Entropy Purity	No hardware RNG instructions in source code	2026-04-19T01:00:53.5690643Z [36;1m    echo "::error::Forbidden HWRNG usage '$pat' found in source"[0m
+Hygiene	Run dtolnay/rust-toolchain@stable	2026-04-19T01:01:02.1799452Z [36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://sh.rustup.rs | sh -s -- --default-toolchain none -y[0m
+Hygiene	Run dtolnay/rust-toolchain@stable	2026-04-19T01:01:10.2034731Z ##[group]Run : work around spurious network errors in curl 8.0
+Hygiene	Run dtolnay/rust-toolchain@stable	2026-04-19T01:01:10.2035075Z [36;1m: work around spurious network errors in curl 8.0[0m
+Hygiene	Deny dead code and unused imports (workspace build)	2026-04-19T01:01:12.4065544Z [1m[92m  Downloaded[0m thiserror-impl v1.0.69
+Hygiene	Deny dead code and unused imports (workspace build)	2026-04-19T01:01:12.4096862Z [1m[92m  Downloaded[0m thiserror v1.0.69
+Hygiene	Deny dead code and unused imports (workspace build)	2026-04-19T01:01:12.7885677Z [1m[92m   Compiling[0m thiserror v1.0.69
+Hygiene	Deny dead code and unused imports (workspace build)	2026-04-19T01:01:16.3341491Z [1m[92m   Compiling[0m thiserror-impl v1.0.69
+Hygiene	No stale serialport / openentropy / libudev deps	2026-04-19T01:01:18.4164365Z [36;1m  echo "::error::Found stale dependencies (serialport/openentropy/libudev) in Cargo.lock"[0m
+Hygiene	No orphan source files outside declared modules	2026-04-19T01:01:18.4253537Z [36;1m  echo "::error::Found $STALE potentially orphaned source files"[0m
+Check (macos-latest)	Run dtolnay/rust-toolchain@stable	2026-04-19T01:01:04.9738600Z [36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://sh.rustup.rs | sh -s -- --default-toolchain none -y[0m
+Check (macos-latest)	Run dtolnay/rust-toolchain@stable	2026-04-19T01:01:14.4989070Z ##[group]Run : work around spurious network errors in curl 8.0
+Check (macos-latest)	Run dtolnay/rust-toolchain@stable	2026-04-19T01:01:14.4989530Z [36;1m: work around spurious network errors in curl 8.0[0m
+Check (macos-latest)	Run cargo check --workspace --exclude qssm-desktop	2026-04-19T01:01:16.7299810Z [1m[92m  Downloaded[0m thiserror v1.0.69
+Check (macos-latest)	Run cargo check --workspace --exclude qssm-desktop	2026-04-19T01:01:16.9140000Z [1m[92m  Downloaded[0m thiserror-impl v1.0.69
+Check (macos-latest)	Run cargo check --workspace --exclude qssm-desktop	2026-04-19T01:01:20.2627360Z [1m[92m   Compiling[0m thiserror v1.0.69
+Check (macos-latest)	Run cargo check --workspace --exclude qssm-desktop	2026-04-19T01:01:23.9622230Z [1m[92m   Compiling[0m thiserror-impl v1.0.69
+Check (ubuntu-latest)	Run dtolnay/rust-toolchain@stable	2026-04-19T01:01:00.5313711Z [36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://sh.rustup.rs | sh -s -- --default-toolchain none -y[0m
+Check (ubuntu-latest)	Run dtolnay/rust-toolchain@stable	2026-04-19T01:01:09.5351287Z ##[group]Run : work around spurious network errors in curl 8.0
+Check (ubuntu-latest)	Run dtolnay/rust-toolchain@stable	2026-04-19T01:01:09.5351773Z [36;1m: work around spurious network errors in curl 8.0[0m
+Check (ubuntu-latest)	Run cargo check --workspace --exclude qssm-desktop	2026-04-19T01:01:11.8753901Z [1m[92m  Downloaded[0m thiserror-impl v1.0.69
+Check (ubuntu-latest)	Run cargo check --workspace --exclude qssm-desktop	2026-04-19T01:01:11.8824141Z [1m[92m  Downloaded[0m thiserror v1.0.69
+Check (ubuntu-latest)	Run cargo check --workspace --exclude qssm-desktop	2026-04-19T01:01:12.4051113Z [1m[92m   Compiling[0m thiserror v1.0.69
+Check (ubuntu-latest)	Run cargo check --workspace --exclude qssm-desktop	2026-04-19T01:01:16.6679930Z [1m[92m   Compiling[0m thiserror-impl v1.0.69
+Check (windows-latest)	Run dtolnay/rust-toolchain@stable	2026-04-19T01:01:05.6516847Z [36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://win.rustup.rs/x86_64 --output 'D:\a\_temp\rustup-init.exe'[0m
+Check (windows-latest)	Run dtolnay/rust-toolchain@stable	2026-04-19T01:01:23.8314562Z ##[group]Run : work around spurious network errors in curl 8.0
+Check (windows-latest)	Run dtolnay/rust-toolchain@stable	2026-04-19T01:01:23.8315276Z [36;1m: work around spurious network errors in curl 8.0[0m
+Check (windows-latest)	Run cargo check --workspace --exclude qssm-desktop	2026-04-19T01:01:33.9085307Z [1m[92m  Downloaded[0m thiserror v1.0.69
+Check (windows-latest)	Run cargo check --workspace --exclude qssm-desktop	2026-04-19T01:01:34.3213961Z [1m[92m  Downloaded[0m thiserror-impl v1.0.69
+Check (windows-latest)	Run cargo check --workspace --exclude qssm-desktop	2026-04-19T01:01:36.1603237Z [1m[92m   Compiling[0m thiserror v1.0.69
+Check (windows-latest)	Run cargo check --workspace --exclude qssm-desktop	2026-04-19T01:01:43.7495137Z [1m[92m   Compiling[0m thiserror-impl v1.0.69
+Test (windows-latest)	Run dtolnay/rust-toolchain@stable	2026-04-19T01:02:55.5390558Z [36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://win.rustup.rs/x86_64 --output 'D:\a\_temp\rustup-init.exe'[0m
+Test (windows-latest)	Run dtolnay/rust-toolchain@stable	2026-04-19T01:03:18.1084579Z ##[group]Run : work around spurious network errors in curl 8.0
+Test (windows-latest)	Run dtolnay/rust-toolchain@stable	2026-04-19T01:03:18.1084916Z [36;1m: work around spurious network errors in curl 8.0[0m
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:38.4124549Z [1m[92m  Downloaded[0m thiserror-impl v1.0.69
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:39.7168728Z [1m[92m  Downloaded[0m thiserror v1.0.69
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:44.0581051Z [1m[92m  Downloaded[0m quick-error v1.2.3
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:51.8975607Z [1m[92m   Compiling[0m thiserror v1.0.69
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:59.6052603Z [1m[92m   Compiling[0m thiserror-impl v1.0.69
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:10.2259706Z [1m[92m   Compiling[0m quick-error v1.2.3
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:24.7299729Z test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:24.8813461Z test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:25.0308341Z test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:25.0993174Z test result: ok. 48 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:25.2792517Z test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:25.2934869Z test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:25.3096388Z test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:25.3195568Z test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:25.3376089Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:25.3478489Z test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:25.3574178Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:25.7696386Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.40s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:25.7820427Z test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:25.7906508Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:25.8017212Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:25.8207016Z test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:25.8397989Z test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:25.8596414Z test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:25.8826390Z test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:25.8964478Z test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:25.9056434Z test algebra::ntt::tests::invalid_parameter_pair_panics ... ok
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:25.9061272Z test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:25.9189292Z test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:25.9285768Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:25.9493611Z test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:25.9816635Z test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:26.0039323Z test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:26.0135336Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:26.0323644Z test result: ok. 25 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:26.0425841Z test reduction_lattice::tests::extraction_knowledge_error_below_neg128 ... ok
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:26.3759603Z test result: ok. 30 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.33s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:26.3868873Z test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:26.3974009Z test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:26.4079739Z test merkle::tests::empty_leaves_error ... ok
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:26.4082518Z test merkle::tests::index_out_of_bounds_error ... ok
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:26.4088144Z test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:26.4173148Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:26.4258427Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:26.4342538Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:26.5339465Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:26.6095372Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:26.7051365Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:26.7515140Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:27.7599627Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.94s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:27.8254008Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:27.9051743Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:27.9606817Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:28.1329248Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:28.2201518Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:28.2759620Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (windows-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:04:28.3128264Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (ubuntu-latest)	Run dtolnay/rust-toolchain@stable	2026-04-19T01:02:45.8399944Z [36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://sh.rustup.rs | sh -s -- --default-toolchain none -y[0m
+Test (ubuntu-latest)	Run dtolnay/rust-toolchain@stable	2026-04-19T01:02:54.6908319Z ##[group]Run : work around spurious network errors in curl 8.0
+Test (ubuntu-latest)	Run dtolnay/rust-toolchain@stable	2026-04-19T01:02:54.6908808Z [36;1m: work around spurious network errors in curl 8.0[0m
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:02:57.0113544Z [1m[92m  Downloaded[0m thiserror-impl v1.0.69
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:02:57.0629449Z [1m[92m  Downloaded[0m thiserror v1.0.69
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:02:57.1669696Z [1m[92m  Downloaded[0m quick-error v1.2.3
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:02:57.5782273Z [1m[92m   Compiling[0m thiserror v1.0.69
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:02.4871215Z [1m[92m   Compiling[0m thiserror-impl v1.0.69
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:10.9319885Z [1m[92m   Compiling[0m quick-error v1.2.3
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:19.1600654Z test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:19.2313805Z test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:19.2979786Z test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:19.3641554Z test result: ok. 48 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:19.5265066Z test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:19.5301781Z test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:19.5379237Z test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:19.5397389Z test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:19.5506902Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:19.5525928Z test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:19.5544446Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:20.0202095Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.46s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:20.0236677Z test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:20.0248508Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:20.0286100Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:20.0402697Z test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:20.0526671Z test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:20.0665117Z test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:20.0830197Z test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:20.0883391Z test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:20.0899869Z test algebra::ntt::tests::invalid_parameter_pair_panics ... ok
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:20.0903306Z test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:20.0962822Z test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:20.0982117Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:20.1114738Z test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:20.1311906Z test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:20.1430010Z test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:20.1441674Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:20.1532799Z test result: ok. 25 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:20.1557275Z test reduction_lattice::tests::extraction_knowledge_error_below_neg128 ... ok
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:20.1571178Z test result: ok. 30 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:20.1596093Z test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:20.1611758Z test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:20.1640180Z test merkle::tests::index_out_of_bounds_error ... ok
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:20.1641787Z test merkle::tests::empty_leaves_error ... ok
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:20.1644043Z test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:20.1657431Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:20.1668868Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:20.1680950Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:20.2120446Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:20.2360804Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:20.2840777Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:20.2975456Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:20.3897373Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:20.4216992Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:20.4413670Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:20.4620631Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:20.5395308Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:20.5758282Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:20.5970968Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (ubuntu-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:20.6104011Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (macos-latest)	Run dtolnay/rust-toolchain@stable	2026-04-19T01:02:49.2925990Z [36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://sh.rustup.rs | sh -s -- --default-toolchain none -y[0m
+Test (macos-latest)	Run dtolnay/rust-toolchain@stable	2026-04-19T01:02:57.0880300Z ##[group]Run : work around spurious network errors in curl 8.0
+Test (macos-latest)	Run dtolnay/rust-toolchain@stable	2026-04-19T01:02:57.0880750Z [36;1m: work around spurious network errors in curl 8.0[0m
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:02:58.8991650Z [1m[92m  Downloaded[0m thiserror v1.0.69
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:02:59.3602990Z [1m[92m  Downloaded[0m thiserror-impl v1.0.69
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:02:59.4529440Z [1m[92m  Downloaded[0m quick-error v1.2.3
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:02.3283810Z [1m[92m   Compiling[0m thiserror v1.0.69
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:05.8891140Z [1m[92m   Compiling[0m thiserror-impl v1.0.69
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:14.7514320Z [1m[92m   Compiling[0m quick-error v1.2.3
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:22.2597580Z test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:22.2930550Z test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:22.3218770Z test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:22.3559220Z test result: ok. 48 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:22.8518590Z test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.49s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:22.8596590Z test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:22.8768590Z test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:22.8789460Z test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:22.8867160Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:22.8895820Z test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:22.8939070Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:23.4638020Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.57s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:23.4679610Z test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:23.4701860Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:23.4767220Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:23.4992950Z test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:23.5174060Z test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:23.5369650Z test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:23.5610610Z test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:23.5704130Z test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:23.5731590Z test algebra::ntt::tests::invalid_parameter_pair_panics ... ok
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:23.5733030Z test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:23.5808870Z test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:23.5852730Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:23.5996510Z test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:23.6290620Z test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:23.6486450Z test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:23.6509540Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:23.6700930Z test result: ok. 25 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:23.6729510Z test reduction_lattice::tests::extraction_knowledge_error_below_neg128 ... ok
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:23.6741210Z test result: ok. 30 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:23.6765810Z test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:23.6797410Z test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:23.6837090Z test merkle::tests::empty_leaves_error ... ok
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:23.6837630Z test merkle::tests::index_out_of_bounds_error ... ok
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:23.6841530Z test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:23.6866090Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:23.6887770Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:23.6908810Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:23.7699660Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:23.7927240Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:23.8334750Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:23.8498360Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:23.9557800Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:23.9855670Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:24.0067800Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:24.0283390Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:24.0864210Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:24.1180100Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:24.1394460Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Test (macos-latest)	Run cargo test --workspace --exclude qssm-desktop	2026-04-19T01:03:24.1556250Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Invariants	Run dtolnay/rust-toolchain@stable	2026-04-19T01:05:53.5521786Z [36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://sh.rustup.rs | sh -s -- --default-toolchain none -y[0m
+Invariants	Run dtolnay/rust-toolchain@stable	2026-04-19T01:06:02.7894786Z ##[group]Run : work around spurious network errors in curl 8.0
+Invariants	Run dtolnay/rust-toolchain@stable	2026-04-19T01:06:02.7895302Z [36;1m: work around spurious network errors in curl 8.0[0m
+Invariants	qssm-api tests	2026-04-19T01:06:04.9397589Z [1m[92m  Downloaded[0m thiserror v1.0.69
+Invariants	qssm-api tests	2026-04-19T01:06:04.9451141Z [1m[92m  Downloaded[0m thiserror-impl v1.0.69
+Invariants	qssm-api tests	2026-04-19T01:06:05.2732340Z [1m[92m   Compiling[0m thiserror v1.0.69
+Invariants	qssm-api tests	2026-04-19T01:06:09.9052602Z [1m[92m   Compiling[0m thiserror-impl v1.0.69
+Invariants	qssm-api tests	2026-04-19T01:06:12.9721164Z test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Invariants	qssm-api tests	2026-04-19T01:06:13.0218892Z test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+Invariants	qssm-api tests	2026-04-19T01:06:13.0621517Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+Invariants	qssm-integration tests	2026-04-19T01:06:13.7042481Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Invariants	qssm-integration tests	2026-04-19T01:06:13.7077854Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Invariants	qssm-integration tests	2026-04-19T01:06:13.7199795Z test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+Invariants	qssm-integration tests	2026-04-19T01:06:13.7312391Z test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+Invariants	qssm-integration tests	2026-04-19T01:06:13.7461809Z test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+Invariants	qssm-integration tests	2026-04-19T01:06:13.7619208Z test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+Invariants	qssm-integration tests	2026-04-19T01:06:13.7671276Z test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Invariants	qssm-integration tests	2026-04-19T01:06:13.7789987Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Invariants	qssm-proofs parameter sync	2026-04-19T01:06:14.4952981Z test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Invariants	qssm-proofs security floor (112 bits)	2026-04-19T01:06:15.1027809Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 29 filtered out; finished in 0.00s
+Invariants	qssm-proofs security floor (112 bits)	2026-04-19T01:06:15.1038773Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 11 filtered out; finished in 0.00s
+Invariants	qssm-templates (all features)	2026-04-19T01:06:16.3413804Z [1m[92m   Compiling[0m thiserror-impl v1.0.69
+Invariants	qssm-templates (all features)	2026-04-19T01:06:16.8294159Z [1m[92m   Compiling[0m thiserror v1.0.69
+Invariants	qssm-templates (all features)	2026-04-19T01:06:18.5628949Z test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Invariants	qssm-templates (all features)	2026-04-19T01:06:18.5978454Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Invariants	qssm-utils (all features)	2026-04-19T01:06:18.9505041Z test merkle::tests::index_out_of_bounds_error ... ok
+Invariants	qssm-utils (all features)	2026-04-19T01:06:18.9505508Z test merkle::tests::empty_leaves_error ... ok
+Invariants	qssm-utils (all features)	2026-04-19T01:06:18.9510751Z test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Invariants	qssm-utils (all features)	2026-04-19T01:06:18.9698541Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Invariants	qssm-gadget check	2026-04-19T01:06:19.2646275Z [1m[92m  Downloaded[0m quick-error v1.2.3
+Invariants	qssm-gadget check	2026-04-19T01:06:22.2412121Z [1m[92m    Checking[0m thiserror v1.0.69
+Invariants	qssm-gadget check	2026-04-19T01:06:24.5132081Z [1m[92m    Checking[0m quick-error v1.2.3
+Invariants	qssm-gadget tests	2026-04-19T01:06:32.7632621Z [1m[92m   Compiling[0m quick-error v1.2.3
+Invariants	qssm-gadget tests	2026-04-19T01:06:39.4632004Z test result: ok. 48 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+Invariants	qssm-gadget tests	2026-04-19T01:06:39.6136839Z test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+Invariants	qssm-gadget tests	2026-04-19T01:06:39.6169386Z test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Invariants	qssm-gadget tests	2026-04-19T01:06:39.6245149Z test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+Invariants	qssm-gadget tests	2026-04-19T01:06:39.6263865Z test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Invariants	qssm-gadget tests	2026-04-19T01:06:39.6352165Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+Invariants	qssm-gadget tests	2026-04-19T01:06:39.6368923Z test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Invariants	qssm-gadget tests	2026-04-19T01:06:39.6385190Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Invariants	qssm-gadget tests	2026-04-19T01:06:39.9416870Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.30s
+Invariants	qssm-gadget tests	2026-04-19T01:06:39.9443186Z test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Invariants	qssm-gadget tests	2026-04-19T01:06:39.9896485Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
