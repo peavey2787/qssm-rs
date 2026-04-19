@@ -16,6 +16,7 @@ pub(crate) fn verify_path_to_root(
     let mut acc = *leaf;
     let mut idx: usize = index;
     for sib in proof {
+        #[allow(clippy::manual_is_multiple_of)]
         let (left, right) = if idx % 2 == 0 {
             (&acc, sib)
         } else {

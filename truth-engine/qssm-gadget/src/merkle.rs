@@ -39,7 +39,7 @@ impl MerklePathWitness {
             }
 
             let sib = &self.siblings[level];
-            acc = if idx.is_multiple_of(2) {
+            acc = if idx % 2 == 0 {
                 merkle_parent(&acc, sib)
             } else {
                 merkle_parent(sib, &acc)
