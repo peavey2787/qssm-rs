@@ -12,8 +12,8 @@ use super::cs_tracing::PolyOpTracingCs;
 use super::handshake::{EngineAPublicJson, TRANSCRIPT_MAP_LAYOUT_VERSION};
 use super::lattice_polyop::LatticePolyOp;
 use super::operators::{
-    effective_external_entropy, merkle_truth_pipe, xor32, EntropyInjectionOp,
-    MerkleParentBlake3Op, TruthLimbV2Params,
+    effective_external_entropy, merkle_truth_pipe, xor32, EntropyInjectionOp, MerkleParentBlake3Op,
+    TruthLimbV2Params,
 };
 use super::r1cs::{Blake3Gadget, ConstraintSystem, VarId, VarKind};
 use crate::primitives::blake3_compress::hash_merkle_parent_witness;
@@ -41,14 +41,7 @@ impl ConstraintSystem for CountingConstraintSystem {
         self.constraint_count = self.constraint_count.saturating_add(1);
     }
 
-    fn enforce_full_adder(
-        &mut self,
-        _a: VarId,
-        _b: VarId,
-        _cin: VarId,
-        _sum: VarId,
-        _cout: VarId,
-    ) {
+    fn enforce_full_adder(&mut self, _a: VarId, _b: VarId, _cin: VarId, _sum: VarId, _cout: VarId) {
         self.constraint_count = self.constraint_count.saturating_add(1);
     }
 
@@ -59,7 +52,10 @@ impl ConstraintSystem for CountingConstraintSystem {
 
 #[test]
 fn transcript_map_version_matches_utils() {
-    assert_eq!(TRANSCRIPT_MAP_LAYOUT_VERSION, LE_FS_PUBLIC_BINDING_LAYOUT_VERSION);
+    assert_eq!(
+        TRANSCRIPT_MAP_LAYOUT_VERSION,
+        LE_FS_PUBLIC_BINDING_LAYOUT_VERSION
+    );
 }
 
 #[test]
@@ -80,7 +76,8 @@ fn poly_op_tracing_cs_merkle_synthesis_ok() {
 #[test]
 fn degree_exceeded_carries_var_ids() {
     let mut ctx = PolyOpContext::new("deg");
-    ctx.register_binary_product(VarId(0), VarId(1), VarId(2), "test").unwrap();
+    ctx.register_binary_product(VarId(0), VarId(1), VarId(2), "test")
+        .unwrap();
     ctx.ensure_len(6);
     ctx.mul_depth[3] = 1;
     ctx.mul_depth[4] = 1;
@@ -95,9 +92,19 @@ fn degree_exceeded_carries_var_ids() {
 #[test]
 fn binding_reservoir_btree_labels_are_canonical_order() {
     let mut reservoir = BindingReservoir::default();
-    reservoir.nominate(BindingPhase::Aux, BindingLabel("zebra".into()), vec![1]).unwrap();
-    reservoir.nominate(BindingPhase::Aux, BindingLabel("alpha".into()), vec![2]).unwrap();
-    let keys: Vec<_> = reservoir.by_phase.get(&BindingPhase::Aux).unwrap().keys().cloned().collect();
+    reservoir
+        .nominate(BindingPhase::Aux, BindingLabel("zebra".into()), vec![1])
+        .unwrap();
+    reservoir
+        .nominate(BindingPhase::Aux, BindingLabel("alpha".into()), vec![2])
+        .unwrap();
+    let keys: Vec<_> = reservoir
+        .by_phase
+        .get(&BindingPhase::Aux)
+        .unwrap()
+        .keys()
+        .cloned()
+        .collect();
     assert_eq!(keys[0].0, "alpha");
     assert_eq!(keys[1].0, "zebra");
 }
@@ -109,15 +116,29 @@ fn engine_a_public_json_key_order() {
     public.validate_transcript_map().unwrap();
     let value = public.to_ordered_json_value().unwrap();
     let keys: Vec<_> = value.as_object().unwrap().keys().cloned().collect();
-    assert_eq!(keys, vec!["message_limb_u30".to_string(), "digest_coeff_vector_u4".to_string()]);
+    assert_eq!(
+        keys,
+        vec![
+            "message_limb_u30".to_string(),
+            "digest_coeff_vector_u4".to_string()
+        ]
+    );
 }
 
 #[test]
 fn public_binding_contract_merge_rejects_duplicate_label() {
     let mut left = PublicBindingContract::default();
-    left.nominations.push((BindingPhase::Aux, BindingLabel("x".into()), Nomination { bytes: vec![1] }));
+    left.nominations.push((
+        BindingPhase::Aux,
+        BindingLabel("x".into()),
+        Nomination { bytes: vec![1] },
+    ));
     let mut right = PublicBindingContract::default();
-    right.nominations.push((BindingPhase::Aux, BindingLabel("x".into()), Nomination { bytes: vec![2] }));
+    right.nominations.push((
+        BindingPhase::Aux,
+        BindingLabel("x".into()),
+        Nomination { bytes: vec![2] },
+    ));
     assert!(left.merge(&right).is_err());
 }
 
@@ -172,7 +193,9 @@ fn truth_pipe_shared_ctx_merkle_then_truth_ok_inner() {
     );
     let mut ctx = PolyOpContext::new("pipe");
     let out = pipe.run_diagnostic(&mut ctx).expect("run");
-    out.truth_witness.validate().expect("truth witness should validate");
+    out.truth_witness
+        .validate()
+        .expect("truth witness should validate");
 }
 
 #[test]
@@ -256,7 +279,10 @@ fn ms_binding_entropy_for_fs_challenge_is_raw_device_link() {
     let fallback = [9u8; 32];
     assert_eq!(pipe.ms_binding_entropy_for_fs_challenge(fallback), link);
     assert_eq!(pipe.second.params.ms_binding_entropy_digest(fallback), link);
-    assert_eq!(effective_external_entropy(&pipe.second.params), xor32(floor, link));
+    assert_eq!(
+        effective_external_entropy(&pipe.second.params),
+        xor32(floor, link)
+    );
 }
 
 #[test]

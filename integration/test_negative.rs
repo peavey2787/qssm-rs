@@ -21,7 +21,13 @@ fn binding() -> [u8; 32] {
     blake3_hash(b"E2E-NEGATIVE-BINDING")
 }
 
-fn make_proof() -> (ProofContext, QssmTemplate, serde_json::Value, Proof, [u8; 32]) {
+fn make_proof() -> (
+    ProofContext,
+    QssmTemplate,
+    serde_json::Value,
+    Proof,
+    [u8; 32],
+) {
     let template = QssmTemplate::proof_of_age("age-gate-21");
     let ctx = ProofContext::new(seed());
     let claim = json!({ "claim": { "age_years": 30 } });
@@ -38,8 +44,7 @@ fn underage_claim_rejected_at_prove() {
     let template = QssmTemplate::proof_of_age("age-gate-21");
     let ctx = ProofContext::new(seed());
     let claim = json!({ "claim": { "age_years": 17 } });
-    let err = prove(&ctx, &template, &claim, 100, 50, binding(), entropy())
-        .unwrap_err();
+    let err = prove(&ctx, &template, &claim, 100, 50, binding(), entropy()).unwrap_err();
     assert!(matches!(err, ZkError::PredicateFailed(_)));
 }
 
@@ -48,8 +53,7 @@ fn missing_claim_field_rejected() {
     let template = QssmTemplate::proof_of_age("age-gate-21");
     let ctx = ProofContext::new(seed());
     let claim = json!({ "claim": { "name": "Alice" } });
-    let err = prove(&ctx, &template, &claim, 100, 50, binding(), entropy())
-        .unwrap_err();
+    let err = prove(&ctx, &template, &claim, 100, 50, binding(), entropy()).unwrap_err();
     assert!(matches!(err, ZkError::PredicateFailed(_)));
 }
 
@@ -63,8 +67,7 @@ fn tampered_ms_root_rejected_via_api() {
     root[0] ^= 0xFF;
     bundle.ms_root_hex = hex::encode(root);
     let tampered = bundle.to_proof().unwrap();
-    let err = verify(&ctx, &template, &claim, &tampered, binding_ctx)
-        .unwrap_err();
+    let err = verify(&ctx, &template, &claim, &tampered, binding_ctx).unwrap_err();
     assert!(matches!(err, ZkError::MsVerifyFailed));
 }
 
@@ -86,8 +89,7 @@ fn tampered_ms_root_rejected_via_local_verifier() {
 fn wrong_binding_context_rejected() {
     let (ctx, template, claim, proof, _) = make_proof();
     let wrong_ctx = blake3_hash(b"WRONG-BINDING-CONTEXT");
-    let err = verify(&ctx, &template, &claim, &proof, wrong_ctx)
-        .unwrap_err();
+    let err = verify(&ctx, &template, &claim, &proof, wrong_ctx).unwrap_err();
     assert!(matches!(err, ZkError::MsVerifyFailed));
 }
 
@@ -97,8 +99,7 @@ fn wrong_binding_context_rejected() {
 fn wrong_claim_rejected_at_verify() {
     let (ctx, template, _claim, proof, binding_ctx) = make_proof();
     let wrong_claim = json!({ "claim": { "age_years": 15 } });
-    let err = verify(&ctx, &template, &wrong_claim, &proof, binding_ctx)
-        .unwrap_err();
+    let err = verify(&ctx, &template, &wrong_claim, &proof, binding_ctx).unwrap_err();
     assert!(matches!(err, ZkError::PredicateFailed(_)));
 }
 
@@ -124,8 +125,7 @@ fn swapped_value_target_rejected() {
     let mut bundle = ProofBundle::from_proof(&proof);
     std::mem::swap(&mut bundle.value, &mut bundle.target);
     let tampered = bundle.to_proof().unwrap();
-    let err = verify(&ctx, &template, &claim, &tampered, binding_ctx)
-        .unwrap_err();
+    let err = verify(&ctx, &template, &claim, &tampered, binding_ctx).unwrap_err();
     assert!(matches!(err, ZkError::MsVerifyFailed));
 }
 
@@ -134,7 +134,13 @@ fn swapped_value_target_rejected() {
 #[test]
 fn unknown_template_rejected_offline() {
     let (ctx, _template, claim, proof, binding_ctx) = make_proof();
-    let result = verify_proof_offline(&ctx, "nonexistent-template-xyz", &claim, &proof, binding_ctx);
+    let result = verify_proof_offline(
+        &ctx,
+        "nonexistent-template-xyz",
+        &claim,
+        &proof,
+        binding_ctx,
+    );
     assert!(matches!(result, Err(VerifyError::UnknownTemplate(_))));
 }
 
@@ -145,5 +151,8 @@ fn proof_from_one_seed_rejected_under_different_seed() {
     let (_ctx, template, claim, proof, binding_ctx) = make_proof();
     let different_ctx = ProofContext::new(blake3_hash(b"DIFFERENT-SEED"));
     let result = verify(&different_ctx, &template, &claim, &proof, binding_ctx);
-    assert!(result.is_err(), "proof under seed A must not verify under seed B");
+    assert!(
+        result.is_err(),
+        "proof under seed A must not verify under seed B"
+    );
 }

@@ -1,7 +1,9 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::predicate::{eval_all_predicates, proof_of_age_predicates, PredicateBlock, PredicateError};
+use crate::predicate::{
+    eval_all_predicates, proof_of_age_predicates, PredicateBlock, PredicateError,
+};
 
 pub const QSSM_TEMPLATE_VERSION: u32 = 1;
 

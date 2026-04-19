@@ -7,7 +7,9 @@
 
 #![forbid(unsafe_code)]
 
-use super::super::binding_contract::{BindingLabel, BindingPhase, Nomination, PublicBindingContract};
+use super::super::binding_contract::{
+    BindingLabel, BindingPhase, Nomination, PublicBindingContract,
+};
 use super::super::context::{PolyOpContext, PolyOpError};
 use super::super::lattice_polyop::LatticePolyOp;
 use super::super::r1cs::ConstraintSystem;
@@ -47,7 +49,10 @@ impl LatticePolyOp for MsGhostMirrorOp {
     type Input = MsGhostMirrorInput;
     type Output = MsGhostMirrorOutput;
 
-    fn public_binding_requirements_for_input(&self, input: &Self::Input) -> Result<PublicBindingContract, PolyOpError> {
+    fn public_binding_requirements_for_input(
+        &self,
+        input: &Self::Input,
+    ) -> Result<PublicBindingContract, PolyOpError> {
         let mut contract = PublicBindingContract::default();
         contract.nominations.push((
             BindingPhase::PublicBinding,

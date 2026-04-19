@@ -15,6 +15,7 @@
 //! assert!(verify_lattice(&vk, &public, &commitment, &proof, &ctx).unwrap());
 //! ```
 #![forbid(unsafe_code)]
+#![allow(dead_code, clippy::manual_is_multiple_of, clippy::needless_range_loop)]
 
 mod algebra;
 mod crs;
@@ -27,16 +28,15 @@ pub use algebra::ring::{
 pub use crs::VerifyingKey;
 pub use error::LeError;
 pub use protocol::commit::{
-    commit_mlwe, verify_lattice_algebraic, Commitment, CommitmentRandomness,
-    LatticeProof, PublicBinding, PublicInstance, Witness,
+    commit_mlwe, verify_lattice_algebraic, Commitment, CommitmentRandomness, LatticeProof,
+    PublicBinding, PublicInstance, Witness,
 };
 // prove_with_witness is intentionally NOT re-exported. It accepts an arbitrary
 // RngCore, which would let external callers inject a weak/biased RNG and defeat
 // the rejection sampling security guarantee. Use prove_arithmetic instead.
 pub(crate) use protocol::commit::prove_with_witness;
 pub use protocol::params::{
-    BETA, C_POLY_SIZE, C_POLY_SPAN, ETA, GAMMA, N,
-    PUBLIC_DIGEST_COEFFS, PUBLIC_DIGEST_COEFF_MAX, Q,
+    BETA, C_POLY_SIZE, C_POLY_SPAN, ETA, GAMMA, N, PUBLIC_DIGEST_COEFFS, PUBLIC_DIGEST_COEFF_MAX, Q,
 };
 pub use qssm_utils::LE_FS_PUBLIC_BINDING_LAYOUT_VERSION;
 
@@ -69,14 +69,7 @@ pub fn prove_arithmetic(
 ) -> Result<(Commitment, LatticeProof), LeError> {
     let commitment = commit_mlwe(vk, public, witness)?;
     let mut rng = Blake3Rng::new(rng_seed);
-    let proof = prove_with_witness(
-        vk,
-        public,
-        witness,
-        &commitment,
-        binding_context,
-        &mut rng,
-    )?;
+    let proof = prove_with_witness(vk, public, witness, &commitment, binding_context, &mut rng)?;
     Ok((commitment, proof))
 }
 

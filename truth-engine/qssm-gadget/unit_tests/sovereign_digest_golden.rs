@@ -1,12 +1,11 @@
 //! Phase 3 golden vector + tamper: truth digest and normative 30-bit LE limb.
 
 use qssm_gadget::{
-    encode_proof_metadata_v2, message_limb_from_truth_digest_normative, truth_digest,
-    TruthWitness, DOMAIN_TRUTH_LIMB_V2,
+    encode_proof_metadata_v2, message_limb_from_truth_digest_normative, truth_digest, TruthWitness,
+    DOMAIN_TRUTH_LIMB_V2,
 };
 use qssm_le::PublicInstance;
 use qssm_utils::hashing::hash_domain;
-use serde_json;
 
 const GOLDEN_ROOT: [u8; 32] = [
     0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10,
@@ -119,7 +118,10 @@ fn template_tampering_detected_via_digest_mismatch() {
     // Tamper the embedded digest in the serialized template.
     let fake_digest = hex::encode([0xFFu8; 32]);
     let tampered = json_str.replace(embedded_digest_hex, &fake_digest);
-    assert_ne!(tampered, json_str, "tampering must modify the JSON template");
+    assert_ne!(
+        tampered, json_str,
+        "tampering must modify the JSON template"
+    );
 
     // The tampered template no longer matches the witness's authenticated digest.
     let tampered_val: serde_json::Value = serde_json::from_str(&tampered).unwrap();

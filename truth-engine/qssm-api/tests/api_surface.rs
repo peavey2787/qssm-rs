@@ -82,14 +82,14 @@ fn zero_public_types_or_reexports() {
 #[test]
 fn byte_array_round_trip() {
     // compile returns Vec<u8>
-    let blueprint: Vec<u8> = qssm_api::compile("age-gate-21")
-        .expect("compile should succeed for age-gate-21");
+    let blueprint: Vec<u8> =
+        qssm_api::compile("age-gate-21").expect("compile should succeed for age-gate-21");
 
     // prove returns Vec<u8>
     let claim = br#"{"claim":{"age_years":30}}"#;
     let salt = [99u8; 32];
-    let proof: Vec<u8> = qssm_api::prove(claim, &salt, &blueprint)
-        .expect("prove should succeed for valid claim");
+    let proof: Vec<u8> =
+        qssm_api::prove(claim, &salt, &blueprint).expect("prove should succeed for valid claim");
 
     // verify accepts &[u8] and returns bool
     let ok: bool = qssm_api::verify(&proof, &blueprint);
@@ -103,7 +103,10 @@ fn byte_array_round_trip() {
 
     // wrong secret must differ
     let wrong: Vec<u8> = qssm_api::open(b"wrong-secret", &salt);
-    assert_ne!(commitment, wrong, "different secret must produce different output");
+    assert_ne!(
+        commitment, wrong,
+        "different secret must produce different output"
+    );
 }
 
 // ── 4. Error paths return Result, never panic ────────────────────────
@@ -138,6 +141,7 @@ fn verify_bad_inputs_returns_false() {
 /// Compile-time assertions that the 5 functions have exactly the
 /// expected signatures. If any signature changes, this won't compile.
 #[test]
+#[allow(clippy::type_complexity)]
 fn signatures_match_frozen_contract() {
     let _: fn(&str) -> Result<Vec<u8>, String> = qssm_api::compile;
     let _: fn(&[u8], &[u8; 32]) -> Vec<u8> = qssm_api::commit;

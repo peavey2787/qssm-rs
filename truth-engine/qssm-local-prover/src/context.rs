@@ -106,29 +106,47 @@ impl Proof {
 
     /// Ghost-Mirror Merkle root.
     #[must_use]
-    pub fn ms_root(&self) -> &[u8; 32] { &self.ms_root }
+    pub fn ms_root(&self) -> &[u8; 32] {
+        &self.ms_root
+    }
     /// Ghost-Mirror inequality proof.
     #[must_use]
-    pub fn ms_proof(&self) -> &GhostMirrorProof { &self.ms_proof }
+    pub fn ms_proof(&self) -> &GhostMirrorProof {
+        &self.ms_proof
+    }
     /// Lattice commitment.
     #[must_use]
-    pub fn le_commitment(&self) -> &Commitment { &self.le_commitment }
+    pub fn le_commitment(&self) -> &Commitment {
+        &self.le_commitment
+    }
     /// Lattice proof.
     #[must_use]
-    pub fn le_proof(&self) -> &LatticeProof { &self.le_proof }
+    pub fn le_proof(&self) -> &LatticeProof {
+        &self.le_proof
+    }
     /// External entropy used at prove-time.
     #[must_use]
-    pub fn external_entropy(&self) -> &[u8; 32] { &self.external_entropy }
+    pub fn external_entropy(&self) -> &[u8; 32] {
+        &self.external_entropy
+    }
     /// Whether the external entropy beacon was included.
     #[must_use]
-    pub fn external_entropy_included(&self) -> bool { self.external_entropy_included }
+    pub fn external_entropy_included(&self) -> bool {
+        self.external_entropy_included
+    }
     /// MS input: claimed value.
     #[must_use]
-    pub fn value(&self) -> u64 { self.value }
+    pub fn value(&self) -> u64 {
+        self.value
+    }
     /// MS input: claimed target.
     #[must_use]
-    pub fn target(&self) -> u64 { self.target }
+    pub fn target(&self) -> u64 {
+        self.target
+    }
     /// Binding entropy for cross-engine commitment.
     #[must_use]
-    pub fn binding_entropy(&self) -> &[u8; 32] { &self.binding_entropy }
+    pub fn binding_entropy(&self) -> &[u8; 32] {
+        &self.binding_entropy
+    }
 }

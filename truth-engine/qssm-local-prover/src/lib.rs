@@ -54,8 +54,16 @@ mod tests {
     }
 
     fn make_proof() -> Proof {
-        prove(&test_ctx(), &test_template(), &test_claim(), 100, 50, test_binding_ctx(), test_entropy())
-            .expect("prove should succeed")
+        prove(
+            &test_ctx(),
+            &test_template(),
+            &test_claim(),
+            100,
+            50,
+            test_binding_ctx(),
+            test_entropy(),
+        )
+        .expect("prove should succeed")
     }
 
     // ── Prove ────────────────────────────────────────────────────────
@@ -68,8 +76,16 @@ mod tests {
     #[test]
     fn prove_rejects_bad_predicate() {
         let bad_claim = json!({ "claim": { "age_years": 15 } });
-        let err = prove(&test_ctx(), &test_template(), &bad_claim, 100, 50, test_binding_ctx(), test_entropy())
-            .unwrap_err();
+        let err = prove(
+            &test_ctx(),
+            &test_template(),
+            &bad_claim,
+            100,
+            50,
+            test_binding_ctx(),
+            test_entropy(),
+        )
+        .unwrap_err();
         assert!(matches!(err, ZkError::PredicateFailed(_)));
     }
 
@@ -101,9 +117,8 @@ mod tests {
         let proof = make_proof();
         let bundle = ProofBundle::from_proof(&proof);
         let json = serde_json::to_string(&bundle).expect("serialize");
-        let parsed: ProofBundle = serde_json::from_str(&json).expect(
-            "old bundle must remain parseable by current (and future) code",
-        );
+        let parsed: ProofBundle = serde_json::from_str(&json)
+            .expect("old bundle must remain parseable by current (and future) code");
         let recovered = parsed.to_proof().expect("to_proof");
         assert_eq!(recovered.ms_root(), proof.ms_root());
         assert_eq!(recovered.value(), proof.value());
@@ -142,7 +157,14 @@ mod tests {
         let json = serde_json::to_string(&bundle).expect("serialize");
         let parsed: ProofBundle = serde_json::from_str(&json).expect("deserialize");
         let err = parsed.to_proof().unwrap_err();
-        assert!(matches!(err, WireFormatError::BadLength { expected: 32, got: 16, .. }));
+        assert!(matches!(
+            err,
+            WireFormatError::BadLength {
+                expected: 32,
+                got: 16,
+                ..
+            }
+        ));
     }
 
     #[test]
@@ -153,19 +175,25 @@ mod tests {
         let json = serde_json::to_string(&bundle).expect("serialize");
         let parsed: ProofBundle = serde_json::from_str(&json).expect("deserialize");
         let err = parsed.to_proof().unwrap_err();
-        assert!(matches!(err, WireFormatError::BadCoeffCount { expected: 256, got: 10, .. }));
+        assert!(matches!(
+            err,
+            WireFormatError::BadCoeffCount {
+                expected: 256,
+                got: 10,
+                ..
+            }
+        ));
     }
 
     #[test]
     fn wire_rejects_unknown_fields() {
         let proof = make_proof();
         let bundle = ProofBundle::from_proof(&proof);
-        let mut json_val: serde_json::Value =
-            serde_json::to_value(&bundle).expect("to_value");
-        json_val.as_object_mut().unwrap().insert(
-            "smuggled_field".to_string(),
-            serde_json::Value::Bool(true),
-        );
+        let mut json_val: serde_json::Value = serde_json::to_value(&bundle).expect("to_value");
+        json_val
+            .as_object_mut()
+            .unwrap()
+            .insert("smuggled_field".to_string(), serde_json::Value::Bool(true));
         let json = serde_json::to_string(&json_val).expect("serialize");
         let result = serde_json::from_str::<ProofBundle>(&json);
         assert!(result.is_err(), "unknown fields must be rejected");
@@ -178,12 +206,23 @@ mod tests {
         let proof_a = make_proof();
         let proof_b = {
             let different_entropy = blake3_hash(b"DIFFERENT-ENTROPY-SEED");
-            prove(&test_ctx(), &test_template(), &test_claim(), 100, 50, test_binding_ctx(), different_entropy)
-                .expect("prove should succeed")
+            prove(
+                &test_ctx(),
+                &test_template(),
+                &test_claim(),
+                100,
+                50,
+                test_binding_ctx(),
+                different_entropy,
+            )
+            .expect("prove should succeed")
         };
         let json_a = serde_json::to_string(&ProofBundle::from_proof(&proof_a)).unwrap();
         let json_b = serde_json::to_string(&ProofBundle::from_proof(&proof_b)).unwrap();
-        assert_ne!(json_a, json_b, "different proofs must produce different bundles");
+        assert_ne!(
+            json_a, json_b,
+            "different proofs must produce different bundles"
+        );
     }
 
     #[test]

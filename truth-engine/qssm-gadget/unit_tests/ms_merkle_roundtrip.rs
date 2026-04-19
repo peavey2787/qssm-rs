@@ -1,9 +1,7 @@
 //! Merkle `recompute_root` matches `qssm-ms` commit root (Phase 0 + hash chain).
 
-use qssm_gadget::{
-    assert_ms_leaf_index_matches_opening, MerklePathWitness, MERKLE_DEPTH_MS,
-};
 use qssm_gadget::GadgetError;
+use qssm_gadget::{assert_ms_leaf_index_matches_opening, MerklePathWitness, MERKLE_DEPTH_MS};
 use qssm_ms::{commit, prove};
 use qssm_utils::hashing::{hash_domain, DOMAIN_MS};
 
@@ -29,9 +27,7 @@ fn merkle_witness_matches_qssm_ms_root() {
     assert_eq!(proof.path().len(), MERKLE_DEPTH_MS);
 
     let mut siblings = [[0u8; 32]; MERKLE_DEPTH_MS];
-    for i in 0..MERKLE_DEPTH_MS {
-        siblings[i] = proof.path()[i];
-    }
+    siblings[..MERKLE_DEPTH_MS].copy_from_slice(&proof.path()[..MERKLE_DEPTH_MS]);
 
     let w = MerklePathWitness {
         leaf,

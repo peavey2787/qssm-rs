@@ -1,4 +1,4 @@
-﻿//! Template gallery, predicate evaluation, and resolver for QSSM verifier policy.
+//! Template gallery, predicate evaluation, and resolver for QSSM verifier policy.
 
 mod predicate;
 #[cfg(feature = "script-helpers")]
@@ -20,9 +20,7 @@ pub use template::{QssmTemplate, TemplateAnchorKind, TemplateError, QSSM_TEMPLAT
 /// All built-in templates shipped with the SDK.
 #[must_use]
 pub fn standard_templates() -> Vec<QssmTemplate> {
-    vec![
-        QssmTemplate::proof_of_age("age-gate-21"),
-    ]
+    vec![QssmTemplate::proof_of_age("age-gate-21")]
 }
 
 /// Resolve a template by `id` from the standard library.
@@ -71,4 +69,3 @@ mod tests {
         assert!(t.verify_public_claim(&claim).is_err());
     }
 }
-

@@ -2,7 +2,6 @@
 
 use qssm_gadget::TruthWitness;
 use qssm_le::{PublicInstance, Witness, BETA, N};
-use qssm_ms;
 use qssm_templates::QssmTemplate;
 use qssm_utils::hashing::{
     blake3_hash, hash_domain, DOMAIN_SDK_LE_MASK, DOMAIN_SDK_LE_WITNESS, DOMAIN_SDK_MS_SEED,
@@ -50,12 +49,22 @@ pub fn prove(
     let binding_entropy = blake3_hash(&binding_ctx);
 
     // 3. MS: commit + prove inequality.
-    let (root, salts) = qssm_ms::commit(ms_seed, binding_entropy)
-        .map_err(ZkError::MsCommit)?;
+    let (root, salts) = qssm_ms::commit(ms_seed, binding_entropy).map_err(ZkError::MsCommit)?;
     ms_seed.zeroize();
     let context = crate::MS_CONTEXT_TAG.to_vec();
-    let ms_proof = qssm_ms::prove(value, target, &salts, binding_entropy, &context, &binding_ctx)
-        .map_err(|e| ZkError::MsProve { source: e, value, target })?;
+    let ms_proof = qssm_ms::prove(
+        value,
+        target,
+        &salts,
+        binding_entropy,
+        &context,
+        &binding_ctx,
+    )
+    .map_err(|e| ZkError::MsProve {
+        source: e,
+        value,
+        target,
+    })?;
 
     // 4. Truth binding: derive digest from MS root + proof metadata.
     let external_entropy = hash_domain(
@@ -85,9 +94,9 @@ pub fn prove(
         DOMAIN_SDK_LE_MASK,
         &[entropy_seed.as_slice(), binding_ctx.as_slice()],
     );
-    let (le_commitment, le_proof) = qssm_le::prove_arithmetic(
-        ctx.vk(), &public, &witness, &binding_ctx, le_mask_seed,
-    ).map_err(ZkError::LeProve)?;
+    let (le_commitment, le_proof) =
+        qssm_le::prove_arithmetic(ctx.vk(), &public, &witness, &binding_ctx, le_mask_seed)
+            .map_err(ZkError::LeProve)?;
     le_mask_seed.zeroize();
     entropy_seed.zeroize();
 

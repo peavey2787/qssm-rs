@@ -1,7 +1,5 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use qssm_gadget::{
-    digest_coeff_vector_from_truth_digest, truth_digest,
-};
+use qssm_gadget::{digest_coeff_vector_from_truth_digest, truth_digest};
 
 fn bench_truth_digest(c: &mut Criterion) {
     let root = [0xABu8; 32];

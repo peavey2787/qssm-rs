@@ -3,7 +3,9 @@
 #![forbid(unsafe_code)]
 
 use super::super::binding::TruthWitness;
-use super::super::binding_contract::{BindingLabel, BindingPhase, Nomination, PublicBindingContract};
+use super::super::binding_contract::{
+    BindingLabel, BindingPhase, Nomination, PublicBindingContract,
+};
 use super::super::context::{PolyOpContext, PolyOpError};
 use super::super::handshake::StateRoot32;
 use super::super::lattice_polyop::LatticePolyOp;
@@ -37,7 +39,10 @@ impl fmt::Debug for TruthLimbV2Params {
             .field("challenge", &"[REDACTED]")
             .field("external_entropy", &"[REDACTED]")
             .field("external_entropy_included", &self.external_entropy_included)
-            .field("device_entropy_link", &self.device_entropy_link.map(|_| "[REDACTED]"))
+            .field(
+                "device_entropy_link",
+                &self.device_entropy_link.map(|_| "[REDACTED]"),
+            )
             .finish()
     }
 }
@@ -92,7 +97,8 @@ impl TruthLimbV2Stage {
             ent,
             self.params.external_entropy_included,
         );
-        w.validate().map_err(|e| PolyOpError::Binding(format!("TruthWitness: {e}")))?;
+        w.validate()
+            .map_err(|e| PolyOpError::Binding(format!("TruthWitness: {e}")))?;
         let mut c = PublicBindingContract::default();
         c.nominations.push((
             BindingPhase::PublicBinding,
@@ -109,7 +115,10 @@ impl LatticePolyOp for TruthLimbV2Stage {
     type Input = StateRoot32;
     type Output = TruthWitness;
 
-    fn public_binding_requirements_for_input(&self, input: &Self::Input) -> Result<PublicBindingContract, PolyOpError> {
+    fn public_binding_requirements_for_input(
+        &self,
+        input: &Self::Input,
+    ) -> Result<PublicBindingContract, PolyOpError> {
         self.public_binding_contract_for_root(*input)
     }
 
@@ -136,7 +145,8 @@ impl LatticePolyOp for TruthLimbV2Stage {
             ent,
             self.params.external_entropy_included,
         );
-        w.validate().map_err(|e| PolyOpError::Binding(format!("TruthWitness: {e}")))?;
+        w.validate()
+            .map_err(|e| PolyOpError::Binding(format!("TruthWitness: {e}")))?;
         Ok(w)
     }
 }

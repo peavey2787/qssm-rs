@@ -167,7 +167,10 @@ fn reduce_i64_mod_q(v: i64, q: i64) -> u32 {
 pub fn encode_rq_coeffs_le(p: &RqPoly) -> [u8; N * 4] {
     let mut out = [0u8; N * 4];
     for (i, c) in p.0.iter().enumerate() {
-        debug_assert!(c < &Q, "encode_rq_coeffs_le: non-canonical coefficient at index {i}");
+        debug_assert!(
+            c < &Q,
+            "encode_rq_coeffs_le: non-canonical coefficient at index {i}"
+        );
         out[i * 4..(i + 1) * 4].copy_from_slice(&c.to_le_bytes());
     }
     out

@@ -233,7 +233,11 @@ impl CompressionWitness {
         );
         // Constant-time comparison of output words to prevent timing side-channels.
         let expected_bytes: Vec<u8> = expected.iter().flat_map(|w| w.to_le_bytes()).collect();
-        let actual_bytes: Vec<u8> = self.output_words.iter().flat_map(|w| w.to_le_bytes()).collect();
+        let actual_bytes: Vec<u8> = self
+            .output_words
+            .iter()
+            .flat_map(|w| w.to_le_bytes())
+            .collect();
         if !bool::from(expected_bytes.ct_eq(&actual_bytes)) {
             return false;
         }

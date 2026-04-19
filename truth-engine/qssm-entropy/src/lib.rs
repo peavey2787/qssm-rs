@@ -85,7 +85,10 @@ impl Heartbeat {
 impl fmt::Debug for Heartbeat {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Heartbeat")
-            .field("raw_jitter", &format_args!("[{} bytes]", self.raw_jitter.len()))
+            .field(
+                "raw_jitter",
+                &format_args!("[{} bytes]", self.raw_jitter.len()),
+            )
             .field("sensor_entropy", &self.sensor_entropy)
             .field("timestamp", &self.timestamp)
             .finish()
@@ -130,16 +133,8 @@ mod tests {
 
     #[test]
     fn test_entropy_uniqueness_synthetic() {
-        let a = Heartbeat::new(
-            vec![1u8; 1024],
-            SensorEntropy::none(),
-            1,
-        );
-        let b = Heartbeat::new(
-            vec![2u8; 1024],
-            SensorEntropy::none(),
-            1,
-        );
+        let a = Heartbeat::new(vec![1u8; 1024], SensorEntropy::none(), 1);
+        let b = Heartbeat::new(vec![2u8; 1024], SensorEntropy::none(), 1);
         assert_ne!(a.to_seed(), b.to_seed());
     }
 
@@ -163,21 +158,33 @@ mod tests {
     fn to_seed_determinism() {
         let a = Heartbeat::new(vec![42u8; 512], SensorEntropy::none(), 999);
         let b = Heartbeat::new(vec![42u8; 512], SensorEntropy::none(), 999);
-        assert_eq!(a.to_seed(), b.to_seed(), "same fields must produce the same seed");
+        assert_eq!(
+            a.to_seed(),
+            b.to_seed(),
+            "same fields must produce the same seed"
+        );
     }
 
     #[test]
     fn to_seed_binds_timestamp() {
         let a = Heartbeat::new(vec![1u8; 512], SensorEntropy::none(), 1);
         let b = Heartbeat::new(vec![1u8; 512], SensorEntropy::none(), 2);
-        assert_ne!(a.to_seed(), b.to_seed(), "different timestamp must yield different seed");
+        assert_ne!(
+            a.to_seed(),
+            b.to_seed(),
+            "different timestamp must yield different seed"
+        );
     }
 
     #[test]
     fn to_seed_binds_sensor() {
         let a = Heartbeat::new(vec![1u8; 512], SensorEntropy::none(), 1);
         let b = Heartbeat::new(vec![1u8; 512], SensorEntropy::from_slice(&[0xAA; 16]), 1);
-        assert_ne!(a.to_seed(), b.to_seed(), "different sensor payload must yield different seed");
+        assert_ne!(
+            a.to_seed(),
+            b.to_seed(),
+            "different sensor payload must yield different seed"
+        );
     }
 
     #[test]
@@ -208,7 +215,10 @@ mod tests {
             !dbg.contains("222") && !dbg.contains("0xDE") && !dbg.contains("dead"),
             "Debug must not leak raw jitter bytes: {dbg}"
         );
-        assert!(dbg.contains("[2 bytes]"), "Debug must show byte count: {dbg}");
+        assert!(
+            dbg.contains("[2 bytes]"),
+            "Debug must show byte count: {dbg}"
+        );
     }
 
     #[test]
@@ -219,7 +229,10 @@ mod tests {
             !dbg.contains("190") && !dbg.contains("0xBE") && !dbg.contains("beef"),
             "Debug must not leak sensor bytes: {dbg}"
         );
-        assert!(dbg.contains("2 bytes"), "Debug must show sensor byte count: {dbg}");
+        assert!(
+            dbg.contains("2 bytes"),
+            "Debug must show sensor byte count: {dbg}"
+        );
     }
 
     #[test]

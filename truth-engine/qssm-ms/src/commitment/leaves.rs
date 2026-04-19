@@ -26,6 +26,7 @@ impl Salts {
 
     /// Internal: borrow the full array.
     #[inline]
+    #[allow(dead_code)]
     pub(crate) fn inner(&self) -> &[[u8; 32]; 128] {
         &self.0
     }
@@ -40,7 +41,10 @@ impl std::ops::Index<usize> for Salts {
 }
 
 pub(crate) fn ms_leaf(i: u8, bit: u8, salt: &[u8; 32], binding_ent: &[u8; 32]) -> [u8; 32] {
-    hash_domain(DOMAIN_MS, &[b"leaf", &[i], &[bit], salt.as_slice(), binding_ent])
+    hash_domain(
+        DOMAIN_MS,
+        &[b"leaf", &[i], &[bit], salt.as_slice(), binding_ent],
+    )
 }
 
 pub(crate) fn build_leaves(salts: &Salts, binding_ent: &[u8; 32]) -> Vec<[u8; 32]> {

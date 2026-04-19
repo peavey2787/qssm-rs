@@ -1,4 +1,4 @@
-﻿#![forbid(unsafe_code)]
+#![forbid(unsafe_code)]
 //! # QSSM Truth Engine — Layer 6 (Façade)
 //!
 //! The single entry point for the entire truth engine.
@@ -31,7 +31,7 @@ mod commit_impl;
 
 use qssm_local_prover::ProofContext;
 use qssm_utils::hashing::blake3_hash;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 // ── Internal wire-format structs (never public) ──────────────────────
 
@@ -92,15 +92,15 @@ pub fn commit(secret: &[u8], salt: &[u8; 32]) -> Vec<u8> {
 /// template's predicates, if hardware entropy is unavailable, or if the
 /// internal prove pipeline fails.
 pub fn prove(secret: &[u8], salt: &[u8; 32], blueprint: &[u8]) -> Result<Vec<u8>, String> {
-    let wire_bp: WireBlueprint = serde_json::from_slice(blueprint)
-        .map_err(|e| format!("invalid blueprint: {e}"))?;
+    let wire_bp: WireBlueprint =
+        serde_json::from_slice(blueprint).map_err(|e| format!("invalid blueprint: {e}"))?;
     let seed = decode_hex_32(&wire_bp.seed_hex, "blueprint seed")?;
     let template = qssm_templates::resolve(&wire_bp.template_id)
         .ok_or_else(|| format!("unknown template: {}", wire_bp.template_id))?;
     let ctx = ProofContext::new(seed);
 
-    let claim: serde_json::Value = serde_json::from_slice(secret)
-        .map_err(|e| format!("invalid JSON claim: {e}"))?;
+    let claim: serde_json::Value =
+        serde_json::from_slice(secret).map_err(|e| format!("invalid JSON claim: {e}"))?;
     let binding_ctx = blake3_hash(salt);
     let entropy_seed = qssm_entropy::harvest(&qssm_entropy::HarvestConfig::default())
         .map_err(|e| format!("entropy unavailable: {e}"))?
@@ -108,7 +108,13 @@ pub fn prove(secret: &[u8], salt: &[u8; 32], blueprint: &[u8]) -> Result<Vec<u8>
     let (value, target) = extract_value_target(&claim, &template);
 
     let proof = qssm_local_prover::prove(
-        &ctx, &template, &claim, value, target, binding_ctx, entropy_seed,
+        &ctx,
+        &template,
+        &claim,
+        value,
+        target,
+        binding_ctx,
+        entropy_seed,
     )
     .map_err(|e| format!("prove failed: {e}"))?;
 
@@ -142,26 +148,33 @@ pub fn open(secret: &[u8], salt: &[u8; 32]) -> Vec<u8> {
 // ── Internal helpers ─────────────────────────────────────────────────
 
 fn verify_inner(proof: &[u8], blueprint: &[u8]) -> Result<bool, String> {
-    let wire_bp: WireBlueprint = serde_json::from_slice(blueprint)
-        .map_err(|e| format!("invalid blueprint: {e}"))?;
+    let wire_bp: WireBlueprint =
+        serde_json::from_slice(blueprint).map_err(|e| format!("invalid blueprint: {e}"))?;
     let seed = decode_hex_32(&wire_bp.seed_hex, "blueprint seed")?;
     let template = qssm_templates::resolve(&wire_bp.template_id)
         .ok_or_else(|| format!("unknown template: {}", wire_bp.template_id))?;
     let ctx = ProofContext::new(seed);
 
-    let wire_proof: WireZkProof = serde_json::from_slice(proof)
-        .map_err(|e| format!("invalid proof: {e}"))?;
+    let wire_proof: WireZkProof =
+        serde_json::from_slice(proof).map_err(|e| format!("invalid proof: {e}"))?;
     let binding_ctx = decode_hex_32(&wire_proof.binding_ctx_hex, "binding_ctx")?;
-    let inner_proof = wire_proof.bundle.to_proof()
+    let inner_proof = wire_proof
+        .bundle
+        .to_proof()
         .map_err(|e| format!("invalid proof bundle: {e}"))?;
 
-    qssm_local_verifier::verify(&ctx, &template, &wire_proof.claim, &inner_proof, binding_ctx)
-        .map_err(|e| format!("verification failed: {e}"))
+    qssm_local_verifier::verify(
+        &ctx,
+        &template,
+        &wire_proof.claim,
+        &inner_proof,
+        binding_ctx,
+    )
+    .map_err(|e| format!("verification failed: {e}"))
 }
 
 fn decode_hex_32(hex_str: &str, field: &str) -> Result<[u8; 32], String> {
-    let bytes = hex::decode(hex_str)
-        .map_err(|e| format!("invalid hex for {field}: {e}"))?;
+    let bytes = hex::decode(hex_str).map_err(|e| format!("invalid hex for {field}: {e}"))?;
     <[u8; 32]>::try_from(bytes.as_slice())
         .map_err(|_| format!("{field}: expected 32 bytes, got {}", bytes.len()))
 }
@@ -169,8 +182,11 @@ fn decode_hex_32(hex_str: &str, field: &str) -> Result<[u8; 32], String> {
 // ── Internal helpers ─────────────────────────────────────────────────
 
 /// Extract (value, target) from claim + template predicates.
-fn extract_value_target(claim: &serde_json::Value, template: &qssm_templates::QssmTemplate) -> (u64, u64) {
-    use qssm_templates::{PredicateBlock, json_at_path};
+fn extract_value_target(
+    claim: &serde_json::Value,
+    template: &qssm_templates::QssmTemplate,
+) -> (u64, u64) {
+    use qssm_templates::{json_at_path, PredicateBlock};
 
     for pred in template.predicates() {
         match pred {
@@ -184,7 +200,11 @@ fn extract_value_target(claim: &serde_json::Value, template: &qssm_templates::Qs
                     return (val, *min as u64);
                 }
             }
-            PredicateBlock::Compare { field, op: qssm_templates::CmpOp::Gt, rhs } => {
+            PredicateBlock::Compare {
+                field,
+                op: qssm_templates::CmpOp::Gt,
+                rhs,
+            } => {
                 if let (Some(lhs), Some(rhs_val)) = (
                     json_at_path(claim, field).and_then(|v| v.as_u64()),
                     rhs.as_u64(),

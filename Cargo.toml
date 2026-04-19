@@ -30,6 +30,7 @@ categories = ["cryptography", "zero-knowledge", "security"]
 # External — truth-engine + shared-libs
 argon2 = "0.5"
 blake3 = "1.5"
+cpufeatures = ">=0.2, <0.3"  # pin below 0.3 (edition2024, needs Rust 1.85+)
 accelerometer = "0.12"
 hex = "0.4"
 openentropy-core = "0.12"

@@ -21,9 +21,19 @@ pub enum PredicateBlock {
         op: CmpOp,
         rhs: Value,
     },
-    Range { field: String, min: i64, max: i64 },
-    InSet { field: String, values: Vec<i64> },
-    AtLeast { field: String, min: i64 },
+    Range {
+        field: String,
+        min: i64,
+        max: i64,
+    },
+    InSet {
+        field: String,
+        values: Vec<i64>,
+    },
+    AtLeast {
+        field: String,
+        min: i64,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
@@ -62,7 +72,6 @@ fn as_i64_at(claim: &Value, field: &str) -> Result<i64, PredicateError> {
         .ok_or_else(|| PredicateError::NotANumber(field.to_string()))
 }
 
-#[must_use]
 pub fn eval_predicate(claim: &Value, pred: &PredicateBlock) -> Result<(), PredicateError> {
     match pred {
         PredicateBlock::Compare { field, op, rhs } => {
@@ -126,7 +135,6 @@ pub fn eval_predicate(claim: &Value, pred: &PredicateBlock) -> Result<(), Predic
     }
 }
 
-#[must_use]
 pub fn eval_all_predicates(claim: &Value, preds: &[PredicateBlock]) -> Result<(), PredicateError> {
     for pred in preds {
         eval_predicate(claim, pred)?;

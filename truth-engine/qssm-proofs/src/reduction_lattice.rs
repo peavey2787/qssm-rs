@@ -186,8 +186,7 @@ impl FsReductionBound {
     /// Ref: \[KLS18\] Theorem 1 — ε_FS = Q_H / |C_eff| in ROM
     #[must_use]
     pub fn compute(c_poly_size: usize, c_poly_span: i32, query_budget_log2: f64) -> Self {
-        let challenge_space_log2 =
-            c_poly_size as f64 * ((2 * c_poly_span + 1) as f64).log2();
+        let challenge_space_log2 = c_poly_size as f64 * ((2 * c_poly_span + 1) as f64).log2();
         Self {
             claim_type: ClaimType::Soundness,
             query_budget_log2,
@@ -292,8 +291,7 @@ impl LyubashevskyExtractionClaim {
     /// Ref: \[Lyu12\] §3, Theorem 3.1 — knowledge error = 1/|C_eff|
     #[must_use]
     pub fn compute(c_poly_size: usize, c_poly_span: i32) -> Self {
-        let challenge_space_log2 =
-            c_poly_size as f64 * ((2 * c_poly_span + 1) as f64).log2();
+        let challenge_space_log2 = c_poly_size as f64 * ((2 * c_poly_span + 1) as f64).log2();
         Self {
             claim_type: ClaimType::Soundness,
             challenge_space_log2,

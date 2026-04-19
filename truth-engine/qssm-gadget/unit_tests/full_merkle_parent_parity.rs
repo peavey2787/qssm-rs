@@ -27,14 +27,7 @@ impl ConstraintSystem for CountingConstraintSystem {
         self.constraint_count = self.constraint_count.saturating_add(1);
     }
 
-    fn enforce_full_adder(
-        &mut self,
-        _a: VarId,
-        _b: VarId,
-        _cin: VarId,
-        _sum: VarId,
-        _cout: VarId,
-    ) {
+    fn enforce_full_adder(&mut self, _a: VarId, _b: VarId, _cin: VarId, _sum: VarId, _cout: VarId) {
         self.constraint_count = self.constraint_count.saturating_add(1);
     }
 

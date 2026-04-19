@@ -138,13 +138,8 @@ impl SecurityEstimate {
     #[must_use]
     pub fn compute(n: usize, q: u32, beta: u32) -> Self {
         use crate::reduction_lattice::LeCommitmentSoundnessTheorem;
-        let thm = LeCommitmentSoundnessTheorem::compute(
-            n,
-            q,
-            beta,
-            C_POLY_SIZE,
-            qssm_le::C_POLY_SPAN,
-        );
+        let thm =
+            LeCommitmentSoundnessTheorem::compute(n, q, beta, C_POLY_SIZE, qssm_le::C_POLY_SPAN);
         Self {
             claim_type: ClaimType::Estimation,
             formal_classical_bits: thm.security_bits(),
@@ -268,8 +263,12 @@ pub fn compute_effective_security(
         None => (None, None, EstimateSource::Formal),
     };
 
-    let eff_c = formal.formal_classical_bits.min(ov_c.unwrap_or(f64::INFINITY));
-    let eff_q = formal.formal_quantum_bits.min(ov_q.unwrap_or(f64::INFINITY));
+    let eff_c = formal
+        .formal_classical_bits
+        .min(ov_c.unwrap_or(f64::INFINITY));
+    let eff_q = formal
+        .formal_quantum_bits
+        .min(ov_q.unwrap_or(f64::INFINITY));
 
     Ok(EffectiveSecurityBits {
         formal_classical_bits: formal.formal_classical_bits,
@@ -467,9 +466,7 @@ mod tests {
         let eff = compute_effective_security(None).unwrap();
         assert_eq!(eff.source, EstimateSource::Formal);
         assert!(eff.overlay_classical_bits.is_none());
-        assert!(
-            (eff.effective_classical_bits - eff.formal_classical_bits).abs() < 0.001
-        );
+        assert!((eff.effective_classical_bits - eff.formal_classical_bits).abs() < 0.001);
     }
 
     #[test]
@@ -507,18 +504,12 @@ mod tests {
         let dir = std::env::temp_dir().join("qssm_proofs_test_min");
         let _ = std::fs::create_dir_all(&dir);
         let path = dir.join("high_overlay.json");
-        std::fs::write(
-            &path,
-            r#"{"classical_bits": 999.0, "quantum_bits": 999.0}"#,
-        )
-        .unwrap();
+        std::fs::write(&path, r#"{"classical_bits": 999.0, "quantum_bits": 999.0}"#).unwrap();
 
         let eff = compute_effective_security(Some(&path)).unwrap();
         assert_eq!(eff.source, EstimateSource::Combined);
         // formal < 999, so effective = formal
-        assert!(
-            (eff.effective_classical_bits - eff.formal_classical_bits).abs() < 0.001
-        );
+        assert!((eff.effective_classical_bits - eff.formal_classical_bits).abs() < 0.001);
 
         let _ = std::fs::remove_file(&path);
     }

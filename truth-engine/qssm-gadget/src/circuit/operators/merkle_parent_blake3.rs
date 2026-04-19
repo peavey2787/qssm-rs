@@ -2,7 +2,9 @@
 
 #![forbid(unsafe_code)]
 
-use super::super::binding_contract::{BindingLabel, BindingPhase, Nomination, PublicBindingContract};
+use super::super::binding_contract::{
+    BindingLabel, BindingPhase, Nomination, PublicBindingContract,
+};
 use super::super::context::{PolyOpContext, PolyOpError};
 use super::super::cs_tracing::PolyOpTracingCs;
 use super::super::handshake::{MerkleParentBlake3Output, StateRoot32};
@@ -54,7 +56,10 @@ impl LatticePolyOp for MerkleParentBlake3Op {
         Ok(self.public_binding_contract())
     }
 
-    fn public_binding_requirements_for_input(&self, _input: &Self::Input) -> Result<PublicBindingContract, PolyOpError> {
+    fn public_binding_requirements_for_input(
+        &self,
+        _input: &Self::Input,
+    ) -> Result<PublicBindingContract, PolyOpError> {
         Ok(self.public_binding_contract())
     }
 

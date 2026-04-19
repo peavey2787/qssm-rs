@@ -1,4 +1,4 @@
-﻿//! # QSSM Local Verifier — Layer 5
+//! # QSSM Local Verifier — Layer 5
 //!
 //! Offline proof verification: the logic that says "Yes" or "No."
 //!
@@ -7,12 +7,10 @@
 
 #![forbid(unsafe_code)]
 
-use qssm_gadget::{
-    digest_coeff_vector_from_truth_digest, encode_proof_metadata_v2, truth_digest,
-};
+use qssm_gadget::{digest_coeff_vector_from_truth_digest, encode_proof_metadata_v2, truth_digest};
 use qssm_le::PublicInstance;
-use qssm_ms::{self, Root};
 use qssm_local_prover::{Proof, ProofContext, ZkError, MS_CONTEXT_TAG};
+use qssm_ms::{self, Root};
 use qssm_templates::QssmTemplate;
 
 /// Verify a proof against a template and context.
@@ -59,11 +57,15 @@ pub fn verify(
     let recomputed_coeffs = digest_coeff_vector_from_truth_digest(&recomputed_digest);
 
     // 4. LE: verify the lattice proof against the RECOMPUTED public instance.
-    let public = PublicInstance::digest_coeffs(recomputed_coeffs)
-        .map_err(ZkError::LeVerify)?;
+    let public = PublicInstance::digest_coeffs(recomputed_coeffs).map_err(ZkError::LeVerify)?;
     let ok = qssm_le::verify_lattice(
-        ctx.vk(), &public, proof.le_commitment(), proof.le_proof(), &binding_ctx,
-    ).map_err(ZkError::LeVerify)?;
+        ctx.vk(),
+        &public,
+        proof.le_commitment(),
+        proof.le_proof(),
+        &binding_ctx,
+    )
+    .map_err(ZkError::LeVerify)?;
     if !ok {
         return Err(ZkError::LeVerifyFailed);
     }
@@ -88,8 +90,7 @@ pub fn verify_proof_offline(
 ) -> Result<bool, VerifyError> {
     let template = qssm_templates::resolve(template_id)
         .ok_or_else(|| VerifyError::UnknownTemplate(template_id.to_owned()))?;
-    verify(ctx, &template, claim, proof, binding_ctx)
-        .map_err(VerifyError::Zk)
+    verify(ctx, &template, claim, proof, binding_ctx).map_err(VerifyError::Zk)
 }
 
 /// Verify a proof offline with an explicit template.
@@ -146,8 +147,16 @@ mod tests {
     }
 
     fn make_proof(binding_ctx: [u8; 32]) -> Proof {
-        prove(&test_ctx(), &test_template(), &test_claim(), 100, 50, binding_ctx, test_entropy())
-            .expect("prove should succeed")
+        prove(
+            &test_ctx(),
+            &test_template(),
+            &test_claim(),
+            100,
+            50,
+            binding_ctx,
+            test_entropy(),
+        )
+        .expect("prove should succeed")
     }
 
     // ── Round-trip ───────────────────────────────────────────────────
@@ -155,8 +164,14 @@ mod tests {
     #[test]
     fn verify_round_trip() {
         let proof = make_proof(test_binding());
-        let ok = verify(&test_ctx(), &test_template(), &test_claim(), &proof, test_binding())
-            .expect("verify should succeed");
+        let ok = verify(
+            &test_ctx(),
+            &test_template(),
+            &test_claim(),
+            &proof,
+            test_binding(),
+        )
+        .expect("verify should succeed");
         assert!(ok);
     }
 
@@ -164,8 +179,14 @@ mod tests {
     fn offline_round_trip() {
         let binding_ctx = blake3_hash(b"test-offline-ctx");
         let proof = make_proof(binding_ctx);
-        let ok = verify_proof_offline(&test_ctx(), "age-gate-21", &test_claim(), &proof, binding_ctx)
-            .expect("offline verify should succeed");
+        let ok = verify_proof_offline(
+            &test_ctx(),
+            "age-gate-21",
+            &test_claim(),
+            &proof,
+            binding_ctx,
+        )
+        .expect("offline verify should succeed");
         assert!(ok);
     }
 
@@ -173,8 +194,14 @@ mod tests {
     fn verify_with_explicit_template_round_trip() {
         let binding_ctx = blake3_hash(b"test-explicit-template");
         let proof = make_proof(binding_ctx);
-        let ok = verify_proof_with_template(&test_ctx(), &test_template(), &test_claim(), &proof, binding_ctx)
-            .expect("verify with template should succeed");
+        let ok = verify_proof_with_template(
+            &test_ctx(),
+            &test_template(),
+            &test_claim(),
+            &proof,
+            binding_ctx,
+        )
+        .expect("verify with template should succeed");
         assert!(ok);
     }
 
@@ -183,7 +210,13 @@ mod tests {
     #[test]
     fn unknown_template_rejected() {
         let proof = make_proof([0u8; 32]);
-        let result = verify_proof_offline(&test_ctx(), "nonexistent-template", &test_claim(), &proof, [0u8; 32]);
+        let result = verify_proof_offline(
+            &test_ctx(),
+            "nonexistent-template",
+            &test_claim(),
+            &proof,
+            [0u8; 32],
+        );
         assert!(matches!(result, Err(VerifyError::UnknownTemplate(_))));
     }
 
@@ -196,7 +229,13 @@ mod tests {
         root[0] ^= 0x01;
         bundle.ms_root_hex = hex::encode(root);
         let tampered = bundle.to_proof().unwrap();
-        let result = verify(&test_ctx(), &test_template(), &test_claim(), &tampered, binding_ctx);
+        let result = verify(
+            &test_ctx(),
+            &test_template(),
+            &test_claim(),
+            &tampered,
+            binding_ctx,
+        );
         assert!(result.is_err());
     }
 
@@ -205,7 +244,13 @@ mod tests {
         let binding_ctx = blake3_hash(b"test-wrong-ctx-a");
         let wrong_ctx = blake3_hash(b"test-wrong-ctx-b");
         let proof = make_proof(binding_ctx);
-        let result = verify(&test_ctx(), &test_template(), &test_claim(), &proof, wrong_ctx);
+        let result = verify(
+            &test_ctx(),
+            &test_template(),
+            &test_claim(),
+            &proof,
+            wrong_ctx,
+        );
         assert!(result.is_err());
     }
 
@@ -214,7 +259,13 @@ mod tests {
         let binding_ctx = blake3_hash(b"test-wrong-claim");
         let proof = make_proof(binding_ctx);
         let bad_claim = json!({ "claim": { "age_years": 17 } });
-        let result = verify(&test_ctx(), &test_template(), &bad_claim, &proof, binding_ctx);
+        let result = verify(
+            &test_ctx(),
+            &test_template(),
+            &bad_claim,
+            &proof,
+            binding_ctx,
+        );
         assert!(result.is_err());
     }
 
@@ -227,8 +278,13 @@ mod tests {
         ent[0] ^= 0xFF;
         bundle.binding_entropy_hex = hex::encode(ent);
         let tampered = bundle.to_proof().unwrap();
-        let result = verify(&test_ctx(), &test_template(), &test_claim(), &tampered, binding_ctx);
+        let result = verify(
+            &test_ctx(),
+            &test_template(),
+            &test_claim(),
+            &tampered,
+            binding_ctx,
+        );
         assert!(result.is_err());
     }
 }
-

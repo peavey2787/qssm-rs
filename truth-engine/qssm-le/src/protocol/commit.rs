@@ -13,8 +13,8 @@ use crate::algebra::ring::{
 };
 use crate::crs::VerifyingKey;
 use crate::protocol::params::{
-    BETA, C_POLY_SIZE, C_POLY_SPAN, ETA, GAMMA, MAX_PROVER_ATTEMPTS, N,
-    PUBLIC_DIGEST_COEFFS, PUBLIC_DIGEST_COEFF_MAX, Q,
+    BETA, C_POLY_SIZE, C_POLY_SPAN, ETA, GAMMA, MAX_PROVER_ATTEMPTS, N, PUBLIC_DIGEST_COEFFS,
+    PUBLIC_DIGEST_COEFF_MAX, Q,
 };
 use crate::LeError;
 
@@ -88,9 +88,7 @@ pub struct Witness {
 
 impl core::fmt::Debug for Witness {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        f.debug_struct("Witness")
-            .field("r", &"[REDACTED]")
-            .finish()
+        f.debug_struct("Witness").field("r", &"[REDACTED]").finish()
     }
 }
 
@@ -439,8 +437,7 @@ pub fn verify_lattice_algebraic(
     let a = vk.matrix_a_poly();
     let mu = mu_from_public(public);
     let u = commitment.0.sub(&mu);
-    let challenge_seed =
-        fs_challenge_bytes(binding_context, vk, public, commitment, &proof.t);
+    let challenge_seed = fs_challenge_bytes(binding_context, vk, public, commitment, &proof.t);
     if challenge_seed.ct_eq(&proof.challenge_seed).unwrap_u8() == 0 {
         return Err(LeError::DomainMismatch);
     }

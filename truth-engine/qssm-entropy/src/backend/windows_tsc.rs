@@ -10,8 +10,8 @@ use std::hint::spin_loop;
 use std::thread;
 use std::time::Duration;
 
-use qssm_utils::verify_density;
 use crate::HeError;
+use qssm_utils::verify_density;
 
 const MAX_DENSITY_PASSES: usize = 12;
 

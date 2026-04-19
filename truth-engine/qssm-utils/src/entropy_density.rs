@@ -136,7 +136,9 @@ mod tests {
 
     #[test]
     fn square_wave_rejected() {
-        let v: Vec<u8> = (0..512).map(|i| if i % 2 == 0 { 0x00 } else { 0xFF }).collect();
+        let v: Vec<u8> = (0..512)
+            .map(|i| if i % 2 == 0 { 0x00 } else { 0xFF })
+            .collect();
         assert!(!verify_density(&v));
     }
 

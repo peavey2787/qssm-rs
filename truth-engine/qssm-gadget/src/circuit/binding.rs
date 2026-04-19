@@ -193,7 +193,9 @@ impl TruthWitness {
 
     pub fn validate(&self) -> Result<(), GadgetError> {
         if self.domain_tag != DOMAIN_TRUTH_LIMB_V2 {
-            return Err(GadgetError::TruthWitnessInvalid { reason: "domain tag mismatch" });
+            return Err(GadgetError::TruthWitnessInvalid {
+                reason: "domain tag mismatch",
+            });
         }
         let expected_metadata = encode_proof_metadata_v2(
             self.n,
@@ -204,11 +206,15 @@ impl TruthWitness {
             self.external_entropy_included,
         );
         if !bool::from(expected_metadata.ct_eq(&self.proof_metadata)) {
-            return Err(GadgetError::TruthWitnessInvalid { reason: "proof metadata mismatch" });
+            return Err(GadgetError::TruthWitnessInvalid {
+                reason: "proof metadata mismatch",
+            });
         }
         let digest = truth_digest(&self.root, &self.binding_context, &self.proof_metadata);
         if !bool::from(digest.ct_eq(&self.digest)) {
-            return Err(GadgetError::TruthWitnessInvalid { reason: "digest mismatch" });
+            return Err(GadgetError::TruthWitnessInvalid {
+                reason: "digest mismatch",
+            });
         }
         let coeffs = digest_coeff_vector_from_truth_digest(&self.digest);
         let (limb_bits, message_limb) = message_limb_from_truth_digest_normative(&self.digest);
@@ -216,10 +222,15 @@ impl TruthWitness {
         let coeffs_bytes = bytemuck_cast_u32_slice(&coeffs);
         let self_coeffs_bytes = bytemuck_cast_u32_slice(&self.digest_coeff_vector);
         let coeffs_eq = coeffs_bytes.ct_eq(&self_coeffs_bytes);
-        let limb_bits_eq = limb_bits_to_bytes(&limb_bits).ct_eq(&limb_bits_to_bytes(&self.limb_bits));
-        let limb_eq = message_limb.to_le_bytes().ct_eq(&self.message_limb.to_le_bytes());
+        let limb_bits_eq =
+            limb_bits_to_bytes(&limb_bits).ct_eq(&limb_bits_to_bytes(&self.limb_bits));
+        let limb_eq = message_limb
+            .to_le_bytes()
+            .ct_eq(&self.message_limb.to_le_bytes());
         if !bool::from(coeffs_eq & limb_bits_eq & limb_eq) {
-            return Err(GadgetError::TruthWitnessInvalid { reason: "coefficient vector or limb mismatch" });
+            return Err(GadgetError::TruthWitnessInvalid {
+                reason: "coefficient vector or limb mismatch",
+            });
         }
         Ok(())
     }
@@ -260,7 +271,12 @@ fn push_bits32(out: &mut Vec<Value>, idx: &mut usize, path: &str, bits: &[bool; 
 fn truth_witness_value(witness: &TruthWitness) -> Value {
     let mut private_wires = Vec::new();
     let mut idx = 0usize;
-    push_bits32(&mut private_wires, &mut idx, "limb_bits", &witness.limb_bits);
+    push_bits32(
+        &mut private_wires,
+        &mut idx,
+        "limb_bits",
+        &witness.limb_bits,
+    );
     json!({
         "kind": "TruthWitnessV1",
         "public": {
@@ -293,26 +309,47 @@ mod tests {
 
     #[test]
     fn limb_is_below_2_pow_30() {
-        let witness = TruthWitness::bind([7u8; 32], [9u8; 32], 1, 2, 0, [3u8; 32], [0u8; 32], false);
+        let witness =
+            TruthWitness::bind([7u8; 32], [9u8; 32], 1, 2, 0, [3u8; 32], [0u8; 32], false);
         assert!(witness.message_limb < (1u64 << 30));
     }
 
     #[test]
     fn truth_witness_round_trip_validate() {
-        let witness = TruthWitness::bind([0xabu8; 32], [0xcdu8; 32], 0, 5, 1, [0xeeu8; 32], [0x11u8; 32], true);
+        let witness = TruthWitness::bind(
+            [0xabu8; 32],
+            [0xcdu8; 32],
+            0,
+            5,
+            1,
+            [0xeeu8; 32],
+            [0x11u8; 32],
+            true,
+        );
         witness.validate().expect("round-trip validation");
         assert_eq!(witness.digest_coeff_vector.len(), DIGEST_COEFF_VECTOR_SIZE);
     }
 
     #[test]
     fn truth_to_prover_json_roundtrip() {
-        let witness = TruthWitness::bind([1u8; 32], [2u8; 32], 1, 0, 0, [3u8; 32], [4u8; 32], false);
-        let value: serde_json::Value = serde_json::from_str(&witness.to_prover_json().expect("json")).expect("parse");
+        let witness =
+            TruthWitness::bind([1u8; 32], [2u8; 32], 1, 0, 0, [3u8; 32], [4u8; 32], false);
+        let value: serde_json::Value =
+            serde_json::from_str(&witness.to_prover_json().expect("json")).expect("parse");
         assert_eq!(value["kind"], "TruthWitnessV1");
-        assert_eq!(value["public"]["message_limb_u30"], serde_json::json!(witness.message_limb));
-        assert_eq!(value["public"]["external_entropy_included"], serde_json::json!(false));
         assert_eq!(
-            value["public"]["digest_coeff_vector_u4"].as_array().expect("digest coeff array").len(),
+            value["public"]["message_limb_u30"],
+            serde_json::json!(witness.message_limb)
+        );
+        assert_eq!(
+            value["public"]["external_entropy_included"],
+            serde_json::json!(false)
+        );
+        assert_eq!(
+            value["public"]["digest_coeff_vector_u4"]
+                .as_array()
+                .expect("digest coeff array")
+                .len(),
             DIGEST_COEFF_VECTOR_SIZE
         );
     }
@@ -332,8 +369,17 @@ mod tests {
         let context = [2u8; 32];
         let metadata = encode_proof_metadata_v2(1, 2, 0, &[3u8; 32], &[4u8; 32], false);
         let digest = truth_digest(&root, &context, &metadata);
-        assert_eq!(digest_coeff_vector_from_truth_digest(&digest), digest_coeff_vector_from_truth_digest(&digest));
-        assert_eq!(message_limb_from_truth_digest_normative(&digest), message_limb_from_truth_digest_normative(&digest));
-        assert_eq!(truth_message_limb_v1(&root, &context, &metadata), truth_message_limb_v1(&root, &context, &metadata));
+        assert_eq!(
+            digest_coeff_vector_from_truth_digest(&digest),
+            digest_coeff_vector_from_truth_digest(&digest)
+        );
+        assert_eq!(
+            message_limb_from_truth_digest_normative(&digest),
+            message_limb_from_truth_digest_normative(&digest)
+        );
+        assert_eq!(
+            truth_message_limb_v1(&root, &context, &metadata),
+            truth_message_limb_v1(&root, &context, &metadata)
+        );
     }
 }

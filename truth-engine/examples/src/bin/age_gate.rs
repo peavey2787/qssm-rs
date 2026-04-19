@@ -26,7 +26,11 @@ fn main() {
     let result = prove(claim_bad, &salt, &blueprint);
     println!(
         "Age 17 => prove result: {}",
-        if result.is_err() { "rejected (correct)" } else { "ERROR: should have been rejected" }
+        if result.is_err() {
+            "rejected (correct)"
+        } else {
+            "ERROR: should have been rejected"
+        }
     );
     assert!(result.is_err(), "underage claim should be rejected");
 

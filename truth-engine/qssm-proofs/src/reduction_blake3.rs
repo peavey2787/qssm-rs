@@ -103,10 +103,7 @@ impl Blake3BindingReduction {
                 "QSSM-MS-V1-VERIFY...............".to_string(),
                 "cross_protocol_digest_v1".to_string(),
             ],
-            engine_b_domain_tags: vec![
-                "QSSM-MS-v1.0".to_string(),
-                "fs_v2".to_string(),
-            ],
+            engine_b_domain_tags: vec!["QSSM-MS-v1.0".to_string(), "fs_v2".to_string()],
             hash_output_bits,
             advantage_log2,
             query_budget_log2,
@@ -142,7 +139,9 @@ mod tests {
         let b = Blake3BindingReduction::for_current_params();
         assert!(!b.engine_a_domain_tags.is_empty());
         assert!(!b.engine_b_domain_tags.is_empty());
-        assert!(b.engine_a_domain_tags.contains(&"QSSM-LE-FS-LYU-v1.0".to_string()));
+        assert!(b
+            .engine_a_domain_tags
+            .contains(&"QSSM-LE-FS-LYU-v1.0".to_string()));
         assert!(b.engine_b_domain_tags.contains(&"QSSM-MS-v1.0".to_string()));
     }
 

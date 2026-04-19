@@ -22,7 +22,6 @@ pub enum EntropyStatsError {
 /// Pearson χ² test for **256** byte categories vs uniform; also rejects very low **distinct** counts.
 ///
 /// For `len < `[`MIN_BYTES_FOR_TEST`], returns **`Ok(())`** (no gate — avoid false positives on tiny buffers).
-#[must_use]
 pub fn validate_entropy_distribution(bytes: &[u8]) -> Result<(), EntropyStatsError> {
     if bytes.len() < MIN_BYTES_FOR_TEST {
         return Ok(());

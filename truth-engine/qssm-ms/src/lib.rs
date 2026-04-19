@@ -16,7 +16,7 @@ pub use error::MsError;
 
 use commitment::leaves::{build_leaves, derive_salts, ms_leaf};
 use commitment::tree::verify_path_to_root;
-use core::{highest_differing_bit, binding_rotation, rot_for_nonce};
+use core::{binding_rotation, highest_differing_bit, rot_for_nonce};
 use qssm_utils::PositionAwareTree;
 use subtle::ConstantTimeEq;
 use transcript::fs_challenge;
@@ -79,23 +79,50 @@ impl GhostMirrorProof {
             return Err(MsError::InvalidProofField("k must be <= 63"));
         }
         if path.len() != MERKLE_PATH_LEN {
-            return Err(MsError::InvalidProofField("path must contain exactly 7 sibling hashes"));
+            return Err(MsError::InvalidProofField(
+                "path must contain exactly 7 sibling hashes",
+            ));
         }
-        Ok(Self { n, k, bit_at_k, opened_salt, path, challenge })
+        Ok(Self {
+            n,
+            k,
+            bit_at_k,
+            opened_salt,
+            path,
+            challenge,
+        })
     }
 
     /// Nonce used for this proof.
-    #[inline] pub fn n(&self) -> u8 { self.n }
+    #[inline]
+    pub fn n(&self) -> u8 {
+        self.n
+    }
     /// Bit position of the crossing.
-    #[inline] pub fn k(&self) -> u8 { self.k }
+    #[inline]
+    pub fn k(&self) -> u8 {
+        self.k
+    }
     /// The bit of the *original* value at position `k`.
-    #[inline] pub fn bit_at_k(&self) -> u8 { self.bit_at_k }
+    #[inline]
+    pub fn bit_at_k(&self) -> u8 {
+        self.bit_at_k
+    }
     /// The opened salt for the leaf at `(k, bit_at_k)`.
-    #[inline] pub fn opened_salt(&self) -> &[u8; 32] { &self.opened_salt }
+    #[inline]
+    pub fn opened_salt(&self) -> &[u8; 32] {
+        &self.opened_salt
+    }
     /// Merkle siblings (length 7).
-    #[inline] pub fn path(&self) -> &[[u8; 32]] { &self.path }
+    #[inline]
+    pub fn path(&self) -> &[[u8; 32]] {
+        &self.path
+    }
     /// Fiat-Shamir challenge digest.
-    #[inline] pub fn challenge(&self) -> &[u8; 32] { &self.challenge }
+    #[inline]
+    pub fn challenge(&self) -> &[u8; 32] {
+        &self.challenge
+    }
 }
 
 impl std::fmt::Debug for GhostMirrorProof {
@@ -112,10 +139,7 @@ impl std::fmt::Debug for GhostMirrorProof {
 }
 
 /// Deterministic salts from `seed` (reproducible CI / demos).
-pub fn commit(
-    seed: [u8; 32],
-    binding_entropy: [u8; 32],
-) -> Result<(Root, Salts), MsError> {
+pub fn commit(seed: [u8; 32], binding_entropy: [u8; 32]) -> Result<(Root, Salts), MsError> {
     let salts = derive_salts(seed);
     let leaves = build_leaves(&salts, &binding_entropy);
     let tree = PositionAwareTree::new(leaves)?;
@@ -202,7 +226,12 @@ pub fn verify(
     if ((value >> proof.k) & 1) as u8 != proof.bit_at_k {
         return false;
     }
-    let leaf = ms_leaf(proof.k, proof.bit_at_k, &proof.opened_salt, &binding_entropy);
+    let leaf = ms_leaf(
+        proof.k,
+        proof.bit_at_k,
+        &proof.opened_salt,
+        &binding_entropy,
+    );
     let leaf_idx = 2 * (proof.k as usize) + (proof.bit_at_k as usize);
     if !verify_path_to_root(root.as_bytes(), &leaf, leaf_idx, 128, &proof.path) {
         return false;

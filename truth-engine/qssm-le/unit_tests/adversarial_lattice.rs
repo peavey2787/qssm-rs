@@ -1,9 +1,9 @@
 use std::mem::MaybeUninit;
 
 use qssm_le::{
-    encode_rq_coeffs_le, verify_lattice, Commitment, CommitmentRandomness, LatticeProof, LeError,
-    PublicBinding, PublicInstance, RqPoly, ScrubbedPoly, VerifyingKey, Witness, GAMMA, N, Q,
-    PUBLIC_DIGEST_COEFFS, prove_arithmetic,
+    encode_rq_coeffs_le, prove_arithmetic, verify_lattice, Commitment, CommitmentRandomness,
+    LatticeProof, LeError, PublicBinding, PublicInstance, RqPoly, ScrubbedPoly, VerifyingKey,
+    Witness, GAMMA, N, PUBLIC_DIGEST_COEFFS, Q,
 };
 use qssm_utils::hashing::DOMAIN_MS;
 
@@ -101,8 +101,16 @@ fn test_scrubbed_poly_zeroization() {
         std::ptr::drop_in_place(ptr);
         // Read raw bytes — ZeroizeOnDrop should have zeroed the coeffs field.
         let raw = std::ptr::read(ptr);
-        assert_eq!(raw.as_public().0[0], 0, "ScrubbedPoly must be zeroed after drop");
-        assert_eq!(raw.as_public().0[N - 1], 0, "ScrubbedPoly must be zeroed after drop");
+        assert_eq!(
+            raw.as_public().0[0],
+            0,
+            "ScrubbedPoly must be zeroed after drop"
+        );
+        assert_eq!(
+            raw.as_public().0[N - 1],
+            0,
+            "ScrubbedPoly must be zeroed after drop"
+        );
         std::mem::forget(raw);
     }
 }
@@ -207,14 +215,26 @@ fn scrubbed_poly_debug_is_redacted() {
 fn witness_debug_is_redacted() {
     let w = Witness::new([7i32; N]);
     let debug_str = format!("{:?}", w);
-    assert!(debug_str.contains("[REDACTED]"), "Witness Debug must not leak coefficients");
-    assert!(!debug_str.contains("7, 7"), "Witness Debug must not contain coefficient values");
+    assert!(
+        debug_str.contains("[REDACTED]"),
+        "Witness Debug must not leak coefficients"
+    );
+    assert!(
+        !debug_str.contains("7, 7"),
+        "Witness Debug must not contain coefficient values"
+    );
 }
 
 #[test]
 fn commitment_randomness_debug_is_redacted() {
     let cr = CommitmentRandomness::new([3i32; N]);
     let debug_str = format!("{:?}", cr);
-    assert!(debug_str.contains("[REDACTED]"), "CommitmentRandomness Debug must not leak coefficients");
-    assert!(!debug_str.contains("3, 3"), "CommitmentRandomness Debug must not contain coefficient values");
+    assert!(
+        debug_str.contains("[REDACTED]"),
+        "CommitmentRandomness Debug must not leak coefficients"
+    );
+    assert!(
+        !debug_str.contains("3, 3"),
+        "CommitmentRandomness Debug must not contain coefficient values"
+    );
 }

@@ -25,8 +25,7 @@ fn make_bundle() -> ProofBundle {
     let template = QssmTemplate::proof_of_age("age-gate-21");
     let ctx = ProofContext::new(seed());
     let claim = json!({ "claim": { "age_years": 30 } });
-    let proof = prove(&ctx, &template, &claim, 100, 50, binding(), entropy())
-        .expect("prove");
+    let proof = prove(&ctx, &template, &claim, 100, 50, binding(), entropy()).expect("prove");
     ProofBundle::from_proof(&proof)
 }
 
@@ -97,7 +96,14 @@ fn truncated_ms_root_rejected() {
     let json = serde_json::to_string(&bundle).unwrap();
     let parsed: ProofBundle = serde_json::from_str(&json).unwrap();
     let err = parsed.to_proof().unwrap_err();
-    assert!(matches!(err, WireFormatError::BadLength { expected: 32, got: 16, .. }));
+    assert!(matches!(
+        err,
+        WireFormatError::BadLength {
+            expected: 32,
+            got: 16,
+            ..
+        }
+    ));
 }
 
 // ── Coefficient count validation ─────────────────────────────────────
@@ -109,7 +115,14 @@ fn wrong_le_commitment_coeff_count_rejected() {
     let json = serde_json::to_string(&bundle).unwrap();
     let parsed: ProofBundle = serde_json::from_str(&json).unwrap();
     let err = parsed.to_proof().unwrap_err();
-    assert!(matches!(err, WireFormatError::BadCoeffCount { expected: 256, got: 10, .. }));
+    assert!(matches!(
+        err,
+        WireFormatError::BadCoeffCount {
+            expected: 256,
+            got: 10,
+            ..
+        }
+    ));
 }
 
 #[test]
@@ -134,7 +147,10 @@ fn unknown_json_fields_rejected() {
     );
     let json = serde_json::to_string(&val).unwrap();
     let result = serde_json::from_str::<ProofBundle>(&json);
-    assert!(result.is_err(), "deny_unknown_fields must reject extra keys");
+    assert!(
+        result.is_err(),
+        "deny_unknown_fields must reject extra keys"
+    );
 }
 
 // ── Field name stability ─────────────────────────────────────────────
@@ -167,7 +183,10 @@ fn json_field_names_are_stable() {
         "value",
         "version",
     ];
-    assert_eq!(keys, expected, "wire format field names must match frozen schema");
+    assert_eq!(
+        keys, expected,
+        "wire format field names must match frozen schema"
+    );
 }
 
 // ── Empty JSON body rejected ─────────────────────────────────────────

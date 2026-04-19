@@ -107,7 +107,10 @@ fn witness_hiding_params_sync() {
     let wh = WitnessHidingClaim::for_current_params();
     assert_eq!(wh.gamma, EXPECTED_GAMMA);
     assert_eq!(wh.beta, EXPECTED_BETA);
-    assert_eq!(wh.gap_ratio, f64::from(EXPECTED_GAMMA) / f64::from(EXPECTED_BETA));
+    assert_eq!(
+        wh.gap_ratio,
+        f64::from(EXPECTED_GAMMA) / f64::from(EXPECTED_BETA)
+    );
 }
 
 // ---------------------------------------------------------------------------

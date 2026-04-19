@@ -1,16 +1,16 @@
 //! Concrete [`LatticePolyOp`] implementations.
 
-pub mod merkle_parent_blake3;
-pub mod truth_limb;
-pub mod entropy_injection;
 pub mod engine_a_binding;
+pub mod entropy_injection;
+pub mod merkle_parent_blake3;
 pub mod ms_ghost_mirror;
+pub mod truth_limb;
 
-pub use merkle_parent_blake3::*;
-pub use truth_limb::*;
-pub use entropy_injection::*;
 pub use engine_a_binding::*;
+pub use entropy_injection::*;
+pub use merkle_parent_blake3::*;
 pub use ms_ghost_mirror::*;
+pub use truth_limb::*;
 
 use super::binding_contract::BindingReservoir;
 use super::context::{PolyOpContext, PolyOpError};
@@ -32,14 +32,7 @@ impl ConstraintSystem for SilentConstraintSystem {
 
     fn enforce_xor(&mut self, _x: VarId, _y: VarId, _and_xy: VarId, _z: VarId) {}
 
-    fn enforce_full_adder(
-        &mut self,
-        _a: VarId,
-        _b: VarId,
-        _cin: VarId,
-        _sum: VarId,
-        _cout: VarId,
-    ) {
+    fn enforce_full_adder(&mut self, _a: VarId, _b: VarId, _cin: VarId, _sum: VarId, _cout: VarId) {
     }
 
     fn enforce_equal(&mut self, _a: VarId, _b: VarId) {}
@@ -82,9 +75,9 @@ impl MerkleTruthPipe {
             )?;
         let mut reservoir = BindingReservoir::default();
         c_merged.merge_into(&mut reservoir)?;
-        let truth_witness =
-            self.second
-                .synthesize_with_context(merkle_out.state_root, cs, ctx)?;
+        let truth_witness = self
+            .second
+            .synthesize_with_context(merkle_out.state_root, cs, ctx)?;
         let refresh_metadata = ctx.take_refresh_metadata();
         Ok(TruthPipeOutput {
             merkle: merkle_out,

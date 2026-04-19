@@ -8,6 +8,16 @@
 //! **`circuit`** (R1CS, binding, seam operators).
 
 #![forbid(unsafe_code)]
+#![allow(
+    dead_code,
+    unused_imports,
+    clippy::needless_range_loop,
+    clippy::manual_is_multiple_of,
+    clippy::too_many_arguments,
+    clippy::needless_bool,
+    clippy::match_like_matches_macro,
+    clippy::double_must_use
+)]
 
 pub(crate) mod circuit;
 pub(crate) mod lattice;
@@ -21,8 +31,8 @@ pub(crate) mod merkle;
 // circuit::binding
 pub use circuit::binding::{
     digest_coeff_vector_from_truth_digest, encode_proof_metadata_v2,
-    message_limb_from_truth_digest_normative, truth_digest, TruthWitness,
-    DIGEST_COEFF_VECTOR_SIZE, DOMAIN_TRUTH_LIMB_V2,
+    message_limb_from_truth_digest_normative, truth_digest, TruthWitness, DIGEST_COEFF_VECTOR_SIZE,
+    DOMAIN_TRUTH_LIMB_V2,
 };
 
 // circuit::binding_contract
@@ -45,12 +55,12 @@ pub use circuit::handshake::{
 pub use circuit::lattice_polyop::{LatticePolyOp, LatticePolyOpThen, OpPipe};
 
 // circuit::operators
+pub use circuit::operators::truth_limb::{effective_external_entropy, xor32};
 pub use circuit::operators::{
     merkle_truth_pipe, EngineABindingInput, EngineABindingOp, EngineABindingOutput,
     EntropyInjectionOp, EntropyInjectionOutput, MerkleParentBlake3Op, MerkleTruthPipe,
     TruthLimbV2Params, TruthLimbV2Stage,
 };
-pub use circuit::operators::truth_limb::{effective_external_entropy, xor32};
 
 // circuit::operators::ms_ghost_mirror (v1.1.0 — post-freeze adapter)
 pub use circuit::operators::ms_ghost_mirror::{

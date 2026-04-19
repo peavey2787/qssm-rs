@@ -48,7 +48,15 @@ fn verify_rejects_wrong_root() {
     let (root, salts) = commit(seed, binding_ent).unwrap();
     let proof = prove(9, 1, &salts, binding_ent, b"x", &BINDING_CTX).unwrap();
     let other = Root::new([0xFF; 32]);
-    assert!(!verify(other, &proof, binding_ent, 9, 1, b"x", &BINDING_CTX));
+    assert!(!verify(
+        other,
+        &proof,
+        binding_ent,
+        9,
+        1,
+        b"x",
+        &BINDING_CTX
+    ));
     let _ = root;
 }
 
@@ -63,10 +71,23 @@ fn verify_rejects_tampered_merkle_sibling() {
         s[0] ^= 0x01;
     }
     let tampered = qssm_ms::GhostMirrorProof::new(
-        proof.n(), proof.k(), proof.bit_at_k(),
-        *proof.opened_salt(), tampered_path, *proof.challenge(),
-    ).unwrap();
-    assert!(!verify(root, &tampered, binding_ent, 100, 1, b"y", &BINDING_CTX));
+        proof.n(),
+        proof.k(),
+        proof.bit_at_k(),
+        *proof.opened_salt(),
+        tampered_path,
+        *proof.challenge(),
+    )
+    .unwrap();
+    assert!(!verify(
+        root,
+        &tampered,
+        binding_ent,
+        100,
+        1,
+        b"y",
+        &BINDING_CTX
+    ));
 }
 
 #[test]
@@ -77,10 +98,23 @@ fn verify_rejects_tampered_fs_challenge() {
     let mut bad_challenge = *proof.challenge();
     bad_challenge[0] ^= 0x80;
     let tampered = qssm_ms::GhostMirrorProof::new(
-        proof.n(), proof.k(), proof.bit_at_k(),
-        *proof.opened_salt(), proof.path().to_vec(), bad_challenge,
-    ).unwrap();
-    assert!(!verify(root, &tampered, binding_ent, 50, 10, b"z", &BINDING_CTX));
+        proof.n(),
+        proof.k(),
+        proof.bit_at_k(),
+        *proof.opened_salt(),
+        proof.path().to_vec(),
+        bad_challenge,
+    )
+    .unwrap();
+    assert!(!verify(
+        root,
+        &tampered,
+        binding_ent,
+        50,
+        10,
+        b"z",
+        &BINDING_CTX
+    ));
 }
 
 #[test]
@@ -90,10 +124,23 @@ fn verify_rejects_mutated_opening_fields() {
     let proof = prove(80, 20, &salts, binding_ent, b"w", &BINDING_CTX).unwrap();
     let flipped_bit = proof.bit_at_k() ^ 1;
     let tampered = qssm_ms::GhostMirrorProof::new(
-        proof.n(), proof.k(), flipped_bit,
-        *proof.opened_salt(), proof.path().to_vec(), *proof.challenge(),
-    ).unwrap();
-    assert!(!verify(root, &tampered, binding_ent, 80, 20, b"w", &BINDING_CTX));
+        proof.n(),
+        proof.k(),
+        flipped_bit,
+        *proof.opened_salt(),
+        proof.path().to_vec(),
+        *proof.challenge(),
+    )
+    .unwrap();
+    assert!(!verify(
+        root,
+        &tampered,
+        binding_ent,
+        80,
+        20,
+        b"w",
+        &BINDING_CTX
+    ));
 }
 
 #[test]
@@ -142,7 +189,15 @@ fn boundary_u64_max_vs_max_minus_one() {
     let (seed, be) = setup();
     let (root, salts) = commit(seed, be).unwrap();
     let proof = prove(u64::MAX, u64::MAX - 1, &salts, be, b"b", &BINDING_CTX).unwrap();
-    assert!(verify(root, &proof, be, u64::MAX, u64::MAX - 1, b"b", &BINDING_CTX));
+    assert!(verify(
+        root,
+        &proof,
+        be,
+        u64::MAX,
+        u64::MAX - 1,
+        b"b",
+        &BINDING_CTX
+    ));
 }
 
 #[test]

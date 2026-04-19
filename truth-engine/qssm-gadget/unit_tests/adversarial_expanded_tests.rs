@@ -3,10 +3,9 @@
 
 use proptest::prelude::*;
 use qssm_gadget::{
-    ConstraintSystem, EngineABindingInput, EngineABindingOp, LatticePolyOp, MerklePathWitness,
-    PolyOpContext, VarId, VarKind, MERKLE_DEPTH_MS,
-    effective_external_entropy, xor32, TruthLimbV2Params,
-    truth_digest,
+    effective_external_entropy, truth_digest, xor32, ConstraintSystem, EngineABindingInput,
+    EngineABindingOp, LatticePolyOp, MerklePathWitness, PolyOpContext, TruthLimbV2Params, VarId,
+    VarKind, MERKLE_DEPTH_MS,
 };
 use qssm_ms::{commit, prove, verify};
 use qssm_utils::blake3_hash;
@@ -45,7 +44,9 @@ fn baseline_inputs() -> EngineABindingInput {
     let context = b"ctx".to_vec();
     let (root, salts) = commit(seed, ledger).expect("commit");
     let proof = prove(value, target, &salts, ledger, &context, &rollup).expect("prove");
-    assert!(verify(root, &proof, ledger, value, target, &context, &rollup));
+    assert!(verify(
+        root, &proof, ledger, value, target, &context, &rollup
+    ));
     let mut input = EngineABindingInput {
         state_root,
         ms_root: *root.as_bytes(),

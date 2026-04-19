@@ -34,7 +34,10 @@ fn sibling_swap_produces_wrong_root() {
     let (mut w, expected) = build_valid_witness();
     w.siblings.swap(0, 1);
     let got = w.recompute_root().unwrap();
-    assert_ne!(got, expected, "swapped siblings must produce different root");
+    assert_ne!(
+        got, expected,
+        "swapped siblings must produce different root"
+    );
 }
 
 #[test]
@@ -45,7 +48,10 @@ fn duplicate_siblings_produce_wrong_root() {
         *s = dup;
     }
     let got = w.recompute_root().unwrap();
-    assert_ne!(got, expected, "duplicate siblings must produce different root");
+    assert_ne!(
+        got, expected,
+        "duplicate siblings must produce different root"
+    );
 }
 
 #[test]
@@ -65,9 +71,8 @@ fn leaf_index_off_by_one_fails_or_wrong_root() {
         siblings: w0.siblings,
         leaf_index: 1,
     };
-    match w1.recompute_root() {
-        Ok(root) => assert_ne!(root, expected, "off-by-one index must differ"),
-        Err(_) => {}
+    if let Ok(root) = w1.recompute_root() {
+        assert_ne!(root, expected, "off-by-one index must differ");
     }
 }
 

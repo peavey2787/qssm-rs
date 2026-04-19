@@ -1,9 +1,9 @@
 //! Lyubashevsky FS + rejection: prove/verify and failure modes.
 
 use qssm_le::{
-    commit_mlwe, prove_arithmetic, verify_lattice, Commitment, LatticeProof,
-    LeError, PublicBinding, PublicInstance, RqPoly, VerifyingKey, Witness, BETA, N,
-    PUBLIC_DIGEST_COEFFS, PUBLIC_DIGEST_COEFF_MAX,
+    commit_mlwe, prove_arithmetic, verify_lattice, Commitment, LatticeProof, LeError,
+    PublicBinding, PublicInstance, RqPoly, VerifyingKey, Witness, BETA, N, PUBLIC_DIGEST_COEFFS,
+    PUBLIC_DIGEST_COEFF_MAX,
 };
 
 const CTX: [u8; 32] = [0xA1; 32];
@@ -17,7 +17,8 @@ fn prove_verify_roundtrip() {
     r[0] = 1;
     r[1] = -1;
     let witness = Witness::new(r);
-    let (commitment, proof) = prove_arithmetic(&vk, &public, &witness, &CTX, TEST_RNG_SEED).unwrap();
+    let (commitment, proof) =
+        prove_arithmetic(&vk, &public, &witness, &CTX, TEST_RNG_SEED).unwrap();
     assert!(verify_lattice(&vk, &public, &commitment, &proof, &CTX).unwrap());
 }
 
@@ -173,8 +174,7 @@ fn from_u64_nibbles_golden_encoding() {
         _ => panic!("unexpected PublicBinding variant"),
     };
     let expected = [
-        0x0u32, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7,
-        0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF,
+        0x0u32, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF,
     ];
     assert_eq!(&coeffs[..16], &expected);
     assert!(coeffs[16..].iter().all(|&coeff| coeff == 0));

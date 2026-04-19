@@ -83,6 +83,7 @@ pub enum MerkleError {
 }
 
 #[cfg(test)]
+#[allow(clippy::needless_range_loop, clippy::manual_is_multiple_of)]
 mod tests {
     use super::*;
     use crate::hashing::blake3_hash;
@@ -92,7 +93,12 @@ mod tests {
     }
 
     /// Helper: manually verify a proof by walking siblings up to the root.
-    fn verify_proof(root: &[u8; 32], leaf: &[u8; 32], mut index: usize, proof: &[[u8; 32]]) -> bool {
+    fn verify_proof(
+        root: &[u8; 32],
+        leaf: &[u8; 32],
+        mut index: usize,
+        proof: &[[u8; 32]],
+    ) -> bool {
         let mut cur = *leaf;
         for sib in proof {
             cur = if index % 2 == 0 {

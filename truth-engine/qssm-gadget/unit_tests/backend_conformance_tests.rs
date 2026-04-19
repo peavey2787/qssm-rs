@@ -28,14 +28,7 @@ impl ConstraintSystem for CountingConstraintSystem {
         self.xor_count += 1;
     }
 
-    fn enforce_full_adder(
-        &mut self,
-        _a: VarId,
-        _b: VarId,
-        _cin: VarId,
-        _sum: VarId,
-        _cout: VarId,
-    ) {
+    fn enforce_full_adder(&mut self, _a: VarId, _b: VarId, _cin: VarId, _sum: VarId, _cout: VarId) {
         self.full_adder_count += 1;
     }
 
@@ -63,7 +56,9 @@ fn baseline_inputs() -> EngineABindingInput {
 
     let (root, salts) = commit(seed, ledger).expect("commit");
     let proof = prove(value, target, &salts, ledger, &context, &rollup).expect("prove");
-    assert!(verify(root, &proof, ledger, value, target, &context, &rollup));
+    assert!(verify(
+        root, &proof, ledger, value, target, &context, &rollup
+    ));
 
     let mut input = EngineABindingInput {
         state_root,
@@ -108,17 +103,34 @@ fn constraint_count_regression() {
     let op = EngineABindingOp;
     let mut ctx = PolyOpContext::new("conformance");
     let mut cs = CountingConstraintSystem::default();
-    let _out = op.synthesize_with_context(input, &mut cs, &mut ctx).expect("baseline must pass");
+    let _out = op
+        .synthesize_with_context(input, &mut cs, &mut ctx)
+        .expect("baseline must pass");
 
     // The seam operator uses hash-based commit-then-open, not R1CS constraints.
     // Pin the expected structural counts: any change indicates a layout regression.
-    assert_eq!(cs.next_var, 0, "seam operator must not allocate R1CS variables");
-    assert_eq!(cs.xor_count, 0, "seam operator must not emit XOR constraints");
-    assert_eq!(cs.full_adder_count, 0, "seam operator must not emit full-adder constraints");
-    assert_eq!(cs.equal_count, 0, "seam operator must not emit equality constraints");
+    assert_eq!(
+        cs.next_var, 0,
+        "seam operator must not allocate R1CS variables"
+    );
+    assert_eq!(
+        cs.xor_count, 0,
+        "seam operator must not emit XOR constraints"
+    );
+    assert_eq!(
+        cs.full_adder_count, 0,
+        "seam operator must not emit full-adder constraints"
+    );
+    assert_eq!(
+        cs.equal_count, 0,
+        "seam operator must not emit equality constraints"
+    );
 
     let total = cs.xor_count + cs.full_adder_count + cs.equal_count;
-    assert_eq!(total, 0, "seam operator total constraint count must be zero");
+    assert_eq!(
+        total, 0,
+        "seam operator total constraint count must be zero"
+    );
 
     // The seam binding output must contain non-zero digests.
     assert_ne!(
@@ -146,14 +158,27 @@ fn deterministic_constraint_layout() {
     let mut ctx2 = PolyOpContext::new("det2");
     let op = EngineABindingOp;
 
-    let _ = op.synthesize_with_context(input1, &mut cs1, &mut ctx1).unwrap();
-    let _ = op.synthesize_with_context(input2, &mut cs2, &mut ctx2).unwrap();
+    let _ = op
+        .synthesize_with_context(input1, &mut cs1, &mut ctx1)
+        .unwrap();
+    let _ = op
+        .synthesize_with_context(input2, &mut cs2, &mut ctx2)
+        .unwrap();
 
-    assert_eq!(cs1.next_var, cs2.next_var, "variable count must be deterministic");
-    assert_eq!(cs1.xor_count, cs2.xor_count, "xor constraint count must be deterministic");
+    assert_eq!(
+        cs1.next_var, cs2.next_var,
+        "variable count must be deterministic"
+    );
+    assert_eq!(
+        cs1.xor_count, cs2.xor_count,
+        "xor constraint count must be deterministic"
+    );
     assert_eq!(
         cs1.full_adder_count, cs2.full_adder_count,
         "full_adder constraint count must be deterministic"
     );
-    assert_eq!(cs1.equal_count, cs2.equal_count, "equal constraint count must be deterministic");
+    assert_eq!(
+        cs1.equal_count, cs2.equal_count,
+        "equal constraint count must be deterministic"
+    );
 }

@@ -19,7 +19,10 @@ pub trait LatticePolyOp: Send + Sync {
     ///
     /// For [`OpPipe`], nominations from **`B`** are merged inside `synthesize_with_context` after
     /// **`A::Output`** is known; this method on `OpPipe` returns only **`A`**'s contract (see doc on [`OpPipe`]).
-    fn public_binding_requirements_for_input(&self, input: &Self::Input) -> Result<PublicBindingContract, PolyOpError> {
+    fn public_binding_requirements_for_input(
+        &self,
+        input: &Self::Input,
+    ) -> Result<PublicBindingContract, PolyOpError> {
         let _ = input;
         self.get_public_binding_requirements()
     }
@@ -57,7 +60,10 @@ where
     type Input = I;
     type Output = O;
 
-    fn public_binding_requirements_for_input(&self, input: &Self::Input) -> Result<PublicBindingContract, PolyOpError> {
+    fn public_binding_requirements_for_input(
+        &self,
+        input: &Self::Input,
+    ) -> Result<PublicBindingContract, PolyOpError> {
         self.first.public_binding_requirements_for_input(input)
     }
 

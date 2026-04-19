@@ -113,29 +113,22 @@ impl ProofBundle {
                 self.ms_k,
                 self.ms_bit_at_k,
                 decode_hash(&self.ms_opened_salt_hex, "ms_opened_salt_hex")?,
-                self
-                    .ms_path_hex
+                self.ms_path_hex
                     .iter()
-                    .enumerate()
-                    .map(|(_i, h)| decode_hash(h, "ms_path_hex"))
+                    .map(|h| decode_hash(h, "ms_path_hex"))
                     .collect::<Result<Vec<_>, _>>()?,
                 decode_hash(&self.ms_challenge_hex, "ms_challenge_hex")?,
             )?,
-            le_commitment: Commitment(RqPoly(
-                vec_to_poly(&self.le_commitment_coeffs, "le_commitment_coeffs")?,
-            )),
+            le_commitment: Commitment(RqPoly(vec_to_poly(
+                &self.le_commitment_coeffs,
+                "le_commitment_coeffs",
+            )?)),
             le_proof: LatticeProof {
                 t: RqPoly(vec_to_poly(&self.le_proof_t_coeffs, "le_proof_t_coeffs")?),
                 z: RqPoly(vec_to_poly(&self.le_proof_z_coeffs, "le_proof_z_coeffs")?),
-                challenge_seed: decode_hash(
-                    &self.le_challenge_seed_hex,
-                    "le_challenge_seed_hex",
-                )?,
+                challenge_seed: decode_hash(&self.le_challenge_seed_hex, "le_challenge_seed_hex")?,
             },
-            external_entropy: decode_hash(
-                &self.external_entropy_hex,
-                "external_entropy_hex",
-            )?,
+            external_entropy: decode_hash(&self.external_entropy_hex, "external_entropy_hex")?,
             external_entropy_included: self.external_entropy_included,
             value: self.value,
             target: self.target,
@@ -145,7 +138,8 @@ impl ProofBundle {
 }
 
 fn decode_hash(hex_str: &str, field: &'static str) -> Result<[u8; 32], WireFormatError> {
-    let bytes = hex::decode(hex_str).map_err(|source| WireFormatError::HexDecode { field, source })?;
+    let bytes =
+        hex::decode(hex_str).map_err(|source| WireFormatError::HexDecode { field, source })?;
     <[u8; 32]>::try_from(bytes.as_slice()).map_err(|_| WireFormatError::BadLength {
         field,
         expected: 32,

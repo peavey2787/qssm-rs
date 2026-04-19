@@ -32,8 +32,7 @@ fn prove_then_verify_via_api() {
 
     let proof = prove(&ctx, &template, &claim, 100, 50, binding_ctx, entropy())
         .expect("prove must succeed");
-    let ok = verify(&ctx, &template, &claim, &proof, binding_ctx)
-        .expect("verify must succeed");
+    let ok = verify(&ctx, &template, &claim, &proof, binding_ctx).expect("verify must succeed");
     assert!(ok, "valid proof must verify");
 }
 
@@ -79,17 +78,18 @@ fn prove_is_deterministic() {
     let ent = entropy();
 
     let ctx1 = ProofContext::new(seed());
-    let proof1 = prove(&ctx1, &template, &claim, 100, 50, binding_ctx, ent)
-        .expect("prove 1");
+    let proof1 = prove(&ctx1, &template, &claim, 100, 50, binding_ctx, ent).expect("prove 1");
     let ctx2 = ProofContext::new(seed());
-    let proof2 = prove(&ctx2, &template, &claim, 100, 50, binding_ctx, ent)
-        .expect("prove 2");
+    let proof2 = prove(&ctx2, &template, &claim, 100, 50, binding_ctx, ent).expect("prove 2");
 
     let bundle1 = ProofBundle::from_proof(&proof1);
     let bundle2 = ProofBundle::from_proof(&proof2);
     let json1 = serde_json::to_string(&bundle1).unwrap();
     let json2 = serde_json::to_string(&bundle2).unwrap();
-    assert_eq!(json1, json2, "identical inputs must produce identical proofs");
+    assert_eq!(
+        json1, json2,
+        "identical inputs must produce identical proofs"
+    );
 }
 
 // ── Different entropy → different proof ──────────────────────────────
@@ -101,8 +101,7 @@ fn different_entropy_produces_different_proof() {
     let binding_ctx = binding();
 
     let ctx = ProofContext::new(seed());
-    let proof_a = prove(&ctx, &template, &claim, 100, 50, binding_ctx, entropy())
-        .expect("prove a");
+    let proof_a = prove(&ctx, &template, &claim, 100, 50, binding_ctx, entropy()).expect("prove a");
     let ctx2 = ProofContext::new(seed());
     let proof_b = prove(
         &ctx2,
@@ -117,7 +116,10 @@ fn different_entropy_produces_different_proof() {
 
     let json_a = serde_json::to_string(&ProofBundle::from_proof(&proof_a)).unwrap();
     let json_b = serde_json::to_string(&ProofBundle::from_proof(&proof_b)).unwrap();
-    assert_ne!(json_a, json_b, "different entropy must yield different proofs");
+    assert_ne!(
+        json_a, json_b,
+        "different entropy must yield different proofs"
+    );
 }
 
 // ── Wire round-trip preserves verifiability ──────────────────────────
@@ -129,15 +131,14 @@ fn wire_round_trip_preserves_verification() {
     let claim = json!({ "claim": { "age_years": 30 } });
     let binding_ctx = binding();
 
-    let proof = prove(&ctx, &template, &claim, 100, 50, binding_ctx, entropy())
-        .expect("prove");
+    let proof = prove(&ctx, &template, &claim, 100, 50, binding_ctx, entropy()).expect("prove");
     let bundle = ProofBundle::from_proof(&proof);
     let json = serde_json::to_string(&bundle).expect("serialize");
     let recovered: ProofBundle = serde_json::from_str(&json).expect("deserialize");
     let proof2 = recovered.to_proof().expect("to_proof");
 
     let ctx2 = ProofContext::new(seed());
-    let ok = verify(&ctx2, &template, &claim, &proof2, binding_ctx)
-        .expect("verify deserialized proof");
+    let ok =
+        verify(&ctx2, &template, &claim, &proof2, binding_ctx).expect("verify deserialized proof");
     assert!(ok);
 }

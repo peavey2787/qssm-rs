@@ -12,9 +12,9 @@ use smallvec::SmallVec;
 
 use crate::backend::sensor::{SensorEntropy, SENSOR_INLINE_CAP};
 use crate::backend::time::unix_timestamp_ns;
-use qssm_utils::MIN_RAW_BYTES;
 use crate::HeError;
 use crate::Heartbeat;
+use qssm_utils::MIN_RAW_BYTES;
 
 /// Configuration for how many raw bytes to request from the hardware observatory.
 #[derive(Debug, Clone)]

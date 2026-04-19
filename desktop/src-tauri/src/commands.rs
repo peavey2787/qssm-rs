@@ -9,15 +9,15 @@ use tauri::Manager;
 use bip39::Mnemonic;
 // SmtRoot: local newtype replacing qssm_traits::SmtRoot (crate removed)
 struct SmtRoot(pub [u8; 32]);
-use qssm_gadget::TruthWitness;
-use qssm_gadget::EntropyAnchor;
 use qssm_entropy::HarvestConfig;
+use qssm_gadget::EntropyAnchor;
+use qssm_gadget::TruthWitness;
 use qssm_le::BETA;
 use qssm_le::{encode_rq_coeffs_le, prove_arithmetic, PublicInstance, VerifyingKey, Witness};
+use qssm_templates::{QssmTemplate, QSSM_TEMPLATE_VERSION};
 use qssm_utils::hashing::blake3_hash;
 use rand::{RngCore, SeedableRng};
 use serde::Deserialize;
-use qssm_templates::{QssmTemplate, QSSM_TEMPLATE_VERSION};
 
 /// Application-level harvest gate (moved from `qssm-entropy`; this is UI/policy, not harvesting).
 static HARDWARE_HARVEST_ENABLED: AtomicBool = AtomicBool::new(true);
@@ -198,9 +198,7 @@ impl HandoffAnchorJson {
         match self {
             Self::Kaspa {
                 parent_block_id_hex,
-            } => Ok(EntropyAnchor::AnchorHash(hex_to_32(
-                parent_block_id_hex,
-            )?)),
+            } => Ok(EntropyAnchor::AnchorHash(hex_to_32(parent_block_id_hex)?)),
             Self::StaticRoot { root_hex } => Ok(EntropyAnchor::StaticRoot(hex_to_32(root_hex)?)),
             Self::Timestamp { unix_secs } => Ok(EntropyAnchor::TimestampUnixSecs {
                 unix_secs: *unix_secs,
@@ -239,13 +237,11 @@ impl HandoffFile {
             let label = a.kind_label();
             return Ok((a.to_entropy_anchor()?, label));
         }
-        let hex = self.anchor_hash_hex.as_ref().ok_or_else(|| {
-            "missing entropy anchor: set anchor or anchor_hash_hex".to_string()
-        })?;
-        Ok((
-            EntropyAnchor::AnchorHash(hex_to_32(hex)?),
-            "anchor",
-        ))
+        let hex = self
+            .anchor_hash_hex
+            .as_ref()
+            .ok_or_else(|| "missing entropy anchor: set anchor or anchor_hash_hex".to_string())?;
+        Ok((EntropyAnchor::AnchorHash(hex_to_32(hex)?), "anchor"))
     }
 }
 
@@ -289,7 +285,9 @@ fn prove_lattice_demo(
             "QSSM-SDK-LE-MASK-v1",
             &[&rng_seed, rollup_ctx, &[attempt]],
         );
-        if let Ok((commitment, proof)) = prove_arithmetic(&vk, &public, &witness, rollup_ctx, mask_seed) {
+        if let Ok((commitment, proof)) =
+            prove_arithmetic(&vk, &public, &witness, rollup_ctx, mask_seed)
+        {
             return Ok(json!({
                 "commitment_coeffs_hex": hex::encode(encode_rq_coeffs_le(&commitment.0)),
                 "t_coeffs_hex": hex::encode(encode_rq_coeffs_le(&proof.t)),
@@ -334,17 +332,24 @@ fn run_pipeline(h: HandoffFile) -> Result<serde_json::Value, String> {
         external_entropy,
         external_entropy_included,
     );
-    truth_witness.validate().map_err(|e| format!("TruthWitness: {e}"))?;
+    truth_witness
+        .validate()
+        .map_err(|e| format!("TruthWitness: {e}"))?;
 
-    let sw: Value = serde_json::from_str(&truth_witness.to_prover_json()
-        .map_err(|e| format!("truth witness JSON serialization failed: {e}"))?)
-        .map_err(|e| format!("truth witness JSON serialization failed: {e}"))?;
-    let le_rng_seed = qssm_utils::hashing::hash_domain(
-        "QSSM-SDK-LE-MASK-v1",
-        &[&external_entropy, &rollup_ctx],
-    );
+    let sw: Value = serde_json::from_str(
+        &truth_witness
+            .to_prover_json()
+            .map_err(|e| format!("truth witness JSON serialization failed: {e}"))?,
+    )
+    .map_err(|e| format!("truth witness JSON serialization failed: {e}"))?;
+    let le_rng_seed =
+        qssm_utils::hashing::hash_domain("QSSM-SDK-LE-MASK-v1", &[&external_entropy, &rollup_ctx]);
     let lattice = prove_lattice_demo(truth_witness.digest_coeff_vector, &rollup_ctx, le_rng_seed)?;
-    let qrng = if external_entropy_included { "external" } else { "fallback" };
+    let qrng = if external_entropy_included {
+        "external"
+    } else {
+        "fallback"
+    };
     let l1_sync = match anchor_kind {
         "kaspa" => L1_HUD,
         "static_root" => "Generic mode - static root anchor (no L1)",
@@ -406,7 +411,8 @@ pub fn verify_claim_with_template(
     if template.qssm_template_version() != QSSM_TEMPLATE_VERSION {
         return Err(format!(
             "unsupported qssm_template_version (got {}, expected {})",
-            template.qssm_template_version(), QSSM_TEMPLATE_VERSION
+            template.qssm_template_version(),
+            QSSM_TEMPLATE_VERSION
         ));
     }
     let claim: Value =
@@ -427,7 +433,8 @@ pub fn export_qssm_template(path: String, template_json: String) -> Result<(), S
     if template.qssm_template_version() != QSSM_TEMPLATE_VERSION {
         return Err(format!(
             "unsupported qssm_template_version (got {}, expected {})",
-            template.qssm_template_version(), QSSM_TEMPLATE_VERSION
+            template.qssm_template_version(),
+            QSSM_TEMPLATE_VERSION
         ));
     }
     let pretty = serde_json::to_string_pretty(&template).map_err(|e| e.to_string())?;

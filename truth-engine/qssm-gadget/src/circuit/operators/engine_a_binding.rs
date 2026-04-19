@@ -2,15 +2,17 @@
 
 #![forbid(unsafe_code)]
 
-use super::super::binding_contract::{BindingLabel, BindingPhase, Nomination, PublicBindingContract};
+use super::super::binding_contract::{
+    BindingLabel, BindingPhase, Nomination, PublicBindingContract,
+};
 use super::super::context::{PolyOpContext, PolyOpError};
 use super::super::lattice_polyop::LatticePolyOp;
 use super::super::r1cs::ConstraintSystem;
 use subtle::ConstantTimeEq;
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
-use std::fmt;
 use qssm_utils::hashing::hash_domain;
+use std::fmt;
 
 const DOMAIN_SEAM_COMMIT_V1: &str = "QSSM-SEAM-COMMIT-v1";
 const DOMAIN_SEAM_OPEN_V1: &str = "QSSM-SEAM-OPEN-v1";
@@ -114,7 +116,10 @@ impl LatticePolyOp for EngineABindingOp {
     type Input = EngineABindingInput;
     type Output = EngineABindingOutput;
 
-    fn public_binding_requirements_for_input(&self, input: &Self::Input) -> Result<PublicBindingContract, PolyOpError> {
+    fn public_binding_requirements_for_input(
+        &self,
+        input: &Self::Input,
+    ) -> Result<PublicBindingContract, PolyOpError> {
         let mut c = PublicBindingContract::default();
         c.nominations.push((
             BindingPhase::PublicBinding,
@@ -156,28 +161,44 @@ impl LatticePolyOp for EngineABindingOp {
 
         let zero = [0u8; 32];
         if bool::from(input.state_root.ct_eq(&zero)) {
-            return Err(PolyOpError::Binding("engine_a seam: state_root is all-zero".into()));
+            return Err(PolyOpError::Binding(
+                "engine_a seam: state_root is all-zero".into(),
+            ));
         }
         if bool::from(input.ms_root.ct_eq(&zero)) {
-            return Err(PolyOpError::Binding("engine_a seam: ms_root is all-zero".into()));
+            return Err(PolyOpError::Binding(
+                "engine_a seam: ms_root is all-zero".into(),
+            ));
         }
         if bool::from(input.relation_digest.ct_eq(&zero)) {
-            return Err(PolyOpError::Binding("engine_a seam: relation_digest is all-zero".into()));
+            return Err(PolyOpError::Binding(
+                "engine_a seam: relation_digest is all-zero".into(),
+            ));
         }
         if bool::from(input.device_entropy_link.ct_eq(&zero)) {
-            return Err(PolyOpError::Binding("engine_a seam: device_entropy_link is all-zero".into()));
+            return Err(PolyOpError::Binding(
+                "engine_a seam: device_entropy_link is all-zero".into(),
+            ));
         }
         if bool::from(input.binding_context.ct_eq(&zero)) {
-            return Err(PolyOpError::Binding("engine_a seam: binding_context is all-zero".into()));
+            return Err(PolyOpError::Binding(
+                "engine_a seam: binding_context is all-zero".into(),
+            ));
         }
         if bool::from(input.ms_fs_v2_challenge.ct_eq(&zero)) {
-            return Err(PolyOpError::Binding("engine_a seam: ms_fs_v2_challenge is all-zero".into()));
+            return Err(PolyOpError::Binding(
+                "engine_a seam: ms_fs_v2_challenge is all-zero".into(),
+            ));
         }
         if bool::from(input.truth_digest.ct_eq(&zero)) {
-            return Err(PolyOpError::Binding("engine_a seam: truth_digest is all-zero".into()));
+            return Err(PolyOpError::Binding(
+                "engine_a seam: truth_digest is all-zero".into(),
+            ));
         }
         if bool::from(input.entropy_anchor.ct_eq(&zero)) {
-            return Err(PolyOpError::Binding("engine_a seam: entropy_anchor is all-zero".into()));
+            return Err(PolyOpError::Binding(
+                "engine_a seam: entropy_anchor is all-zero".into(),
+            ));
         }
 
         let recomputed = Self::commitment_digest(&input);

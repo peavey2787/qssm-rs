@@ -4,8 +4,8 @@
 //! parsing across crate boundaries.
 
 use qssm_templates::{
-    resolve, standard_templates, eval_predicate, eval_all_predicates,
-    QssmTemplate, PredicateError, QSSM_TEMPLATE_VERSION,
+    eval_all_predicates, eval_predicate, resolve, standard_templates, PredicateError, QssmTemplate,
+    QSSM_TEMPLATE_VERSION,
 };
 use serde_json::json;
 
@@ -29,7 +29,10 @@ fn resolve_unknown_template_returns_none() {
 #[test]
 fn standard_templates_is_not_empty() {
     let templates = standard_templates();
-    assert!(!templates.is_empty(), "gallery must contain at least one template");
+    assert!(
+        !templates.is_empty(),
+        "gallery must contain at least one template"
+    );
 }
 
 #[test]
@@ -46,7 +49,11 @@ fn all_standard_templates_have_unique_ids() {
 fn all_standard_templates_resolvable() {
     for t in standard_templates() {
         let resolved = resolve(t.id());
-        assert!(resolved.is_some(), "template '{}' must be resolvable by ID", t.id());
+        assert!(
+            resolved.is_some(),
+            "template '{}' must be resolvable by ID",
+            t.id()
+        );
     }
 }
 
@@ -56,7 +63,8 @@ fn all_standard_templates_resolvable() {
 fn valid_claim_passes_predicate() {
     let t = resolve("age-gate-21").unwrap();
     let claim = json!({ "claim": { "age_years": 25 } });
-    t.verify_public_claim(&claim).expect("predicate should pass");
+    t.verify_public_claim(&claim)
+        .expect("predicate should pass");
 }
 
 #[test]
@@ -115,7 +123,10 @@ fn template_json_round_trip() {
     let json_bytes = serde_json::to_vec(&original).expect("serialize");
     let recovered = QssmTemplate::from_json_slice(&json_bytes).expect("deserialize");
     assert_eq!(original.id(), recovered.id());
-    assert_eq!(original.qssm_template_version(), recovered.qssm_template_version());
+    assert_eq!(
+        original.qssm_template_version(),
+        recovered.qssm_template_version()
+    );
 }
 
 // ── eval_predicate / eval_all_predicates direct ──────────────────────
@@ -148,9 +159,8 @@ fn template_used_in_full_prove_verify_pipeline() {
     let binding = blake3_hash(b"TEMPLATE-PIPELINE-BINDING");
     let entropy = blake3_hash(b"TEMPLATE-PIPELINE-ENTROPY");
 
-    let proof = qssm_local_prover::prove(&ctx, &t, &claim, 100, 50, binding, entropy)
-        .expect("prove");
-    let ok = qssm_local_verifier::verify(&ctx, &t, &claim, &proof, binding)
-        .expect("verify");
+    let proof =
+        qssm_local_prover::prove(&ctx, &t, &claim, 100, 50, binding, entropy).expect("prove");
+    let ok = qssm_local_verifier::verify(&ctx, &t, &claim, &proof, binding).expect("verify");
     assert!(ok);
 }

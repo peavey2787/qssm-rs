@@ -4,7 +4,7 @@
 //! cargo run -p zk-examples --bin simple_proof
 //! ```
 
-use qssm_api::{compile, commit, prove, verify, open};
+use qssm_api::{commit, compile, open, prove, verify};
 use zk_examples::hex_short;
 
 fn main() {

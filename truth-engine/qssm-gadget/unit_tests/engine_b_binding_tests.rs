@@ -1,7 +1,7 @@
-use qssm_gadget::PolyOpContext;
 use qssm_gadget::LatticePolyOp;
-use qssm_gadget::{EngineABindingInput, EngineABindingOp};
+use qssm_gadget::PolyOpContext;
 use qssm_gadget::{ConstraintSystem, VarId, VarKind};
+use qssm_gadget::{EngineABindingInput, EngineABindingOp};
 use qssm_ms::{commit, prove, verify};
 use qssm_utils::blake3_hash;
 
@@ -19,14 +19,7 @@ impl ConstraintSystem for NoopConstraintSystem {
 
     fn enforce_xor(&mut self, _x: VarId, _y: VarId, _and_xy: VarId, _z: VarId) {}
 
-    fn enforce_full_adder(
-        &mut self,
-        _a: VarId,
-        _b: VarId,
-        _cin: VarId,
-        _sum: VarId,
-        _cout: VarId,
-    ) {
+    fn enforce_full_adder(&mut self, _a: VarId, _b: VarId, _cin: VarId, _sum: VarId, _cout: VarId) {
     }
 
     fn enforce_equal(&mut self, _a: VarId, _b: VarId) {}
@@ -53,13 +46,7 @@ fn baseline_inputs() -> (EngineABindingInput, u64, u64, Vec<u8>) {
     let proof = prove(value, target, &salts, ledger, &context, &rollup).expect("prove");
 
     assert!(verify(
-        root,
-        &proof,
-        ledger,
-        value,
-        target,
-        &context,
-        &rollup,
+        root, &proof, ledger, value, target, &context, &rollup,
     ));
 
     let mut input = EngineABindingInput {
@@ -127,7 +114,10 @@ fn engine_a_binding_rejects_tweaked_relation_digest() {
     let mut ctx = PolyOpContext::new("engine_a_binding");
     let mut cs = NoopConstraintSystem::default();
     let res = op.synthesize_with_context(tampered, &mut cs, &mut ctx);
-    assert!(res.is_err(), "tampered relation_digest must fail seam verify");
+    assert!(
+        res.is_err(),
+        "tampered relation_digest must fail seam verify"
+    );
 }
 
 #[test]
@@ -140,7 +130,10 @@ fn engine_a_binding_rejects_tweaked_binding_context() {
     let mut ctx = PolyOpContext::new("engine_a_binding");
     let mut cs = NoopConstraintSystem::default();
     let res = op.synthesize_with_context(tampered, &mut cs, &mut ctx);
-    assert!(res.is_err(), "tampered binding_context must fail seam verify");
+    assert!(
+        res.is_err(),
+        "tampered binding_context must fail seam verify"
+    );
 }
 
 #[test]
@@ -153,7 +146,10 @@ fn engine_a_binding_rejects_tweaked_ms_fs_v2_challenge() {
     let mut ctx = PolyOpContext::new("engine_a_binding");
     let mut cs = NoopConstraintSystem::default();
     let res = op.synthesize_with_context(tampered, &mut cs, &mut ctx);
-    assert!(res.is_err(), "tampered ms_fs_v2_challenge must fail seam verify");
+    assert!(
+        res.is_err(),
+        "tampered ms_fs_v2_challenge must fail seam verify"
+    );
 }
 
 #[test]
@@ -166,7 +162,10 @@ fn engine_a_binding_rejects_wrong_claimed_seam_commitment() {
     let mut ctx = PolyOpContext::new("engine_a_binding");
     let mut cs = NoopConstraintSystem::default();
     let res = op.synthesize_with_context(tampered, &mut cs, &mut ctx);
-    assert!(res.is_err(), "tampered claimed_seam_commitment must fail commit-then-open");
+    assert!(
+        res.is_err(),
+        "tampered claimed_seam_commitment must fail commit-then-open"
+    );
 }
 
 #[test]
@@ -215,15 +214,16 @@ fn byte_swap_within_field_detected() {
     let (input, _value, _target, _context) = baseline_inputs();
     let mut tampered = input.clone();
     // Swap first two bytes of state_root (not a bit-flip — a positional swap).
-    let tmp = tampered.state_root[0];
-    tampered.state_root[0] = tampered.state_root[1];
-    tampered.state_root[1] = tmp;
+    tampered.state_root.swap(0, 1);
 
     let op = EngineABindingOp;
     let mut ctx = PolyOpContext::new("engine_a_binding");
     let mut cs = NoopConstraintSystem::default();
     let res = op.synthesize_with_context(tampered, &mut cs, &mut ctx);
-    assert!(res.is_err(), "byte-swap within state_root must fail seam verify");
+    assert!(
+        res.is_err(),
+        "byte-swap within state_root must fail seam verify"
+    );
 }
 
 #[test]
@@ -236,7 +236,10 @@ fn engine_a_binding_rejects_all_zero_device_entropy_link() {
     let mut ctx = PolyOpContext::new("engine_a_binding");
     let mut cs = NoopConstraintSystem::default();
     let res = op.synthesize_with_context(tampered, &mut cs, &mut ctx);
-    assert!(res.is_err(), "all-zero device_entropy_link must be rejected");
+    assert!(
+        res.is_err(),
+        "all-zero device_entropy_link must be rejected"
+    );
 }
 
 #[test]
@@ -262,7 +265,10 @@ fn engine_a_binding_rejects_tweaked_entropy_anchor() {
     let mut ctx = PolyOpContext::new("engine_a_binding");
     let mut cs = NoopConstraintSystem::default();
     let res = op.synthesize_with_context(tampered, &mut cs, &mut ctx);
-    assert!(res.is_err(), "tampered entropy_anchor must fail seam verify");
+    assert!(
+        res.is_err(),
+        "tampered entropy_anchor must fail seam verify"
+    );
 }
 
 #[test]

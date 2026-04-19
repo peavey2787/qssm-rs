@@ -133,7 +133,7 @@ fn main() {
     // 1. Compile a template into an opaque blueprint (byte array).
     let blueprint = compile("age-gate-21").expect("unknown template");
 
-    // 2. Commit a secret for later reveal.
+    // 2. Commit to the secret so the prover cannot change it later.
     let secret = b"my-secret";
     let salt = [1u8; 32];
     let commitment = commit(secret, &salt);
@@ -144,8 +144,9 @@ fn main() {
 
     // 4. Verify the proof.
     assert!(verify(&proof, &blueprint));
-
-    // 5. Reveal — reconstruct the commitment and compare.
+    
+    // 5. (Optional) Reveal — only for debugging or demonstration.
+    //    Real zero-knowledge flows NEVER call this.
     assert_eq!(open(secret, &salt), commitment);
 }
 ```
