@@ -26,14 +26,19 @@ Some exploratory L1/L2 application notes/specs remain under `docs/02-protocol-sp
 
 ### Features
 
-- Post‑quantum (lattice‑based)
-- Deterministic proving (no randomness)
-- Prover‑network‑less (no GPU farms, no prover clusters)
-- Stateless verification (no ledger replay, no history)
-- Mobile‑class performance targets ( < 10ms )
-- Template‑driven truth predicates
-- Fully local prover + verifier
-- Six‑layer frozen architecture
+- **Two proving engines, unified API**
+  - **QSSM‑LE (Engine A)** — a Lyubashevsky‑style lattice NIZK using masking, blinding, prover randomness, and rejection sampling.
+  - **QSSM‑MS (Engine B)** — a deterministic, hash‑native predicate engine with no prover randomness.
+  - The public API exposes a single proving interface, but the underlying engines differ by design.
+
+- **Post‑quantum (lattice‑based)**
+- **Prover‑network‑less** (no GPU farms, no prover clusters)
+- **Stateless verification** (no ledger replay, no history)
+- **Mobile‑class performance targets** (< 10ms)
+- **Template‑driven truth predicates**
+- **Fully local prover + verifier**
+- **Six‑layer frozen architecture**
+
 
 ### Non-goals
 

@@ -16,7 +16,7 @@ pub(crate) fn verify_path_to_root(
     let mut acc = *leaf;
     let mut idx: usize = index;
     for sib in proof {
-        let (left, right) = if idx.is_multiple_of(2) {
+        let (left, right) = if idx % 2 == 0 {
             (&acc, sib)
         } else {
             (sib, &acc)
