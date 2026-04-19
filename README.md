@@ -24,6 +24,30 @@ Contributing guide: [CONTRIBUTING.md](CONTRIBUTING.md)
 **Note:**
 Some exploratory L1/L2 application notes/specs remain under `docs/02-protocol-specs/l1-l2`, but they are not the product boundary for this repository and are not the main entry point for QSSM.
 
+## Distribution Targets
+
+QSSM ships with **three integration surfaces**, depending on your environment:
+
+### 1. Rust (native)
+The full Truth Engine is available as a set of frozen Rust crates under `truth-engine/` and published individually on crates.io.  
+Use this if you are embedding QSSM directly into a Rust application, service, or SDK.
+
+### 2. CLI binary (`qssm-cli`)
+A standalone command‑line tool for proving and verifying templates locally.  
+Ideal for operators, auditors, CI pipelines, and non‑Rust integrations.  
+Download from the Releases page (`qssm-cli.exe`).
+
+### 3. WASM package (`qssm-core/pkg/`)
+A WebAssembly build of the Truth Engine core, generated via `wasm-pack`.  
+Use this if you are integrating QSSM into a browser, Node.js, or TypeScript environment.  
+The WASM package includes:
+
+- `qssm_core_bg.wasm`
+- `qssm_core.js`
+- `qssm_core_bg.js`
+- TypeScript definitions
+- `package.json`
+
 ### Features
 
 - **Two proving engines, unified API**
