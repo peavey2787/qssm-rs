@@ -413,13 +413,3 @@ Build desktop app:
 ```powershell
 npm --prefix desktop run tauri:build
 ```
-
-## If a command from an old doc fails
-
-Check these first:
-
-- old docs may still say `crates/...`; current paths are `truth-engine/...` and `desktop/...`
-- old docs may still say `qssm-examples`; current package name is `zk-examples`
-- old docs may still mention `millionaires_duel`; that binary is not currently defined in `truth-engine/examples/Cargo.toml`
-- the dedicated integration package is `qssm-integration`
-- the desktop app is `desktop/`, not `crates/qssm-desktop`

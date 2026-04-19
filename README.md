@@ -156,6 +156,13 @@ fn main() {
 }
 ```
 
+### Developer Guide
+
+For all build, test, integration, and desktop-app commands, see:
+
+➡️ [QSSM Developer How‑To](how-to.md)
+
+
 ## License and sovereignty
 
 This project is licensed under the **Business Source License 1.1 (BSL-1.1)**. See [`LICENSE`](LICENSE) for the full text.
