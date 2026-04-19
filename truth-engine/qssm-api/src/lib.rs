@@ -187,7 +187,9 @@ fn resolve_template_input(raw: &str) -> Result<qssm_templates::QssmTemplate, Str
         .map_err(|_| format!("unknown template or invalid template JSON: {raw}"))
 }
 
-fn template_from_blueprint(wire_bp: &WireBlueprint) -> Result<qssm_templates::QssmTemplate, String> {
+fn template_from_blueprint(
+    wire_bp: &WireBlueprint,
+) -> Result<qssm_templates::QssmTemplate, String> {
     if !wire_bp.template_json.trim().is_empty() {
         return qssm_templates::QssmTemplate::from_json_slice(wire_bp.template_json.as_bytes())
             .map_err(|e| format!("invalid blueprint template: {e}"));
@@ -286,7 +288,11 @@ mod tests {
         let claim = br#"{"claim":{"age_years":21}}"#;
         let salt = [1u8; 32];
         let proof = prove(claim, &salt, &blueprint);
-        assert!(proof.is_ok(), "age=21 should pass age-gate-21: {}", proof.unwrap_err());
+        assert!(
+            proof.is_ok(),
+            "age=21 should pass age-gate-21: {}",
+            proof.unwrap_err()
+        );
         assert!(verify(&proof.unwrap(), &blueprint));
     }
 
@@ -324,7 +330,8 @@ mod tests {
                 }
             ]
         });
-        let blueprint = compile(&template.to_string()).expect("custom template JSON should compile");
+        let blueprint =
+            compile(&template.to_string()).expect("custom template JSON should compile");
         let proof = prove(br#"{"claim":{"age_years":30}}"#, &[7u8; 32], &blueprint)
             .expect("custom template blueprint should prove");
         assert!(verify(&proof, &blueprint));

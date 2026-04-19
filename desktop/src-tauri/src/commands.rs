@@ -58,7 +58,10 @@ pub fn proof_of_age_template_json() -> Result<String, String> {
 }
 
 #[tauri::command]
-pub fn verify_claim_with_template(template_json: String, claim_json: String) -> Result<String, String> {
+pub fn verify_claim_with_template(
+    template_json: String,
+    claim_json: String,
+) -> Result<String, String> {
     let template = QssmTemplate::from_json_slice(template_json.as_bytes())
         .map_err(|error| format!("invalid .qssm template: {error}"))?;
     let claim: serde_json::Value = serde_json::from_str(&claim_json)
@@ -169,7 +172,11 @@ mod tests {
     fn test_prove_value_meets_min() {
         let bp = compile_age_blueprint();
         let proof = prove_claim(CLAIM_21.into(), SALT_HEX.into(), bp);
-        assert!(proof.is_ok(), "age=21 must pass age-gate-21: {}", proof.unwrap_err());
+        assert!(
+            proof.is_ok(),
+            "age=21 must pass age-gate-21: {}",
+            proof.unwrap_err()
+        );
     }
 
     #[test]
@@ -240,7 +247,10 @@ mod tests {
         let json = age_template_json();
         let result = verify_claim_with_template(json, CLAIM_21.into()).unwrap();
         let parsed: serde_json::Value = serde_json::from_str(&result).unwrap();
-        assert_eq!(parsed["ok"], true, "age=21 must pass age-gate-21 predicate check");
+        assert_eq!(
+            parsed["ok"], true,
+            "age=21 must pass age-gate-21 predicate check"
+        );
     }
 
     // ── import / export round-trip ──
