@@ -15,16 +15,16 @@ use qssm_proofs::reduction_rejection::RejectionSamplingClaim;
 use qssm_proofs::reduction_witness_hiding::WitnessHidingClaim;
 
 // ---------------------------------------------------------------------------
-// Frozen parameter constants (must match qssm-le exactly)
+// Canonical LE Set B constants (must match qssm-le exactly)
 // ---------------------------------------------------------------------------
 
 const EXPECTED_N: usize = 256;
 const EXPECTED_Q: u32 = 8_380_417;
 const EXPECTED_BETA: u32 = 8;
-const EXPECTED_ETA: u32 = 2048;
-const EXPECTED_GAMMA: u32 = 4096;
-const EXPECTED_C_POLY_SIZE: usize = 64;
-const EXPECTED_C_POLY_SPAN: i32 = 16;
+const EXPECTED_ETA: u32 = 196_608;
+const EXPECTED_GAMMA: u32 = 199_680;
+const EXPECTED_C_POLY_SIZE: usize = 48;
+const EXPECTED_C_POLY_SPAN: i32 = 8;
 
 #[test]
 fn upstream_constants_match_expected() {

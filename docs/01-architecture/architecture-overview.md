@@ -2,6 +2,9 @@
 
 * [README](../../README.md) — Project home
 * **Desktop helper (primary user entry):** [../../desktop/](../../desktop/) — Tauri app: handoff JSON → entropy collection → witness packaging → proof scaffolding
+* [MS redesign options](./ms_redesign_options.md)
+* [MS v2 observable boundary contract](./ms_v2_observable_boundary_contract.md)
+* [LE parameter analysis](./le_parameter_analysis.md)
 * [QSSM-LE — Engine A](../02-protocol-specs/qssm-le-engine-a.md)
 * [QSSM-MS — Engine B](../02-protocol-specs/qssm-ms-engine-b.md)
 * [BLAKE3-lattice gadget spec](../02-protocol-specs/blake3-lattice-gadget-spec.md)
@@ -184,6 +187,24 @@ If you need portable, post-quantum, stateless proofs for arithmetic, comparisons
 If you need a concrete sovereign system that uses that stack for fair ordering and anchored execution, that system is **MSSQ**.
 
 The repo therefore represents **Applied Epistemic Engineering through running code**: build the truth engine first, then build systems that consume it.
+
+---
+
+## Security Claims Snapshot
+
+The current formal status and the near-term redesign targets are:
+
+| Component | Property | Status |
+| --- | --- | --- |
+| **MS (current)** | Zero-knowledge under the frozen hidden-value game | **Not satisfied** |
+| **MS (v2 Option B transcript format)** | Canonical predicate-only transcript surface | **Satisfied** |
+| **MS (v2 Option B)** | Zero-knowledge | **Conditional** |
+| **LE (Set B current params)** | Witness-hiding | **Satisfied** |
+| **LE (Set B current params)** | HVZK parameter template | **Satisfied** |
+| **LE (Set B current params)** | ZK in the ROM | **Conditional** |
+| **QSSM (composed Option B + Set B)** | End-to-end zero-knowledge | **Conditional** |
+
+The supporting engineering tracks are documented in [ms_redesign_options.md](./ms_redesign_options.md) and [le_parameter_analysis.md](./le_parameter_analysis.md).
 
 ---
 

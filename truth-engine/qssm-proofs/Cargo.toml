@@ -6,9 +6,15 @@ license.workspace = true
 repository.workspace = true
 description = "Formal invariants, reductions, and hardness gates for QSSM Engine A/B binding."
 
+[features]
+default = []
+audit-mode = []
+
 [dependencies]
+blake3.workspace = true
 qssm-gadget.workspace = true
 qssm-le.workspace = true
+qssm-ms.workspace = true
 qssm-utils.workspace = true
 serde.workspace = true
 serde_json.workspace = true

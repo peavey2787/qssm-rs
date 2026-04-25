@@ -9,11 +9,22 @@ map of what lives here and what must not move.
 
 - Builds a 128-leaf Ghost-Mirror commitment from deterministic salts and
   binding entropy.
-- Produces succinct proofs of the public predicate `value > target`.
-- Verifies Merkle opening, Fiat-Shamir binding, and the crossing predicate.
+- Produces succinct proofs of the public predicate `value > target` on the
+  legacy verifier-known-value flow.
+- Exposes the canonical MS v2 predicate-only commitment proof selected for the
+  redesign path.
+- Verifies Merkle opening, Fiat-Shamir binding, and the crossing predicate on
+  the legacy flow, plus the commitment-bound predicate-only verifier and
+  programmable-oracle simulator for MS v2.
 
-This is not a general-purpose proving system and it is not zero-knowledge.
-Both `value` and `target` are verifier-known inputs.
+This is not a general-purpose proving system.
+
+The legacy `commit` / `prove` / `verify` flow is not zero-knowledge; both
+`value` and `target` are verifier-known inputs there.
+
+The crate now also exposes the canonical MS v2 predicate-only commitment proof
+for the redesign path. That v2 surface has a real witness relation, prover,
+verifier, and separate programmable-oracle simulator.
 
 ## Public Surface
 
@@ -22,6 +33,15 @@ Primary types and functions are re-exported from [src/lib.rs](src/lib.rs):
 - `commit(seed, binding_entropy)`
 - `prove(value, target, salts, binding_entropy, context, binding_context)`
 - `verify(root, proof, binding_entropy, value, target, context, binding_context)`
+- `PredicateOnlyStatementV2`
+- `PredicateOnlyProofV2`
+- `ValueCommitmentV2`
+- `PredicateWitnessV2`
+- `commit_value_v2(value, commitment_seed, binding_entropy)`
+- `prove_predicate_only_v2(statement, witness, prover_seed)`
+- `verify_predicate_only_v2(statement, proof)`
+- `simulate_predicate_only_v2(statement, simulator_seed)`
+- `verify_predicate_only_v2_with_programming(statement, simulation)`
 - `Root`
 - `GhostMirrorProof`
 - `Salts`

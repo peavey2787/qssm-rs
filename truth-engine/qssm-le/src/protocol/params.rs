@@ -12,13 +12,13 @@ pub const PUBLIC_DIGEST_COEFFS: usize = 64;
 /// Maximum per-coefficient value for digest-to-coefficient embedding (4-bit lanes).
 pub const PUBLIC_DIGEST_COEFF_MAX: u32 = 0x0f;
 
-/// Masking vector \(\ell_\infty\) bound (Lyubashevsky-style; rejection if exceeded).
-pub const ETA: u32 = 2_048;
+/// Masking vector \(\ell_\infty\) bound (proof-safe Set B for the formal HVZK route).
+pub const ETA: u32 = 196_608;
 /// Verifier accepts responses with \(\|z\|_\infty \le \gamma\) (centered mod \(q\)).
-pub const GAMMA: u32 = 4_096;
+pub const GAMMA: u32 = 199_680;
 /// Polynomial challenge coefficient count.
-pub const C_POLY_SIZE: usize = 64;
+pub const C_POLY_SIZE: usize = 48;
 /// Polynomial challenge coefficient span per lane \([-C\_POLY\_SPAN, C\_POLY\_SPAN]\).
-pub const C_POLY_SPAN: i32 = 16;
+pub const C_POLY_SPAN: i32 = 8;
 /// Prover resampling attempts before giving up.
 pub const MAX_PROVER_ATTEMPTS: u32 = 65_536;

@@ -10,9 +10,17 @@ mod commitment;
 mod core;
 mod error;
 mod transcript;
+mod v2;
 
 pub use commitment::leaves::Salts;
 pub use error::MsError;
+pub use v2::{
+    commit_value_v2, predicate_relation_holds_v2, prove_predicate_only_v2,
+    simulate_predicate_only_v2, verify_predicate_only_v2,
+    verify_predicate_only_v2_with_programming, BitnessProofV2, ComparisonClauseProofV2,
+    ComparisonProofV2, EqualitySubproofV2, PredicateOnlyProofV2, PredicateOnlySimulationV2,
+    PredicateOnlyStatementV2, PredicateWitnessV2, ProgrammedOracleQueryV2, ValueCommitmentV2,
+};
 
 use commitment::leaves::{build_leaves, derive_salts, ms_leaf};
 use commitment::tree::verify_path_to_root;
@@ -257,4 +265,47 @@ pub fn verify(
         return false;
     }
     highest_differing_bit(a_p, b_p) == Some(proof.k)
+}
+
+#[cfg(test)]
+mod predicate_only_v2_tests {
+    use super::*;
+
+    #[test]
+    fn predicate_only_v2_roundtrip() {
+        let binding_entropy = [7u8; 32];
+        let binding_context = [9u8; 32];
+        let context = b"age_gate_fast";
+        let (commitment, witness) =
+            commit_value_v2(u64::MAX, [3u8; 32], binding_entropy).unwrap();
+        let statement = PredicateOnlyStatementV2::new(
+            commitment,
+            u64::MAX - 1,
+            binding_entropy,
+            binding_context,
+            context.to_vec(),
+        )
+        ;
+        let proof = prove_predicate_only_v2(&statement, &witness, [4u8; 32]).unwrap();
+        assert!(verify_predicate_only_v2(&statement, &proof).unwrap());
+    }
+
+    #[test]
+    fn predicate_only_v2_simulator_requires_programmed_oracle() {
+        let binding_entropy = [7u8; 32];
+        let binding_context = [9u8; 32];
+        let context = b"age_gate_fast";
+        let (commitment, _witness) =
+            commit_value_v2(u64::MAX, [3u8; 32], binding_entropy).unwrap();
+        let statement = PredicateOnlyStatementV2::new(
+            commitment,
+            u64::MAX - 1,
+            binding_entropy,
+            binding_context,
+            context.to_vec(),
+        );
+        let simulation = simulate_predicate_only_v2(&statement, [5u8; 32]).unwrap();
+        assert!(verify_predicate_only_v2_with_programming(&statement, &simulation).unwrap());
+        assert!(verify_predicate_only_v2(&statement, simulation.proof()).is_err());
+    }
 }

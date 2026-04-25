@@ -6,6 +6,7 @@ pub mod reduction_lattice;
 pub mod reduction_ms;
 pub mod reduction_rejection;
 pub mod reduction_witness_hiding;
+pub mod reduction_zk;
 
 use qssm_gadget::DIGEST_COEFF_VECTOR_SIZE;
 use qssm_le::{BETA, C_POLY_SIZE, N, Q};
@@ -25,6 +26,8 @@ pub enum ClaimType {
     Soundness,
     /// Formal reduction showing cross-engine forgery implies hash collision.
     Binding,
+    /// Simulation-based transcript lemma or theorem scaffold for zero-knowledge.
+    ZeroKnowledge,
     /// Bounded-leakage argument. Explicitly NOT full HVZK simulation.
     WitnessHiding,
     /// Numeric bound from a cited model; heuristic until backed by external estimator.
@@ -102,7 +105,7 @@ pub enum HardnessError {
 
 const TARGET_BITS: f64 = 128.0;
 pub const CI_FLOOR_BITS: f64 = 112.0;
-pub const MIN_C_POLY_SIZE: usize = 64;
+pub const MIN_C_POLY_SIZE: usize = 48;
 pub const MIN_DIGEST_COEFF_VECTOR_SIZE: usize = 64;
 
 // ---------------------------------------------------------------------------
@@ -512,5 +515,33 @@ mod tests {
         assert!((eff.effective_classical_bits - eff.formal_classical_bits).abs() < 0.001);
 
         let _ = std::fs::remove_file(&path);
+    }
+}
+
+
+// ---------------------------------------------------------------------------
+// Audit-mode feature gate: runs only when `cargo test --features audit-mode`
+// ---------------------------------------------------------------------------
+
+#[cfg(all(test, feature = "audit-mode"))]
+mod audit_mode_tests {
+    use crate::reduction_zk::{run_audit_validation, PROOF_STRUCTURE_VERSION};
+
+    #[test]
+    fn audit_mode_validates_simulator_independence_and_lemma_closure() {
+        let checklist = run_audit_validation()
+            .expect("audit validation must succeed");
+        assert!(
+            checklist.all_passed,
+            "Audit-mode validation failed: not all checklist items passed"
+        );
+        assert_eq!(checklist.version, PROOF_STRUCTURE_VERSION);
+        for item in &checklist.items {
+            assert!(
+                item.passed,
+                "Audit-mode item {} failed: {}",
+                item.id, item.detail
+            );
+        }
     }
 }
