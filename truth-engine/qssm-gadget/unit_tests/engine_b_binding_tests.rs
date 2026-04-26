@@ -2,7 +2,8 @@ use qssm_gadget::LatticePolyOp;
 use qssm_gadget::PolyOpContext;
 use qssm_gadget::{ConstraintSystem, VarId, VarKind};
 use qssm_gadget::{EngineABindingInput, EngineABindingOp};
-use qssm_ms::{commit, prove, verify};
+use qssm_ms::{commit_value_v2, prove_predicate_only_v2, PredicateOnlyStatementV2};
+use qssm_utils::hashing::{hash_domain, DOMAIN_MS};
 use qssm_utils::blake3_hash;
 
 #[derive(Debug, Default)]
@@ -25,37 +26,51 @@ impl ConstraintSystem for NoopConstraintSystem {
     fn enforce_equal(&mut self, _a: VarId, _b: VarId) {}
 }
 
-fn relation_digest(value: u64, target: u64, challenge: [u8; 32]) -> [u8; 32] {
-    let mut v = Vec::with_capacity(48);
-    v.extend_from_slice(&value.to_le_bytes());
-    v.extend_from_slice(&target.to_le_bytes());
-    v.extend_from_slice(&challenge);
-    blake3_hash(&v)
+fn bitness_global_challenges_digest(challenges: &[[u8; 32]]) -> [u8; 32] {
+    let len_bytes = (challenges.len() as u32).to_le_bytes();
+    let mut chunks: Vec<&[u8]> = Vec::with_capacity(challenges.len() + 1);
+    chunks.push(&len_bytes);
+    for challenge in challenges {
+        chunks.push(challenge.as_slice());
+    }
+    hash_domain(DOMAIN_MS, &chunks)
 }
 
 fn baseline_inputs() -> (EngineABindingInput, u64, u64, Vec<u8>) {
     let seed = [3u8; 32];
-    let ledger = [4u8; 32];
+    let binding_entropy = [4u8; 32];
     let rollup = [5u8; 32];
     let state_root = blake3_hash(b"state-root");
-    let value = 100u64;
-    let target = 50u64;
+    let value = u64::MAX;
+    let target = u64::MAX - 1;
     let context = b"ctx".to_vec();
 
-    let (root, salts) = commit(seed, ledger).expect("commit");
-    let proof = prove(value, target, &salts, ledger, &context, &rollup).expect("prove");
-
-    assert!(verify(
-        root, &proof, ledger, value, target, &context, &rollup,
-    ));
+    let (commitment, witness) =
+        commit_value_v2(value, seed, binding_entropy).expect("commit v2");
+    let statement = PredicateOnlyStatementV2::new(
+        commitment,
+        target,
+        binding_entropy,
+        rollup,
+        context.clone(),
+    );
+    let proof = prove_predicate_only_v2(&statement, &witness, [7u8; 32]).expect("prove v2");
+    let bitness = proof
+        .bitness_global_challenges()
+        .expect("bitness global challenges");
+    let comparison = proof
+        .comparison_global_challenge()
+        .expect("comparison global challenge");
 
     let mut input = EngineABindingInput {
         state_root,
-        ms_root: *root.as_bytes(),
-        relation_digest: relation_digest(value, target, *proof.challenge()),
-        ms_fs_v2_challenge: *proof.challenge(),
+        ms_v2_statement_digest: *proof.statement_digest(),
+        ms_v2_result_bit: u8::from(proof.result()),
+        ms_v2_bitness_global_challenges_digest: bitness_global_challenges_digest(&bitness),
+        ms_v2_comparison_global_challenge: comparison,
+        ms_v2_transcript_digest: proof.transcript_digest(),
         binding_context: rollup,
-        device_entropy_link: ledger,
+        device_entropy_link: binding_entropy,
         truth_digest: blake3_hash(b"truth-digest-baseline"),
         entropy_anchor: blake3_hash(b"entropy-anchor-baseline"),
         claimed_seam_commitment: [0u8; 32],
@@ -95,20 +110,20 @@ fn engine_a_binding_rejects_tweaked_state_root() {
 fn engine_a_binding_rejects_tweaked_ms_root() {
     let (input, _value, _target, _context) = baseline_inputs();
     let mut tampered = input.clone();
-    tampered.ms_root[0] ^= 0x01;
+    tampered.ms_v2_statement_digest[0] ^= 0x01;
 
     let op = EngineABindingOp;
     let mut ctx = PolyOpContext::new("engine_a_binding");
     let mut cs = NoopConstraintSystem::default();
     let res = op.synthesize_with_context(tampered, &mut cs, &mut ctx);
-    assert!(res.is_err(), "tampered ms_root must fail seam verify");
+    assert!(res.is_err(), "tampered ms_v2_statement_digest must fail seam verify");
 }
 
 #[test]
-fn engine_a_binding_rejects_tweaked_relation_digest() {
+fn engine_a_binding_rejects_tweaked_result_bit() {
     let (input, _value, _target, _context) = baseline_inputs();
     let mut tampered = input.clone();
-    tampered.relation_digest[0] ^= 0x01;
+    tampered.ms_v2_result_bit ^= 0x01;
 
     let op = EngineABindingOp;
     let mut ctx = PolyOpContext::new("engine_a_binding");
@@ -116,7 +131,7 @@ fn engine_a_binding_rejects_tweaked_relation_digest() {
     let res = op.synthesize_with_context(tampered, &mut cs, &mut ctx);
     assert!(
         res.is_err(),
-        "tampered relation_digest must fail seam verify"
+        "tampered ms_v2_result_bit must fail seam verify"
     );
 }
 
@@ -137,10 +152,10 @@ fn engine_a_binding_rejects_tweaked_binding_context() {
 }
 
 #[test]
-fn engine_a_binding_rejects_tweaked_ms_fs_v2_challenge() {
+fn engine_a_binding_rejects_tweaked_ms_v2_bitness_global_challenges_digest() {
     let (input, _value, _target, _context) = baseline_inputs();
     let mut tampered = input.clone();
-    tampered.ms_fs_v2_challenge[0] ^= 0x01;
+    tampered.ms_v2_bitness_global_challenges_digest[0] ^= 0x01;
 
     let op = EngineABindingOp;
     let mut ctx = PolyOpContext::new("engine_a_binding");
@@ -148,7 +163,7 @@ fn engine_a_binding_rejects_tweaked_ms_fs_v2_challenge() {
     let res = op.synthesize_with_context(tampered, &mut cs, &mut ctx);
     assert!(
         res.is_err(),
-        "tampered ms_fs_v2_challenge must fail seam verify"
+        "tampered ms_v2_bitness_global_challenges_digest must fail seam verify"
     );
 }
 
@@ -198,13 +213,13 @@ fn engine_a_binding_rejects_all_zero_state_root() {
 fn engine_a_binding_rejects_all_zero_ms_root() {
     let (input, _value, _target, _context) = baseline_inputs();
     let mut tampered = input.clone();
-    tampered.ms_root = [0u8; 32];
+    tampered.ms_v2_statement_digest = [0u8; 32];
 
     let op = EngineABindingOp;
     let mut ctx = PolyOpContext::new("engine_a_binding");
     let mut cs = NoopConstraintSystem::default();
     let res = op.synthesize_with_context(tampered, &mut cs, &mut ctx);
-    assert!(res.is_err(), "all-zero ms_root must be rejected");
+    assert!(res.is_err(), "all-zero ms_v2_statement_digest must be rejected");
 }
 
 // ── Gap 3: byte-swap within a single field must be detected ───────────────
@@ -298,16 +313,74 @@ fn engine_a_binding_rejects_all_zero_entropy_anchor() {
 }
 
 #[test]
-fn engine_a_binding_rejects_all_zero_ms_fs_v2_challenge() {
+fn engine_a_binding_rejects_all_zero_ms_v2_bitness_global_challenges_digest() {
     let (input, _value, _target, _context) = baseline_inputs();
     let mut tampered = input.clone();
-    tampered.ms_fs_v2_challenge = [0u8; 32];
+    tampered.ms_v2_bitness_global_challenges_digest = [0u8; 32];
 
     let op = EngineABindingOp;
     let mut ctx = PolyOpContext::new("engine_a_binding");
     let mut cs = NoopConstraintSystem::default();
     let res = op.synthesize_with_context(tampered, &mut cs, &mut ctx);
-    assert!(res.is_err(), "all-zero ms_fs_v2_challenge must be rejected");
+    assert!(
+        res.is_err(),
+        "all-zero ms_v2_bitness_global_challenges_digest must be rejected"
+    );
+}
+
+#[test]
+fn seam_digest_changes_when_statement_digest_changes() {
+    let (input, _value, _target, _context) = baseline_inputs();
+    let mut tampered = input.clone();
+    tampered.ms_v2_statement_digest[0] ^= 0x01;
+    assert_ne!(
+        EngineABindingOp::commitment_digest(&input),
+        EngineABindingOp::commitment_digest(&tampered)
+    );
+}
+
+#[test]
+fn seam_digest_changes_when_result_bit_changes() {
+    let (input, _value, _target, _context) = baseline_inputs();
+    let mut tampered = input.clone();
+    tampered.ms_v2_result_bit ^= 0x01;
+    assert_ne!(
+        EngineABindingOp::commitment_digest(&input),
+        EngineABindingOp::commitment_digest(&tampered)
+    );
+}
+
+#[test]
+fn seam_digest_changes_when_any_bitness_global_challenge_changes() {
+    let (input, _value, _target, _context) = baseline_inputs();
+    let mut tampered = input.clone();
+    tampered.ms_v2_bitness_global_challenges_digest[0] ^= 0x01;
+    assert_ne!(
+        EngineABindingOp::commitment_digest(&input),
+        EngineABindingOp::commitment_digest(&tampered)
+    );
+}
+
+#[test]
+fn seam_digest_changes_when_comparison_global_challenge_changes() {
+    let (input, _value, _target, _context) = baseline_inputs();
+    let mut tampered = input.clone();
+    tampered.ms_v2_comparison_global_challenge[0] ^= 0x01;
+    assert_ne!(
+        EngineABindingOp::commitment_digest(&input),
+        EngineABindingOp::commitment_digest(&tampered)
+    );
+}
+
+#[test]
+fn seam_digest_changes_when_transcript_digest_changes() {
+    let (input, _value, _target, _context) = baseline_inputs();
+    let mut tampered = input.clone();
+    tampered.ms_v2_transcript_digest[0] ^= 0x01;
+    assert_ne!(
+        EngineABindingOp::commitment_digest(&input),
+        EngineABindingOp::commitment_digest(&tampered)
+    );
 }
 
 #[test]

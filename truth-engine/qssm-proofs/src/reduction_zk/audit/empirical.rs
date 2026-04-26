@@ -44,7 +44,7 @@ pub fn run_ms_v2_empirical_alignment(
                 statement.binding_context.as_slice(),
             ],
         );
-        let sim = simulate_ms_v2_transcript(&public_input, simulator_seed)?;
+        let sim = simulate_ms_v2_transcript(SimulatorOnly::new(&public_input), simulator_seed)?;
         let real_obs = observe_real_ms_v2_transcript(&real);
         let sim_obs = observe_simulated_ms_v2_transcript(&sim);
         let real_bitness_bytes = flatten_digest_bytes(&real_obs.bitness_global_challenges);
@@ -186,7 +186,7 @@ pub fn run_ms_v2_empirical_alignment(
                 "bitness_challenge_nibble",
             ),
             notes: vec![
-                "Structure layer probes witness-correlated hidden features against the frozen observable surface to catch residual leakage patterns even when the classical legacy variables k, n, and bit_at_k are absent.".to_string(),
+                "Structure layer probes witness-correlated hidden features against the frozen observable surface to catch residual leakage patterns even when the classical variables k, n, and bit_at_k are absent.".to_string(),
             ],
         },
         simulator_gap_layer: MsV2SimulatorGapLayer {

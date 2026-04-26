@@ -62,9 +62,9 @@ pub use circuit::operators::{
     TruthLimbV2Params, TruthLimbV2Stage,
 };
 
-// circuit::operators::ms_ghost_mirror (v1.1.0 — post-freeze adapter)
-pub use circuit::operators::ms_ghost_mirror::{
-    MsGhostMirrorInput, MsGhostMirrorOp, MsGhostMirrorOutput,
+// circuit::operators::ms_predicate_v2_bridge
+pub use circuit::operators::ms_predicate_v2_bridge::{
+    MsPredicateOnlyV2BridgeInput, MsPredicateOnlyV2BridgeOp, MsPredicateOnlyV2BridgeOutput,
 };
 
 // primitives::entropy

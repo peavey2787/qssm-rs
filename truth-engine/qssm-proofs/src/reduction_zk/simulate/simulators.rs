@@ -89,8 +89,9 @@ pub fn attempt_ms_witness_free_simulator(
 
 #[must_use]
 pub fn attempt_ms_v2_witness_free_simulator(
-    public_input: &MsHiddenValuePublicInput,
+    public_input: SimulatorOnly<&MsHiddenValuePublicInput>,
 ) -> MsV2WitnessFreeSimulatorAttempt {
+    let public_input = public_input.into_inner();
     let statement = match ms_v2_statement_from_public_input(public_input) {
         Ok(statement) => statement,
         Err(error) => {
@@ -213,8 +214,9 @@ pub fn attempt_ms_v2_witness_free_simulator(
 }
 
 pub fn attempt_le_witness_free_simulator(
-    public_input: &LePublicInput,
+    public_input: SimulatorOnly<&LePublicInput>,
 ) -> Result<LeWitnessFreeSimulatorAttempt, ZkSimulationError> {
+    let public_input = public_input.into_inner();
     let mut logs = vec![SimulatorLogEntry {
         step: "freeze_le_game".to_string(),
         detail: format!(
@@ -366,8 +368,8 @@ pub fn sample_real_qssm_transcript(
         ms: sample_real_ms_v2_transcript(&fixture.ms_statement, ms_commitment_seed)?,
         le: sample_real_le_transcript(
             &public_input.le,
-            fixture.le_witness_coeffs,
-            le_prover_seed,
+            WitnessOnly::new(fixture.le_witness_coeffs),
+            RealProverOnly::new(le_prover_seed),
         )?,
     })
 }
@@ -378,8 +380,12 @@ pub fn sample_g1_qssm_observation(
     ms_simulator_seed: [u8; 32],
     le_prover_seed: [u8; 32],
 ) -> Result<QssmTranscriptObservation, ZkSimulationError> {
-    let ms = simulate_ms_v2_transcript(&public_input.ms, ms_simulator_seed)?;
-    let le = sample_real_le_transcript(&public_input.le, fixture.le_witness_coeffs, le_prover_seed)?;
+    let ms = simulate_ms_v2_transcript(SimulatorOnly::new(&public_input.ms), ms_simulator_seed)?;
+    let le = sample_real_le_transcript(
+        &public_input.le,
+        WitnessOnly::new(fixture.le_witness_coeffs),
+        RealProverOnly::new(le_prover_seed),
+    )?;
 
     Ok(QssmTranscriptObservation {
         ms: observe_simulated_ms_v2_transcript(&ms),
@@ -388,9 +394,10 @@ pub fn sample_g1_qssm_observation(
 }
 
 pub fn simulate_qssm_transcript(
-    public_input: &QssmPublicInput,
+    public_input: SimulatorOnly<&QssmPublicInput>,
     simulator_seed: [u8; 32],
 ) -> Result<SimulatedQssmTranscript, ZkSimulationError> {
+    let public_input = public_input.into_inner();
     let ms_statement = ms_v2_statement_from_public_input(&public_input.ms)?;
     let ms_seed = hash_domain(
         DOMAIN_ZK_SIM,
@@ -411,7 +418,7 @@ pub fn simulate_qssm_transcript(
     );
 
     Ok(SimulatedQssmTranscript {
-        ms: simulate_ms_v2_transcript(&public_input.ms, ms_seed)?,
+        ms: simulate_ms_v2_transcript(SimulatorOnly::new(&public_input.ms), ms_seed)?,
         le: simulate_le_transcript(SimulatorOnly::new(&public_input.le), le_seed)?,
     })
 }

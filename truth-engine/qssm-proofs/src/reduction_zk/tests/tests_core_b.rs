@@ -134,7 +134,7 @@
     #[test]
     fn global_qssm_simulator_emits_joint_public_only_transcript() {
         let public_input = sample_qssm_public_input();
-        let transcript = simulate_qssm_transcript(&public_input, [77u8; 32])
+        let transcript = simulate_qssm_transcript(SimulatorOnly::new(&public_input), [77u8; 32])
             .expect("global qssm simulator transcript");
         let observation = observe_simulated_qssm_transcript(&transcript);
 
@@ -151,7 +151,7 @@
             .expect("g0 real qssm transcript");
         let g1 = sample_g1_qssm_observation(&public_input, &fixture, [61u8; 32], [59u8; 32])
             .expect("g1 hybrid observation");
-        let g2 = simulate_qssm_transcript(&public_input, [77u8; 32])
+        let g2 = simulate_qssm_transcript(SimulatorOnly::new(&public_input), [77u8; 32])
             .expect("g2 global simulator transcript");
 
         assert_eq!(observe_real_qssm_transcript(&g0).ms.statement_digest, g1.ms.statement_digest);

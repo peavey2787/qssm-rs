@@ -37,6 +37,15 @@ The composed theorem is stated in programmable ROM with explicit assumptions:
 
 This crate focuses on correctness-aligned reduction/audit structure and executable checks around that statement.
 
+Implementation-to-proof linkage is enforced by integration tests that:
+- validate announcement-only mutation behavior for MS Fiat-Shamir query derivation,
+- and pin a fixed-seed programmed-query sequence snapshot for the MS simulator path.
+
+LE Set B validation includes:
+- production artifact export (`schema_version = 1`),
+- independent in-crate recomputation,
+- and external numeric fixture validation with exact integer checks and `2^-64` absolute float tolerance.
+
 ## Security Floors
 
 - ZK floor: **132.2 bits**
@@ -48,5 +57,7 @@ This crate focuses on correctness-aligned reduction/audit structure and executab
 ```
 cargo test -p qssm-proofs
 cargo test -p qssm-proofs --test parameter_sync
+cargo test -p qssm-proofs --test external_le_validation
+cargo test -p qssm-proofs --test ms_announcement_contract
 cargo test -p qssm-proofs audit_mode_tests --features audit-mode -- --nocapture
 ```

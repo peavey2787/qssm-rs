@@ -5,7 +5,7 @@ impl CanonicalMsV2TranscriptDesign {
             name: "MS v2 Option B — predicate-only transcript".to_string(),
             transcript_definition: vec![
                 "Visible transcript carries a public value commitment, the result bit, 64 bitness Sigma transcripts, and one comparison Sigma transcript.".to_string(),
-                "No comparison coordinates, branch bits, Merkle paths, or legacy Fiat-Shamir nonce metadata are exposed.".to_string(),
+                "No comparison coordinates, branch bits, Merkle paths, or prior nonce metadata are exposed.".to_string(),
                 "The exact engine surface is qssm_ms::PredicateOnlyStatementV2 plus qssm_ms::PredicateOnlyProofV2.".to_string(),
             ],
             prover_stub_contract: vec![

@@ -114,7 +114,8 @@
 
     #[test]
     fn le_witness_free_attempt_constructs_rom_transcript_under_set_b() {
-        let attempt = attempt_le_witness_free_simulator(&sample_le_public_input())
+        let public_input = sample_le_public_input();
+        let attempt = attempt_le_witness_free_simulator(SimulatorOnly::new(&public_input))
             .expect("le witness-free simulator attempt");
         assert!(attempt.transcript.is_some());
         assert!(attempt.algebraic_relation_holds);

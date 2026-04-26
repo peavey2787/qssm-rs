@@ -310,7 +310,8 @@ fn game_based_zk_proof_for_canonical_option_b_and_set_b(
             StandardZkGame {
                 name: "G2".to_string(),
                 transcript_distribution:
-                    "simulate_qssm_transcript(public_input, simulator_seed)".to_string(),
+                    "simulate_qssm_transcript(SimulatorOnly(public_input), simulator_seed)"
+                        .to_string(),
                 simulator: Some("simulate_qssm_transcript".to_string()),
                 theorem_role:
                     "Ideal game: a single global simulator emits the full joint QSSM transcript from public inputs only."
@@ -332,10 +333,10 @@ fn game_based_zk_proof_for_canonical_option_b_and_set_b(
                 "LE prover seed".to_string(),
             ],
             ms_component:
-                "Derive a domain-separated ms_seed and invoke simulate_ms_v2_transcript(public_input.ms, ms_seed)."
+                "Derive a domain-separated ms_seed and invoke simulate_ms_v2_transcript(SimulatorOnly(public_input.ms), ms_seed)."
                     .to_string(),
             le_component:
-                "Derive a domain-separated le_seed and invoke simulate_le_transcript(public_input.le, le_seed)."
+                "Derive a domain-separated le_seed and invoke simulate_le_transcript(SimulatorOnly(public_input.le), le_seed)."
                     .to_string(),
             shared_randomness_model:
                 "A single ambient simulator seed is split into domain-separated MS and LE seeds; no witness state or correlated coins are shared across the two component simulators."
@@ -348,7 +349,7 @@ fn game_based_zk_proof_for_canonical_option_b_and_set_b(
                 from_game: "G0".to_string(),
                 to_game: "G1".to_string(),
                 explicit_simulator:
-                    "Replace the MS prover by simulate_ms_v2_transcript(public_input.ms, ms_seed) while retaining sample_real_le_transcript for LE."
+                    "Replace the MS prover by simulate_ms_v2_transcript(SimulatorOnly(public_input.ms), ms_seed) while retaining sample_real_le_transcript for LE."
                         .to_string(),
                 assumption_dependencies: vec![AssumptionId::A1, AssumptionId::A2],
                 internal_lemma_dependencies: vec![
@@ -368,7 +369,7 @@ fn game_based_zk_proof_for_canonical_option_b_and_set_b(
                 from_game: "G1".to_string(),
                 to_game: "G2".to_string(),
                 explicit_simulator:
-                    "Replace the LE prover by simulate_le_transcript(public_input.le, le_seed) and package the MS / LE simulator pair into the global simulator simulate_qssm_transcript."
+                    "Replace the LE prover by simulate_le_transcript(SimulatorOnly(public_input.le), le_seed) and package the MS / LE simulator pair into the global simulator simulate_qssm_transcript."
                         .to_string(),
                 assumption_dependencies: vec![AssumptionId::A4],
                 internal_lemma_dependencies: vec![

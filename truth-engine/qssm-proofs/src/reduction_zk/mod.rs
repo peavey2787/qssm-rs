@@ -2,7 +2,7 @@
 //!
 //! This module records both:
 //!
-//! - the legacy MS transcript blocker under the current hidden-value game, and
+//! - the historical MS transcript blocker under the current hidden-value game, and
 //! - the canonical publishable path selected for the redesign:
 //!   MS v2 Option B plus LE Set B.
 //!
@@ -10,7 +10,7 @@
 //! surfaces, executable simulator artifacts, and the remaining conditional proof
 //! obligations.
 //!
-//! For the legacy MS surface, this module adds the missing executable proof
+//! For the historical MS surface, this module adds the missing executable proof
 //! objects that a simulation-based ZK argument would need:
 //!
 //! - Lemma 1: a witness-free sampler for `(k, n)`
@@ -33,7 +33,10 @@
 use crate::{
     lattice::rejection::RejectionSamplingClaim,
     lattice::witness_hiding::WitnessHidingClaim,
-    shared::{fiat_shamir::FiatShamirOracle, safety::SimulatorOnly},
+    shared::{
+        fiat_shamir::FiatShamirOracle,
+        safety::{RealProverOnly, SimulatorOnly, WitnessOnly},
+    },
     ClaimType,
 };
 use qssm_gadget::{MERKLE_DEPTH_MS, MERKLE_WIDTH_MS};

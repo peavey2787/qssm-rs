@@ -11,3 +11,7 @@
 | 7 | Simulator witness isolation contract | `GlobalQssmSimulator` | `adversarial_simulator_witness_leak_detected_by_checklist` | — | Required |
 | 8 | LE simulation single core path | `simulate_le_core` wrappers | `le_global_simulation_matches_baseline_transcript_bytes_on_fixed_seed` | — | Required |
 | 9 | Canonical nested ZK source layout | `reduction_zk/{core,simulate,transcript,audit,tests}` | `cargo check -p qssm-proofs --all-targets` | — | Required |
+| 10 | Independent LE Set B recomputation | `LeSetBValidationArtifact` | `tests/external_le_validation.rs` | 132.2 | Required |
+| 11 | External numeric fixture parity | `ExternalLeSetBValidationReport` (`schema_version=1`) | `external_fixture_matches_current_artifact` | 132.2 | Required |
+| 12 | Announcement-only mutation contract | `FiatShamirOracle` + `qssm_ms` simulation query stream | `tests/ms_announcement_contract.rs` | — | Required |
+| 13 | Fixed-seed FS query-sequence snapshot | `PredicateOnlySimulationV2::programmed_queries` | `fixed_seed_programmed_query_sequence_matches_snapshot` | — | Required |

@@ -24,6 +24,9 @@ All Set B parameters are authoritative in `qssm_le::protocol::params` (`truth-en
 
 with the frozen boundary contracts and Set B parameter conditions.
 
+The wording-modernization sweep is strictly non-semantic: no FS domain tags,
+transcript labels, or public API symbols are changed by documentation-only edits.
+
 ## Security Floors
 
 - ZK floor (Fiat-Shamir challenge-space margin): **132.2 bits**
@@ -34,5 +37,7 @@ with the frozen boundary contracts and Set B parameter conditions.
 
 - Parameter values are sourced from `qssm_le::protocol::params` only.
 - `gamma == eta + ||cr||_inf` is checked by executable tests.
+- Independent LE Set B recomputation is checked against the production artifact and external fixture schema `1`.
+- External numeric reports must match exact integer fields and floating fields within `2^-64` absolute tolerance.
 - Frozen theorem audit paths must preserve `PROOF_STRUCTURE_VERSION` and `run_audit_validation`.
 - `src/reduction_zk/` remains nested (`core/`, `simulate/`, `transcript/`, `audit/`, `tests/`) with no flat duplicate source copies.

@@ -6,6 +6,7 @@ pub mod rejection;
 
 #[path = "../reduction_witness_hiding.rs"]
 pub mod witness_hiding;
+pub mod external_validation;
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {

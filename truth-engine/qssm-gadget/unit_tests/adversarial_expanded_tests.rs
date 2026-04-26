@@ -7,7 +7,8 @@ use qssm_gadget::{
     EngineABindingOp, LatticePolyOp, MerklePathWitness, PolyOpContext, TruthLimbV2Params, VarId,
     VarKind, MERKLE_DEPTH_MS,
 };
-use qssm_ms::{commit, prove, verify};
+use qssm_ms::{commit_value_v2, prove_predicate_only_v2, PredicateOnlyStatementV2};
+use qssm_utils::hashing::{hash_domain, DOMAIN_MS};
 use qssm_utils::blake3_hash;
 
 #[derive(Debug, Default)]
@@ -26,34 +27,49 @@ impl ConstraintSystem for NoopCs {
     fn enforce_equal(&mut self, _: VarId, _: VarId) {}
 }
 
-fn relation_digest(value: u64, target: u64, challenge: [u8; 32]) -> [u8; 32] {
-    let mut v = Vec::with_capacity(48);
-    v.extend_from_slice(&value.to_le_bytes());
-    v.extend_from_slice(&target.to_le_bytes());
-    v.extend_from_slice(&challenge);
-    blake3_hash(&v)
+fn bitness_global_challenges_digest(challenges: &[[u8; 32]]) -> [u8; 32] {
+    let len_bytes = (challenges.len() as u32).to_le_bytes();
+    let mut chunks: Vec<&[u8]> = Vec::with_capacity(challenges.len() + 1);
+    chunks.push(&len_bytes);
+    for challenge in challenges {
+        chunks.push(challenge.as_slice());
+    }
+    hash_domain(DOMAIN_MS, &chunks)
 }
 
 fn baseline_inputs() -> EngineABindingInput {
     let seed = [3u8; 32];
-    let ledger = [4u8; 32];
+    let binding_entropy = [4u8; 32];
     let rollup = [5u8; 32];
     let state_root = blake3_hash(b"state-root");
-    let value = 100u64;
-    let target = 50u64;
+    let value = u64::MAX;
+    let target = u64::MAX - 1;
     let context = b"ctx".to_vec();
-    let (root, salts) = commit(seed, ledger).expect("commit");
-    let proof = prove(value, target, &salts, ledger, &context, &rollup).expect("prove");
-    assert!(verify(
-        root, &proof, ledger, value, target, &context, &rollup
-    ));
+    let (commitment, witness) =
+        commit_value_v2(value, seed, binding_entropy).expect("commit v2");
+    let statement = PredicateOnlyStatementV2::new(
+        commitment,
+        target,
+        binding_entropy,
+        rollup,
+        context.clone(),
+    );
+    let proof = prove_predicate_only_v2(&statement, &witness, [7u8; 32]).expect("prove v2");
+    let bitness = proof
+        .bitness_global_challenges()
+        .expect("bitness global challenges");
+    let comparison = proof
+        .comparison_global_challenge()
+        .expect("comparison global challenge");
     let mut input = EngineABindingInput {
         state_root,
-        ms_root: *root.as_bytes(),
-        relation_digest: relation_digest(value, target, *proof.challenge()),
-        ms_fs_v2_challenge: *proof.challenge(),
+        ms_v2_statement_digest: *proof.statement_digest(),
+        ms_v2_result_bit: u8::from(proof.result()),
+        ms_v2_bitness_global_challenges_digest: bitness_global_challenges_digest(&bitness),
+        ms_v2_comparison_global_challenge: comparison,
+        ms_v2_transcript_digest: proof.transcript_digest(),
         binding_context: rollup,
-        device_entropy_link: ledger,
+        device_entropy_link: binding_entropy,
         truth_digest: blake3_hash(b"truth-digest-adv"),
         entropy_anchor: blake3_hash(b"entropy-anchor-adv"),
         claimed_seam_commitment: [0u8; 32],
@@ -69,17 +85,19 @@ proptest! {
     #![proptest_config(ProptestConfig::with_cases(200))]
 
     #[test]
-    fn random_single_byte_flip_breaks_seam(field_idx in 0u8..8u8, byte_idx in 0usize..32usize) {
+    fn random_single_byte_flip_breaks_seam(field_idx in 0u8..10u8, byte_idx in 0usize..32usize) {
         let mut input = baseline_inputs();
         match field_idx {
             0 => input.state_root[byte_idx] ^= 0xFF,
-            1 => input.ms_root[byte_idx] ^= 0xFF,
-            2 => input.relation_digest[byte_idx] ^= 0xFF,
-            3 => input.ms_fs_v2_challenge[byte_idx] ^= 0xFF,
+            1 => input.ms_v2_statement_digest[byte_idx] ^= 0xFF,
+            2 => input.ms_v2_result_bit ^= 0x01,
+            3 => input.ms_v2_bitness_global_challenges_digest[byte_idx] ^= 0xFF,
             4 => input.binding_context[byte_idx] ^= 0xFF,
             5 => input.device_entropy_link[byte_idx] ^= 0xFF,
             6 => input.truth_digest[byte_idx] ^= 0xFF,
-            _ => input.entropy_anchor[byte_idx] ^= 0xFF,
+            7 => input.entropy_anchor[byte_idx] ^= 0xFF,
+            8 => input.ms_v2_comparison_global_challenge[byte_idx] ^= 0xFF,
+            _ => input.ms_v2_transcript_digest[byte_idx] ^= 0xFF,
         }
         let op = EngineABindingOp;
         let mut ctx = PolyOpContext::new("adv");

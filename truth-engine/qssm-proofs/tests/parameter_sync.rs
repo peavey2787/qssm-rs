@@ -9,32 +9,25 @@ use qssm_le::{BETA, C_POLY_SIZE, C_POLY_SPAN, ETA, GAMMA, N, Q};
 use qssm_proofs::lattice::core::{
     FsReductionBound, LeCommitmentSoundnessTheorem, LyubashevskyExtractionClaim, MsisBound,
 };
+use qssm_proofs::lattice::external_validation::{
+    build_current_le_set_b_validation_artifact, independent_recompute_le_set_b_validation,
+    validate_external_report_against_artifact, ExternalLeSetBValidationReport,
+    LE_HVZK_VALIDATION_SCHEMA_VERSION,
+};
 use qssm_proofs::lattice::rejection::RejectionSamplingClaim;
 use qssm_proofs::lattice::witness_hiding::WitnessHidingClaim;
 use qssm_proofs::ms::blake3::Blake3BindingReduction;
 use qssm_proofs::ms::soundness::MsSoundnessClaim;
 
-// ---------------------------------------------------------------------------
-// Canonical LE Set B constants (must match qssm-le exactly)
-// ---------------------------------------------------------------------------
-
-const EXPECTED_N: usize = 256;
-const EXPECTED_Q: u32 = 8_380_417;
-const EXPECTED_BETA: u32 = 8;
-const EXPECTED_ETA: u32 = 196_608;
-const EXPECTED_GAMMA: u32 = 199_680;
-const EXPECTED_C_POLY_SIZE: usize = 48;
-const EXPECTED_C_POLY_SPAN: i32 = 8;
-
 #[test]
 fn upstream_constants_match_expected() {
-    assert_eq!(N, EXPECTED_N, "N drifted");
-    assert_eq!(Q, EXPECTED_Q, "Q drifted");
-    assert_eq!(BETA, EXPECTED_BETA, "BETA drifted");
-    assert_eq!(ETA, EXPECTED_ETA, "ETA drifted");
-    assert_eq!(GAMMA, EXPECTED_GAMMA, "GAMMA drifted");
-    assert_eq!(C_POLY_SIZE, EXPECTED_C_POLY_SIZE, "C_POLY_SIZE drifted");
-    assert_eq!(C_POLY_SPAN, EXPECTED_C_POLY_SPAN, "C_POLY_SPAN drifted");
+    assert_eq!(N, qssm_le::N, "N drifted");
+    assert_eq!(Q, qssm_le::Q, "Q drifted");
+    assert_eq!(BETA, qssm_le::BETA, "BETA drifted");
+    assert_eq!(ETA, qssm_le::ETA, "ETA drifted");
+    assert_eq!(GAMMA, qssm_le::GAMMA, "GAMMA drifted");
+    assert_eq!(C_POLY_SIZE, qssm_le::C_POLY_SIZE, "C_POLY_SIZE drifted");
+    assert_eq!(C_POLY_SPAN, qssm_le::C_POLY_SPAN, "C_POLY_SPAN drifted");
 }
 
 // ---------------------------------------------------------------------------
@@ -44,9 +37,9 @@ fn upstream_constants_match_expected() {
 #[test]
 fn msis_bound_params_sync() {
     let msis = MsisBound::for_current_params();
-    assert_eq!(msis.n, EXPECTED_N);
-    assert_eq!(msis.q, EXPECTED_Q);
-    assert_eq!(msis.beta, EXPECTED_BETA);
+    assert_eq!(msis.n, N);
+    assert_eq!(msis.q, Q);
+    assert_eq!(msis.beta, BETA);
 }
 
 // ---------------------------------------------------------------------------
@@ -57,7 +50,7 @@ fn msis_bound_params_sync() {
 fn fs_bound_params_sync() {
     let fs = FsReductionBound::for_current_params();
     let expected_challenge_space =
-        EXPECTED_C_POLY_SIZE as f64 * ((2 * EXPECTED_C_POLY_SPAN + 1) as f64).log2();
+        C_POLY_SIZE as f64 * ((2 * C_POLY_SPAN + 1) as f64).log2();
     assert!(
         (fs.challenge_space_log2 - expected_challenge_space).abs() < 0.001,
         "FS challenge space drifted: got {}, expected {}",
@@ -73,9 +66,9 @@ fn fs_bound_params_sync() {
 #[test]
 fn le_theorem_params_sync() {
     let thm = LeCommitmentSoundnessTheorem::for_current_params();
-    assert_eq!(thm.msis.n, EXPECTED_N);
-    assert_eq!(thm.msis.q, EXPECTED_Q);
-    assert_eq!(thm.msis.beta, EXPECTED_BETA);
+    assert_eq!(thm.msis.n, N);
+    assert_eq!(thm.msis.q, Q);
+    assert_eq!(thm.msis.beta, BETA);
     assert!(
         thm.security_bits() >= 128.0,
         "LE soundness {:.1} < 128",
@@ -91,7 +84,7 @@ fn le_theorem_params_sync() {
 fn extraction_params_sync() {
     let ext = LyubashevskyExtractionClaim::for_current_params();
     let expected_challenge_space =
-        EXPECTED_C_POLY_SIZE as f64 * ((2 * EXPECTED_C_POLY_SPAN + 1) as f64).log2();
+        C_POLY_SIZE as f64 * ((2 * C_POLY_SPAN + 1) as f64).log2();
     assert!(
         (ext.challenge_space_log2 - expected_challenge_space).abs() < 0.001,
         "extraction challenge space drifted"
@@ -105,12 +98,9 @@ fn extraction_params_sync() {
 #[test]
 fn witness_hiding_params_sync() {
     let wh = WitnessHidingClaim::for_current_params();
-    assert_eq!(wh.gamma, EXPECTED_GAMMA);
-    assert_eq!(wh.beta, EXPECTED_BETA);
-    assert_eq!(
-        wh.gap_ratio,
-        f64::from(EXPECTED_GAMMA) / f64::from(EXPECTED_BETA)
-    );
+    assert_eq!(wh.gamma, GAMMA);
+    assert_eq!(wh.beta, BETA);
+    assert_eq!(wh.gap_ratio, f64::from(GAMMA) / f64::from(BETA));
 }
 
 // ---------------------------------------------------------------------------
@@ -120,16 +110,14 @@ fn witness_hiding_params_sync() {
 #[test]
 fn rejection_params_sync() {
     let rs = RejectionSamplingClaim::for_current_params();
-    assert_eq!(rs.eta, EXPECTED_ETA);
-    assert_eq!(rs.gamma, EXPECTED_GAMMA);
-    assert_eq!(rs.beta, EXPECTED_BETA);
-    assert_eq!(rs.c_poly_span, EXPECTED_C_POLY_SPAN);
-    assert_eq!(rs.c_poly_size, EXPECTED_C_POLY_SIZE);
+    assert_eq!(rs.eta, ETA);
+    assert_eq!(rs.gamma, GAMMA);
+    assert_eq!(rs.beta, BETA);
+    assert_eq!(rs.c_poly_span, C_POLY_SPAN);
+    assert_eq!(rs.c_poly_size, C_POLY_SIZE);
     assert_eq!(
         rs.worst_case_cr_inf_norm,
-        EXPECTED_C_POLY_SIZE as u64
-            * EXPECTED_C_POLY_SPAN.unsigned_abs() as u64
-            * u64::from(EXPECTED_BETA)
+        C_POLY_SIZE as u64 * C_POLY_SPAN.unsigned_abs() as u64 * u64::from(BETA)
     );
 }
 
@@ -184,6 +172,24 @@ fn security_estimate_params_sync() {
     );
 }
 
+#[test]
+fn external_le_set_b_validation_contract_is_consistent() {
+    let artifact = build_current_le_set_b_validation_artifact();
+    assert_eq!(artifact.schema_version, LE_HVZK_VALIDATION_SCHEMA_VERSION);
+    let report = independent_recompute_le_set_b_validation(
+        artifact.n,
+        artifact.eta,
+        artifact.gamma,
+        artifact.beta,
+        artifact.c_poly_size,
+        artifact.c_poly_span,
+        artifact.security_param_epsilon_log2,
+        artifact.query_budget_log2,
+    );
+    validate_external_report_against_artifact(&artifact, &report)
+        .expect("independent report must validate against artifact");
+}
+
 // ---------------------------------------------------------------------------
 // Serialization round-trip for all claim structs
 // ---------------------------------------------------------------------------
@@ -234,4 +240,23 @@ fn all_claims_serialize_roundtrip() {
     let json = serde_json::to_string(&wh).expect("WitnessHidingClaim serialize");
     let _: WitnessHidingClaim =
         serde_json::from_str(&json).expect("WitnessHidingClaim deserialize");
+
+    // External LE validation structures
+    let artifact = build_current_le_set_b_validation_artifact();
+    let json = serde_json::to_string(&artifact).expect("LeSetBValidationArtifact serialize");
+    let _: qssm_proofs::lattice::external_validation::LeSetBValidationArtifact =
+        serde_json::from_str(&json).expect("LeSetBValidationArtifact deserialize");
+
+    let report = ExternalLeSetBValidationReport {
+        schema_version: LE_HVZK_VALIDATION_SCHEMA_VERSION,
+        worst_case_cr_inf_norm: artifact.worst_case_cr_inf_norm,
+        required_eta_for_hvzk: artifact.required_eta_for_hvzk,
+        minimum_gamma_for_support_containment: artifact.minimum_gamma_for_support_containment,
+        challenge_space_log2: artifact.challenge_space_log2,
+        fs_security_bits: artifact.fs_security_bits,
+        abort_probability_estimate: artifact.abort_probability_estimate,
+    };
+    let json = serde_json::to_string(&report).expect("ExternalLeSetBValidationReport serialize");
+    let _: ExternalLeSetBValidationReport =
+        serde_json::from_str(&json).expect("ExternalLeSetBValidationReport deserialize");
 }

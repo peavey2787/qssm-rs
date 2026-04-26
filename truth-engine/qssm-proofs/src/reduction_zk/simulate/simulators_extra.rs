@@ -9,19 +9,19 @@ pub fn honest_zk_theorem_for_current_system() -> Result<HonestZkTheorem, ZkSimul
         },
         SimulationStrategy::ProgramSimulation,
     );
-    let le_attempt = attempt_le_witness_free_simulator(&LePublicInput {
+    let le_attempt = attempt_le_witness_free_simulator(SimulatorOnly::new(&LePublicInput {
         vk: VerifyingKey::from_seed([11u8; 32]),
         public: PublicInstance::from_u64_nibbles(42),
         binding_context: [13u8; 32],
-    })?;
+    }))?;
 
     Ok(HonestZkTheorem {
         claim_type: ClaimType::ZeroKnowledge,
         theorem_statement:
-            "Under the frozen visible transcript surfaces, the current deployed stack still lacks a complete end-to-end ZK theorem because the legacy MS transcript exposes witness-dependent visible outputs. The LE layer is now committed to the proof-safe Set B regime, where the executable ROM transcript construction matches the encoded HVZK parameter template."
+            "Under the frozen visible transcript surfaces, the current deployed stack still lacks a complete end-to-end ZK theorem because the current MS hidden-value transcript exposes witness-dependent visible outputs. The LE layer is now committed to the proof-safe Set B regime, where the executable ROM transcript construction matches the encoded HVZK parameter template."
                 .to_string(),
         honest_status:
-            "MS structural blocker remains on the legacy transcript; LE Set B is aligned with the proof-safe parameter template; the publishable path is to switch to the canonical MS v2 predicate-only transcript and complete the composed reduction."
+            "MS structural blocker remains on the current hidden-value transcript; LE Set B is aligned with the proof-safe parameter template; the publishable path is to switch to the canonical MS v2 predicate-only transcript and complete the composed reduction."
                 .to_string(),
         ms_attempt,
         le_attempt,
@@ -129,16 +129,16 @@ pub fn simulate_le_transcript(
 
 pub fn sample_real_le_transcript(
     public_input: &LePublicInput,
-    le_witness_coeffs: [i32; N],
-    prover_seed: [u8; 32],
+    le_witness_coeffs: WitnessOnly<[i32; N]>,
+    prover_seed: RealProverOnly<[u8; 32]>,
 ) -> Result<RealLeTranscript, ZkSimulationError> {
-    let witness = Witness::new(le_witness_coeffs);
+    let witness = Witness::new(le_witness_coeffs.into_inner());
     let (commitment, proof) = prove_arithmetic(
         &public_input.vk,
         &public_input.public,
         &witness,
         &public_input.binding_context,
-        prover_seed,
+        prover_seed.into_inner(),
     )?;
     let verified = verify_lattice(
         &public_input.vk,
@@ -162,10 +162,10 @@ pub fn sample_real_le_transcript(
 }
 
 pub fn simulate_ms_v2_transcript(
-    public_input: &MsHiddenValuePublicInput,
+    public_input: SimulatorOnly<&MsHiddenValuePublicInput>,
     simulator_seed: [u8; 32],
 ) -> Result<SimulatedMsV2Transcript, ZkSimulationError> {
-    let statement = ms_v2_statement_from_public_input(public_input)?;
+    let statement = ms_v2_statement_from_public_input(public_input.into_inner())?;
     let simulation = qssm_ms::simulate_predicate_only_v2(&statement, simulator_seed)?;
     let verified = qssm_ms::verify_predicate_only_v2_with_programming(&statement, &simulation)?;
     if !verified {
