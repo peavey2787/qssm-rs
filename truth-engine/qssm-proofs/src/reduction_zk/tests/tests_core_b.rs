@@ -373,3 +373,87 @@
             .any(|item| item.contains("programmable random oracle")));
     }
 
+    fn baseline_global_simulate_le_transcript(
+        public_input: &LePublicInput,
+        simulator_seed: [u8; 32],
+    ) -> Result<SimulatedLeTranscript, ZkSimulationError> {
+        let sampled_r = sample_centered_vec_with_seed(
+            b"le_global_sim_commitment_short",
+            public_input.binding_context,
+            simulator_seed,
+            BETA,
+        );
+        let commitment_r = short_vec_to_rq(&sampled_r)?;
+        let a = public_input.vk.matrix_a_poly();
+        let mu = le_mu_from_public(&public_input.public);
+        let commitment_poly = a.mul(&commitment_r)?.add(&mu);
+        let commitment = Commitment(commitment_poly);
+        let z_arr = sample_centered_vec_with_seed(
+            b"le_global_sim_z",
+            public_input.binding_context,
+            simulator_seed,
+            GAMMA,
+        );
+        let z = short_vec_to_rq_bound(&z_arr, GAMMA)?;
+        let challenge_seed = hash_domain(
+            DOMAIN_ZK_SIM,
+            &[
+                b"le_global_sim_challenge_seed",
+                simulator_seed.as_slice(),
+                public_input.binding_context.as_slice(),
+                &public_input.vk.crs_seed,
+                &le_public_binding_fs_bytes(&public_input.public),
+                &encode_rq_coeffs_le(&commitment.0),
+            ],
+        );
+        let c_poly = le_challenge_poly(&challenge_seed);
+        let c_rq = le_challenge_poly_to_rq(&c_poly);
+        let u = commitment.0.sub(&mu);
+        let az = a.mul(&z)?;
+        let cu = c_rq.mul(&u)?;
+        let t = az.sub(&cu);
+        let programmed_oracle_query_digest = le_fs_programmed_query_digest(
+            &public_input.binding_context,
+            &public_input.vk,
+            &public_input.public,
+            &commitment,
+            &t,
+        );
+        Ok(SimulatedLeTranscript {
+            commitment_coeffs: commitment.0 .0.to_vec(),
+            t_coeffs: t.0.to_vec(),
+            z_coeffs: z.0.to_vec(),
+            challenge_seed,
+            programmed_oracle_query_digest,
+        })
+    }
+
+    #[test]
+    fn le_global_simulation_matches_baseline_transcript_bytes_on_fixed_seed() {
+        let public_input = sample_le_public_input();
+        let seed = [77u8; 32];
+        let baseline = baseline_global_simulate_le_transcript(&public_input, seed)
+            .expect("baseline le sim");
+        let current = simulate_le_transcript(SimulatorOnly::new(&public_input), seed)
+            .expect("current le sim");
+        assert_eq!(baseline.challenge_seed, current.challenge_seed);
+        assert_eq!(
+            baseline.programmed_oracle_query_digest,
+            current.programmed_oracle_query_digest
+        );
+        assert_eq!(baseline.commitment_coeffs, current.commitment_coeffs);
+        assert_eq!(baseline.t_coeffs, current.t_coeffs);
+        assert_eq!(baseline.z_coeffs, current.z_coeffs);
+    }
+
+    #[test]
+    fn set_b_parameter_invariants_match_encoded_formula() {
+        let analysis = LeHvzkConstraintAnalysis::for_current_params();
+        assert_eq!(
+            analysis.minimum_gamma_for_support_containment,
+            analysis.eta as u64 + analysis.worst_case_cr_inf_norm
+        );
+        let fs_security_bits = analysis.challenge_space_log2 - analysis.query_budget_log2;
+        assert!((fs_security_bits - 132.2).abs() < 0.2);
+    }
+

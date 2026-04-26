@@ -61,41 +61,19 @@ fn le_fs_programmed_query_digest(
     commitment: &Commitment,
     t: &RqPoly,
 ) -> [u8; 32] {
-    hash_domain(
+    FiatShamirOracle::le_programmed_query_digest(
         DOMAIN_ZK_SIM,
-        &[
-            b"le_programmed_query_digest",
-            binding_context.as_slice(),
-            &vk.crs_seed,
-            &le_public_binding_fs_bytes(public),
-            &encode_rq_coeffs_le(&commitment.0),
-            &encode_rq_coeffs_le(t),
-        ],
+        binding_context,
+        vk,
+        public,
+        commitment,
+        t,
+        &le_public_binding_fs_bytes(public),
     )
 }
 
 fn le_challenge_poly(seed: &[u8; 32]) -> [i32; C_POLY_SIZE] {
-    let mut coeffs = [0i32; C_POLY_SIZE];
-    let span = C_POLY_SPAN as u32;
-    let mut filled = 0usize;
-    let mut ctr = 0u32;
-    while filled < C_POLY_SIZE {
-        let mut h = blake3::Hasher::new();
-        h.update(DOMAIN_LE_CHALLENGE_POLY.as_bytes());
-        h.update(seed);
-        h.update(&ctr.to_le_bytes());
-        let block = h.finalize();
-        for chunk in block.as_bytes().chunks_exact(4) {
-            if filled >= C_POLY_SIZE {
-                break;
-            }
-            let raw = u32::from_le_bytes([chunk[0], chunk[1], chunk[2], chunk[3]]);
-            coeffs[filled] = (raw % (2 * span + 1)) as i32 - C_POLY_SPAN;
-            filled += 1;
-        }
-        ctr = ctr.wrapping_add(1);
-    }
-    coeffs
+    FiatShamirOracle::le_challenge_poly(seed)
 }
 
 fn le_challenge_poly_to_rq(poly: &[i32; C_POLY_SIZE]) -> RqPoly {
@@ -139,28 +117,5 @@ fn le_minimum_gamma_for_support_containment(
     c_poly_span: i32,
 ) -> u64 {
     u64::from(eta) + le_worst_case_cr_inf_norm(beta, c_poly_size, c_poly_span)
-}
-
-#[allow(dead_code)]
-fn le_fs_challenge_bytes(
-    binding_context: &[u8; 32],
-    vk: &VerifyingKey,
-    public: &PublicInstance,
-    commitment: &Commitment,
-    t: &RqPoly,
-) -> [u8; 32] {
-    let mut h = blake3::Hasher::new();
-    h.update(DOMAIN_LE_FS.as_bytes());
-    h.update(&DST_LE_COMMIT);
-    h.update(&DST_MS_VERIFY);
-    h.update(CROSS_PROTOCOL_BINDING_LABEL);
-    h.update(DOMAIN_MS.as_bytes());
-    h.update(b"fs_v2");
-    h.update(binding_context);
-    h.update(vk.crs_seed.as_slice());
-    h.update(&le_public_binding_fs_bytes(public));
-    h.update(&encode_rq_coeffs_le(&commitment.0));
-    h.update(&encode_rq_coeffs_le(t));
-    *h.finalize().as_bytes()
 }
 

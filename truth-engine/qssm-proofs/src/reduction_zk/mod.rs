@@ -31,29 +31,28 @@
 //! impossibility result or a proof that the system is non-ZK.
 
 use crate::{
-    reduction_rejection::RejectionSamplingClaim,
-    reduction_witness_hiding::WitnessHidingClaim,
+    lattice::rejection::RejectionSamplingClaim,
+    lattice::witness_hiding::WitnessHidingClaim,
+    shared::{fiat_shamir::FiatShamirOracle, safety::SimulatorOnly},
     ClaimType,
 };
 use qssm_gadget::{MERKLE_DEPTH_MS, MERKLE_WIDTH_MS};
 use qssm_le::{
-    encode_rq_coeffs_le, prove_arithmetic, short_vec_to_rq, short_vec_to_rq_bound,
-    verify_lattice, BETA, C_POLY_SIZE, C_POLY_SPAN, Commitment, ETA, GAMMA, N,
-    PublicBinding, PublicInstance, Q, RqPoly, VerifyingKey, Witness,
+    prove_arithmetic, short_vec_to_rq, short_vec_to_rq_bound, verify_lattice, BETA,
+    C_POLY_SIZE, C_POLY_SPAN, Commitment, ETA, GAMMA, N, PublicBinding,
+    PublicInstance, Q, RqPoly, VerifyingKey, Witness,
     LE_FS_PUBLIC_BINDING_LAYOUT_VERSION,
 };
 use qssm_utils::{hash_domain, PositionAwareTree, DOMAIN_MS};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 
+#[cfg(test)]
+use qssm_le::encode_rq_coeffs_le;
+
 const MS_LEAF_COUNT: usize = MERKLE_WIDTH_MS;
 const MS_BIT_COUNT: usize = MERKLE_WIDTH_MS / 2;
 const DOMAIN_ZK_SIM: &str = "QSSM-ZK-SIM-v1.0";
-const DOMAIN_LE_FS: &str = "QSSM-LE-FS-LYU-v1.0";
-const DOMAIN_LE_CHALLENGE_POLY: &str = "QSSM-LE-CHALLENGE-POLY-v1.0";
-const CROSS_PROTOCOL_BINDING_LABEL: &[u8] = b"cross_protocol_digest_v1";
-const DST_LE_COMMIT: [u8; 32] = *b"QSSM-LE-V1-COMMIT...............";
-const DST_MS_VERIFY: [u8; 32] = *b"QSSM-MS-V1-VERIFY...............";
 const MS_BITNESS_QUERY_ANNOUNCEMENT_ONLY_CONTRACT: &str =
     "bitness_query_digest hashes only statement_digest, bit_index, and announcements; it excludes responses and challenge shares.";
 const MS_COMPARISON_QUERY_ANNOUNCEMENT_ONLY_CONTRACT: &str =
@@ -64,22 +63,24 @@ const MS_SCHNORR_REPARAMETERIZATION_CONTRACT: &str =
     "For a fixed public point P = w * H and programmed challenge c, the real Schnorr transcript distribution (alpha, alpha*H, alpha+c*w) is exactly identical to the simulated transcript distribution (z*H-c*P, z) by the bijection z <-> alpha = z - c*w.";
 
 
-include!("types_core.rs");
-include!("types_theorem.rs");
-include!("lemmas_a.rs");
-include!("lemmas_b.rs");
-include!("simulators.rs");
-include!("simulators_extra.rs");
-include!("empirical.rs");
-include!("helpers_ms.rs");
-include!("helpers_le.rs");
-include!("theorem_core.rs");
-include!("theorem_prob.rs");
-include!("theorem_chain.rs");
-include!("theorem_graph.rs");
-include!("closure.rs");
-include!("audit.rs");
-include!("redesigned.rs");
+include!("core/types_core.rs");
+include!("core/types_theorem.rs");
+include!("transcript/lemmas_a.rs");
+include!("transcript/lemmas_b.rs");
+include!("simulate/simulators.rs");
+include!("simulate/simulators_extra.rs");
+include!("audit/empirical.rs");
+include!("simulate/helpers_ms.rs");
+include!("simulate/helpers_le.rs");
+include!("core/theorem_core.rs");
+include!("core/theorem_prob.rs");
+include!("core/theorem_chain.rs");
+include!("core/theorem_graph.rs");
+include!("audit/closure.rs");
+include!("audit/audit.rs");
+include!("simulate/redesigned.rs");
+include!("transcript/transcript_model.rs");
 
 #[cfg(test)]
+#[path = "tests/mod.rs"]
 mod tests;

@@ -28,10 +28,20 @@ pub fn honest_zk_theorem_for_current_system() -> Result<HonestZkTheorem, ZkSimul
     })
 }
 
-pub fn simulate_le_transcript(
+#[derive(Debug, Clone)]
+pub(crate) struct LeSimulationCore {
+    pub transcript: SimulatedLeTranscript,
+    pub algebraic_relation_holds: bool,
+    pub norm_bound_holds: bool,
+}
+
+pub(crate) fn simulate_le_core(
     public_input: &LePublicInput,
-    simulator_seed: [u8; 32],
-) -> Result<SimulatedLeTranscript, ZkSimulationError> {
+    simulator_seed: Option<[u8; 32]>,
+    commitment_label: &[u8],
+    z_label: &[u8],
+    challenge_label: &[u8],
+) -> Result<LeSimulationCore, ZkSimulationError> {
     let rejection = RejectionSamplingClaim::for_current_params();
     if !rejection.meets_hvzk_requirement() {
         return Err(ZkSimulationError::TheoremInvariant(format!(
@@ -40,35 +50,32 @@ pub fn simulate_le_transcript(
         )));
     }
 
-    let sampled_r = sample_centered_vec_with_seed(
-        b"le_global_sim_commitment_short",
-        public_input.binding_context,
-        simulator_seed,
-        BETA,
-    );
+    let sampled_r = match simulator_seed {
+        Some(seed) => {
+            sample_centered_vec_with_seed(commitment_label, public_input.binding_context, seed, BETA)
+        }
+        None => sample_centered_vec(commitment_label, public_input.binding_context, BETA),
+    };
     let commitment_r = short_vec_to_rq(&sampled_r)?;
     let a = public_input.vk.matrix_a_poly();
     let mu = le_mu_from_public(&public_input.public);
     let commitment_poly = a.mul(&commitment_r)?.add(&mu);
     let commitment = Commitment(commitment_poly);
 
-    let z_arr = sample_centered_vec_with_seed(
-        b"le_global_sim_z",
-        public_input.binding_context,
-        simulator_seed,
-        GAMMA,
-    );
+    let z_arr = match simulator_seed {
+        Some(seed) => sample_centered_vec_with_seed(z_label, public_input.binding_context, seed, GAMMA),
+        None => sample_centered_vec(z_label, public_input.binding_context, GAMMA),
+    };
     let z = short_vec_to_rq_bound(&z_arr, GAMMA)?;
-    let challenge_seed = hash_domain(
+    let fs_public_bytes = le_public_binding_fs_bytes(&public_input.public);
+    let challenge_seed = FiatShamirOracle::le_challenge_seed(
         DOMAIN_ZK_SIM,
-        &[
-            b"le_global_sim_challenge_seed",
-            simulator_seed.as_slice(),
-            public_input.binding_context.as_slice(),
-            &public_input.vk.crs_seed,
-            &le_public_binding_fs_bytes(&public_input.public),
-            &encode_rq_coeffs_le(&commitment.0),
-        ],
+        challenge_label,
+        simulator_seed.as_ref(),
+        &public_input.binding_context,
+        &public_input.vk,
+        &fs_public_bytes,
+        &commitment,
     );
     let c_poly = le_challenge_poly(&challenge_seed);
     let c_rq = le_challenge_poly_to_rq(&c_poly);
@@ -93,13 +100,31 @@ pub fn simulate_le_transcript(
         ));
     }
 
-    Ok(SimulatedLeTranscript {
-        commitment_coeffs: commitment.0 .0.to_vec(),
-        t_coeffs: t.0.to_vec(),
-        z_coeffs: z.0.to_vec(),
-        challenge_seed,
-        programmed_oracle_query_digest,
+    Ok(LeSimulationCore {
+        transcript: SimulatedLeTranscript {
+            commitment_coeffs: commitment.0 .0.to_vec(),
+            t_coeffs: t.0.to_vec(),
+            z_coeffs: z.0.to_vec(),
+            challenge_seed,
+            programmed_oracle_query_digest,
+        },
+        algebraic_relation_holds,
+        norm_bound_holds,
     })
+}
+
+pub fn simulate_le_transcript(
+    public_input: SimulatorOnly<&LePublicInput>,
+    simulator_seed: [u8; 32],
+) -> Result<SimulatedLeTranscript, ZkSimulationError> {
+    Ok(simulate_le_core(
+        public_input.into_inner(),
+        Some(simulator_seed),
+        b"le_global_sim_commitment_short",
+        b"le_global_sim_z",
+        b"le_global_sim_challenge_seed",
+    )?
+    .transcript)
 }
 
 pub fn sample_real_le_transcript(

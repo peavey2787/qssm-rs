@@ -131,7 +131,7 @@
     }
 
     #[test]
-    fn honest_theorem_reports_legacy_ms_blocker_and_le_set_b_alignment() {
+    fn honest_theorem_reports_ms_blocker_and_le_set_b_alignment() {
         let theorem = honest_zk_theorem_for_current_system().expect("honest theorem");
         assert_eq!(theorem.claim_type, ClaimType::ZeroKnowledge);
         assert!(theorem

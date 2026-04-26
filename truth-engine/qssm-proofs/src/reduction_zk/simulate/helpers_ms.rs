@@ -385,19 +385,16 @@ fn fs_challenge(
     context: &[u8],
     binding_context: &[u8; 32],
 ) -> [u8; 32] {
-    hash_domain(
+    FiatShamirOracle::ms_bitness_challenge(
         DOMAIN_MS,
-        &[
-            b"fs_v2",
-            root.as_slice(),
-            &[n],
-            &[k],
-            binding_entropy.as_slice(),
-            &value.to_le_bytes(),
-            &target.to_le_bytes(),
-            context,
-            binding_context.as_slice(),
-        ],
+        root,
+        n,
+        k,
+        binding_entropy,
+        value,
+        target,
+        context,
+        binding_context,
     )
 }
 

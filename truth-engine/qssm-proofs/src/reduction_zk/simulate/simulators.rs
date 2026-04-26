@@ -229,16 +229,13 @@ pub fn attempt_le_witness_free_simulator(
         uses_random_oracle_programming: false,
     }];
 
-    let sampled_r = sample_centered_vec(
+    let core = simulate_le_core(
+        public_input,
+        None,
         b"le_sim_commitment_short",
-        public_input.binding_context,
-        BETA,
-    );
-    let commitment_r = short_vec_to_rq(&sampled_r)?;
-    let a = public_input.vk.matrix_a_poly();
-    let mu = le_mu_from_public(&public_input.public);
-    let commitment_poly = a.mul(&commitment_r)?.add(&mu);
-    let commitment = Commitment(commitment_poly);
+        b"le_sim_z",
+        b"le_sim_challenge_seed",
+    )?;
     logs.push(SimulatorLogEntry {
         step: "sample_commitment".to_string(),
         detail:
@@ -248,32 +245,6 @@ pub fn attempt_le_witness_free_simulator(
         uses_independent_sampling: true,
         uses_random_oracle_programming: false,
     });
-
-    let z_arr = sample_centered_vec(b"le_sim_z", public_input.binding_context, GAMMA);
-    let z = short_vec_to_rq_bound(&z_arr, GAMMA)?;
-    let challenge_seed = hash_domain(
-        DOMAIN_ZK_SIM,
-        &[
-            b"le_sim_challenge_seed",
-            public_input.binding_context.as_slice(),
-            &public_input.vk.crs_seed,
-            &le_public_binding_fs_bytes(&public_input.public),
-            &encode_rq_coeffs_le(&commitment.0),
-        ],
-    );
-    let c_poly = le_challenge_poly(&challenge_seed);
-    let c_rq = le_challenge_poly_to_rq(&c_poly);
-    let u = commitment.0.sub(&mu);
-    let az = a.mul(&z)?;
-    let cu = c_rq.mul(&u)?;
-    let t = az.sub(&cu);
-    let programmed_oracle_query_digest = le_fs_programmed_query_digest(
-        &public_input.binding_context,
-        &public_input.vk,
-        &public_input.public,
-        &commitment,
-        &t,
-    );
     logs.push(SimulatorLogEntry {
         step: "program_random_oracle".to_string(),
         detail:
@@ -283,11 +254,8 @@ pub fn attempt_le_witness_free_simulator(
         uses_independent_sampling: true,
         uses_random_oracle_programming: true,
     });
-
-    let lhs = a.mul(&z)?;
-    let rhs = t.add(&c_rq.mul(&u)?);
-    let algebraic_relation_holds = lhs == rhs;
-    let norm_bound_holds = z.inf_norm_centered() <= GAMMA;
+    let algebraic_relation_holds = core.algebraic_relation_holds;
+    let norm_bound_holds = core.norm_bound_holds;
 
     let mut failures = Vec::new();
     let rejection = RejectionSamplingClaim::for_current_params();
@@ -318,13 +286,7 @@ pub fn attempt_le_witness_free_simulator(
 
     Ok(LeWitnessFreeSimulatorAttempt {
         game: ZkGameDefinition::le_hidden_witness_game(),
-        transcript: Some(SimulatedLeTranscript {
-            commitment_coeffs: commitment.0 .0.to_vec(),
-            t_coeffs: t.0.to_vec(),
-            z_coeffs: z.0.to_vec(),
-            challenge_seed,
-            programmed_oracle_query_digest,
-        }),
+        transcript: Some(core.transcript),
         logs,
         failures,
         algebraic_relation_holds,
@@ -450,7 +412,7 @@ pub fn simulate_qssm_transcript(
 
     Ok(SimulatedQssmTranscript {
         ms: simulate_ms_v2_transcript(&public_input.ms, ms_seed)?,
-        le: simulate_le_transcript(&public_input.le, le_seed)?,
+        le: simulate_le_transcript(SimulatorOnly::new(&public_input.le), le_seed)?,
     })
 }
 

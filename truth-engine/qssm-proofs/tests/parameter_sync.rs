@@ -6,13 +6,13 @@
 
 use qssm_le::{BETA, C_POLY_SIZE, C_POLY_SPAN, ETA, GAMMA, N, Q};
 
-use qssm_proofs::reduction_blake3::Blake3BindingReduction;
-use qssm_proofs::reduction_lattice::{
+use qssm_proofs::lattice::core::{
     FsReductionBound, LeCommitmentSoundnessTheorem, LyubashevskyExtractionClaim, MsisBound,
 };
-use qssm_proofs::reduction_ms::MsSoundnessClaim;
-use qssm_proofs::reduction_rejection::RejectionSamplingClaim;
-use qssm_proofs::reduction_witness_hiding::WitnessHidingClaim;
+use qssm_proofs::lattice::rejection::RejectionSamplingClaim;
+use qssm_proofs::lattice::witness_hiding::WitnessHidingClaim;
+use qssm_proofs::ms::blake3::Blake3BindingReduction;
+use qssm_proofs::ms::soundness::MsSoundnessClaim;
 
 // ---------------------------------------------------------------------------
 // Canonical LE Set B constants (must match qssm-le exactly)

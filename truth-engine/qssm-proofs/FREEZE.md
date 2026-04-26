@@ -1,61 +1,38 @@
 # FREEZE.md — qssm-proofs Claim Inventory
 
-> This file tracks the frozen formal claims in `qssm-proofs`.
-> It is NOT an institutional document (`publish = false`).
+This file records frozen security-model assumptions and parameterized claims for `qssm-proofs`.
 
-## Frozen Parameters (from qssm-le)
+## Authoritative Parameters
 
-| Parameter | Value | Source |
-|-----------|-------|--------|
-| N | 256 | `qssm_le::N` |
-| Q | 8,380,417 | `qssm_le::Q` |
-| BETA | 8 | `qssm_le::BETA` |
-| ETA | 2,048 | `qssm_le::ETA` |
-| GAMMA | 4,096 | `qssm_le::GAMMA` |
-| C_POLY_SIZE | 64 | `qssm_le::C_POLY_SIZE` |
-| C_POLY_SPAN | 16 | `qssm_le::C_POLY_SPAN` |
+All Set B parameters are authoritative in `qssm_le::protocol::params` (`truth-engine/qssm-le/src/protocol/params.rs`).
 
-## Claim Inventory
+| Parameter | Value |
+|---|---|
+| `N` | `256` |
+| `Q` | `8,380,417` |
+| `BETA` | `8` |
+| `ETA` | `196,608` |
+| `GAMMA` | `199,680` |
+| `C_POLY_SIZE` | `48` |
+| `C_POLY_SPAN` | `8` |
 
-### We prove (formal reduction)
+## Frozen Theorem Posture
 
-1. **LE Commitment Soundness** — `LeCommitmentSoundnessTheorem`
-   - ε_forge ≤ ε_MSIS + ε_FS
-   - MSIS: perfectly binding (rank-1, invertible CRS, δ* < 1)
-   - FS: ε_FS = Q_H / |C_eff| = 2^64 / 33^64 → −258.8 bits
+`qssm-proofs` carries the composed ZK theorem in programmable ROM with additive bound:
 
-2. **Special Soundness / Extraction** — `LyubashevskyExtractionClaim`
-   - Knowledge error κ = 1/33^64 → −322.8 bits
-   - Extraction via (c₁−c₂)⁻¹ in R_q ≅ F_q^256
+`Adv_QSSM(D) <= epsilon_ms_hash_binding + epsilon_ms_rom_programmability + epsilon_le`
 
-3. **BLAKE3 Cross-Engine Binding** — `Blake3BindingReduction`
-   - ε_bind ≤ Q_H² / 2^257 (birthday on 256-bit hash)
-   - advantage ≈ −129 bits for Q_H = 2^64
+with the frozen boundary contracts and Set B parameter conditions.
 
-4. **MS Inequality Soundness** — `MsSoundnessClaim`
-   - ε_ms ≤ 256 · (ε_coll + 2^{-256}) ≈ 2^{-248}
+## Security Floors
 
-### We bound (numeric estimate)
-
-5. **BKZ Hardness Estimate** — `SecurityEstimate`
-   - min(MSIS-APS15, FS-KLS18) ≈ 259 classical bits
-   - FS-dominated (MSIS = ∞ for rank-1)
-
-### We claim (non-simulation property)
-
-6. **Witness-Hiding** — `WitnessHidingClaim`
-   - Gap ratio γ/β = 512
-   - Per-coefficient leakage ≈ 2^{-10} bits
-
-### We do NOT claim
-
-- **Full HVZK / simulation-based ZK** — η = 2,048 does not meet η ≥ 483,000
-  required by [Lyu12] Lemma 3.2 for ε = 2^{-128}.
-- **Post-quantum ROM analysis** — quantum bits are heuristic (0.265·b model).
+- ZK floor (Fiat-Shamir challenge-space margin): **132.2 bits**
+- Soundness floor (collision-dominated MS bound): **121 bits**
+- CI enforcement floor (`CI_FLOOR_BITS` in crate): `112`
 
 ## Invariants
 
-- `CI_FLOOR_BITS = 112` — CI test fails below this.
-- `TARGET_BITS = 128` — design target.
-- All claim structs carry `claim_type: ClaimType` field.
-- `tests/parameter_sync.rs` asserts every claim struct uses upstream constants.
+- Parameter values are sourced from `qssm_le::protocol::params` only.
+- `gamma == eta + ||cr||_inf` is checked by executable tests.
+- Frozen theorem audit paths must preserve `PROOF_STRUCTURE_VERSION` and `run_audit_validation`.
+- `src/reduction_zk/` remains nested (`core/`, `simulate/`, `transcript/`, `audit/`, `tests/`) with no flat duplicate source copies.

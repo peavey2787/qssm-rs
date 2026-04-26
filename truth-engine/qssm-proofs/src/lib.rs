@@ -1,12 +1,10 @@
 #![forbid(unsafe_code)]
 
 pub mod benchmarks;
-pub mod reduction_blake3;
-pub mod reduction_lattice;
-pub mod reduction_ms;
-pub mod reduction_rejection;
-pub mod reduction_witness_hiding;
-pub mod reduction_zk;
+pub mod lattice;
+pub mod ms;
+pub mod shared;
+pub mod zk;
 
 use qssm_gadget::DIGEST_COEFF_VECTOR_SIZE;
 use qssm_le::{BETA, C_POLY_SIZE, N, Q};
@@ -140,7 +138,7 @@ impl SecurityEstimate {
     /// Compute from formal MSIS + FS bounds for (n, q, β).
     #[must_use]
     pub fn compute(n: usize, q: u32, beta: u32) -> Self {
-        use crate::reduction_lattice::LeCommitmentSoundnessTheorem;
+        use crate::lattice::core::LeCommitmentSoundnessTheorem;
         let thm =
             LeCommitmentSoundnessTheorem::compute(n, q, beta, C_POLY_SIZE, qssm_le::C_POLY_SPAN);
         Self {
@@ -202,10 +200,10 @@ pub struct EffectiveSecurityBits {
 struct ExternalEstimate {
     classical_bits: f64,
     quantum_bits: f64,
-    #[allow(dead_code)]
-    source: Option<String>,
-    #[allow(dead_code)]
-    date: Option<String>,
+    #[serde(rename = "source")]
+    _source: Option<String>,
+    #[serde(rename = "date")]
+    _date: Option<String>,
 }
 
 /// Compute formal security bits for the given lattice parameters.
@@ -525,7 +523,7 @@ mod tests {
 
 #[cfg(all(test, feature = "audit-mode"))]
 mod audit_mode_tests {
-    use crate::reduction_zk::{run_audit_validation, PROOF_STRUCTURE_VERSION};
+    use crate::zk::core::{run_audit_validation, PROOF_STRUCTURE_VERSION};
 
     #[test]
     fn audit_mode_validates_simulator_independence_and_lemma_closure() {

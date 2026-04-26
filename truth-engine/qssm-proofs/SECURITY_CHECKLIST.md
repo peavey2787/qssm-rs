@@ -2,16 +2,12 @@
 
 | # | Claim | Struct | Test | Bits | Status |
 |---|-------|--------|------|------|--------|
-| 1 | MSIS perfectly binding (rank-1) | `MsisBound` | `msis_bound_perfectly_binding_for_current_params` | ∞ | Pass |
-| 2 | FS soundness (ROM) | `FsReductionBound` | `fs_reduction_challenge_space` | 258.8 | Pass |
-| 3 | LE composed soundness | `LeCommitmentSoundnessTheorem` | `le_commitment_soundness_meets_128` | 258.8 | Pass |
-| 4 | Extraction (special soundness) | `LyubashevskyExtractionClaim` | `extraction_knowledge_error_below_neg128` | 322.8 | Pass |
-| 5 | Witness-hiding gap ratio | `WitnessHidingClaim` | `witness_hiding_gap_ratio` | — | Pass |
-| 6 | HVZK NOT met | `RejectionSamplingClaim` | `hvzk_not_met` | — | Pass |
-| 7 | Rejection abort probability | `RejectionSamplingClaim` | `abort_probability_is_positive` | — | Pass |
-| 8 | BLAKE3 binding (birthday) | `Blake3BindingReduction` | `binding_advantage_below_neg128` | 129 | Pass |
-| 9 | MS soundness | `MsSoundnessClaim` | `ms_soundness_below_neg_112` | 248 | Pass |
-| 10 | Security estimate ≥ 128 | `SecurityEstimate` | `security_estimate_for_current_params` | 258.8 | Pass |
-| 11 | CI floor 112 bits | `system_audit()` | `ci_security_floor_112_bits` | 258.8 | Pass |
-| 12 | Parameter drift guardrail | — | `tests/parameter_sync.rs` (11 tests) | — | Pass |
-| 13 | Serialization round-trip | all claim structs | `all_claims_serialize_roundtrip` | — | Pass |
+| 1 | Parameter authority in `qssm_le::protocol::params` | Set B constants | `tests/parameter_sync.rs` | — | Required |
+| 2 | Set B support containment | `LeHvzkConstraintAnalysis` | `set_b_parameter_invariants_match_encoded_formula` | — | Required |
+| 3 | ZK FS floor under Set B | `LeHvzkConstraintAnalysis` | `set_b_parameter_invariants_match_encoded_formula` | 132.2 | Required |
+| 4 | Soundness floor | `MsSoundnessClaim` | `ms_soundness_below_neg_112` | 121 | Required |
+| 5 | Composed theorem closure | `ClosedZkTheorem` | `proof_closure_checker_*` tests | — | Required |
+| 6 | Audit checklist passes | `run_audit_validation` | `audit_validation_returns_passing_checklist` | — | Required |
+| 7 | Simulator witness isolation contract | `GlobalQssmSimulator` | `adversarial_simulator_witness_leak_detected_by_checklist` | — | Required |
+| 8 | LE simulation single core path | `simulate_le_core` wrappers | `le_global_simulation_matches_baseline_transcript_bytes_on_fixed_seed` | — | Required |
+| 9 | Canonical nested ZK source layout | `reduction_zk/{core,simulate,transcript,audit,tests}` | `cargo check -p qssm-proofs --all-targets` | — | Required |
