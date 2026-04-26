@@ -28,7 +28,7 @@ Classify every ROM usage in the QSSM system as **essential** (Fiat-Shamir core �
 | Challenge polynomial | `challenge_poly()` | challenge_seed + counter → coefficients | **ESSENTIAL** — Derives the challenge polynomial from the FS output. Part of the FS chain. |
 | Prover CSPRNG | `Blake3Rng::new(seed)` | rng_seed → XOF stream for y sampling | **ELIMINABLE** — Deterministic masking. Any seeded CSPRNG works. Not oracle-programmed. |
 
-### Simulator Layer (`qssm-proofs/src/reduction_zk.rs`)
+### Simulator Layer (`qssm-proofs/src/reduction_zk/mod.rs`)
 
 | Call Site | Function | What It Hashes | ROM Classification |
 |-----------|----------|----------------|-------------------|

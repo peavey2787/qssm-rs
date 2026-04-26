@@ -9,7 +9,7 @@ This document freezes the current publishable theorem artifact for the canonical
 - game-based proof chain `G0 -> G1 -> G2`
 - global simulator `simulate_qssm_transcript`
 
-The source of truth for the executable theorem object is `truth-engine/qssm-proofs/src/reduction_zk.rs`.
+The source of truth for the executable theorem object is `truth-engine/qssm-proofs/src/reduction_zk/mod.rs`.
 
 ## Scope
 

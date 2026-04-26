@@ -17,7 +17,7 @@ The canonical code surface is:
 - `qssm_ms::simulate_predicate_only_v2`
 - `qssm_ms::verify_predicate_only_v2_with_programming`
 
-The formal reduction surface in [truth-engine/qssm-proofs/src/reduction_zk.rs](../../truth-engine/qssm-proofs/src/reduction_zk.rs) treats this accessor set as the authoritative public boundary.
+The formal reduction surface in [truth-engine/qssm-proofs/src/reduction_zk/mod.rs](../../truth-engine/qssm-proofs/src/reduction_zk/mod.rs) treats this accessor set as the authoritative public boundary.
 
 ## Observable sigma-algebra
 
@@ -68,7 +68,7 @@ The simulator is not allowed to depend on:
 - prover randomness
 - `PredicateWitnessV2`
 
-In the current codebase this is enforced by construction in [truth-engine/qssm-proofs/src/reduction_zk.rs](../../truth-engine/qssm-proofs/src/reduction_zk.rs): the simulator rebuilds the public statement from the commitment-bearing public input and calls `qssm_ms::simulate_predicate_only_v2` without any witness argument.
+In the current codebase this is enforced by construction in [truth-engine/qssm-proofs/src/reduction_zk/mod.rs](../../truth-engine/qssm-proofs/src/reduction_zk/mod.rs): the simulator rebuilds the public statement from the commitment-bearing public input and calls `qssm_ms::simulate_predicate_only_v2` without any witness argument.
 
 ## Reduction consequence
 
@@ -83,7 +83,7 @@ This means the MS theorem and the LE theorem are not separate presentation artif
 
 ## Empirical suite scope
 
-The empirical MS-only distinguisher suite in [truth-engine/qssm-proofs/src/reduction_zk.rs](../../truth-engine/qssm-proofs/src/reduction_zk.rs) now checks three layers on this frozen boundary:
+The empirical MS-only distinguisher suite in [truth-engine/qssm-proofs/src/reduction_zk/mod.rs](../../truth-engine/qssm-proofs/src/reduction_zk/mod.rs) now checks three layers on this frozen boundary:
 
 - statistical layer: nibble histograms, adjacent-byte correlation / byte-delta checks, entropy estimates, and observable conditional bias
 - structure layer: witness-correlated hidden features against public projections

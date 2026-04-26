@@ -10,7 +10,7 @@ Under the frozen hidden-value ZK game, the current MS transcript is structurally
 - `k`
 - `bit_at_k`
 
-The formal simulator attempt in [truth-engine/qssm-proofs/src/reduction_zk.rs](../../truth-engine/qssm-proofs/src/reduction_zk.rs) fails exactly at:
+The formal simulator attempt in [truth-engine/qssm-proofs/src/reduction_zk/mod.rs](../../truth-engine/qssm-proofs/src/reduction_zk/mod.rs) fails exactly at:
 
 - `MS k/n selection`
 - `MS bit_at_k extraction`

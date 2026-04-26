@@ -61,4 +61,4 @@ Derived properties:
 
 This is the proof-safe configuration now committed in the codebase. It satisfies the exact eta/gamma/challenge-shape conditions encoded in the formal crate while still clearing the 128-bit Fiat-Shamir target.
 
-The corresponding formal objects are now aligned with this set in [truth-engine/qssm-proofs/src/reduction_rejection.rs](../../truth-engine/qssm-proofs/src/reduction_rejection.rs), [truth-engine/qssm-proofs/src/reduction_lattice.rs](../../truth-engine/qssm-proofs/src/reduction_lattice.rs), and [truth-engine/qssm-proofs/src/reduction_zk.rs](../../truth-engine/qssm-proofs/src/reduction_zk.rs).
+The corresponding formal objects are now aligned with this set in [truth-engine/qssm-proofs/src/reduction_rejection.rs](../../truth-engine/qssm-proofs/src/reduction_rejection.rs), [truth-engine/qssm-proofs/src/reduction_lattice.rs](../../truth-engine/qssm-proofs/src/reduction_lattice.rs), and [truth-engine/qssm-proofs/src/reduction_zk/mod.rs](../../truth-engine/qssm-proofs/src/reduction_zk/mod.rs).
