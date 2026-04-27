@@ -10,11 +10,13 @@ pub struct SimulatorOnly<T>(T);
 /// let _cap = SimulatorOnly::new(42u8);
 /// ```
 impl<T> SimulatorOnly<T> {
+    #[allow(dead_code)]
     #[must_use]
     pub(crate) fn new(value: T) -> Self {
         Self(value)
     }
 
+    #[allow(dead_code)]
     #[must_use]
     pub(crate) fn into_inner(self) -> T {
         self.0
@@ -26,11 +28,13 @@ impl<T> SimulatorOnly<T> {
 pub struct RealProverOnly<T>(T);
 
 impl<T> RealProverOnly<T> {
+    #[allow(dead_code)]
     #[must_use]
     pub(crate) fn new(value: T) -> Self {
         Self(value)
     }
 
+    #[allow(dead_code)]
     #[must_use]
     pub(crate) fn into_inner(self) -> T {
         self.0
@@ -42,11 +46,13 @@ impl<T> RealProverOnly<T> {
 pub struct WitnessOnly<T>(T);
 
 impl<T> WitnessOnly<T> {
+    #[allow(dead_code)]
     #[must_use]
     pub(crate) fn new(value: T) -> Self {
         Self(value)
     }
 
+    #[allow(dead_code)]
     #[must_use]
     pub(crate) fn into_inner(self) -> T {
         self.0

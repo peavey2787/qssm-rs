@@ -1,5 +1,6 @@
-#[path = "../reduction_zk/mod.rs"]
-pub mod core;
+pub mod core {
+    pub use crate::reduction_zk::*;
+}
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {

@@ -3,6 +3,12 @@
 pub mod benchmarks;
 pub mod lattice;
 pub mod ms;
+pub mod reduction_blake3;
+pub mod reduction_lattice;
+pub mod reduction_ms;
+pub mod reduction_rejection;
+pub mod reduction_witness_hiding;
+pub mod reduction_zk;
 pub mod shared;
 pub mod zk;
 

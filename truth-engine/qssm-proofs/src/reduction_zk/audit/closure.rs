@@ -1,3 +1,5 @@
+use super::*;
+
 fn collect_theorem_path_entries(
     architecture_freeze: &FrozenArchitectureSeal,
     assumption_graph: &AssumptionDependencyGraph,
@@ -7,14 +9,41 @@ fn collect_theorem_path_entries(
     theorem_statement: &str,
 ) -> Vec<(String, String)> {
     let mut entries = vec![
-        ("architecture_freeze.statement".to_string(), architecture_freeze.statement.clone()),
-        ("game_based_proof.security_definition".to_string(), game_based_proof.security_definition.clone()),
-        ("game_based_proof.exact_claim".to_string(), game_based_proof.exact_claim.clone()),
-        ("game_based_proof.theorem_statement".to_string(), game_based_proof.theorem_statement.clone()),
-        ("game_based_proof.global_simulator.shared_randomness_model".to_string(), game_based_proof.global_simulator.shared_randomness_model.clone()),
-        ("closed_theorem.output_bound.expression".to_string(), output_bound.expression.clone()),
-        ("closed_theorem.output_bound.justification".to_string(), output_bound.justification.clone()),
-        ("closed_theorem.theorem_statement".to_string(), theorem_statement.to_string()),
+        (
+            "architecture_freeze.statement".to_string(),
+            architecture_freeze.statement.clone(),
+        ),
+        (
+            "game_based_proof.security_definition".to_string(),
+            game_based_proof.security_definition.clone(),
+        ),
+        (
+            "game_based_proof.exact_claim".to_string(),
+            game_based_proof.exact_claim.clone(),
+        ),
+        (
+            "game_based_proof.theorem_statement".to_string(),
+            game_based_proof.theorem_statement.clone(),
+        ),
+        (
+            "game_based_proof.global_simulator.shared_randomness_model".to_string(),
+            game_based_proof
+                .global_simulator
+                .shared_randomness_model
+                .clone(),
+        ),
+        (
+            "closed_theorem.output_bound.expression".to_string(),
+            output_bound.expression.clone(),
+        ),
+        (
+            "closed_theorem.output_bound.justification".to_string(),
+            output_bound.justification.clone(),
+        ),
+        (
+            "closed_theorem.theorem_statement".to_string(),
+            theorem_statement.to_string(),
+        ),
     ];
 
     for assumption in &assumption_graph.inputs {
@@ -24,16 +53,34 @@ fn collect_theorem_path_entries(
         ));
     }
     for contract in premise_contracts {
-        entries.push(("closed_theorem.premise_contract".to_string(), contract.clone()));
+        entries.push((
+            "closed_theorem.premise_contract".to_string(),
+            contract.clone(),
+        ));
     }
     for game in &game_based_proof.games {
-        entries.push((format!("{} transcript_distribution", game.name), game.transcript_distribution.clone()));
-        entries.push((format!("{} theorem_role", game.name), game.theorem_role.clone()));
+        entries.push((
+            format!("{} transcript_distribution", game.name),
+            game.transcript_distribution.clone(),
+        ));
+        entries.push((
+            format!("{} theorem_role", game.name),
+            game.theorem_role.clone(),
+        ));
     }
     for transition in &game_based_proof.transitions {
-        entries.push((format!("{} theorem_statement", transition.name), transition.theorem_statement.clone()));
-        entries.push((format!("{} explicit_simulator", transition.name), transition.explicit_simulator.clone()));
-        entries.push((format!("{} bound.justification", transition.name), transition.bound.justification.clone()));
+        entries.push((
+            format!("{} theorem_statement", transition.name),
+            transition.theorem_statement.clone(),
+        ));
+        entries.push((
+            format!("{} explicit_simulator", transition.name),
+            transition.explicit_simulator.clone(),
+        ));
+        entries.push((
+            format!("{} bound.justification", transition.name),
+            transition.bound.justification.clone(),
+        ));
     }
     entries
 }
@@ -69,7 +116,10 @@ fn validate_exact_ms_simulation_lemmas(
     internal_lemma_chain: &[TheoremLemmaReference],
     issues: &mut Vec<ProofClosureIssue>,
 ) {
-    for lemma in internal_lemma_chain.iter().filter(|lemma| lemma.name.starts_with("MS-")) {
+    for lemma in internal_lemma_chain
+        .iter()
+        .filter(|lemma| lemma.name.starts_with("MS-"))
+    {
         if lemma.name.starts_with("MS-3") {
             if !lemma.assumption_dependencies.is_empty()
                 || lemma.produced_bound_numeric_upper_bound != Some(0.0)
@@ -95,16 +145,16 @@ fn validate_exact_ms_simulation_lemmas(
                 issues.push(ProofClosureIssue {
                     kind: ProofClosureIssueKind::ForbiddenMsResidualAssumption,
                     location: lemma.name.clone(),
-                    detail: format!(
-                        "{} depends on an MS assumption outside A1/A2.",
-                        lemma.name
-                    ),
+                    detail: format!("{} depends on an MS assumption outside A1/A2.", lemma.name),
                 });
             }
         }
     }
 
-    let Some(ms_3a) = internal_lemma_chain.iter().find(|lemma| lemma.name == "MS-3a") else {
+    let Some(ms_3a) = internal_lemma_chain
+        .iter()
+        .find(|lemma| lemma.name == "MS-3a")
+    else {
         issues.push(ProofClosureIssue {
             kind: ProofClosureIssueKind::ExactSimulationLemmaViolation,
             location: "MS-3a".to_string(),
@@ -112,7 +162,10 @@ fn validate_exact_ms_simulation_lemmas(
         });
         return;
     };
-    let Some(ms_3b) = internal_lemma_chain.iter().find(|lemma| lemma.name == "MS-3b") else {
+    let Some(ms_3b) = internal_lemma_chain
+        .iter()
+        .find(|lemma| lemma.name == "MS-3b")
+    else {
         issues.push(ProofClosureIssue {
             kind: ProofClosureIssueKind::ExactSimulationLemmaViolation,
             location: "MS-3b".to_string(),
@@ -120,7 +173,10 @@ fn validate_exact_ms_simulation_lemmas(
         });
         return;
     };
-    let Some(ms_3c) = internal_lemma_chain.iter().find(|lemma| lemma.name == "MS-3c") else {
+    let Some(ms_3c) = internal_lemma_chain
+        .iter()
+        .find(|lemma| lemma.name == "MS-3c")
+    else {
         issues.push(ProofClosureIssue {
             kind: ProofClosureIssueKind::ExactSimulationLemmaViolation,
             location: "MS-3c".to_string(),
@@ -214,7 +270,8 @@ fn symbol_closes_recursively(
                 return assumption_terms.contains(symbol);
             }
             bound.epsilon_dependencies.iter().all(|dep| {
-                dep == symbol || symbol_closes_recursively(dep, bound_map, assumption_terms, visiting)
+                dep == symbol
+                    || symbol_closes_recursively(dep, bound_map, assumption_terms, visiting)
             })
         })
     } else {
@@ -225,7 +282,7 @@ fn symbol_closes_recursively(
     result
 }
 
-fn proof_closure_report_for_closed_theorem(
+pub(crate) fn proof_closure_report_for_closed_theorem(
     architecture_freeze: &FrozenArchitectureSeal,
     assumption_graph: &AssumptionDependencyGraph,
     internal_lemma_chain: &[TheoremLemmaReference],
@@ -381,8 +438,7 @@ fn proof_closure_report_for_closed_theorem(
                     location: location.clone(),
                     detail: format!(
                         "{} still depends on residual MS epsilon term {} beyond A1/A2.",
-                        bound.symbol,
-                        token
+                        bound.symbol, token
                     ),
                 });
             }
@@ -392,8 +448,7 @@ fn proof_closure_report_for_closed_theorem(
                     location: location.clone(),
                     detail: format!(
                         "{} references undefined epsilon term {}.",
-                        bound.symbol,
-                        dependency
+                        bound.symbol, dependency
                     ),
                 });
             }
@@ -428,7 +483,9 @@ fn proof_closure_report_for_closed_theorem(
             .collect();
 
         for dependency in &transition.bound.epsilon_dependencies {
-            if !produced_by_dependencies.contains(dependency) && !assumption_terms.contains(dependency) {
+            if !produced_by_dependencies.contains(dependency)
+                && !assumption_terms.contains(dependency)
+            {
                 issues.push(ProofClosureIssue {
                     kind: ProofClosureIssueKind::CompositionUsesUndeclaredBound,
                     location: transition.name.clone(),

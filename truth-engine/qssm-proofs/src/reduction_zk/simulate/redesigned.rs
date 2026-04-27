@@ -1,3 +1,5 @@
+use super::*;
+
 impl RedesignedSystemsTheorem {
     pub fn for_current_and_redesigned_systems() -> Result<Self, ZkSimulationError> {
         let current_system = honest_zk_theorem_for_current_system()?;
@@ -5,7 +7,8 @@ impl RedesignedSystemsTheorem {
         let ms_v2_observable_boundary = MsV2ObservableBoundaryContract::for_frozen_interface();
         let le_constraint_analysis = LeHvzkConstraintAnalysis::for_current_params();
         let canonical_le_set_b = CanonicalLeSetB::current();
-        let ms_v2_alignment = run_ms_v2_empirical_alignment(&statement_batch_for_ms_v2_alignment())?;
+        let ms_v2_alignment =
+            run_ms_v2_empirical_alignment(&statement_batch_for_ms_v2_alignment())?;
         let unified_hybrid_game = UnifiedZkHybridGame::for_canonical_option_b_and_set_b();
         let closed_zk_theorem = ClosedZkTheorem::for_current_and_redesigned_systems(
             &ms_v2_observable_boundary,

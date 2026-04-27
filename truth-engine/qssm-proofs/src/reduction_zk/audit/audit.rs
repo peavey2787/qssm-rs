@@ -1,3 +1,5 @@
+use super::*;
+
 /// Frozen version of the QSSM proof structure.
 /// Changing this value signals a structural break requiring full re-audit.
 pub const PROOF_STRUCTURE_VERSION: &str = "QSSM-PROOF-FROZEN-v2.0";
@@ -84,7 +86,9 @@ impl ClosedZkTheorem {
         let mut items = Vec::new();
 
         // 1. Architecture freeze
-        let arch_ok = self.architecture_freeze.no_further_structural_changes_allowed
+        let arch_ok = self
+            .architecture_freeze
+            .no_further_structural_changes_allowed
             && self.architecture_freeze.components.iter().all(|c| c.frozen);
         items.push(VerificationChecklistItem {
             id: "ARCH-FREEZE".to_string(),
@@ -206,8 +210,12 @@ impl ClosedZkTheorem {
         let mut out = String::new();
         out.push_str("\\begin{theorem}[QSSM Zero-Knowledge]\n");
         out.push_str("\\label{thm:qssm-zk}\n");
-        out.push_str("Let $\\mathcal{D}$ be any PPT distinguisher over the joint QSSM transcript.\n");
-        out.push_str("Let $G_0$ denote the real transcript game, $G_1$ the hybrid with the MS component\n");
+        out.push_str(
+            "Let $\\mathcal{D}$ be any PPT distinguisher over the joint QSSM transcript.\n",
+        );
+        out.push_str(
+            "Let $G_0$ denote the real transcript game, $G_1$ the hybrid with the MS component\n",
+        );
         out.push_str("replaced by $\\mathsf{Sim}_{\\mathrm{MS}}$, and $G_2$ the ideal game produced by the\n");
         out.push_str("global simulator $\\mathsf{Sim}_{\\mathrm{QSSM}}$.\n");
         out.push_str("Under Assumptions~A1 (hash binding), A2 (ROM programmability), and A4 (LE HVZK bound):\n");
@@ -231,10 +239,14 @@ impl ClosedZkTheorem {
         out.push_str("    boundary-consistent abstraction. Any distinguisher is reduced to\n");
         out.push_str("    hash/commitment binding on the frozen observable interface\n");
         out.push_str("    (loss~$\\epsilon_{\\mathrm{ms,bind}}$).\n");
-        out.push_str("  \\item \\textbf{MS-2.} Replace real Fiat--Shamir challenge derivation with\n");
+        out.push_str(
+            "  \\item \\textbf{MS-2.} Replace real Fiat--Shamir challenge derivation with\n",
+        );
         out.push_str("    programmed oracle answers on the frozen observable boundary\n");
         out.push_str("    (loss~$\\epsilon_{\\mathrm{ms,rom}}$).\n");
-        out.push_str("  \\item \\textbf{MS-3a.} Once the bitness Fiat--Shamir query is programmed,\n");
+        out.push_str(
+            "  \\item \\textbf{MS-3a.} Once the bitness Fiat--Shamir query is programmed,\n",
+        );
         out.push_str("    every witness-using bitness branch is exactly distribution-identical\n");
         out.push_str("    to a simulated Schnorr branch (zero advantage by Schnorr\n");
         out.push_str("    reparameterization).\n");
@@ -281,4 +293,3 @@ pub fn run_audit_validation() -> Result<VerificationChecklist, ZkSimulationError
     let theorem = ClosedZkTheorem::for_current_and_redesigned_systems(&boundary, &le_analysis);
     Ok(theorem.verification_checklist())
 }
-

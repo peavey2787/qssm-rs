@@ -1,3 +1,5 @@
+use super::*;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum SimulationStrategy {
     DistributionCollapse,
@@ -401,4 +403,3 @@ pub struct AssumptionDependencyEdge {
     pub to: String,
     pub rationale: String,
 }
-

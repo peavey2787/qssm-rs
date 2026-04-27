@@ -1,3 +1,5 @@
+use super::*;
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct MsTranscript {
     pub statement_digest: [u8; 32],

@@ -1,3 +1,5 @@
+use super::*;
+
 impl CanonicalMsV2TranscriptDesign {
     #[must_use]
     pub fn option_b() -> Self {
@@ -151,8 +153,10 @@ impl ClosedZkTheorem {
             le_constraint_analysis,
         );
         let architecture_freeze = frozen_qssm_architecture_seal();
-        let assumption_graph =
-            assumption_dependency_graph_for_canonical_option_b_and_set_b(boundary, le_constraint_analysis);
+        let assumption_graph = assumption_dependency_graph_for_canonical_option_b_and_set_b(
+            boundary,
+            le_constraint_analysis,
+        );
         let internal_lemma_chain = theorem_lemma_chain_for_canonical_option_b_and_set_b(&reduction);
         let game_based_proof = game_based_zk_proof_for_canonical_option_b_and_set_b(
             boundary,
@@ -226,7 +230,8 @@ impl ClosedZkTheorem {
             game_based_proof,
             premise_contracts,
             random_variables: vec![
-                "T_G0 := verifier view sampled from the real joint QSSM transcript game".to_string(),
+                "T_G0 := verifier view sampled from the real joint QSSM transcript game"
+                    .to_string(),
                 "T_G2 := verifier view sampled from the global simulator output".to_string(),
             ],
             distributions: vec![
@@ -252,13 +257,8 @@ impl LeHvzkConstraintAnalysis {
         let epsilon_log2 = -128.0;
         let query_budget_log2 = 64.0;
         let worst_case_cr_inf_norm = le_worst_case_cr_inf_norm(BETA, C_POLY_SIZE, C_POLY_SPAN);
-        let required_eta_for_hvzk = le_required_eta_for_hvzk(
-            N,
-            BETA,
-            C_POLY_SIZE,
-            C_POLY_SPAN,
-            epsilon_log2,
-        );
+        let required_eta_for_hvzk =
+            le_required_eta_for_hvzk(N, BETA, C_POLY_SIZE, C_POLY_SPAN, epsilon_log2);
         let minimum_gamma_for_support_containment =
             le_minimum_gamma_for_support_containment(ETA, BETA, C_POLY_SIZE, C_POLY_SPAN);
         let challenge_space_log2 = le_challenge_space_log2(C_POLY_SIZE, C_POLY_SPAN);
@@ -280,7 +280,8 @@ impl LeHvzkConstraintAnalysis {
             challenge_space_log2,
             fs_security_bits,
             current_eta_shortfall: required_eta_for_hvzk - f64::from(ETA),
-            current_gamma_shortfall: i64::from(GAMMA) - minimum_gamma_for_support_containment as i64,
+            current_gamma_shortfall: i64::from(GAMMA)
+                - minimum_gamma_for_support_containment as i64,
         }
     }
 }
@@ -306,7 +307,8 @@ impl CanonicalLeSetB {
         let challenge_space_log2 = le_challenge_space_log2(c_poly_size, c_poly_span);
         let fs_security_bits = challenge_space_log2 - 64.0;
         let satisfies_hvzk_eta = f64::from(eta) >= required_eta_for_hvzk;
-        let satisfies_support_containment = u64::from(gamma) >= minimum_gamma_for_support_containment;
+        let satisfies_support_containment =
+            u64::from(gamma) >= minimum_gamma_for_support_containment;
         let meets_128_bit_fs = fs_security_bits >= 128.0;
 
         Self {

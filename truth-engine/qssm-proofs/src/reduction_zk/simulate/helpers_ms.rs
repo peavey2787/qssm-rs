@@ -1,3 +1,5 @@
+use super::*;
+
 pub fn public_candidate_pairs(statement: &MsPublicStatement) -> Vec<(u8, u8)> {
     let r = binding_rotation(&statement.binding_entropy);
     let mut out = Vec::new();
@@ -112,7 +114,12 @@ pub fn simulate_commitment_opening(
     for i in 0u8..MS_BIT_COUNT as u8 {
         for bit in 0u8..=1 {
             let leaf_idx = 2 * usize::from(i) + usize::from(bit);
-            leaves.push(ms_leaf(i, bit, &salts[leaf_idx], &statement.binding_entropy));
+            leaves.push(ms_leaf(
+                i,
+                bit,
+                &salts[leaf_idx],
+                &statement.binding_entropy,
+            ));
         }
     }
 
@@ -183,7 +190,7 @@ fn binding_rotation(binding_entropy: &[u8; 32]) -> u64 {
     u64::from_le_bytes(bytes)
 }
 
-fn harness_commitment_seed(statement: &MsPublicStatement, sample_idx: u32) -> [u8; 32] {
+pub(crate) fn harness_commitment_seed(statement: &MsPublicStatement, sample_idx: u32) -> [u8; 32] {
     hash_domain(
         DOMAIN_MS,
         &[
@@ -197,7 +204,7 @@ fn harness_commitment_seed(statement: &MsPublicStatement, sample_idx: u32) -> [u
     )
 }
 
-fn statement_batch_for_ms_v2_alignment() -> Vec<MsPublicStatement> {
+pub(crate) fn statement_batch_for_ms_v2_alignment() -> Vec<MsPublicStatement> {
     let cases = [
         (u64::MAX, u64::MAX ^ 1),
         (u64::MAX, u64::MAX ^ (1u64 << 7)),
@@ -212,7 +219,10 @@ fn statement_batch_for_ms_v2_alignment() -> Vec<MsPublicStatement> {
             MsPublicStatement {
                 value,
                 target,
-                binding_entropy: hash_domain(DOMAIN_MS, &[b"zk_ms_v2_binding_entropy", &case_bytes]),
+                binding_entropy: hash_domain(
+                    DOMAIN_MS,
+                    &[b"zk_ms_v2_binding_entropy", &case_bytes],
+                ),
                 binding_context: hash_domain(
                     DOMAIN_MS,
                     &[b"zk_ms_v2_binding_context", &case_bytes],
@@ -230,7 +240,7 @@ fn rot_for_nonce(r: u64, n: u8) -> u64 {
     u64::from_le_bytes(bytes)
 }
 
-fn highest_differing_bit(a: u64, b: u64) -> Option<u8> {
+pub(crate) fn highest_differing_bit(a: u64, b: u64) -> Option<u8> {
     let mut k: u8 = 63;
     loop {
         let bit_a = (a >> k) & 1;
@@ -253,7 +263,7 @@ fn ms_leaf(i: u8, bit: u8, salt: &[u8; 32], binding_entropy: &[u8; 32]) -> [u8; 
 }
 
 #[allow(clippy::too_many_arguments)]
-fn fs_challenge(
+pub(crate) fn fs_challenge(
     root: &[u8; 32],
     n: u8,
     k: u8,
@@ -276,7 +286,7 @@ fn fs_challenge(
     )
 }
 
-fn empirical_distance<T>(left: &[T], right: &[T]) -> EmpiricalDistributionDistance
+pub(crate) fn empirical_distance<T>(left: &[T], right: &[T]) -> EmpiricalDistributionDistance
 where
     T: Ord + Clone,
 {

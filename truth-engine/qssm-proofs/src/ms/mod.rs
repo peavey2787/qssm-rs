@@ -1,8 +1,10 @@
-#[path = "../reduction_blake3.rs"]
-pub mod blake3;
+pub mod blake3 {
+    pub use crate::reduction_blake3::*;
+}
 
-#[path = "../reduction_ms.rs"]
-pub mod soundness;
+pub mod soundness {
+    pub use crate::reduction_ms::*;
+}
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {

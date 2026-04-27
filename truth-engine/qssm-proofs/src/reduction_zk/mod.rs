@@ -29,6 +29,7 @@
 //! that the current end-to-end system already satisfies full ZK. Unmet proof
 //! obligations are recorded as exactly that; they are not treated as an
 //! impossibility result or a proof that the system is non-ZK.
+#![allow(dead_code)]
 
 use crate::{
     lattice::rejection::RejectionSamplingClaim,
@@ -63,24 +64,19 @@ const MS_TRUE_CLAUSE_PUBLIC_POINT_CONTRACT: &str =
     "At the highest differing bit position, every true-clause comparison public point is exactly of the form P = r * H for the corresponding committed blinder r.";
 const MS_SCHNORR_REPARAMETERIZATION_CONTRACT: &str =
     "For a fixed public point P = w * H and programmed challenge c, the real Schnorr transcript distribution (alpha, alpha*H, alpha+c*w) is exactly identical to the simulated transcript distribution (z*H-c*P, z) by the bijection z <-> alpha = z - c*w.";
+pub mod audit;
+pub mod core;
+pub mod simulate;
+pub mod transcript;
 
-include!("core/types_core.rs");
-include!("core/types_theorem.rs");
-include!("transcript/lemmas_a.rs");
-include!("transcript/lemmas_b.rs");
-include!("simulate/simulators.rs");
-include!("simulate/simulators_extra.rs");
-include!("audit/empirical.rs");
-include!("simulate/helpers_ms.rs");
-include!("simulate/helpers_le.rs");
-include!("core/theorem_core.rs");
-include!("core/theorem_prob.rs");
-include!("core/theorem_chain.rs");
-include!("core/theorem_graph.rs");
-include!("audit/closure.rs");
-include!("audit/audit.rs");
-include!("simulate/redesigned.rs");
-include!("transcript/transcript_model.rs");
+#[allow(unused_imports)]
+pub(crate) use audit::*;
+#[allow(unused_imports)]
+pub(crate) use core::*;
+#[allow(unused_imports)]
+pub(crate) use simulate::*;
+#[allow(unused_imports)]
+pub(crate) use transcript::*;
 
 #[cfg(test)]
 #[path = "tests/mod.rs"]

@@ -1,3 +1,5 @@
+use super::*;
+
 #[derive(Debug, thiserror::Error)]
 pub enum ZkSimulationError {
     #[error("simulation requires a satisfiable public statement (value must be > target)")]
@@ -249,4 +251,3 @@ impl FiatShamirConsistencyLemma {
         }
     }
 }
-

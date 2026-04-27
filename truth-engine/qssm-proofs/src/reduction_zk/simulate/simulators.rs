@@ -1,3 +1,5 @@
+use super::*;
+
 #[must_use]
 pub fn attempt_ms_witness_free_simulator(
     public_input: &MsHiddenValuePublicInput,
@@ -108,7 +110,9 @@ pub fn attempt_ms_v2_witness_free_simulator(
                 failures: vec![SimulatorFailure {
                     class: FailureClass::Structural,
                     location: "MS v2 public statement reconstruction".to_string(),
-                    detail: format!("The public value commitment could not be reconstructed: {error}"),
+                    detail: format!(
+                        "The public value commitment could not be reconstructed: {error}"
+                    ),
                 }],
             };
         }
@@ -422,4 +426,3 @@ pub fn simulate_qssm_transcript(
         le: simulate_le_transcript(SimulatorOnly::new(&public_input.le), le_seed)?,
     })
 }
-

@@ -1,3 +1,5 @@
+use super::*;
+
 pub fn honest_zk_theorem_for_current_system() -> Result<HonestZkTheorem, ZkSimulationError> {
     let ms_attempt = attempt_ms_witness_free_simulator(
         &MsHiddenValuePublicInput {
@@ -51,9 +53,12 @@ pub(crate) fn simulate_le_core(
     }
 
     let sampled_r = match simulator_seed {
-        Some(seed) => {
-            sample_centered_vec_with_seed(commitment_label, public_input.binding_context, seed, BETA)
-        }
+        Some(seed) => sample_centered_vec_with_seed(
+            commitment_label,
+            public_input.binding_context,
+            seed,
+            BETA,
+        ),
         None => sample_centered_vec(commitment_label, public_input.binding_context, BETA),
     };
     let commitment_r = short_vec_to_rq(&sampled_r)?;
@@ -63,7 +68,9 @@ pub(crate) fn simulate_le_core(
     let commitment = Commitment(commitment_poly);
 
     let z_arr = match simulator_seed {
-        Some(seed) => sample_centered_vec_with_seed(z_label, public_input.binding_context, seed, GAMMA),
+        Some(seed) => {
+            sample_centered_vec_with_seed(z_label, public_input.binding_context, seed, GAMMA)
+        }
         None => sample_centered_vec(z_label, public_input.binding_context, GAMMA),
     };
     let z = short_vec_to_rq_bound(&z_arr, GAMMA)?;
@@ -169,9 +176,11 @@ pub fn simulate_ms_v2_transcript(
     let simulation = qssm_ms::simulate_predicate_only_v2(&statement, simulator_seed)?;
     let verified = qssm_ms::verify_predicate_only_v2_with_programming(&statement, &simulation)?;
     if !verified {
-        return Err(ZkSimulationError::Ms(qssm_ms::MsError::InvalidV2ProofField(
-            "programmed-oracle verifier rejected the simulated transcript",
-        )));
+        return Err(ZkSimulationError::Ms(
+            qssm_ms::MsError::InvalidV2ProofField(
+                "programmed-oracle verifier rejected the simulated transcript",
+            ),
+        ));
     }
     Ok(SimulatedMsV2Transcript {
         statement_digest: *simulation.proof().statement_digest(),
@@ -192,9 +201,11 @@ pub fn sample_real_ms_v2_transcript(
     let proof = qssm_ms::prove_predicate_only_v2(&statement_v2, &witness_v2, prover_seed)?;
     let verified = qssm_ms::verify_predicate_only_v2(&statement_v2, &proof)?;
     if !verified {
-        return Err(ZkSimulationError::Ms(qssm_ms::MsError::InvalidV2ProofField(
-            "real MS v2 verifier rejected the prover transcript",
-        )));
+        return Err(ZkSimulationError::Ms(
+            qssm_ms::MsError::InvalidV2ProofField(
+                "real MS v2 verifier rejected the prover transcript",
+            ),
+        ));
     }
 
     Ok(RealMsV2Transcript {
@@ -229,4 +240,3 @@ pub fn observe_simulated_ms_v2_transcript(
         transcript_digest: transcript.transcript_digest,
     }
 }
-

@@ -1,3 +1,5 @@
+use super::*;
+
 pub fn run_ms_v2_empirical_alignment(
     statements: &[MsPublicStatement],
 ) -> Result<MsV2EmpiricalAlignmentReport, ZkSimulationError> {
@@ -71,22 +73,28 @@ pub fn run_ms_v2_empirical_alignment(
         sim_comparison_bytes_all.extend(sim_obs.comparison_global_challenge.iter().copied());
         real_comparison_nibbles.extend(real_comparison_nibbles_local.iter().copied());
         sim_comparison_nibbles.extend(sim_comparison_nibbles_local.iter().copied());
-        real_comparison_byte_deltas.extend(adjacent_byte_deltas(&real_obs.comparison_global_challenge));
-        sim_comparison_byte_deltas.extend(adjacent_byte_deltas(&sim_obs.comparison_global_challenge));
+        real_comparison_byte_deltas
+            .extend(adjacent_byte_deltas(&real_obs.comparison_global_challenge));
+        sim_comparison_byte_deltas
+            .extend(adjacent_byte_deltas(&sim_obs.comparison_global_challenge));
         real_transcript_digest_bytes_all.extend(real_obs.transcript_digest.iter().copied());
         sim_transcript_digest_bytes_all.extend(sim_obs.transcript_digest.iter().copied());
         real_transcript_digest_nibbles.extend(real_digest_nibbles_local.iter().copied());
         sim_transcript_digest_nibbles.extend(sim_digest_nibbles_local.iter().copied());
-        real_transcript_digest_byte_deltas.extend(adjacent_byte_deltas(&real_obs.transcript_digest));
+        real_transcript_digest_byte_deltas
+            .extend(adjacent_byte_deltas(&real_obs.transcript_digest));
         sim_transcript_digest_byte_deltas.extend(adjacent_byte_deltas(&sim_obs.transcript_digest));
         real_challenge_prefixes.extend(real_comparison_nibbles_local.iter().copied());
         real_digest_prefixes.extend(real_digest_nibbles_local.iter().copied());
-        hidden_gap_bit_conditions.extend(
-            std::iter::repeat_n(hidden_gap_bit, real_comparison_nibbles_local.len()),
-        );
+        hidden_gap_bit_conditions.extend(std::iter::repeat_n(
+            hidden_gap_bit,
+            real_comparison_nibbles_local.len(),
+        ));
         hidden_gap_bit_outcomes.extend(real_comparison_nibbles_local.iter().copied());
-        hidden_lsb_conditions
-            .extend(std::iter::repeat_n(hidden_lsb, real_digest_nibbles_local.len()));
+        hidden_lsb_conditions.extend(std::iter::repeat_n(
+            hidden_lsb,
+            real_digest_nibbles_local.len(),
+        ));
         hidden_lsb_outcomes.extend(real_digest_nibbles_local.iter().copied());
         hidden_hamming_weight_conditions.extend(std::iter::repeat_n(
             hidden_weight_bucket,
@@ -206,7 +214,7 @@ pub fn run_ms_v2_empirical_alignment(
     })
 }
 
-fn ms_v2_statement_from_public_input(
+pub(crate) fn ms_v2_statement_from_public_input(
     public_input: &MsHiddenValuePublicInput,
 ) -> Result<qssm_ms::PredicateOnlyStatementV2, ZkSimulationError> {
     let commitment = qssm_ms::ValueCommitmentV2::new(public_input.commitment_bit_points.clone())?;
@@ -219,7 +227,7 @@ fn ms_v2_statement_from_public_input(
     ))
 }
 
-fn ms_v2_artifacts_from_statement(
+pub(crate) fn ms_v2_artifacts_from_statement(
     statement: &MsPublicStatement,
     commitment_seed: [u8; 32],
 ) -> Result<
@@ -231,11 +239,8 @@ fn ms_v2_artifacts_from_statement(
     ),
     ZkSimulationError,
 > {
-    let (commitment, witness) = qssm_ms::commit_value_v2(
-        statement.value,
-        commitment_seed,
-        statement.binding_entropy,
-    )?;
+    let (commitment, witness) =
+        qssm_ms::commit_value_v2(statement.value, commitment_seed, statement.binding_entropy)?;
     let public_input = MsHiddenValuePublicInput {
         commitment_bit_points: commitment.bit_commitments().to_vec(),
         target: statement.target,

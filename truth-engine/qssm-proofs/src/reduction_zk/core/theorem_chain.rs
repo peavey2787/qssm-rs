@@ -1,4 +1,6 @@
-fn probability_objects_for_canonical_option_b_and_set_b(
+use super::*;
+
+pub(crate) fn probability_objects_for_canonical_option_b_and_set_b(
     boundary: &MsV2ObservableBoundaryContract,
 ) -> Vec<ProbabilityObject> {
     vec![
@@ -117,7 +119,9 @@ fn probability_objects_for_canonical_option_b_and_set_b(
     ]
 }
 
-fn ms_formal_assumptions(_boundary: &MsV2ObservableBoundaryContract) -> Vec<FormalAssumption> {
+pub(crate) fn ms_formal_assumptions(
+    _boundary: &MsV2ObservableBoundaryContract,
+) -> Vec<FormalAssumption> {
     vec![
         FormalAssumption {
             id: AssumptionId::A1,
@@ -266,7 +270,7 @@ fn ms_3c_exact_comparison_simulation_lemma() -> MsReductionLemma {
     }
 }
 
-fn ms_reduction_chain_for_frozen_interface(
+pub(crate) fn ms_reduction_chain_for_frozen_interface(
     boundary: &MsV2ObservableBoundaryContract,
 ) -> MsReductionChain {
     let assumptions = ms_formal_assumptions(boundary);
@@ -368,13 +372,13 @@ fn ms_reduction_chain_for_frozen_interface(
     }
 }
 
-fn le_advantage_bound(
+pub(crate) fn le_advantage_bound(
     le_constraint_analysis: &LeHvzkConstraintAnalysis,
     boundary: &MsV2ObservableBoundaryContract,
 ) -> AdvantageBound {
     let rejection = RejectionSamplingClaim::for_current_params();
-    let numeric_upper_bound = rejection.abort_probability_estimate
-        + 2f64.powf(-le_constraint_analysis.fs_security_bits);
+    let numeric_upper_bound =
+        rejection.abort_probability_estimate + 2f64.powf(-le_constraint_analysis.fs_security_bits);
 
     AdvantageBound {
         symbol: "epsilon_le".to_string(),
@@ -399,7 +403,7 @@ fn le_advantage_bound(
     }
 }
 
-fn frozen_qssm_architecture_seal() -> FrozenArchitectureSeal {
+pub(crate) fn frozen_qssm_architecture_seal() -> FrozenArchitectureSeal {
     FrozenArchitectureSeal {
         name: "Frozen QSSM security model".to_string(),
         no_further_structural_changes_allowed: true,

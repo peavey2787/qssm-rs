@@ -1,3 +1,5 @@
+use super::*;
+
 impl ReductionProofSketch {
     #[must_use]
     pub fn for_canonical_option_b_and_set_b(

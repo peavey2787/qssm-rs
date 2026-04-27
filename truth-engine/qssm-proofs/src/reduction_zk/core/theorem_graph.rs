@@ -1,4 +1,6 @@
-fn assumption_dependency_graph_for_canonical_option_b_and_set_b(
+use super::*;
+
+pub(crate) fn assumption_dependency_graph_for_canonical_option_b_and_set_b(
     boundary: &MsV2ObservableBoundaryContract,
     le_constraint_analysis: &LeHvzkConstraintAnalysis,
 ) -> AssumptionDependencyGraph {
@@ -70,7 +72,7 @@ fn assumption_dependency_graph_for_canonical_option_b_and_set_b(
     }
 }
 
-fn theorem_lemma_chain_for_canonical_option_b_and_set_b(
+pub(crate) fn theorem_lemma_chain_for_canonical_option_b_and_set_b(
     reduction: &ReductionProofSketch,
 ) -> Vec<TheoremLemmaReference> {
     vec![
@@ -224,11 +226,7 @@ fn theorem_lemma_chain_for_canonical_option_b_and_set_b(
             ],
             premise_contracts: reduction.composition_safety_lemma.premise_contracts.clone(),
             produced_bound: reduction.composition_safety_lemma.bound.symbol.clone(),
-            produced_bound_expression: reduction
-                .composition_safety_lemma
-                .bound
-                .expression
-                .clone(),
+            produced_bound_expression: reduction.composition_safety_lemma.bound.expression.clone(),
             produced_bound_numeric_upper_bound: reduction
                 .composition_safety_lemma
                 .bound
@@ -238,7 +236,7 @@ fn theorem_lemma_chain_for_canonical_option_b_and_set_b(
     ]
 }
 
-fn game_based_zk_proof_for_canonical_option_b_and_set_b(
+pub(crate) fn game_based_zk_proof_for_canonical_option_b_and_set_b(
     boundary: &MsV2ObservableBoundaryContract,
     le_constraint_analysis: &LeHvzkConstraintAnalysis,
     reduction: &ReductionProofSketch,

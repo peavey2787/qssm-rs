@@ -1,9 +1,10 @@
+use super::*;
 
-fn sample_centered_vec(label: &[u8], binding_context: [u8; 32], bound: u32) -> [i32; N] {
+pub(crate) fn sample_centered_vec(label: &[u8], binding_context: [u8; 32], bound: u32) -> [i32; N] {
     sample_centered_vec_with_seed(label, binding_context, [0u8; 32], bound)
 }
 
-fn sample_centered_vec_with_seed(
+pub(crate) fn sample_centered_vec_with_seed(
     label: &[u8],
     binding_context: [u8; 32],
     simulator_seed: [u8; 32],
@@ -28,7 +29,7 @@ fn sample_centered_vec_with_seed(
     out
 }
 
-fn le_public_binding_fs_bytes(public: &PublicInstance) -> Vec<u8> {
+pub(crate) fn le_public_binding_fs_bytes(public: &PublicInstance) -> Vec<u8> {
     let _ = LE_FS_PUBLIC_BINDING_LAYOUT_VERSION;
     match public.binding() {
         PublicBinding::DigestCoeffVector { coeffs } => {
@@ -43,7 +44,7 @@ fn le_public_binding_fs_bytes(public: &PublicInstance) -> Vec<u8> {
     }
 }
 
-fn le_mu_from_public(public: &PublicInstance) -> RqPoly {
+pub(crate) fn le_mu_from_public(public: &PublicInstance) -> RqPoly {
     match public.binding() {
         PublicBinding::DigestCoeffVector { coeffs } => {
             let mut out = [0u32; N];
@@ -54,7 +55,7 @@ fn le_mu_from_public(public: &PublicInstance) -> RqPoly {
     }
 }
 
-fn le_fs_programmed_query_digest(
+pub(crate) fn le_fs_programmed_query_digest(
     binding_context: &[u8; 32],
     vk: &VerifyingKey,
     public: &PublicInstance,
@@ -72,11 +73,11 @@ fn le_fs_programmed_query_digest(
     )
 }
 
-fn le_challenge_poly(seed: &[u8; 32]) -> [i32; C_POLY_SIZE] {
+pub(crate) fn le_challenge_poly(seed: &[u8; 32]) -> [i32; C_POLY_SIZE] {
     FiatShamirOracle::le_challenge_poly(seed)
 }
 
-fn le_challenge_poly_to_rq(poly: &[i32; C_POLY_SIZE]) -> RqPoly {
+pub(crate) fn le_challenge_poly_to_rq(poly: &[i32; C_POLY_SIZE]) -> RqPoly {
     let mut out = [0u32; N];
     for idx in 0..C_POLY_SIZE {
         let coeff = poly[idx];
@@ -89,11 +90,11 @@ fn le_challenge_poly_to_rq(poly: &[i32; C_POLY_SIZE]) -> RqPoly {
     RqPoly(out)
 }
 
-fn le_worst_case_cr_inf_norm(beta: u32, c_poly_size: usize, c_poly_span: i32) -> u64 {
+pub(crate) fn le_worst_case_cr_inf_norm(beta: u32, c_poly_size: usize, c_poly_span: i32) -> u64 {
     c_poly_size as u64 * c_poly_span.unsigned_abs() as u64 * u64::from(beta)
 }
 
-fn le_required_eta_for_hvzk(
+pub(crate) fn le_required_eta_for_hvzk(
     n: usize,
     beta: u32,
     c_poly_size: usize,
@@ -106,11 +107,11 @@ fn le_required_eta_for_hvzk(
     11.0 * worst_case_cr_inf_norm as f64 * (ln_arg.ln() / std::f64::consts::PI).sqrt()
 }
 
-fn le_challenge_space_log2(c_poly_size: usize, c_poly_span: i32) -> f64 {
+pub(crate) fn le_challenge_space_log2(c_poly_size: usize, c_poly_span: i32) -> f64 {
     c_poly_size as f64 * ((2 * c_poly_span + 1) as f64).log2()
 }
 
-fn le_minimum_gamma_for_support_containment(
+pub(crate) fn le_minimum_gamma_for_support_containment(
     eta: u32,
     beta: u32,
     c_poly_size: usize,
@@ -118,4 +119,3 @@ fn le_minimum_gamma_for_support_containment(
 ) -> u64 {
     u64::from(eta) + le_worst_case_cr_inf_norm(beta, c_poly_size, c_poly_span)
 }
-

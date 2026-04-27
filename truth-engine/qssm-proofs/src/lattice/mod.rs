@@ -1,12 +1,15 @@
-#[path = "../reduction_lattice.rs"]
-pub mod core;
+pub mod core {
+    pub use crate::reduction_lattice::*;
+}
 
-#[path = "../reduction_rejection.rs"]
-pub mod rejection;
+pub mod rejection {
+    pub use crate::reduction_rejection::*;
+}
 
 pub mod external_validation;
-#[path = "../reduction_witness_hiding.rs"]
-pub mod witness_hiding;
+pub mod witness_hiding {
+    pub use crate::reduction_witness_hiding::*;
+}
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
