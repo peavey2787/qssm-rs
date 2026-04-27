@@ -167,8 +167,8 @@ impl MsisBound {
 /// effective challenge space size.
 ///
 /// - Ref: \[KLS18\] Theorem 1 — Fiat-Shamir in ROM
-/// - |C_eff| = (2·C_POLY_SPAN+1)^C_POLY_SIZE = 33^64
-/// - log₂(|C_eff|) = 64·log₂(33) ≈ 322.8
+/// - |C_eff| = (2·C_POLY_SPAN+1)^C_POLY_SIZE = 17^48
+/// - log₂(|C_eff|) = 48·log₂(17) ≈ 196.2
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct FsReductionBound {
     pub claim_type: ClaimType,
@@ -272,8 +272,8 @@ impl LeCommitmentSoundnessTheorem {
 /// q = 8,380,417 (since q ≡ 1 mod 512), so R_q ≅ F_q^{256} via NTT and
 /// every nonzero element is a unit.
 ///
-/// Knowledge error κ = 1/|C_eff| = 1/33^{64}.
-/// log₂(1/κ) = 64·log₂(33) ≈ 322.8 bits.
+/// Knowledge error κ = 1/|C_eff| = 1/17^{48}.
+/// log₂(1/κ) = 48·log₂(17) ≈ 196.2 bits.
 ///
 /// - Ref: \[Lyu12\] §3, Theorem 3.1 — special soundness for Σ-protocol
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

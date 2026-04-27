@@ -254,6 +254,31 @@ Canonical wrapper model:
 | `proof_z` | `z_coeffs` |
 | `commitment` | `commitment_coeffs` |
 
+## EasyCrypt formalization surface
+
+First-pass EasyCrypt modeling should treat the following as the canonical execution surface:
+
+- `SimulatedMsV2Transcript` observable fields:
+  - `statement_digest`
+  - `result`
+  - `bitness_global_challenges`
+  - `comparison_global_challenge`
+  - `transcript_digest`
+- `SimulatedLeTranscript` observable fields:
+  - `commitment_coeffs`
+  - `t_coeffs`
+  - `z_coeffs`
+  - `challenge_seed`
+  - `programmed_oracle_query_digest`
+- `SimulatedQssmTranscript` as the composed output object.
+- `simulate_qssm_transcript` as the canonical composed simulator entry point.
+
+The following code surfaces are implementation diagnostics and are not first-pass EasyCrypt model objects:
+
+- `Real*` transcript structs and sampling helpers.
+- witness-free simulator attempt structs.
+- audit/diagnostic report structs and attempt logs.
+
 ## Code Mapping
 
 - Global simulator composition:
@@ -269,4 +294,8 @@ Canonical wrapper model:
 - Engine A FS construction:
   - `truth-engine/qssm-le/src/protocol/commit.rs`
 - Engine B v2 query/XOF construction:
-  - `truth-engine/qssm-ms/src/v2.rs`
+  - `truth-engine/qssm-ms/src/v2/mod.rs`
+  - `truth-engine/qssm-ms/src/v2/types.rs`
+  - `truth-engine/qssm-ms/src/v2/protocol.rs`
+  - `truth-engine/qssm-ms/src/v2/internals.rs`
+  - `truth-engine/qssm-ms/src/v2/wire_constructors.rs`
