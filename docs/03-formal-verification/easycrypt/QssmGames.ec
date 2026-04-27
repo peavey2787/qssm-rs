@@ -1,7 +1,5 @@
-require import Real.
+require import AllCore.
 require import QssmTypes QssmSim.
-
-theory QssmGames.
 
 (* Game skeletons *)
 op G0 : qssm_public_input -> seed -> game_view.
@@ -17,9 +15,7 @@ axiom Adv_def :
 
 (* Skeleton transition placeholders *)
 axiom G0_to_G1_skeleton :
-  forall (x : qssm_public_input) (s : seed), True.
+  forall (x : qssm_public_input) (s : seed), true.
 
 axiom G1_to_G2_skeleton :
-  forall (x : qssm_public_input) (s : seed), True.
-
-end.
+  forall (x : qssm_public_input) (s : seed), true.

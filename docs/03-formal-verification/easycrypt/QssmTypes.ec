@@ -1,4 +1,4 @@
-theory QssmTypes.
+require import AllCore.
 
 (* Core abstract data *)
 type digest.
@@ -21,8 +21,6 @@ type ms_bitness_query.
 type ms_comparison_query.
 type le_query_material.
 
-(* Distinguishers/events *)
+(* Distinguishers / game views *)
 type distinguisher.
 type game_view.
-
-end.

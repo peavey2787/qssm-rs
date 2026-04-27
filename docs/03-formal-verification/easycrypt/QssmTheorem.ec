@@ -1,7 +1,5 @@
-require import Real.
+require import AllCore.
 require import QssmTypes QssmFS QssmMS QssmLE QssmGames.
-
-theory QssmTheorem.
 
 op Adv_QSSM : distinguisher -> real.
 
@@ -15,17 +13,18 @@ axiom A2_ms_rom_programmability :
 axiom A4_le_hvzk :
   forall (D : distinguisher), 0%r <= epsilon_le.
 
-(* Explicitly reference MS-3a/MS-3b/MS-3c placeholders from QssmMS *)
-axiom use_MS_3a : forall (x : ms_public_input) (s : seed), True.
-axiom use_MS_3b : forall (x : ms_public_input), True.
-axiom use_MS_3c : forall (x : ms_public_input) (s : seed), True.
+(* Bridge to MS-3a/b/c placeholders (MS-3a via layered lemma in `QssmMS.ec`) *)
+lemma use_MS_3a (x : ms_public_input) (s : seed) : ms3a_bitness_real_sim_equiv x s.
+proof.
+by apply (MS_3a_exact_bitness_simulation x s).
+qed.
+axiom use_MS_3b : forall (x : ms_public_input), true.
+axiom use_MS_3c : forall (x : ms_public_input) (s : seed), true.
 
-(* Main theorem statement skeleton *)
+(* Main theorem statement skeleton (not yet derived without game hops) *)
 axiom qssm_main_theorem_skeleton :
   forall (D : distinguisher),
     Adv_QSSM D <=
       epsilon_ms_hash_binding +
       epsilon_ms_rom_programmability +
       epsilon_le.
-
-end.

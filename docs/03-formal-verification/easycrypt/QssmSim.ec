@@ -1,6 +1,5 @@
+require import AllCore.
 require import QssmTypes QssmMS QssmLE.
-
-theory QssmSim.
 
 (* Public-only simulator interfaces *)
 op ms_simulator : ms_public_input -> seed -> ms_transcript_observable.
@@ -14,6 +13,4 @@ op simulate_qssm_transcript :
   qssm_public_input -> seed -> qssm_transcript_observable.
 
 axiom simulate_qssm_transcript_public_only :
-  forall (x : qssm_public_input) (s : seed), True.
-
-end.
+  forall (x : qssm_public_input) (s : seed), true.
