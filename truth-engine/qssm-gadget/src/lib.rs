@@ -35,6 +35,13 @@ pub use circuit::binding::{
     DOMAIN_TRUTH_LIMB_V2,
 };
 
+// circuit::binding_ms_v2 (MS v2 predicate-only → LE; no v1 coordinates)
+pub use circuit::binding_ms_v2::{
+    digest_bitness_global_challenges_v2, encode_ms_v2_truth_metadata,
+    encode_ms_v2_truth_metadata_from_statement_proof, truth_digest_ms_v2, TruthWitnessMsV2,
+    DOMAIN_TRUTH_LIMB_MS_V2, MS_V2_TRUTH_METADATA_LEN,
+};
+
 // circuit::binding_contract
 pub use circuit::binding_contract::{
     BindingLabel, BindingPhase, BindingReservoir, Nomination, PublicBindingContract,

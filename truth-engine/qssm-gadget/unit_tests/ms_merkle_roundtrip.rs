@@ -1,42 +1,60 @@
-//! Merkle `recompute_root` matches `qssm-ms` commit root (Phase 0 + hash chain).
+//! MS v2 truth-metadata binding roundtrip (replaces legacy Merkle root vs `qssm-ms::commit`).
 
-use qssm_gadget::GadgetError;
-use qssm_gadget::{assert_ms_leaf_index_matches_opening, MerklePathWitness, MERKLE_DEPTH_MS};
-use qssm_ms::{commit, prove};
-use qssm_utils::hashing::{hash_domain, DOMAIN_MS};
+use qssm_gadget::{
+    encode_ms_v2_truth_metadata_from_statement_proof, GadgetError, MerklePathWitness,
+    TruthWitnessMsV2, MERKLE_DEPTH_MS,
+};
+use qssm_ms::{commit_value_v2, prove_predicate_only_v2, PredicateOnlyStatementV2};
 
-fn ms_leaf(i: u8, bit: u8, salt: &[u8; 32], ledger: &[u8; 32]) -> [u8; 32] {
-    hash_domain(DOMAIN_MS, &[b"leaf", &[i], &[bit], salt.as_slice(), ledger])
+#[test]
+fn ms_v2_truth_witness_bind_validate_roundtrip() {
+    let seed = [0x42u8; 32];
+    let binding_entropy = [0x11u8; 32];
+    let binding_ctx = [0x55u8; 32];
+    let context = b"gadget-ms-v2-roundtrip".to_vec();
+
+    let (commitment, witness) =
+        commit_value_v2(100u64, seed, binding_entropy).expect("commit v2");
+    let statement = PredicateOnlyStatementV2::new(
+        commitment,
+        50u64,
+        binding_entropy,
+        binding_ctx,
+        context,
+    );
+    let proof =
+        prove_predicate_only_v2(&statement, &witness, [0x33u8; 32]).expect("prove v2");
+
+    let ext = [0x99u8; 32];
+    let metadata = encode_ms_v2_truth_metadata_from_statement_proof(&statement, &proof, &ext, false)
+        .expect("encode metadata");
+    let cd = statement.commitment().digest();
+    let tw = TruthWitnessMsV2::bind(cd, binding_ctx, metadata);
+    tw.validate().expect("truth witness validates");
 }
 
 #[test]
-fn merkle_witness_matches_qssm_ms_root() {
+fn ms_v2_truth_witness_rejects_bad_metadata_length() {
     let seed = [0x42u8; 32];
-    let ledger = [0x11u8; 32];
-    let ctx = b"ctx";
-    let rollup = [0x55u8; 32];
-
-    let (root, salts) = commit(seed, ledger).expect("commit");
-    let expected_root = *root.as_bytes();
-    let proof = prove(100u64, 50u64, &salts, ledger, ctx, &rollup).expect("prove");
-
-    let leaf_index = (2usize * (proof.k() as usize) + (proof.bit_at_k() as usize)) as u8;
-    assert_ms_leaf_index_matches_opening(proof.k(), proof.bit_at_k(), leaf_index).expect("opening");
-
-    let leaf = ms_leaf(proof.k(), proof.bit_at_k(), proof.opened_salt(), &ledger);
-    assert_eq!(proof.path().len(), MERKLE_DEPTH_MS);
-
-    let mut siblings = [[0u8; 32]; MERKLE_DEPTH_MS];
-    siblings[..MERKLE_DEPTH_MS].copy_from_slice(&proof.path()[..MERKLE_DEPTH_MS]);
-
-    let w = MerklePathWitness {
-        leaf,
-        siblings,
-        leaf_index,
-    };
-
-    let got = w.recompute_root().expect("recompute");
-    assert_eq!(got, expected_root);
+    let binding_entropy = [0x11u8; 32];
+    let binding_ctx = [0x55u8; 32];
+    let (commitment, witness) =
+        commit_value_v2(100u64, seed, binding_entropy).expect("commit v2");
+    let statement = PredicateOnlyStatementV2::new(
+        commitment,
+        50u64,
+        binding_entropy,
+        binding_ctx,
+        b"x".to_vec(),
+    );
+    let proof =
+        prove_predicate_only_v2(&statement, &witness, [0x33u8; 32]).expect("prove v2");
+    let mut metadata = encode_ms_v2_truth_metadata_from_statement_proof(&statement, &proof, &[0u8; 32], false)
+        .expect("encode");
+    metadata.push(0);
+    let cd = statement.commitment().digest();
+    let tw = TruthWitnessMsV2::bind(cd, binding_ctx, metadata);
+    assert!(tw.validate().is_err());
 }
 
 #[test]

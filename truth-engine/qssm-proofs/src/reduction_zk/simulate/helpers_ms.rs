@@ -165,50 +165,6 @@ pub fn simulate_ms_transcript(
     })
 }
 
-pub fn sample_real_ms_transcript(
-    statement: &MsPublicStatement,
-    commitment_seed: [u8; 32],
-) -> Result<RealMsTranscript, ZkSimulationError> {
-    statement.validate_yes_instance()?;
-    let (root, salts) = qssm_ms::commit(commitment_seed, statement.binding_entropy)?;
-    let proof = qssm_ms::prove(
-        statement.value,
-        statement.target,
-        &salts,
-        statement.binding_entropy,
-        &statement.context,
-        &statement.binding_context,
-    )?;
-    let bit_at_k = proof.bit_at_k();
-    let opened_salt = *proof.opened_salt();
-    let leaf_index = 2 * usize::from(proof.k()) + usize::from(bit_at_k);
-    let leaf = ms_leaf(proof.k(), bit_at_k, &opened_salt, &statement.binding_entropy);
-
-    Ok(RealMsTranscript {
-        root: *root.as_bytes(),
-        k: proof.k(),
-        n: proof.n(),
-        challenge: *proof.challenge(),
-        opening: SimulatedOpening {
-            leaf_index,
-            bit_at_k,
-            opened_salt,
-            leaf,
-            path: proof.path().to_vec(),
-        },
-    })
-}
-
-#[must_use]
-pub fn observe_real_ms_transcript(transcript: &RealMsTranscript) -> TranscriptObservation {
-    TranscriptObservation {
-        n: transcript.n,
-        k: transcript.k,
-        bit_at_k: transcript.opening.bit_at_k,
-        path_len: transcript.opening.path.len(),
-    }
-}
-
 #[must_use]
 pub fn observe_simulated_ms_transcript(
     transcript: &SimulatedMsTranscript,
@@ -219,50 +175,6 @@ pub fn observe_simulated_ms_transcript(
         bit_at_k: transcript.opening.bit_at_k,
         path_len: transcript.opening.path.len(),
     }
-}
-
-pub fn run_ms_empirical_distinguisher(
-    statements: &[MsPublicStatement],
-    strategy: SimulationStrategy,
-) -> Result<MsEmpiricalDistinguisherReport, ZkSimulationError> {
-    let mut real_joint = Vec::with_capacity(statements.len());
-    let mut sim_joint = Vec::with_capacity(statements.len());
-    let mut real_nonce = Vec::with_capacity(statements.len());
-    let mut sim_nonce = Vec::with_capacity(statements.len());
-    let mut real_k = Vec::with_capacity(statements.len());
-    let mut sim_k = Vec::with_capacity(statements.len());
-    let mut real_bit = Vec::with_capacity(statements.len());
-    let mut sim_bit = Vec::with_capacity(statements.len());
-
-    for (sample_idx, statement) in statements.iter().enumerate() {
-        let seed = harness_commitment_seed(statement, sample_idx as u32);
-        let real = sample_real_ms_transcript(statement, seed)?;
-        let sim = simulate_ms_transcript(statement, strategy)?;
-        let real_obs = observe_real_ms_transcript(&real);
-        let sim_obs = observe_simulated_ms_transcript(&sim.transcript);
-
-        real_nonce.push(real_obs.n);
-        sim_nonce.push(sim_obs.n);
-        real_k.push(real_obs.k);
-        sim_k.push(sim_obs.k);
-        real_bit.push(real_obs.bit_at_k);
-        sim_bit.push(sim_obs.bit_at_k);
-        real_joint.push(real_obs);
-        sim_joint.push(sim_obs);
-    }
-
-    Ok(MsEmpiricalDistinguisherReport {
-        strategy,
-        sample_count: statements.len(),
-        joint_distance: empirical_distance(&real_joint, &sim_joint),
-        nonce_distance: empirical_distance(&real_nonce, &sim_nonce),
-        bit_index_distance: empirical_distance(&real_k, &sim_k),
-        bit_state_distance: empirical_distance(&real_bit, &sim_bit),
-        notes: vec![
-            "Empirical only: compares observable transcript marginals, not full computational indistinguishability.".to_string(),
-            "Roots and full challenge digests are not bucketed directly because finite-sample supports are too sparse for a meaningful histogram test.".to_string(),
-        ],
-    })
 }
 
 fn binding_rotation(binding_entropy: &[u8; 32]) -> u64 {
@@ -283,41 +195,6 @@ fn harness_commitment_seed(statement: &MsPublicStatement, sample_idx: u32) -> [u
             statement.context.as_slice(),
         ],
     )
-}
-
-#[cfg(test)]
-fn statement_batch_for_distinguisher() -> Vec<MsPublicStatement> {
-    let mut out = Vec::new();
-    for target in 1u64..64 {
-        for gap in 1u64..16 {
-            let value = target + gap;
-            let target_bytes = target.to_le_bytes();
-            let gap_bytes = gap.to_le_bytes();
-            let binding_entropy = hash_domain(
-                DOMAIN_MS,
-                &[b"zk_test_binding_entropy", &target_bytes, &gap_bytes],
-            );
-            let binding_context = hash_domain(
-                DOMAIN_MS,
-                &[b"zk_test_binding_context", &target_bytes, &gap_bytes],
-            );
-            let context = format!("test_ctx_{target}_{gap}").into_bytes();
-            let statement = MsPublicStatement {
-                value,
-                target,
-                binding_entropy,
-                binding_context,
-                context,
-            };
-            if public_candidate_pairs(&statement).len() > 1 {
-                out.push(statement);
-            }
-            if out.len() == 8 {
-                return out;
-            }
-        }
-    }
-    panic!("failed to construct a statement batch with multiple valid nonce pairs");
 }
 
 fn statement_batch_for_ms_v2_alignment() -> Vec<MsPublicStatement> {

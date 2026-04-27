@@ -2,6 +2,8 @@
 
 Status: Normative wrapper schema for proverless accumulation over existing `prover_package.json` outputs, designed for zero-rework migration to future IVC.
 
+> **Legacy MS binding fields (unchanged in this schema revision):** The JSON examples below still use **`ms_root_hex`** and **`ms_fs_v2_challenge_hex`** under `wrapper_v1.ms_binding`, reflecting historical `StepEnvelope` / accumulator shape. The **active gadget seam** in `qssm-gadget` binds **MS v2** verifier-visible observables (`ms_v2_*`) and domains `QSSM-SEAM-MS-V2-*-v1` (see [`blake3-lattice-gadget-spec.md`](../blake3-lattice-gadget-spec.md)). A future **`schema_version`** bump should align wrapper field names with v2 seam material; **no schema migration** is performed in this document.
+
 ## 1. Goals
 
 - Reuse current `prover_package.json` shape with no breaking changes.

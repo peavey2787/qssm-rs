@@ -15,5 +15,5 @@ thiserror.workspace = true
 zeroize = { version = "1.8", features = ["derive"] }
 
 [[test]]
-name = "mirror_shift_adversarial"
-path = "unit_tests/mirror_shift_adversarial.rs"
+name = "predicate_only_v2_adversarial"
+path = "unit_tests/predicate_only_v2_adversarial.rs"

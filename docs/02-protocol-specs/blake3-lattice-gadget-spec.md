@@ -9,7 +9,7 @@ It is a composition/bridge spec, not a replacement for either engine’s standal
 
 Current bridge path note:
 - The active bridge binds the canonical MS v2 predicate-only path.
-- Legacy `GhostMirrorProof` / `qssm_ms::verify` material is not part of active seam binding.
+- Legacy GhostMirror verification material is removed from active seam binding.
 
 ## Normative Bridge Interfaces
 

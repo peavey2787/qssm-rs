@@ -207,60 +207,10 @@
     }
 
     #[test]
-    fn sampled_real_transcript_roundtrips_through_ms_verifier() {
+    fn sampled_real_ms_v2_roundtrips_through_predicate_verifier() {
         let statement = sample_statement();
-        let real = sample_real_ms_transcript(&statement, [3u8; 32]).expect("real transcript");
-        let proof = qssm_ms::GhostMirrorProof::new(
-            real.n,
-            real.k,
-            real.opening.bit_at_k,
-            real.opening.opened_salt,
-            real.opening.path.clone(),
-            real.challenge,
-        )
-        .expect("ghost mirror proof");
-        assert!(qssm_ms::verify(
-            qssm_ms::Root::new(real.root),
-            &proof,
-            statement.binding_entropy,
-            statement.value,
-            statement.target,
-            &statement.context,
-            &statement.binding_context,
-        ));
-    }
-
-    #[test]
-    fn program_simulation_matches_real_observable_marginals_on_batch() {
-        let statements = statement_batch_for_distinguisher();
-        let report = run_ms_empirical_distinguisher(
-            &statements,
-            SimulationStrategy::ProgramSimulation,
-        )
-        .expect("program simulation distinguisher report");
-        assert_eq!(report.sample_count, statements.len());
-        assert_eq!(report.joint_distance.total_variation_distance, 0.0);
-        assert_eq!(report.nonce_distance.total_variation_distance, 0.0);
-        assert_eq!(report.bit_index_distance.total_variation_distance, 0.0);
-        assert_eq!(report.bit_state_distance.total_variation_distance, 0.0);
-    }
-
-    #[test]
-    fn distribution_collapse_is_no_better_than_program_simulation_on_batch() {
-        let statements = statement_batch_for_distinguisher();
-        let program = run_ms_empirical_distinguisher(
-            &statements,
-            SimulationStrategy::ProgramSimulation,
-        )
-        .expect("program simulation report");
-        let collapse = run_ms_empirical_distinguisher(
-            &statements,
-            SimulationStrategy::DistributionCollapse,
-        )
-        .expect("distribution collapse report");
-        assert!(program.joint_distance.total_variation_distance
-            <= collapse.joint_distance.total_variation_distance);
-        assert!(collapse.notes.iter().any(|item| item.contains("Empirical only")));
+        let (st, proof) = prove_ms_v2_for_public_statement(&statement, [3u8; 32], [5u8; 32]);
+        assert!(qssm_ms::verify_predicate_only_v2(&st, &proof).unwrap());
     }
 
     #[test]

@@ -9,7 +9,14 @@ fn spec_vs_code_fingerprint_test() {
     let zk_helpers_le = include_str!("../src/reduction_zk/simulate/helpers_le.rs");
     let zk_types = include_str!("../src/reduction_zk/core/types_core.rs");
     let le_commit = include_str!("../../qssm-le/src/protocol/commit.rs");
-    let ms_v2 = include_str!("../../qssm-ms/src/v2.rs");
+    let ms_v2 = [
+        include_str!("../../qssm-ms/src/v2/mod.rs"),
+        include_str!("../../qssm-ms/src/v2/types.rs"),
+        include_str!("../../qssm-ms/src/v2/protocol.rs"),
+        include_str!("../../qssm-ms/src/v2/internals.rs"),
+        include_str!("../../qssm-ms/src/v2/wire_constructors.rs"),
+    ]
+    .join("\n");
 
     // FS labels/domains that must stay pinned.
     for token in [

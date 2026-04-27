@@ -5,48 +5,14 @@ Rust implementation is authoritative. This spec mirrors current code in `truth-e
 ## Scope
 
 Engine B provides:
-- legacy Ghost-Mirror inequality proof (`commit` / `prove` / `verify`)
 - canonical predicate-only v2 transcript (`PredicateOnlyStatementV2`, `PredicateOnlyProofV2`, simulator API)
 
 ## Constants and Domains
 
 - Value width: `u64` (`V2_BIT_COUNT = 64`)
-- Legacy tree shape: 128 leaves, depth 7
 - Domain string: `DOMAIN_MS` from `qssm_utils`
 
 No constants are duplicated here beyond descriptive values; code values come from `qssm-ms` and `qssm-utils`.
-
-## Legacy Ghost-Mirror Interface
-
-### Prover/Verifier Surface
-
-- `commit(seed, binding_entropy) -> (Root, Salts)`
-- `prove(value, target, salts, binding_entropy, context, binding_context) -> GhostMirrorProof`
-- `verify(root, proof, binding_entropy, value, target, context, binding_context) -> bool`
-
-### Transcript Fields
-
-`GhostMirrorProof` logical proof fields (exposed via accessor methods, not public struct fields):
-- `n: u8`
-- `k: u8`
-- `bit_at_k: u8`
-- `opened_salt: [u8; 32]`
-- `path: Vec<[u8; 32]>` (must be length 7)
-- `challenge: [u8; 32]`
-
-### Fiat-Shamir Inputs (Legacy Path)
-
-Legacy challenge is derived from:
-- `root`
-- `n`
-- `k`
-- `binding_entropy`
-- `value`
-- `target`
-- `context`
-- `binding_context`
-
-These are exactly the inputs used by `transcript::fs_challenge`.
 
 ## Predicate-Only v2 Interface (Canonical)
 
@@ -117,16 +83,13 @@ These inputs are announcement-only by construction for query digests.
 - `verify_predicate_only_v2_with_programming` validates simulator output against programmed query/challenge pairs.
 - `verify_predicate_only_v2` is the non-programmed verifier path.
 - No claim in this file changes FS domains or transcript label semantics.
+- `qssm-ms` is an internal implementation crate; product-facing API boundary is `qssm-api`.
 
 ## Code Mapping
 
 - Module root and exports:
   - `truth-engine/qssm-ms/src/lib.rs`
 - Predicate-only v2 transcript, query digests, simulator:
-  - `truth-engine/qssm-ms/src/v2.rs`
-- Legacy FS challenge helper:
-  - `truth-engine/qssm-ms/src/transcript.rs`
-- Legacy rotation helpers:
-  - `truth-engine/qssm-ms/src/core.rs`
+  - `truth-engine/qssm-ms/src/v2/`
 - Merkle and domain hashing primitives used by Engine B:
   - `truth-engine/qssm-utils/src/hashing.rs`

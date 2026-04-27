@@ -57,15 +57,6 @@ pub struct TranscriptSimulationArtifact {
     pub transcript: SimulatedMsTranscript,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct RealMsTranscript {
-    pub root: [u8; 32],
-    pub k: u8,
-    pub n: u8,
-    pub challenge: [u8; 32],
-    pub opening: SimulatedOpening,
-}
-
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct TranscriptObservation {
     pub n: u8,
@@ -114,17 +105,6 @@ pub struct ByteCorrelationEstimate {
     pub simulated_adjacent_correlation: f64,
     pub correlation_gap: f64,
     pub delta_distance: EmpiricalDistributionDistance,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct MsEmpiricalDistinguisherReport {
-    pub strategy: SimulationStrategy,
-    pub sample_count: usize,
-    pub joint_distance: EmpiricalDistributionDistance,
-    pub nonce_distance: EmpiricalDistributionDistance,
-    pub bit_index_distance: EmpiricalDistributionDistance,
-    pub bit_state_distance: EmpiricalDistributionDistance,
-    pub notes: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

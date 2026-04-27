@@ -368,3 +368,22 @@
         assert_eq!(reduction.hybrid_lemmas[2].bound.numeric_upper_bound, Some(0.0));
     }
 
+    fn prove_ms_v2_for_public_statement(
+        statement: &MsPublicStatement,
+        value_seed: [u8; 32],
+        prover_seed: [u8; 32],
+    ) -> (qssm_ms::PredicateOnlyStatementV2, qssm_ms::PredicateOnlyProofV2) {
+        statement.validate_yes_instance().unwrap();
+        let (c, w) =
+            qssm_ms::commit_value_v2(statement.value, value_seed, statement.binding_entropy).unwrap();
+        let st = qssm_ms::PredicateOnlyStatementV2::new(
+            c,
+            statement.target,
+            statement.binding_entropy,
+            statement.binding_context,
+            statement.context.clone(),
+        );
+        let proof = qssm_ms::prove_predicate_only_v2(&st, &w, prover_seed).unwrap();
+        (st, proof)
+    }
+

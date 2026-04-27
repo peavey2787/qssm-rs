@@ -10,6 +10,10 @@ This document specifies:
 - exact transcript field layouts used in `qssm-proofs`
 - exact hash/XOF transformation surfaces used by MS/LE execution paths
 
+API boundary note:
+- `qssm-ms` is an internal implementation crate.
+- `qssm-api` is the only user-facing product API boundary.
+
 This document does not restate game-based theorem abstraction; see `qssm-zk-theorem-spec.md`.
 
 ## Canonical Domains and Labels

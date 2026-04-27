@@ -1,24 +1,17 @@
 //! # QSSM Local Verifier — Layer 5
 //!
-//! Offline proof verification: the logic that says "Yes" or "No."
-//!
-//! This crate owns the cross-engine rebinding verification pipeline:
-//! predicates → MS verify → truth rebinding → LE lattice check.
+//! Offline proof verification: predicates → MS v2 verify → truth binding → LE lattice check.
 
 #![forbid(unsafe_code)]
 
-use qssm_gadget::{digest_coeff_vector_from_truth_digest, encode_proof_metadata_v2, truth_digest};
+use qssm_gadget::{
+    encode_ms_v2_truth_metadata_from_statement_proof, TruthWitnessMsV2,
+};
 use qssm_le::PublicInstance;
 use qssm_local_prover::{Proof, ProofContext, ZkError, MS_CONTEXT_TAG};
-use qssm_ms::{self, Root};
+use qssm_ms::verify_predicate_only_v2;
 use qssm_templates::QssmTemplate;
 
-/// Verify a proof against a template and context.
-///
-/// **Cross-engine rebinding:** the verifier independently recomputes the
-/// truth digest from the MS transcript and derives the LE public instance.
-/// The LE proof is verified against this *recomputed* instance — never against
-/// a value the prover claims.
 pub fn verify(
     ctx: &ProofContext,
     template: &QssmTemplate,
@@ -26,38 +19,33 @@ pub fn verify(
     proof: &Proof,
     binding_ctx: [u8; 32],
 ) -> Result<bool, ZkError> {
-    // 1. Check predicates against the public claim.
     template.verify_public_claim(claim)?;
 
-    // 2. MS: verify the inequality proof.
-    let context = MS_CONTEXT_TAG.to_vec();
-    let root = Root::new(*proof.ms_root());
-    if !qssm_ms::verify(
-        root,
-        proof.ms_proof(),
-        *proof.binding_entropy(),
-        proof.value(),
-        proof.target(),
-        &context,
-        &binding_ctx,
-    ) {
+    if proof.ms_statement().binding_context() != &binding_ctx {
+        return Err(ZkError::MsVerifyFailed);
+    }
+    if proof.ms_statement().context() != MS_CONTEXT_TAG {
         return Err(ZkError::MsVerifyFailed);
     }
 
-    // 3. CROSS-ENGINE REBINDING — Math is Law.
-    let metadata = encode_proof_metadata_v2(
-        proof.ms_proof().n(),
-        proof.ms_proof().k(),
-        proof.ms_proof().bit_at_k(),
-        proof.ms_proof().challenge(),
+    let ok_ms = verify_predicate_only_v2(proof.ms_statement(), proof.ms_proof())
+        .map_err(|_| ZkError::MsVerifyFailed)?;
+    if !ok_ms {
+        return Err(ZkError::MsVerifyFailed);
+    }
+
+    let metadata = encode_ms_v2_truth_metadata_from_statement_proof(
+        proof.ms_statement(),
+        proof.ms_proof(),
         proof.external_entropy(),
         proof.external_entropy_included(),
-    );
-    let recomputed_digest = truth_digest(proof.ms_root(), &binding_ctx, &metadata);
-    let recomputed_coeffs = digest_coeff_vector_from_truth_digest(&recomputed_digest);
+    )
+    .map_err(|_| ZkError::TruthWitnessInvalid)?;
 
-    // 4. LE: verify the lattice proof against the RECOMPUTED public instance.
-    let public = PublicInstance::digest_coeffs(recomputed_coeffs).map_err(ZkError::LeVerify)?;
+    let tw = TruthWitnessMsV2::bind(*proof.ms_root(), binding_ctx, metadata);
+    tw.validate().map_err(|_| ZkError::TruthWitnessInvalid)?;
+
+    let public = PublicInstance::digest_coeffs(tw.digest_coeff_vector).map_err(ZkError::LeVerify)?;
     let ok = qssm_le::verify_lattice(
         ctx.vk(),
         &public,
@@ -73,14 +61,6 @@ pub fn verify(
     Ok(true)
 }
 
-/// Verify a proof offline using the standard template gallery.
-///
-/// Resolves the template by `template_id`, then delegates to [`verify`].
-///
-/// # Errors
-///
-/// Returns [`VerifyError::UnknownTemplate`] if the template ID is not found,
-/// or [`VerifyError::Zk`] if the underlying proof verification fails.
 pub fn verify_proof_offline(
     ctx: &ProofContext,
     template_id: &str,
@@ -93,7 +73,6 @@ pub fn verify_proof_offline(
     verify(ctx, &template, claim, proof, binding_ctx).map_err(VerifyError::Zk)
 }
 
-/// Verify a proof offline with an explicit template.
 pub fn verify_proof_with_template(
     ctx: &ProofContext,
     template: &QssmTemplate,
@@ -104,13 +83,11 @@ pub fn verify_proof_with_template(
     verify(ctx, template, claim, proof, binding_ctx)
 }
 
-/// Errors from offline verification.
 #[derive(Debug, thiserror::Error)]
 #[non_exhaustive]
 pub enum VerifyError {
     #[error("unknown template: {0}")]
     UnknownTemplate(String),
-
     #[error(transparent)]
     Zk(#[from] ZkError),
 }
@@ -159,8 +136,6 @@ mod tests {
         .expect("prove should succeed")
     }
 
-    // ── Round-trip ───────────────────────────────────────────────────
-
     #[test]
     fn verify_round_trip() {
         let proof = make_proof(test_binding());
@@ -205,8 +180,6 @@ mod tests {
         assert!(ok);
     }
 
-    // ── Adversarial ──────────────────────────────────────────────────
-
     #[test]
     fn unknown_template_rejected() {
         let proof = make_proof([0u8; 32]);
@@ -221,13 +194,13 @@ mod tests {
     }
 
     #[test]
-    fn tampered_ms_root_rejected() {
+    fn tampered_ms_proof_statement_digest_rejected() {
         let binding_ctx = blake3_hash(b"test-tampered-root");
         let proof = make_proof(binding_ctx);
         let mut bundle = ProofBundle::from_proof(&proof);
-        let mut root = hex::decode(&bundle.ms_root_hex).unwrap();
-        root[0] ^= 0x01;
-        bundle.ms_root_hex = hex::encode(root);
+        let mut dig = hex::decode(&bundle.ms_v2_proof_statement_digest_hex).unwrap();
+        dig[0] ^= 0x01;
+        bundle.ms_v2_proof_statement_digest_hex = hex::encode(dig);
         let tampered = bundle.to_proof().unwrap();
         let result = verify(
             &test_ctx(),
@@ -276,7 +249,9 @@ mod tests {
         let mut bundle = ProofBundle::from_proof(&proof);
         let mut ent = hex::decode(&bundle.binding_entropy_hex).unwrap();
         ent[0] ^= 0xFF;
-        bundle.binding_entropy_hex = hex::encode(ent);
+        let ent_hex = hex::encode(ent);
+        bundle.binding_entropy_hex = ent_hex.clone();
+        bundle.ms_v2_binding_entropy_hex = ent_hex;
         let tampered = bundle.to_proof().unwrap();
         let result = verify(
             &test_ctx(),
