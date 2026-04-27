@@ -28,7 +28,7 @@ fn claim() -> serde_json::Value {
 // ── Deterministic key schedule ───────────────────────────────────────
 
 #[test]
-fn same_entropy_seed_produces_identical_ms_root() {
+fn same_entropy_seed_produces_identical_ms_commitments() {
     let ent = blake3_hash(b"DETERMINISTIC-ENTROPY");
     let b = binding();
     let ctx = ProofContext::new(seed());
@@ -38,13 +38,13 @@ fn same_entropy_seed_produces_identical_ms_root() {
 
     let b1 = ProofBundle::from_proof(&proof1);
     let b2 = ProofBundle::from_proof(&proof2);
-    assert_eq!(b1.ms_root_hex, b2.ms_root_hex);
+    assert_eq!(b1.ms_v2_bit_commitments_hex, b2.ms_v2_bit_commitments_hex);
     assert_eq!(b1.binding_entropy_hex, b2.binding_entropy_hex);
     assert_eq!(b1.external_entropy_hex, b2.external_entropy_hex);
 }
 
 #[test]
-fn different_entropy_seeds_produce_different_ms_roots() {
+fn different_entropy_seeds_produce_different_ms_commitments() {
     let b = binding();
     let ctx = ProofContext::new(seed());
     let proof1 = prove(
@@ -71,7 +71,7 @@ fn different_entropy_seeds_produce_different_ms_roots() {
 
     let b1 = ProofBundle::from_proof(&proof1);
     let b2 = ProofBundle::from_proof(&proof2);
-    assert_ne!(b1.ms_root_hex, b2.ms_root_hex);
+    assert_ne!(b1.ms_v2_bit_commitments_hex, b2.ms_v2_bit_commitments_hex);
 }
 
 #[test]
@@ -102,7 +102,7 @@ fn different_binding_context_produces_different_proofs() {
 
     let b1 = ProofBundle::from_proof(&proof1);
     let b2 = ProofBundle::from_proof(&proof2);
-    assert_ne!(b1.ms_root_hex, b2.ms_root_hex);
+    assert_ne!(b1.ms_v2_bit_commitments_hex, b2.ms_v2_bit_commitments_hex);
     assert_ne!(b1.binding_entropy_hex, b2.binding_entropy_hex);
 }
 

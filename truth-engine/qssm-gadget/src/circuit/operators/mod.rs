@@ -3,13 +3,13 @@
 pub mod engine_a_binding;
 pub mod entropy_injection;
 pub mod merkle_parent_blake3;
-pub mod ms_ghost_mirror;
+pub mod ms_predicate_v2_bridge;
 pub mod truth_limb;
 
 pub use engine_a_binding::*;
 pub use entropy_injection::*;
 pub use merkle_parent_blake3::*;
-pub use ms_ghost_mirror::*;
+pub use ms_predicate_v2_bridge::*;
 pub use truth_limb::*;
 
 use super::binding_contract::BindingReservoir;

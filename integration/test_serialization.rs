@@ -80,9 +80,9 @@ fn wrong_version_rejected() {
 // ── Malformed hex ────────────────────────────────────────────────────
 
 #[test]
-fn invalid_hex_in_ms_root_rejected() {
+fn invalid_hex_in_ms_binding_context_rejected() {
     let mut bundle = make_bundle();
-    bundle.ms_root_hex = "not-valid-hex!!".to_string();
+    bundle.ms_v2_binding_context_hex = "not-valid-hex!!".to_string();
     let json = serde_json::to_string(&bundle).unwrap();
     let parsed: ProofBundle = serde_json::from_str(&json).unwrap();
     let err = parsed.to_proof().unwrap_err();
@@ -90,9 +90,9 @@ fn invalid_hex_in_ms_root_rejected() {
 }
 
 #[test]
-fn truncated_ms_root_rejected() {
+fn truncated_ms_binding_context_rejected() {
     let mut bundle = make_bundle();
-    bundle.ms_root_hex = hex::encode([0u8; 16]); // 16 bytes instead of 32
+    bundle.ms_v2_binding_context_hex = hex::encode([0u8; 16]); // 16 bytes instead of 32
     let json = serde_json::to_string(&bundle).unwrap();
     let parsed: ProofBundle = serde_json::from_str(&json).unwrap();
     let err = parsed.to_proof().unwrap_err();
@@ -171,15 +171,16 @@ fn json_field_names_are_stable() {
         "le_commitment_coeffs",
         "le_proof_t_coeffs",
         "le_proof_z_coeffs",
-        "ms_bit_at_k",
-        "ms_challenge_hex",
-        "ms_k",
-        "ms_n",
-        "ms_opened_salt_hex",
-        "ms_path_hex",
-        "ms_root_hex",
+        "ms_v2_binding_context_hex",
+        "ms_v2_binding_entropy_hex",
+        "ms_v2_bit_commitments_hex",
+        "ms_v2_bitness_proofs",
+        "ms_v2_comparison_clauses",
+        "ms_v2_context_hex",
+        "ms_v2_proof_result",
+        "ms_v2_proof_statement_digest_hex",
+        "ms_v2_target",
         "protocol_version",
-        "target",
         "value",
         "version",
     ];

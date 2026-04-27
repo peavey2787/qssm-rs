@@ -17,8 +17,8 @@ libfuzzer-sys = "0.4"
 path = ".."
 
 [[bin]]
-name = "verify_mirror_shift"
-path = "fuzz_targets/verify_mirror_shift.rs"
+name = "verify_predicate_only_v2"
+path = "fuzz_targets/verify_predicate_only_v2.rs"
 test = false
 doc = false
 bench = false

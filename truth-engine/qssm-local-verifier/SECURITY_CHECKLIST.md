@@ -27,7 +27,7 @@ Architectural Purity
 
 [x] No Layer 1 (LE), Layer 2 (MS), or Layer 3 (gadget) dependencies. The verifier depends only on `qssm-api` (Layer 5 facade) and `qssm-templates` (template gallery). Layer separation is enforced by the dependency graph.
 
-[x] `MsGhostMirrorOp` (a `LatticePolyOp` implementation) was relocated to `qssm-gadget` (Layer 3) at v1.1.0 before this freeze. All circuit-composition logic lives in its proper layer.
+[x] Gadget MS bridge is **MS v2–only** (`MsPredicateOnlyV2BridgeOp` in `qssm-gadget`) and this crate verifies packaged proofs with `verify_predicate_only_v2` over MS v2 statement/proof objects.
 
 Error Handling
 

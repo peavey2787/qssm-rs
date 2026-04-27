@@ -145,9 +145,8 @@ mod tests {
         assert!(b.engine_b_domain_tags.contains(&"QSSM-MS-v1.0".to_string()));
     }
 
-    // Legacy compat
     #[test]
-    fn legacy_default_collision_claim() {
+    fn default_collision_claim_smoke() {
         let c = default_collision_claim();
         assert!(c.advantage_upper_bound < 1e-30);
     }

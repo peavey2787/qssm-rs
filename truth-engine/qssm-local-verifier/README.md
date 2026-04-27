@@ -2,14 +2,21 @@
 
 Internal offline-verifier convenience crate for the QSSM workspace.
 
-This crate is frozen, holds no secrets, and adds no cryptographic logic of its
-own. It exists to resolve templates and delegate verification to `qssm-api`.
+This crate is frozen, holds no secrets, and is an internal verification
+implementation crate in the workspace. It is not a user-facing API.
 
 ## What This Crate Does
 
-- Resolves built-in templates by ID
-- Wraps `qssm_api::verify()` behind a single offline entry point
-- Re-exports `Proof`, `ProofContext`, `ZkError`, and `QssmTemplate`
+- Verifies internal proof artifacts for local/offline workspace use
+- Performs template/predicate consistency checks for verifier flows
+- Exposes internal verifier-facing types for workspace crates
+
+## Boundary and Canonical Protocol Notes
+
+- `qssm-local-verifier` is internal implementation surface.
+- `qssm-api` is the only user-facing API boundary.
+- MS v2 predicate-only is the canonical active MS path.
+- Legacy GhostMirror/v1 is removed from active code.
 
 ## Contributor Rules
 

@@ -31,6 +31,7 @@ pub fn limb_to_q_coeff0(m: u64) -> Result<u32, LatticeBridgeError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use qssm_le::Q as LE_Q;
 
     #[test]
     fn limb_to_q_coeff0_range() {
@@ -38,5 +39,10 @@ mod tests {
         assert!(limb_to_q_coeff0(u64::from(BRIDGE_Q)).is_err());
         let m = u64::from(BRIDGE_Q) - 1;
         assert_eq!(limb_to_q_coeff0(m).unwrap(), m as u32);
+    }
+
+    #[test]
+    fn bridge_q_matches_qssm_le_q() {
+        assert_eq!(BRIDGE_Q, LE_Q);
     }
 }

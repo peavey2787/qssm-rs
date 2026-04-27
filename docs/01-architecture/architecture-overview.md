@@ -5,8 +5,6 @@
 * [QSSM-LE — Engine A](../02-protocol-specs/qssm-le-engine-a.md)
 * [QSSM-MS — Engine B](../02-protocol-specs/qssm-ms-engine-b.md)
 * [BLAKE3-lattice gadget spec](../02-protocol-specs/blake3-lattice-gadget-spec.md)
-* [BLAKE3-lattice gadget — Rust plan](../04-implementation-plans/blake3-lattice-gadget-rust-plan.md)
-* [MSSQ — Egalitarian rollup](../02-protocol-specs/l1-l2/mssq.md)
 
 ---
 
@@ -21,20 +19,12 @@ The primary goal of this repository is not the rollup by itself. The primary goa
 
 Historically, decentralized truth has been tied to heavy, stateful infrastructure. A chain stores the past, nodes replay the past, and “truth” becomes something you derive by carrying a large amount of historical baggage. QSSM is designed to break that dependency. The core stack aims to let a prover produce a succinct statement about arithmetic, magnitude, or membership, and let an observer verify that statement quickly from compact artifacts alone.
 
-This repo therefore contains **two projects with a one-way dependency**:
-
-1. **The Truth Engine (core project):** the recursive proving stack built from **QSSM-LE**, **QSSM-MS**, and the **BLAKE3-lattice gadget**. This is the main star of the show.
-2. **The Egalitarian Rollup (downstream project):** **MSSQ**, a sovereign validity rollup that uses the Truth Engine to enforce MEV-zero ordering, proof-gated execution, and finalized BlockDAG anchoring.
-
-The right mental model is simple: **QSSM is the product; MSSQ is one major application of it.**
 
 ---
 
-## 1. Two Project Paths
+### **Portable Truth**
 
-### **Project One — Portable Truth**
-
-The first project is the stateless proof system itself. It is a vertical cryptographic stack for producing portable truth: proofs that can move across applications, devices, and settlement environments without dragging a large state history behind them.
+This project is the stateless proof system itself. It is a vertical cryptographic stack for producing portable truth: proofs that can move across applications, devices, and settlement environments without dragging a large state history behind them.
 
 Its job is to answer questions like these:
 
@@ -42,10 +32,6 @@ Its job is to answer questions like these:
 - Is one value greater than another?
 - Is this value a member of a committed set?
 - Can one proof system recursively bind the output of another?
-
-### **Project Two — MSSQ as Implementation**
-
-The second project is the rollup that consumes those proofs. MSSQ uses the QSSM stack to build a fairness-oriented execution environment on top of finalized L1 data. It is important, but it is not the root of the architecture. MSSQ depends on QSSM; QSSM does not depend on MSSQ.
 
 ---
 
@@ -129,30 +115,6 @@ That bridge is what turns QSSM from a pair of useful engines into a stateless un
 
 This bridge is what makes the phrase **Universal Truth Engine** meaningful instead of marketing language.
 
----
-
-## 6. MSSQ: The Egalitarian Rollup Built on QSSM
-
-MSSQ is the second project in the repo and the first major implementation of the Truth Engine. It is a sovereign validity rollup that uses the QSSM stack to solve sequencing and settlement problems on top of a BlockDAG anchor.
-
-Its purpose is not to redefine the architecture around the rollup. Its purpose is to demonstrate how the core proving stack can be applied to a concrete system where fairness and verifiable execution matter.
-
-### **What MSSQ uses from the core stack**
-
-- **QSSM-MS** for compact predicate proofs where comparison logic is enough
-- **QSSM-LE** for arithmetic and structured proof composition
-- **Shared `RollupContext` binding** so proofs, leader messages, and batch semantics attach to the same finalized L1 view
-
-### **What MSSQ adds on top**
-
-- **MEV-zero sequencing:** leaders do not choose arbitrary transaction order; they sort by hash-lexicographical order
-- **Egalitarian leader selection:** a **Seed\(_k\)** lottery gives registered nodes a fair slot race
-- **Finalized anchoring:** context is derived from finalized L1 limbs, not merely a volatile tip
-- **Proof-gated execution:** state transitions are applied only when the required proof material verifies
-
-In short, MSSQ is the first sovereign rollup implementation of the Truth Engine, not the definition of the Truth Engine itself.
-
----
 
 ## 7. User Entry: QSSM Desktop and Handoff Flow
 
@@ -181,9 +143,21 @@ The QSSM family should be read in this order:
 
 If you need portable, post-quantum, stateless proofs for arithmetic, comparisons, or recursive composition, the primary architecture is **QSSM-LE + QSSM-MS + the BLAKE3-lattice gadget**.
 
-If you need a concrete sovereign system that uses that stack for fair ordering and anchored execution, that system is **MSSQ**.
+---
 
-The repo therefore represents **Applied Epistemic Engineering through running code**: build the truth engine first, then build systems that consume it.
+## Security Claims Snapshot
+
+The current formal status and the near-term redesign targets are:
+
+| Component | Property | Status |
+| --- | --- | --- |
+| **MS (current)** | Zero-knowledge under the frozen hidden-value game | **Not satisfied** |
+| **MS (v2 Option B transcript format)** | Canonical predicate-only transcript surface | **Satisfied** |
+| **MS (v2 Option B)** | Zero-knowledge | **Conditional** |
+| **LE (Set B current params)** | Witness-hiding | **Satisfied** |
+| **LE (Set B current params)** | HVZK parameter template | **Satisfied** |
+| **LE (Set B current params)** | ZK in the ROM | **Conditional** |
+| **QSSM (composed Option B + Set B)** | End-to-end zero-knowledge | **Conditional** |
 
 ---
 

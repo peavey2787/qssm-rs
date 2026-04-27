@@ -117,8 +117,8 @@ mod tests {
         let proof = make_proof();
         let bundle = ProofBundle::from_proof(&proof);
         let json = serde_json::to_string(&bundle).expect("serialize");
-        let parsed: ProofBundle = serde_json::from_str(&json)
-            .expect("old bundle must remain parseable by current (and future) code");
+        let parsed: ProofBundle =
+            serde_json::from_str(&json).expect("v2 bundle must remain parseable by current code");
         let recovered = parsed.to_proof().expect("to_proof");
         assert_eq!(recovered.ms_root(), proof.ms_root());
         assert_eq!(recovered.value(), proof.value());
@@ -142,7 +142,7 @@ mod tests {
     fn wire_rejects_bad_hex() {
         let proof = make_proof();
         let mut bundle = ProofBundle::from_proof(&proof);
-        bundle.ms_root_hex = "ZZZZ_not_hex".to_string();
+        bundle.ms_v2_binding_context_hex = "ZZZZ_not_hex".to_string();
         let json = serde_json::to_string(&bundle).expect("serialize");
         let parsed: ProofBundle = serde_json::from_str(&json).expect("deserialize");
         let err = parsed.to_proof().unwrap_err();
@@ -153,7 +153,7 @@ mod tests {
     fn wire_rejects_wrong_length() {
         let proof = make_proof();
         let mut bundle = ProofBundle::from_proof(&proof);
-        bundle.ms_root_hex = hex::encode([0u8; 16]);
+        bundle.ms_v2_binding_context_hex = hex::encode([0u8; 16]);
         let json = serde_json::to_string(&bundle).expect("serialize");
         let parsed: ProofBundle = serde_json::from_str(&json).expect("deserialize");
         let err = parsed.to_proof().unwrap_err();
@@ -252,15 +252,16 @@ mod tests {
             "le_commitment_coeffs",
             "le_proof_t_coeffs",
             "le_proof_z_coeffs",
-            "ms_bit_at_k",
-            "ms_challenge_hex",
-            "ms_k",
-            "ms_n",
-            "ms_opened_salt_hex",
-            "ms_path_hex",
-            "ms_root_hex",
+            "ms_v2_binding_context_hex",
+            "ms_v2_binding_entropy_hex",
+            "ms_v2_bit_commitments_hex",
+            "ms_v2_bitness_proofs",
+            "ms_v2_comparison_clauses",
+            "ms_v2_context_hex",
+            "ms_v2_proof_result",
+            "ms_v2_proof_statement_digest_hex",
+            "ms_v2_target",
             "protocol_version",
-            "target",
             "value",
             "version",
         ];

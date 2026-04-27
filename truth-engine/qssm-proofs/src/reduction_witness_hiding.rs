@@ -1,15 +1,14 @@
 //! Witness-hiding claim for the LE Σ-protocol.
 //!
-//! # We do not claim full simulation-based HVZK.
+//! # This module records the witness-hiding margin only.
 //!
-//! Standard Lyubashevsky simulation (\[Lyu12\] Lemma 3.2) requires
-//! η ≥ 11·‖cr‖_∞·√(ln(2N/ε)/π).  With ‖cr‖_∞ ≤ 8192 and η = 2048,
-//! this requirement is not met (would need η ≈ 483,000).
+//! The committed LE Set B parameters now satisfy the encoded HVZK template in
+//! the formal crate, but this module stays narrower: it records the direct
+//! witness-hiding gap between the accepted z-range and the witness bound.
 //!
-//! We claim **witness-hiding**: accepted z has ‖z‖_∞ ≤ γ = 4096 while
-//! ‖r‖_∞ ≤ β = 8.  The gap ratio γ/β = 512 means r contributes ≤ 0.2%
-//! of each coordinate's range.  An adversary observing z gains at most
-//! β/(2γ+1) ≈ 2^{−10} bits of information per coefficient about r.
+//! With γ = 199680 and β = 8, the gap ratio γ/β = 24960 means r contributes a
+//! tiny shift relative to the accepted z range. An adversary observing z gains
+//! at most β/(2γ+1) ≈ 2^{-15.6} bits of information per coefficient about r.
 //!
 //! - Ref: \[Lyu12\] §3, Lemma 3.2 — simulation requirement
 //! - Ref: \[DDLL13\] §3 — bimodal Gaussian framework
@@ -18,16 +17,16 @@ use crate::ClaimType;
 use qssm_le::{BETA, GAMMA};
 use serde::{Deserialize, Serialize};
 
-/// Witness-hiding claim for the LE Σ-protocol (NOT full HVZK).
+/// Witness-hiding claim for the LE Σ-protocol.
 ///
-/// The gap ratio γ/β = 512 ensures that the witness polynomial r (with
-/// ‖r‖_∞ ≤ 8) is masked by z (with ‖z‖_∞ ≤ 4096).  Each coordinate of
-/// z has range 8193 possible values; the witness shifts the distribution
+/// The gap ratio γ/β = 24960 ensures that the witness polynomial r (with
+/// ‖r‖_∞ ≤ 8) is masked by z (with ‖z‖_∞ ≤ 199680). Each coordinate of
+/// z has range 399361 possible values; the witness shifts the distribution
 /// by at most 8, giving per-coefficient leakage ≤ β/(2γ+1).
 ///
 /// The `not_claimed` field explicitly lists properties we do NOT claim.
 ///
-/// - Ref: \[Lyu12\] §3, Lemma 3.2 — simulation requirement not met
+/// - Ref: \[Lyu12\] §3, Lemma 3.2 — witness-hiding bound used here
 /// - Ref: \[DDLL13\] §3.1 — bimodal framework
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct WitnessHidingClaim {
@@ -77,20 +76,24 @@ mod tests {
     fn witness_hiding_gap_ratio() {
         let wh = WitnessHidingClaim::for_current_params();
         assert_eq!(wh.claim_type, ClaimType::WitnessHiding);
-        assert_eq!(wh.gamma, 4096);
+        assert_eq!(wh.gamma, 199_680);
         assert_eq!(wh.beta, 8);
-        assert!(wh.gap_ratio >= 256.0, "gap ratio {:.1} < 256", wh.gap_ratio);
-        // γ/β = 512
-        assert!((wh.gap_ratio - 512.0).abs() < 0.01);
+        assert!(
+            wh.gap_ratio >= 24_000.0,
+            "gap ratio {:.1} < 24000",
+            wh.gap_ratio
+        );
+        // γ/β = 24960
+        assert!((wh.gap_ratio - 24_960.0).abs() < 0.01);
     }
 
     #[test]
     fn per_coeff_leakage_is_small() {
         let wh = WitnessHidingClaim::for_current_params();
-        // β/(2γ+1) = 8/8193 ≈ 0.000976 → log2 ≈ −10.0
+        // β/(2γ+1) = 8/399361 ≈ 0.0000200 → log2 ≈ −15.6
         assert!(
-            wh.per_coeff_leakage_bits < -9.0,
-            "per_coeff_leakage_bits = {:.2}, expected < -9",
+            wh.per_coeff_leakage_bits < -15.0,
+            "per_coeff_leakage_bits = {:.2}, expected < -15",
             wh.per_coeff_leakage_bits
         );
     }

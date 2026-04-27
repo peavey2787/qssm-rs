@@ -6,109 +6,107 @@ Status: Normative protocol contract for closing the `EngineABindingOp` gap.
 
 This specification defines the cryptographic seam between:
 
-- Engine B (`qssm-ms`): predicate proof (`value > target`) and Merkle root commitments.
+- Engine B (`qssm-ms`): MS v2 predicate-only proof (`PredicateOnlyProofV2`) over a public statement (`PredicateOnlyStatementV2`).
 - Engine A (`qssm-le`): sovereign public-binding commitment and Lyubashevsky-style proof surface.
 
-Goal: a prover cannot present a valid Engine B statement unless the same hidden value relation is bound into Engine A public commitments under the same rollup context and entropy link.
+Goal: a prover cannot present a valid cross-engine package unless MS v2 verification has succeeded and the same **verifier-visible** MS observables are bound into Engine A public commitments under the agreed rollup context and entropy link.
 
 Adversary model includes:
 
-- Cross-engine replay (`ms` proof copied into a different Engine A context).
-- Substitution (`value`/`target` relation valid in B but not tied to A state commitment).
+- Cross-engine replay (MS v2 observables copied into a different Engine A context).
+- Substitution (valid MS proof in isolation but not tied to A state commitment).
 - Malleability on transcript inputs (domain collisions, context swaps, blind reuse across contexts).
 
 ## 2. Normative seam invariants
 
 A valid cross-engine proof package MUST satisfy all of the following:
 
-1. Binding correctness: the Engine B witness relation maps to the same state commitment lineage consumed by Engine A.
-2. Transcript coherence: both engines bind the same `rollup_context_digest`.
-3. Entropy coherence: the MS FS `entropy` input uses the same digest selected by `SovereignLimbV2Params::ms_ledger_entropy_digest`.
-4. Blind integrity: seam commitments are blinded by `device_entropy_link` (or explicit fallback policy when absent).
-5. Public minimality: only commitments and challenge digests are public; raw witness values remain private.
+1. **MS v2 verification:** `verify_predicate_only_v2(statement, proof)` succeeds before any gadget seam output is accepted.
+2. **Binding correctness:** seam commitment includes the **public** MS v2 observables (`ms_v2_*` family) agreed with the LE handoff.
+3. **Transcript coherence:** both engines bind the same rollup / binding context digest where required by code.
+4. **Entropy coherence:** MS FS binding entropy and Engine A truth-limb external entropy follow the gadget handshake (`TruthLimbV2Params` / `device_entropy_link` policy).
+5. **Public minimality:** seam material uses only **verifier-visible** fields from the v2 proof and statement (no hidden witness lanes in the seam hash).
 
 ## 3. Commit-then-open seam flow
 
 ```mermaid
 flowchart TD
     rawEntropy[RawJitterOnDevice] --> linkDigest[deviceEntropyLinkDigest]
-    msWitness[EngineBWitnessValueTarget] --> msCommit[MSCommitAndProof]
-    linkDigest --> msCommit
-
-    msCommit --> seamCommit[SeamCommitValueWithLinkBlind]
+    msV2[MSv2StatementAndProof] --> msVerify[verify_predicate_only_v2]
+    msVerify --> observables[ms_v2_observables]
+    linkDigest --> seamCommit[SeamCommitWithMsV2Observables]
     stateRoot[SovereignStateRoot] --> seamCommit
-    rollupCtx[RollupContextDigest] --> seamCommit
+    observables --> seamCommit
+    rollupCtx[RollupBindingContext] --> seamCommit
 
     seamCommit --> engineAPublic[EngineAPublicBindingArtifacts]
     engineAPublic --> leProof[EngineAProof]
-    msCommit --> seamVerify[CrossEngineVerifier]
+    msVerify --> seamVerify[CrossEngineVerifier]
     leProof --> seamVerify
 ```
 
-Normative sequence:
+Normative sequence (gadget-aligned):
 
-1. Prover obtains on-device raw entropy and computes `device_entropy_link = blake3(raw)`.
-2. Prover produces Engine B proof (`qssm-ms`) with FS entropy set to this link digest (or explicit fallback digest when link is absent).
+1. Prover obtains on-device raw entropy and computes `device_entropy_link` (or uses the agreed fallback policy).
+2. Prover produces MS v2 proof and verifies it locally; collects `ms_v2_statement_digest`, `ms_v2_result_bit`, `ms_v2_bitness_global_challenges_digest`, `ms_v2_comparison_global_challenge`, `ms_v2_transcript_digest`.
 3. Prover computes seam commitment:  
-   `C_seam = H(DOMAIN_SEAM_COMMIT_V1 || state_root || ms_root || relation_digest || device_entropy_link || rollup_context_digest)`.
+   `C_seam = H(QSSM-SEAM-MS-V2-COMMIT-v1 || state_root || ms_v2_statement_digest || ms_v2_result_bit || ms_v2_bitness_global_challenges_digest || ms_v2_comparison_global_challenge || ms_v2_transcript_digest || device_entropy_link || binding_context || truth_digest || entropy_anchor)`.
 4. Prover emits Engine A-facing public artifact set containing `C_seam` and required digest lanes.
 5. Verifier checks:
-   - Engine B verify success.
+   - MS v2 verify success (at bridge boundary).
    - Engine A verify success.
-   - Seam commitment recomputes exactly from agreed public inputs and transcript-bound fields.
+   - Seam commitment recomputes exactly from agreed public inputs.
 
 ## 4. Domain separation (required)
 
-Implementations MUST use unique domain tags for seam material and MUST include:
+Implementations MUST use unique domain tags for seam material. **Current gadget strings (exact):**
 
-- engine identifier (`ms` vs `le`),
-- protocol version,
-- `rollup_context_digest`,
-- state root / ms root references,
-- challenge linkage fields.
+- `QSSM-SEAM-MS-V2-COMMIT-v1`
+- `QSSM-SEAM-MS-V2-OPEN-v1`
+- `QSSM-SEAM-MS-V2-BINDING-v1`
 
-Recommended tags:
-
-- `QSSM-SEAM-COMMIT-v1`
-- `QSSM-SEAM-OPEN-v1`
-- `QSSM-SEAM-BINDING-v1`
+Historical tags `QSSM-SEAM-COMMIT-v1` / `OPEN` / `BINDING` referred to the **removed** cleartext GhostMirror seam field layout and MUST NOT be reused for the v2 seam without a version bump and migration plan.
 
 ## 5. Required input/output contract (protocol-level)
 
-Seam input set (private/public mixed):
+Seam input set (public fields carried by `EngineABindingInput`):
 
-- Private: witness-side relation payload from Engine B path (value-side material).
-- Public: `state_root`, `ms_root`, `rollup_context_digest`, `ms_fs_v2_challenge`.
-- Secret blinding digest: `device_entropy_link` (digest is secret-derived; raw jitter never exported).
+- `state_root`
+- `ms_v2_statement_digest`
+- `ms_v2_result_bit` (0 or 1)
+- `ms_v2_bitness_global_challenges_digest`
+- `ms_v2_comparison_global_challenge`
+- `ms_v2_transcript_digest`
+- `binding_context` (rollup / isolation digest)
+- `device_entropy_link`
+- `truth_digest`, `entropy_anchor`
+- `claimed_seam_commitment`, `require_ms_verified` (must be true after MS verify)
 
 Seam output set (public):
 
-- `seam_commitment_digest` (32 bytes),
-- optional coefficient-vector lanes for Engine A public binding,
-- deterministic transcript bytes for recomputation.
+- `seam_commitment_digest` (32 bytes)
+- `seam_open_digest`, `seam_binding_digest`
+- Engine A public binding artifacts as defined by the handshake
 
 ## 6. Failure conditions (hard reject)
 
 Reject the package if any of these hold:
 
-- Engine B verify fails.
-- Engine A verify fails.
-- `rollup_context_digest` mismatch between engines.
-- `ms` FS entropy does not match seam-selected link digest.
-- seam commitment digest mismatch.
-- domain tag/version mismatch.
+- MS v2 verification fails.
+- Engine A verification fails.
+- Binding context mismatch between engines where required.
+- Seam commitment digest mismatch.
+- Domain tag / version mismatch.
 
 ## 7. Mapping to current code surfaces
 
-Current seam surfaces are in:
+Normative implementation:
 
-- `crates/qssm-gadget/src/circuit/poly_ops.rs`
-  - `EngineABindingOp` (currently contract stub)
-  - `MsGhostMirrorOp` (MS verification adapter)
-  - `PublicBindingContract` / `BindingReservoir`
-  - `SovereignLimbV2Params::ms_ledger_entropy_digest`
+- [`truth-engine/qssm-gadget/src/circuit/operators/ms_predicate_v2_bridge.rs`](../../../truth-engine/qssm-gadget/src/circuit/operators/ms_predicate_v2_bridge.rs) — `MsPredicateOnlyV2BridgeOp` (`verify_predicate_only_v2`).
+- [`truth-engine/qssm-gadget/src/circuit/operators/engine_a_binding.rs`](../../../truth-engine/qssm-gadget/src/circuit/operators/engine_a_binding.rs) — `EngineABindingOp` commit-then-open over `ms_v2_*` fields.
+- [`truth-engine/qssm-gadget/src/circuit/handshake.rs`](../../../truth-engine/qssm-gadget/src/circuit/handshake.rs) — transcript map version, `EngineAPublicJson`.
 
-This document defines the normative behavior that a non-stub `EngineABindingOp` MUST implement.
+**Note:** Packaged offline verification and gadget seam binding are both on MS v2 predicate-only proof objects in the current workspace.
 
 ## 8. Privacy boundary
 
