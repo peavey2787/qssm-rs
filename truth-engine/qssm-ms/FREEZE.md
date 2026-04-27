@@ -12,6 +12,7 @@
 - predicate-only prover/verifier
 - programmed-oracle simulator + verification path
 - wire reconstruction constructors for decoded fields
+- CI-backed fuzzing surface (`fuzz/` with `verify_predicate_only_v2`, `qssm-ms-fuzz.yml`, canonical `fuzz/Cargo.lock`)
 
 Legacy GhostMirror v1 API and implementation were removed from this crate.
 

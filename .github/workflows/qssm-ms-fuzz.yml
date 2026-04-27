@@ -1,0 +1,47 @@
+name: QSSM-MS Verifier Fuzz
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "truth-engine/qssm-ms/**"
+      - ".github/workflows/qssm-ms-fuzz.yml"
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  verifier-fuzz-1h:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install nightly Rust
+        uses: dtolnay/rust-toolchain@nightly
+
+      - name: Install cargo-fuzz
+        run: cargo install cargo-fuzz --locked
+
+      - name: Verify fuzz target exists
+        working-directory: truth-engine/qssm-ms
+        run: cargo +nightly fuzz list
+
+      - name: Run verifier fuzzing for 1 hour
+        working-directory: truth-engine/qssm-ms
+        run: |
+          cargo +nightly fuzz run verify_predicate_only_v2 -- \
+            -max_total_time=3600 \
+            -print_final_stats=1 \
+            -rss_limit_mb=4096
+
+      - name: Upload fuzz artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qssm-ms-fuzz-artifacts
+          path: |
+            truth-engine/qssm-ms/fuzz/artifacts
+            truth-engine/qssm-ms/fuzz/corpus
+          if-no-files-found: ignore
