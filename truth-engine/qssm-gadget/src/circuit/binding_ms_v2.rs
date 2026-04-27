@@ -18,8 +18,7 @@ use crate::error::GadgetError;
 pub const DOMAIN_TRUTH_LIMB_MS_V2: &str = "QSSM-SOVEREIGN-LIMB-MS-V2-v1.0";
 
 /// Fixed width of [`encode_ms_v2_truth_metadata`] output (concat layout, normative).
-pub const MS_V2_TRUTH_METADATA_LEN: usize =
-    32 + 1 + 32 + 32 + 32 + 32 + 1; // statement, result, bitness dig, comp, transcript, extropy, flag
+pub const MS_V2_TRUTH_METADATA_LEN: usize = 32 + 1 + 32 + 32 + 32 + 32 + 1; // statement, result, bitness dig, comp, transcript, extropy, flag
 
 /// Bitness digest matches gadget seam / engine-b tests: `DOMAIN_MS` over `‖len‖‖c0‖…‖c63‖`.
 #[must_use]
@@ -85,17 +84,19 @@ pub fn encode_ms_v2_truth_metadata_from_statement_proof(
             reason: "statement digest mismatch (statement vs proof)",
         });
     }
-    let bitness = proof
-        .bitness_global_challenges()
-        .map_err(|_| GadgetError::TruthWitnessInvalid {
-            reason: "bitness global challenges",
-        })?;
+    let bitness =
+        proof
+            .bitness_global_challenges()
+            .map_err(|_| GadgetError::TruthWitnessInvalid {
+                reason: "bitness global challenges",
+            })?;
     let bitness_digest = digest_bitness_global_challenges_v2(&bitness);
-    let comparison = proof
-        .comparison_global_challenge()
-        .map_err(|_| GadgetError::TruthWitnessInvalid {
-            reason: "comparison global challenge",
-        })?;
+    let comparison =
+        proof
+            .comparison_global_challenge()
+            .map_err(|_| GadgetError::TruthWitnessInvalid {
+                reason: "comparison global challenge",
+            })?;
     let transcript = proof.transcript_digest();
     Ok(encode_ms_v2_truth_metadata(
         &sd,
@@ -204,8 +205,7 @@ mod tests {
         let seed = [1u8; 32];
         let binding_entropy = [2u8; 32];
         let binding_ctx = [3u8; 32];
-        let (commitment, witness) =
-            commit_value_v2(100, seed, binding_entropy).expect("commit v2");
+        let (commitment, witness) = commit_value_v2(100, seed, binding_entropy).expect("commit v2");
         let statement = PredicateOnlyStatementV2::new(
             commitment,
             50,
@@ -213,8 +213,7 @@ mod tests {
             binding_ctx,
             b"ctx".to_vec(),
         );
-        let proof =
-            prove_predicate_only_v2(&statement, &witness, [9u8; 32]).expect("prove v2");
+        let proof = prove_predicate_only_v2(&statement, &witness, [9u8; 32]).expect("prove v2");
         let ext = [7u8; 32];
         let md = encode_ms_v2_truth_metadata_from_statement_proof(&statement, &proof, &ext, false)
             .expect("encode");

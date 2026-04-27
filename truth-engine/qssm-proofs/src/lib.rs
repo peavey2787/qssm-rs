@@ -516,7 +516,6 @@ mod tests {
     }
 }
 
-
 // ---------------------------------------------------------------------------
 // Audit-mode feature gate: runs only when `cargo test --features audit-mode`
 // ---------------------------------------------------------------------------
@@ -527,8 +526,7 @@ mod audit_mode_tests {
 
     #[test]
     fn audit_mode_validates_simulator_independence_and_lemma_closure() {
-        let checklist = run_audit_validation()
-            .expect("audit validation must succeed");
+        let checklist = run_audit_validation().expect("audit validation must succeed");
         assert!(
             checklist.all_passed,
             "Audit-mode validation failed: not all checklist items passed"

@@ -16,14 +16,7 @@ impl ConstraintSystem for NoopConstraintSystem {
         id
     }
     fn enforce_xor(&mut self, _x: VarId, _y: VarId, _and_xy: VarId, _z: VarId) {}
-    fn enforce_full_adder(
-        &mut self,
-        _a: VarId,
-        _b: VarId,
-        _cin: VarId,
-        _sum: VarId,
-        _cout: VarId,
-    ) {
+    fn enforce_full_adder(&mut self, _a: VarId, _b: VarId, _cin: VarId, _sum: VarId, _cout: VarId) {
     }
     fn enforce_equal(&mut self, _a: VarId, _b: VarId) {}
 }
@@ -66,16 +59,17 @@ fn v2_proof_must_verify_before_binding() {
         &mut cs,
         &mut ctx,
     );
-    assert!(res.is_err(), "bridge must reject if verify_predicate_only_v2 fails");
+    assert!(
+        res.is_err(),
+        "bridge must reject if verify_predicate_only_v2 fails"
+    );
 }
 
 #[test]
 fn no_active_bridge_path_consumes_ghostmirror_challenge() {
-    let operators_mod =
-        include_str!("../src/circuit/operators/mod.rs").replace('\r', "");
+    let operators_mod = include_str!("../src/circuit/operators/mod.rs").replace('\r', "");
     let lib_rs = include_str!("../src/lib.rs").replace('\r', "");
-    let seam_rs =
-        include_str!("../src/circuit/operators/engine_a_binding.rs").replace('\r', "");
+    let seam_rs = include_str!("../src/circuit/operators/engine_a_binding.rs").replace('\r', "");
 
     assert!(
         !operators_mod.contains("ms_ghost_mirror"),

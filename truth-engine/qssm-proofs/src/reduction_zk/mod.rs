@@ -41,10 +41,9 @@ use crate::{
 };
 use qssm_gadget::{MERKLE_DEPTH_MS, MERKLE_WIDTH_MS};
 use qssm_le::{
-    prove_arithmetic, short_vec_to_rq, short_vec_to_rq_bound, verify_lattice, BETA,
-    C_POLY_SIZE, C_POLY_SPAN, Commitment, ETA, GAMMA, N, PublicBinding,
-    PublicInstance, Q, RqPoly, VerifyingKey, Witness,
-    LE_FS_PUBLIC_BINDING_LAYOUT_VERSION,
+    prove_arithmetic, short_vec_to_rq, short_vec_to_rq_bound, verify_lattice, Commitment,
+    PublicBinding, PublicInstance, RqPoly, VerifyingKey, Witness, BETA, C_POLY_SIZE, C_POLY_SPAN,
+    ETA, GAMMA, LE_FS_PUBLIC_BINDING_LAYOUT_VERSION, N, Q,
 };
 use qssm_utils::{hash_domain, PositionAwareTree, DOMAIN_MS};
 use serde::{Deserialize, Serialize};
@@ -64,7 +63,6 @@ const MS_TRUE_CLAUSE_PUBLIC_POINT_CONTRACT: &str =
     "At the highest differing bit position, every true-clause comparison public point is exactly of the form P = r * H for the corresponding committed blinder r.";
 const MS_SCHNORR_REPARAMETERIZATION_CONTRACT: &str =
     "For a fixed public point P = w * H and programmed challenge c, the real Schnorr transcript distribution (alpha, alpha*H, alpha+c*w) is exactly identical to the simulated transcript distribution (z*H-c*P, z) by the bijection z <-> alpha = z - c*w.";
-
 
 include!("core/types_core.rs");
 include!("core/types_theorem.rs");

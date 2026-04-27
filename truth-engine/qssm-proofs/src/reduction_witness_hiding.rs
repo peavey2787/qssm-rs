@@ -78,7 +78,11 @@ mod tests {
         assert_eq!(wh.claim_type, ClaimType::WitnessHiding);
         assert_eq!(wh.gamma, 199_680);
         assert_eq!(wh.beta, 8);
-        assert!(wh.gap_ratio >= 24_000.0, "gap ratio {:.1} < 24000", wh.gap_ratio);
+        assert!(
+            wh.gap_ratio >= 24_000.0,
+            "gap ratio {:.1} < 24000",
+            wh.gap_ratio
+        );
         // γ/β = 24960
         assert!((wh.gap_ratio - 24_960.0).abs() < 0.01);
     }

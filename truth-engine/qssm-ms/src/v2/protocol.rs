@@ -1,13 +1,14 @@
 use super::internals::{
-    bitness_query_digest, candidate_positions, clause_bit_indices, clause_public_points, comparison_query_digest,
-    decode_commitment_points, decode_scalar, decompress_point, hash_query_to_scalar, hash_to_scalar,
-    highest_differing_bit_u64, pedersen_commit, pedersen_h, prove_bitness_bit, simulated_schnorr_announcement,
-    ChallengeOracle, HashChallengeOracle, ProgrammedChallengeOracle,
+    bitness_query_digest, candidate_positions, clause_bit_indices, clause_public_points,
+    comparison_query_digest, decode_commitment_points, decode_scalar, decompress_point,
+    hash_query_to_scalar, hash_to_scalar, highest_differing_bit_u64, pedersen_commit, pedersen_h,
+    prove_bitness_bit, simulated_schnorr_announcement, ChallengeOracle, HashChallengeOracle,
+    ProgrammedChallengeOracle,
 };
 use super::types::{
-    BitnessProofV2, ComparisonClauseProofV2, ComparisonProofV2, EqualitySubproofV2, PredicateOnlyProofV2,
-    PredicateOnlySimulationV2, PredicateOnlyStatementV2, PredicateWitnessV2, ProgrammedOracleQueryV2,
-    ValueCommitmentV2, V2_BIT_COUNT,
+    BitnessProofV2, ComparisonClauseProofV2, ComparisonProofV2, EqualitySubproofV2,
+    PredicateOnlyProofV2, PredicateOnlySimulationV2, PredicateOnlyStatementV2, PredicateWitnessV2,
+    ProgrammedOracleQueryV2, ValueCommitmentV2, V2_BIT_COUNT,
 };
 use crate::MsError;
 use curve25519_dalek::{constants::RISTRETTO_BASEPOINT_POINT, scalar::Scalar};
@@ -146,7 +147,8 @@ pub fn prove_predicate_only_v2(
                         &(subproof_index as u32).to_le_bytes(),
                     ],
                 );
-                let announcement = simulated_schnorr_announcement(*point, response, challenge_share);
+                let announcement =
+                    simulated_schnorr_announcement(*point, response, challenge_share);
                 subproofs.push(EqualitySubproofV2 {
                     announcement,
                     response: response.to_bytes(),
@@ -166,8 +168,8 @@ pub fn prove_predicate_only_v2(
     let true_indices = clause_bit_indices(true_position);
     let mut true_subproofs = Vec::with_capacity(true_indices.len());
     for (subproof_index, bit_index) in true_indices.iter().enumerate() {
-        let response =
-            true_clause_alphas[subproof_index] + true_challenge * witness.blinder_scalar(*bit_index as usize)?;
+        let response = true_clause_alphas[subproof_index]
+            + true_challenge * witness.blinder_scalar(*bit_index as usize)?;
         true_subproofs.push(EqualitySubproofV2 {
             announcement: clauses[true_clause_index].subproofs[subproof_index].announcement,
             response: response.to_bytes(),
@@ -202,8 +204,12 @@ pub fn simulate_predicate_only_v2(
     let mut programmed_queries = Vec::with_capacity(V2_BIT_COUNT + 1);
     let mut bitness_proofs = Vec::with_capacity(V2_BIT_COUNT);
 
-    for bit_index in 0..V2_BIT_COUNT {
-        let commitment = commitment_points[bit_index];
+    for (bit_index, commitment) in commitment_points
+        .iter()
+        .copied()
+        .enumerate()
+        .take(V2_BIT_COUNT)
+    {
         let point_zero = commitment;
         let point_one = commitment - RISTRETTO_BASEPOINT_POINT;
         let challenge_zero = hash_to_scalar(
@@ -240,9 +246,11 @@ pub fn simulate_predicate_only_v2(
                 b"one",
             ],
         );
-        let announce_zero = simulated_schnorr_announcement(point_zero, response_zero, challenge_zero);
+        let announce_zero =
+            simulated_schnorr_announcement(point_zero, response_zero, challenge_zero);
         let announce_one = simulated_schnorr_announcement(point_one, response_one, challenge_one);
-        let query_digest = bitness_query_digest(&statement_digest, bit_index, &announce_zero, &announce_one);
+        let query_digest =
+            bitness_query_digest(&statement_digest, bit_index, &announce_zero, &announce_one);
         programmed_queries.push(ProgrammedOracleQueryV2 {
             query_digest,
             challenge: (challenge_zero + challenge_one).to_bytes(),
@@ -385,7 +393,8 @@ fn verify_predicate_only_v2_inner(
         ));
     }
 
-    let comparison_query = comparison_query_digest(&statement_digest, &proof.comparison_proof.clauses);
+    let comparison_query =
+        comparison_query_digest(&statement_digest, &proof.comparison_proof.clauses);
     let expected_challenge = oracle.challenge(&comparison_query)?;
     let actual_challenge = proof.comparison_proof.global_challenge()?;
     if actual_challenge != expected_challenge {

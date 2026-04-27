@@ -4,9 +4,7 @@
 
 #![forbid(unsafe_code)]
 
-use qssm_gadget::{
-    encode_ms_v2_truth_metadata_from_statement_proof, TruthWitnessMsV2,
-};
+use qssm_gadget::{encode_ms_v2_truth_metadata_from_statement_proof, TruthWitnessMsV2};
 use qssm_le::PublicInstance;
 use qssm_local_prover::{Proof, ProofContext, ZkError, MS_CONTEXT_TAG};
 use qssm_ms::verify_predicate_only_v2;
@@ -45,7 +43,8 @@ pub fn verify(
     let tw = TruthWitnessMsV2::bind(*proof.ms_root(), binding_ctx, metadata);
     tw.validate().map_err(|_| ZkError::TruthWitnessInvalid)?;
 
-    let public = PublicInstance::digest_coeffs(tw.digest_coeff_vector).map_err(ZkError::LeVerify)?;
+    let public =
+        PublicInstance::digest_coeffs(tw.digest_coeff_vector).map_err(ZkError::LeVerify)?;
     let ok = qssm_le::verify_lattice(
         ctx.vk(),
         &public,

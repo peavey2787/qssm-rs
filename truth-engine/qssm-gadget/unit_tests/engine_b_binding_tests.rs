@@ -3,8 +3,8 @@ use qssm_gadget::PolyOpContext;
 use qssm_gadget::{ConstraintSystem, VarId, VarKind};
 use qssm_gadget::{EngineABindingInput, EngineABindingOp};
 use qssm_ms::{commit_value_v2, prove_predicate_only_v2, PredicateOnlyStatementV2};
-use qssm_utils::hashing::{hash_domain, DOMAIN_MS};
 use qssm_utils::blake3_hash;
+use qssm_utils::hashing::{hash_domain, DOMAIN_MS};
 
 #[derive(Debug, Default)]
 struct NoopConstraintSystem {
@@ -45,15 +45,9 @@ fn baseline_inputs() -> (EngineABindingInput, u64, u64, Vec<u8>) {
     let target = u64::MAX - 1;
     let context = b"ctx".to_vec();
 
-    let (commitment, witness) =
-        commit_value_v2(value, seed, binding_entropy).expect("commit v2");
-    let statement = PredicateOnlyStatementV2::new(
-        commitment,
-        target,
-        binding_entropy,
-        rollup,
-        context.clone(),
-    );
+    let (commitment, witness) = commit_value_v2(value, seed, binding_entropy).expect("commit v2");
+    let statement =
+        PredicateOnlyStatementV2::new(commitment, target, binding_entropy, rollup, context.clone());
     let proof = prove_predicate_only_v2(&statement, &witness, [7u8; 32]).expect("prove v2");
     let bitness = proof
         .bitness_global_challenges()
@@ -116,7 +110,10 @@ fn engine_a_binding_rejects_tweaked_ms_root() {
     let mut ctx = PolyOpContext::new("engine_a_binding");
     let mut cs = NoopConstraintSystem::default();
     let res = op.synthesize_with_context(tampered, &mut cs, &mut ctx);
-    assert!(res.is_err(), "tampered ms_v2_statement_digest must fail seam verify");
+    assert!(
+        res.is_err(),
+        "tampered ms_v2_statement_digest must fail seam verify"
+    );
 }
 
 #[test]
@@ -219,7 +216,10 @@ fn engine_a_binding_rejects_all_zero_ms_root() {
     let mut ctx = PolyOpContext::new("engine_a_binding");
     let mut cs = NoopConstraintSystem::default();
     let res = op.synthesize_with_context(tampered, &mut cs, &mut ctx);
-    assert!(res.is_err(), "all-zero ms_v2_statement_digest must be rejected");
+    assert!(
+        res.is_err(),
+        "all-zero ms_v2_statement_digest must be rejected"
+    );
 }
 
 // ── Gap 3: byte-swap within a single field must be detected ───────────────

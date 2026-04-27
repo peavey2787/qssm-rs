@@ -53,8 +53,11 @@ fn spec_vs_code_fingerprint_test() {
         );
     }
 
-    for token in ["le_global_sim_commitment_short", "le_global_sim_z", "le_global_sim_challenge_seed"]
-    {
+    for token in [
+        "le_global_sim_commitment_short",
+        "le_global_sim_z",
+        "le_global_sim_challenge_seed",
+    ] {
         assert!(
             zk_simulators_extra.contains(token),
             "LE simulator code missing token: {token}"

@@ -2,8 +2,8 @@
 
 use qssm_ms::{
     commit_value_v2, prove_predicate_only_v2, verify_predicate_only_v2, BitnessProofV2,
-    ComparisonClauseProofV2, ComparisonProofV2, EqualitySubproofV2, MsError,
-    PredicateOnlyProofV2, PredicateOnlyStatementV2, V2_BIT_COUNT,
+    ComparisonClauseProofV2, ComparisonProofV2, EqualitySubproofV2, MsError, PredicateOnlyProofV2,
+    PredicateOnlyStatementV2, V2_BIT_COUNT,
 };
 
 const BE: [u8; 32] = [0x77; 32];
@@ -45,7 +45,9 @@ fn clone_comparison(proof: &PredicateOnlyProofV2) -> ComparisonProofV2 {
             let subs: Vec<EqualitySubproofV2> = cl
                 .subproofs_slice()
                 .iter()
-                .map(|s| EqualitySubproofV2::from_wire(*s.announcement_bytes(), *s.response_bytes()))
+                .map(|s| {
+                    EqualitySubproofV2::from_wire(*s.announcement_bytes(), *s.response_bytes())
+                })
                 .collect();
             ComparisonClauseProofV2::from_wire(*cl.challenge_share_bytes(), subs)
         })

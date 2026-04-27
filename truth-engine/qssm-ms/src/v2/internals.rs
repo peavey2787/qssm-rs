@@ -1,6 +1,6 @@
 use super::types::{
-    BitnessProofV2, ComparisonClauseProofV2, PredicateOnlyStatementV2, ProgrammedOracleQueryV2, ValueCommitmentV2,
-    V2_BIT_COUNT,
+    BitnessProofV2, ComparisonClauseProofV2, PredicateOnlyStatementV2, ProgrammedOracleQueryV2,
+    ValueCommitmentV2, V2_BIT_COUNT,
 };
 use crate::MsError;
 use blake3::Hasher;
@@ -20,7 +20,9 @@ pub(crate) fn pedersen_h() -> RistrettoPoint {
     hash_to_point(b"predicate_only_v2_pedersen_h")
 }
 
-pub(crate) fn decode_commitment_points(commitment: &ValueCommitmentV2) -> Result<Vec<RistrettoPoint>, MsError> {
+pub(crate) fn decode_commitment_points(
+    commitment: &ValueCommitmentV2,
+) -> Result<Vec<RistrettoPoint>, MsError> {
     commitment
         .bit_commitments()
         .iter()
@@ -80,7 +82,8 @@ pub(crate) fn prove_bitness_bit(
         (announce_sim, announce_true)
     };
 
-    let query_digest = bitness_query_digest(statement_digest, bit_index, &announce_zero, &announce_one);
+    let query_digest =
+        bitness_query_digest(statement_digest, bit_index, &announce_zero, &announce_one);
     let challenge_global = hash_query_to_scalar(&query_digest);
 
     let (challenge_zero, challenge_one, response_zero, response_one) = if true_branch_is_zero {
@@ -145,7 +148,8 @@ pub(crate) fn clause_public_points(
             ((statement.target() >> bit_index) & 1) as u8
         };
         points.push(
-            commitments[bit_index as usize] - Scalar::from(expected_bit as u64) * RISTRETTO_BASEPOINT_POINT,
+            commitments[bit_index as usize]
+                - Scalar::from(expected_bit as u64) * RISTRETTO_BASEPOINT_POINT,
         );
     }
     Ok(points)
@@ -186,7 +190,10 @@ pub(crate) fn comparison_query_digest(
 }
 
 pub(crate) fn hash_query_to_scalar(query_digest: &[u8; 32]) -> Scalar {
-    hash_to_scalar(b"predicate_only_v2_query_scalar", &[query_digest.as_slice()])
+    hash_to_scalar(
+        b"predicate_only_v2_query_scalar",
+        &[query_digest.as_slice()],
+    )
 }
 
 pub(crate) fn simulated_schnorr_announcement(
@@ -194,7 +201,9 @@ pub(crate) fn simulated_schnorr_announcement(
     response: Scalar,
     challenge: Scalar,
 ) -> [u8; 32] {
-    (response * pedersen_h() - challenge * point).compress().to_bytes()
+    (response * pedersen_h() - challenge * point)
+        .compress()
+        .to_bytes()
 }
 
 pub(crate) fn highest_differing_bit_u64(left: u64, right: u64) -> Option<u8> {

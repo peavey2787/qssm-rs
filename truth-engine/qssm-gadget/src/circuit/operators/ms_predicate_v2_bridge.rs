@@ -11,9 +11,7 @@ use super::super::binding_contract::{
 use super::super::context::{PolyOpContext, PolyOpError};
 use super::super::lattice_polyop::LatticePolyOp;
 use super::super::r1cs::ConstraintSystem;
-use qssm_ms::{
-    verify_predicate_only_v2, PredicateOnlyProofV2, PredicateOnlyStatementV2,
-};
+use qssm_ms::{verify_predicate_only_v2, PredicateOnlyProofV2, PredicateOnlyStatementV2};
 use qssm_utils::hashing::{hash_domain, DOMAIN_MS};
 
 #[derive(Debug, Clone)]
@@ -135,9 +133,7 @@ impl LatticePolyOp for MsPredicateOnlyV2BridgeOp {
 mod tests {
     use super::*;
     use crate::{ConstraintSystem, VarId, VarKind};
-    use qssm_ms::{
-        commit_value_v2, prove_predicate_only_v2, PredicateOnlyStatementV2,
-    };
+    use qssm_ms::{commit_value_v2, prove_predicate_only_v2, PredicateOnlyStatementV2};
 
     #[derive(Debug, Default)]
     struct NoopConstraintSystem {
@@ -176,8 +172,7 @@ mod tests {
             binding_context,
             context,
         );
-        let proof =
-            prove_predicate_only_v2(&statement, &witness, [4u8; 32]).expect("prove v2");
+        let proof = prove_predicate_only_v2(&statement, &witness, [4u8; 32]).expect("prove v2");
         MsPredicateOnlyV2BridgeInput { statement, proof }
     }
 

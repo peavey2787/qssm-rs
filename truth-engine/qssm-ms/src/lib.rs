@@ -5,6 +5,7 @@ mod error;
 mod v2;
 
 pub use error::MsError;
+pub use v2::wire_constructors;
 pub use v2::{
     commit_value_v2, predicate_relation_holds_v2, prove_predicate_only_v2,
     simulate_predicate_only_v2, verify_predicate_only_v2,
@@ -13,4 +14,3 @@ pub use v2::{
     PredicateOnlyStatementV2, PredicateWitnessV2, ProgrammedOracleQueryV2, ValueCommitmentV2,
     V2_BIT_COUNT,
 };
-pub use v2::wire_constructors;

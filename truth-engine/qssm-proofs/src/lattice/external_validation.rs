@@ -44,8 +44,7 @@ pub fn build_current_le_set_b_validation_artifact() -> LeSetBValidationArtifact 
     let claim = RejectionSamplingClaim::for_current_params();
     let challenge_space_log2 = C_POLY_SIZE as f64 * ((2 * C_POLY_SPAN + 1) as f64).log2();
     let fs_security_bits = challenge_space_log2 - LE_HVZK_QUERY_BUDGET_LOG2;
-    let minimum_gamma_for_support_containment =
-        u64::from(ETA) + claim.worst_case_cr_inf_norm;
+    let minimum_gamma_for_support_containment = u64::from(ETA) + claim.worst_case_cr_inf_norm;
     LeSetBValidationArtifact {
         schema_version: LE_HVZK_VALIDATION_SCHEMA_VERSION,
         n: N,
@@ -69,6 +68,7 @@ pub fn build_current_le_set_b_validation_artifact() -> LeSetBValidationArtifact 
 }
 
 #[must_use]
+#[allow(clippy::too_many_arguments)]
 pub fn independent_recompute_le_set_b_validation(
     n: usize,
     eta: u32,

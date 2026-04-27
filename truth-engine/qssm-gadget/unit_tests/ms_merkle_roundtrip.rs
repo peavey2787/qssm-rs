@@ -13,21 +13,15 @@ fn ms_v2_truth_witness_bind_validate_roundtrip() {
     let binding_ctx = [0x55u8; 32];
     let context = b"gadget-ms-v2-roundtrip".to_vec();
 
-    let (commitment, witness) =
-        commit_value_v2(100u64, seed, binding_entropy).expect("commit v2");
-    let statement = PredicateOnlyStatementV2::new(
-        commitment,
-        50u64,
-        binding_entropy,
-        binding_ctx,
-        context,
-    );
-    let proof =
-        prove_predicate_only_v2(&statement, &witness, [0x33u8; 32]).expect("prove v2");
+    let (commitment, witness) = commit_value_v2(100u64, seed, binding_entropy).expect("commit v2");
+    let statement =
+        PredicateOnlyStatementV2::new(commitment, 50u64, binding_entropy, binding_ctx, context);
+    let proof = prove_predicate_only_v2(&statement, &witness, [0x33u8; 32]).expect("prove v2");
 
     let ext = [0x99u8; 32];
-    let metadata = encode_ms_v2_truth_metadata_from_statement_proof(&statement, &proof, &ext, false)
-        .expect("encode metadata");
+    let metadata =
+        encode_ms_v2_truth_metadata_from_statement_proof(&statement, &proof, &ext, false)
+            .expect("encode metadata");
     let cd = statement.commitment().digest();
     let tw = TruthWitnessMsV2::bind(cd, binding_ctx, metadata);
     tw.validate().expect("truth witness validates");
@@ -38,8 +32,7 @@ fn ms_v2_truth_witness_rejects_bad_metadata_length() {
     let seed = [0x42u8; 32];
     let binding_entropy = [0x11u8; 32];
     let binding_ctx = [0x55u8; 32];
-    let (commitment, witness) =
-        commit_value_v2(100u64, seed, binding_entropy).expect("commit v2");
+    let (commitment, witness) = commit_value_v2(100u64, seed, binding_entropy).expect("commit v2");
     let statement = PredicateOnlyStatementV2::new(
         commitment,
         50u64,
@@ -47,10 +40,10 @@ fn ms_v2_truth_witness_rejects_bad_metadata_length() {
         binding_ctx,
         b"x".to_vec(),
     );
-    let proof =
-        prove_predicate_only_v2(&statement, &witness, [0x33u8; 32]).expect("prove v2");
-    let mut metadata = encode_ms_v2_truth_metadata_from_statement_proof(&statement, &proof, &[0u8; 32], false)
-        .expect("encode");
+    let proof = prove_predicate_only_v2(&statement, &witness, [0x33u8; 32]).expect("prove v2");
+    let mut metadata =
+        encode_ms_v2_truth_metadata_from_statement_proof(&statement, &proof, &[0u8; 32], false)
+            .expect("encode");
     metadata.push(0);
     let cd = statement.commitment().digest();
     let tw = TruthWitnessMsV2::bind(cd, binding_ctx, metadata);

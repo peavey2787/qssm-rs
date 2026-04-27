@@ -4,9 +4,9 @@ pub mod core;
 #[path = "../reduction_rejection.rs"]
 pub mod rejection;
 
+pub mod external_validation;
 #[path = "../reduction_witness_hiding.rs"]
 pub mod witness_hiding;
-pub mod external_validation;
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {

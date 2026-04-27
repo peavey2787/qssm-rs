@@ -165,10 +165,7 @@ impl ProofBundle {
         if self.protocol_version != PROTOCOL_VERSION {
             return Err(WireFormatError::UnsupportedVersion(self.protocol_version));
         }
-        let be_a = decode_hash(
-            &self.ms_v2_binding_entropy_hex,
-            "ms_v2_binding_entropy_hex",
-        )?;
+        let be_a = decode_hash(&self.ms_v2_binding_entropy_hex, "ms_v2_binding_entropy_hex")?;
         let be_b = decode_hash(&self.binding_entropy_hex, "binding_entropy_hex")?;
         if be_a != be_b {
             return Err(WireFormatError::MsV2Inconsistent(
@@ -195,16 +192,13 @@ impl ProofBundle {
             .map(|h| decode_hash(h, "ms_v2_bit_commitments_hex"))
             .collect::<Result<Vec<_>, _>>()?;
         let commitment = ValueCommitmentV2::new(bit_commitments)?;
-        let binding_ctx = decode_hash(
-            &self.ms_v2_binding_context_hex,
-            "ms_v2_binding_context_hex",
-        )?;
-        let context = hex::decode(&self.ms_v2_context_hex).map_err(|source| {
-            WireFormatError::HexDecode {
+        let binding_ctx =
+            decode_hash(&self.ms_v2_binding_context_hex, "ms_v2_binding_context_hex")?;
+        let context =
+            hex::decode(&self.ms_v2_context_hex).map_err(|source| WireFormatError::HexDecode {
                 field: "ms_v2_context_hex",
                 source,
-            }
-        })?;
+            })?;
         let statement = PredicateOnlyStatementV2::new(
             commitment,
             self.ms_v2_target,
@@ -266,21 +260,24 @@ fn decode_bitness_wire(w: &MsV2BitnessWire) -> Result<BitnessProofV2, WireFormat
     ))
 }
 
-fn decode_clause_wire(c: &MsV2ComparisonClauseWire) -> Result<ComparisonClauseProofV2, WireFormatError> {
+fn decode_clause_wire(
+    c: &MsV2ComparisonClauseWire,
+) -> Result<ComparisonClauseProofV2, WireFormatError> {
     let sub: Vec<EqualitySubproofV2> = c
         .subproofs
         .iter()
-        .map(
-            |s| -> Result<EqualitySubproofV2, WireFormatError> {
-                Ok(EqualitySubproofV2::from_wire(
-                    decode_hash(&s.announcement_hex, "comparison_subproof.announcement_hex")?,
-                    decode_hash(&s.response_hex, "comparison_subproof.response_hex")?,
-                ))
-            },
-        )
+        .map(|s| -> Result<EqualitySubproofV2, WireFormatError> {
+            Ok(EqualitySubproofV2::from_wire(
+                decode_hash(&s.announcement_hex, "comparison_subproof.announcement_hex")?,
+                decode_hash(&s.response_hex, "comparison_subproof.response_hex")?,
+            ))
+        })
         .collect::<Result<Vec<_>, WireFormatError>>()?;
     Ok(ComparisonClauseProofV2::from_wire(
-        decode_hash(&c.challenge_share_hex, "comparison_clause.challenge_share_hex")?,
+        decode_hash(
+            &c.challenge_share_hex,
+            "comparison_clause.challenge_share_hex",
+        )?,
         sub,
     ))
 }

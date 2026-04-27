@@ -70,7 +70,10 @@ impl std::fmt::Debug for PredicateWitnessV2 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("PredicateWitnessV2")
             .field("value", &"[REDACTED]")
-            .field("blinders", &format_args!("[{} blinders]", self.blinders.len()))
+            .field(
+                "blinders",
+                &format_args!("[{} blinders]", self.blinders.len()),
+            )
             .finish()
     }
 }
@@ -284,7 +287,10 @@ impl std::fmt::Debug for PredicateOnlyProofV2 {
             .field("result", &self.result)
             .field("statement_digest", &self.statement_digest)
             .field("bitness_proof_count", &self.bitness_proofs.len())
-            .field("comparison_clause_count", &self.comparison_proof.clauses.len())
+            .field(
+                "comparison_clause_count",
+                &self.comparison_proof.clauses.len(),
+            )
             .field("transcript_digest", &self.transcript_digest())
             .finish()
     }

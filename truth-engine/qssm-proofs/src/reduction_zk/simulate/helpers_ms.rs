@@ -252,6 +252,7 @@ fn ms_leaf(i: u8, bit: u8, salt: &[u8; 32], binding_entropy: &[u8; 32]) -> [u8; 
     )
 }
 
+#[allow(clippy::too_many_arguments)]
 fn fs_challenge(
     root: &[u8; 32],
     n: u8,

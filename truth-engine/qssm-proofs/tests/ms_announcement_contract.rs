@@ -260,7 +260,11 @@ fn fixed_seed_programmed_query_sequence_matches_snapshot() {
         .expect("comparison global challenge");
 
     let programmed = simulation.programmed_queries();
-    assert_eq!(programmed.len(), 65, "expected 64 bitness + 1 comparison query");
+    assert_eq!(
+        programmed.len(),
+        65,
+        "expected 64 bitness + 1 comparison query"
+    );
     for idx in 0..64 {
         assert_eq!(
             programmed[idx].challenge(),
@@ -278,8 +282,7 @@ fn fixed_seed_programmed_query_sequence_matches_snapshot() {
     let sequence_hash = blake3::hash(&blob);
     let sequence_hash_hex = hex(sequence_hash.as_bytes());
     assert_eq!(
-        sequence_hash_hex,
-        "8c6f6e1c723aaa23ebe73fe45b317a72d6bf38799a7e3c0f3129d4c78ab45be3",
+        sequence_hash_hex, "8c6f6e1c723aaa23ebe73fe45b317a72d6bf38799a7e3c0f3129d4c78ab45be3",
         "fixed-seed programmed-query sequence drifted"
     );
 }

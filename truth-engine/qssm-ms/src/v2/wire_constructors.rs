@@ -1,6 +1,6 @@
 use super::types::{
-    BitnessProofV2, ComparisonClauseProofV2, ComparisonProofV2, EqualitySubproofV2, PredicateOnlyProofV2,
-    V2_BIT_COUNT,
+    BitnessProofV2, ComparisonClauseProofV2, ComparisonProofV2, EqualitySubproofV2,
+    PredicateOnlyProofV2, V2_BIT_COUNT,
 };
 use crate::MsError;
 

@@ -12,7 +12,7 @@
     fn verify_path(root: &[u8; 32], leaf: &[u8; 32], mut index: usize, path: &[[u8; 32]]) -> bool {
         let mut cur = *leaf;
         for sibling in path {
-            cur = if index % 2 == 0 {
+            cur = if index.is_multiple_of(2) {
                 merkle_parent(&cur, sibling)
             } else {
                 merkle_parent(sibling, &cur)

@@ -8,8 +8,8 @@ use qssm_gadget::{
     VarKind, MERKLE_DEPTH_MS,
 };
 use qssm_ms::{commit_value_v2, prove_predicate_only_v2, PredicateOnlyStatementV2};
-use qssm_utils::hashing::{hash_domain, DOMAIN_MS};
 use qssm_utils::blake3_hash;
+use qssm_utils::hashing::{hash_domain, DOMAIN_MS};
 
 #[derive(Debug, Default)]
 struct NoopCs {
@@ -45,15 +45,9 @@ fn baseline_inputs() -> EngineABindingInput {
     let value = u64::MAX;
     let target = u64::MAX - 1;
     let context = b"ctx".to_vec();
-    let (commitment, witness) =
-        commit_value_v2(value, seed, binding_entropy).expect("commit v2");
-    let statement = PredicateOnlyStatementV2::new(
-        commitment,
-        target,
-        binding_entropy,
-        rollup,
-        context.clone(),
-    );
+    let (commitment, witness) = commit_value_v2(value, seed, binding_entropy).expect("commit v2");
+    let statement =
+        PredicateOnlyStatementV2::new(commitment, target, binding_entropy, rollup, context.clone());
     let proof = prove_predicate_only_v2(&statement, &witness, [7u8; 32]).expect("prove v2");
     let bitness = proof
         .bitness_global_challenges()

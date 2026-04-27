@@ -1,5 +1,3 @@
-#![cfg(test)]
-
 use super::*;
 use qssm_utils::merkle_parent;
 

@@ -49,8 +49,7 @@ fn msis_bound_params_sync() {
 #[test]
 fn fs_bound_params_sync() {
     let fs = FsReductionBound::for_current_params();
-    let expected_challenge_space =
-        C_POLY_SIZE as f64 * ((2 * C_POLY_SPAN + 1) as f64).log2();
+    let expected_challenge_space = C_POLY_SIZE as f64 * ((2 * C_POLY_SPAN + 1) as f64).log2();
     assert!(
         (fs.challenge_space_log2 - expected_challenge_space).abs() < 0.001,
         "FS challenge space drifted: got {}, expected {}",
@@ -83,8 +82,7 @@ fn le_theorem_params_sync() {
 #[test]
 fn extraction_params_sync() {
     let ext = LyubashevskyExtractionClaim::for_current_params();
-    let expected_challenge_space =
-        C_POLY_SIZE as f64 * ((2 * C_POLY_SPAN + 1) as f64).log2();
+    let expected_challenge_space = C_POLY_SIZE as f64 * ((2 * C_POLY_SPAN + 1) as f64).log2();
     assert!(
         (ext.challenge_space_log2 - expected_challenge_space).abs() < 0.001,
         "extraction challenge space drifted"

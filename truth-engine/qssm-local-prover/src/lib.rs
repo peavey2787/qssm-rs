@@ -117,8 +117,8 @@ mod tests {
         let proof = make_proof();
         let bundle = ProofBundle::from_proof(&proof);
         let json = serde_json::to_string(&bundle).expect("serialize");
-        let parsed: ProofBundle = serde_json::from_str(&json)
-            .expect("v2 bundle must remain parseable by current code");
+        let parsed: ProofBundle =
+            serde_json::from_str(&json).expect("v2 bundle must remain parseable by current code");
         let recovered = parsed.to_proof().expect("to_proof");
         assert_eq!(recovered.ms_root(), proof.ms_root());
         assert_eq!(recovered.value(), proof.value());

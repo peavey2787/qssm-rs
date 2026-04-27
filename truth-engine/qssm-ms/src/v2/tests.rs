@@ -1,6 +1,7 @@
 use super::{
-    commit_value_v2, predicate_relation_holds_v2, prove_predicate_only_v2, simulate_predicate_only_v2,
-    verify_predicate_only_v2, verify_predicate_only_v2_with_programming, PredicateOnlyStatementV2, PredicateWitnessV2,
+    commit_value_v2, predicate_relation_holds_v2, prove_predicate_only_v2,
+    simulate_predicate_only_v2, verify_predicate_only_v2,
+    verify_predicate_only_v2_with_programming, PredicateOnlyStatementV2, PredicateWitnessV2,
 };
 
 fn sample_statement(
@@ -34,14 +35,16 @@ fn relation_check_rejects_mismatched_witness() {
 
 #[test]
 fn real_proof_roundtrip_verifies_under_hash_oracle() {
-    let (statement, witness) = sample_statement(30, 21, [1u8; 32], [7u8; 32], [9u8; 32], b"age_gate_21");
+    let (statement, witness) =
+        sample_statement(30, 21, [1u8; 32], [7u8; 32], [9u8; 32], b"age_gate_21");
     let proof = prove_predicate_only_v2(&statement, &witness, [3u8; 32]).unwrap();
     assert!(verify_predicate_only_v2(&statement, &proof).unwrap());
 }
 
 #[test]
 fn simulated_proof_verifies_only_with_programmed_oracle() {
-    let (statement, _witness) = sample_statement(30, 21, [1u8; 32], [7u8; 32], [9u8; 32], b"age_gate_21");
+    let (statement, _witness) =
+        sample_statement(30, 21, [1u8; 32], [7u8; 32], [9u8; 32], b"age_gate_21");
     let simulation = simulate_predicate_only_v2(&statement, [5u8; 32]).unwrap();
     assert!(verify_predicate_only_v2_with_programming(&statement, &simulation).unwrap());
     assert!(verify_predicate_only_v2(&statement, simulation.proof()).is_err());
@@ -49,7 +52,8 @@ fn simulated_proof_verifies_only_with_programmed_oracle() {
 
 #[test]
 fn proof_observables_are_accessible_for_distribution_checks() {
-    let (statement, witness) = sample_statement(45, 21, [6u8; 32], [7u8; 32], [9u8; 32], b"age_gate_21");
+    let (statement, witness) =
+        sample_statement(45, 21, [6u8; 32], [7u8; 32], [9u8; 32], b"age_gate_21");
     let proof = prove_predicate_only_v2(&statement, &witness, [8u8; 32]).unwrap();
     assert_eq!(proof.bitness_global_challenges().unwrap().len(), 64);
     assert_ne!(proof.comparison_global_challenge().unwrap(), [0u8; 32]);

@@ -37,13 +37,8 @@ pub fn prove(
     ms_seed.zeroize();
 
     let context = crate::MS_CONTEXT_TAG.to_vec();
-    let statement = PredicateOnlyStatementV2::new(
-        commitment,
-        target,
-        binding_entropy,
-        binding_ctx,
-        context,
-    );
+    let statement =
+        PredicateOnlyStatementV2::new(commitment, target, binding_entropy, binding_ctx, context);
 
     let mut prover_seed = hash_domain(
         DOMAIN_MS_V2_PROVER_SEED,

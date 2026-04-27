@@ -9,7 +9,6 @@ pub struct SimulatorOnly<T>(T);
 /// use qssm_proofs::shared::safety::SimulatorOnly;
 /// let _cap = SimulatorOnly::new(42u8);
 /// ```
-
 impl<T> SimulatorOnly<T> {
     #[must_use]
     pub(crate) fn new(value: T) -> Self {

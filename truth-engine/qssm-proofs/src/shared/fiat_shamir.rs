@@ -7,6 +7,7 @@ pub struct FiatShamirOracle;
 
 impl FiatShamirOracle {
     #[must_use]
+    #[allow(clippy::too_many_arguments)]
     pub fn ms_bitness_challenge(
         domain_ms: &str,
         root: &[u8; 32],
@@ -42,7 +43,11 @@ impl FiatShamirOracle {
     ) -> [u8; 32] {
         domain_hash(
             domain_ms,
-            &[b"ms_comparison_challenge", statement_digest.as_slice(), clause_announcements],
+            &[
+                b"ms_comparison_challenge",
+                statement_digest.as_slice(),
+                clause_announcements,
+            ],
         )
     }
 
