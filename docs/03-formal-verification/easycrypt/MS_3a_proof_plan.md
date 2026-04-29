@@ -92,6 +92,8 @@ Record **`ms_single_bit_or_transcript`**: statement digest `msbt_stmt`, public p
 
 ## Real / sim bitness transcript (full MS v2)
 
+**Source packaging (`QssmMS.ec`):** `ms3a_real_source_payload` / `ms3a_sim_source_payload` are record types whose fields match the arguments to `ms3a_make_real_source` / `ms3a_make_sim_source`. Laws `d_ms3a_bitness_real_source` / `d_ms3a_bitness_sim_source` are **by definition** `dmap` of abstract payload distributions through those constructors (via `ms3a_bitness_layer_source_of_{real,sim}_payload`).
+
 **Rust/spec anchors:** `internals.rs`, execution spec F.
 
 **Refined vs earlier plan:** `cglob` can be tied to `ms_bitness_fs_scalar` via `ms_bitness_fs_programmed`; digest wiring for announcements is still abstract (`ms_single_bit_branch_digest`).
@@ -115,7 +117,9 @@ Record **`ms_single_bit_or_transcript`**: statement digest `msbt_stmt`, public p
 | `MS_3a_bitness_layer_exact_simulation` | **Proved** — for each valid index, unpack `ms_per_bit_programmed` at `ms_nth_single_bit_or bits i`, extract FS+split, and instantiate `MS_3a_single_bit_programmed_or_split_exact_simulation` |
 | `MS_3a_observable_bitness_challenges_consistent`, `MS_3a_observable_transcript_digest_consistent` | **Proved** (`QssmMSTranscriptObservable.ec`) |
 | `MS_3a_bitness_layer_to_observable_exact_simulation` | **Proved** — delegates per-index OR packaging through `MS_3a_bitness_layer_exact_simulation`; observable/digest hypotheses reserved for game marginal |
-| `d_ms3a_bitness_real_source`, `d_ms3a_bitness_sim_source` | **Structured source distrs** (`QssmMS.ec`) over `{stmt, result, bits, bitness_glob, comparison_glob, transcript_digest}` |
+| `d_ms3a_real_source_payload`, `d_ms3a_sim_source_payload` | **Abstract payload distrs** (`QssmMS.ec`) — scheduling from `ms_public_input` / `seed` |
+| `d_ms3a_bitness_real_source`, `d_ms3a_bitness_sim_source` | **Defined** (`QssmMS.ec`) as `dmap` pushforwards of payload laws through `ms3a_bitness_layer_source_of_{real,sim}_payload` (wrappers over `ms3a_make_*_source`) |
+| `dmap_source_constructor_in_image` | **Axiom** — generic `dmap` membership ⇒ preimage in support (`QssmMS.ec`; distribution image, not crypto) |
 | `ms3a_pack_observable`, `d_ms3a_bitness_*_observable_v2` | **Defined** (`QssmMS.ec`) via `dmap` from structured source into canonical `ms_v2_transcript_observable` |
 | `d_ms3a_bitness_real_observable`, `d_ms3a_bitness_sim_observable` | **Defined** (`QssmMS.ec`) via `dlet` pushforward from v2 observable through `ms3a_observable_of_v2` |
 | `ms3a_bitness_real_sim_equiv` | **Predicate** — `d_ms3a_bitness_real_observable x = d_ms3a_bitness_sim_observable x s` |
@@ -153,12 +157,12 @@ Record **`ms_single_bit_or_transcript`**: statement digest `msbt_stmt`, public p
 | Uniform-shift reparameterization for `duni_scalar` pairs | `duni_scalar_shift_reparam` (`QssmSchnorrSingleBit.ec`) |
 | Generic source-packaging equality obligation (premise-driven) | `ms3a_source_eq_from_bitness_layer` (`QssmMS.ec`) |
 | Constructor-scoped source obligations | `ms3a_real_source_constructor_wf`, `ms3a_sim_source_constructor_wf`, `ms3a_source_constructors_same_public_fields`, `ms3a_source_constructors_programmed_bitness`, `ms3a_source_constructors_bitness_exact` (`QssmMS.ec`) |
-| Source-constructor image predicates | `ms3a_real_source_in_constructor_image`, `ms3a_sim_source_in_constructor_image` (`QssmMS.ec`) |
-| Source distribution-in-image obligations | `ms3a_real_source_distribution_in_image`, `ms3a_sim_source_distribution_in_image` (`QssmMS.ec`) |
-| Source constructor image lemmas | `ms3a_real_source_constructor_image`, `ms3a_sim_source_constructor_image` (**proved wrappers** in `QssmMS.ec`) |
+| Source-constructor image predicates | `ms3a_real_source_in_constructor_image`, `ms3a_sim_source_in_constructor_image` — **definitions** (`QssmMS.ec`) |
+| Source distribution-in-image | `ms3a_real_source_distribution_in_image`, `ms3a_sim_source_distribution_in_image` — **proved** from `dmap` source definitions + `dmap_source_constructor_in_image` (`QssmMS.ec`) |
+| Source constructor image lemmas | `ms3a_real_source_constructor_image`, `ms3a_sim_source_constructor_image` — **proved** (delegate to distribution-in-image lemmas) (`QssmMS.ec`) |
 | Generic digest-by-construction constructor field/layout obligation | `ms3a_pack_observable_with_digest_field_correct` (`QssmMS.ec`) |
 | Skeleton-to-game equivalence (`ms3a_bitness_real_sim_equiv` to full game statement) | future `QssmGames` / transcript ops (explicitly out of current scope) |
 
 ## Next target
 
-**Close one major lower obligation next:** derive/remove `ms3a_source_eq_from_bitness_layer` itself from explicit constructor-level source semantics and bitness-layer/packing lemmas, then replace distribution-in-image obligations (`ms3a_real_source_distribution_in_image`, `ms3a_sim_source_distribution_in_image`) with definitional proofs from concrete source constructors. Optionally derive/remove `ms3a_pack_observable_with_digest_field_correct` and `duni_scalar_shift_reparam` from stronger library-level finite-field/hash-layout facts if available in your chosen EasyCrypt model.
+**Close one major lower obligation next:** derive/remove `ms3a_source_eq_from_bitness_layer` from explicit constructor-level source semantics and bitness-layer/packing lemmas. **Done in this track:** bitness real/sim source distributions are constructor pushforwards (`dmap` of abstract payload laws); distribution-in-image lemmas are proved modulo the generic `dmap_source_constructor_in_image` axiom (discharge from `Distr` theory if your EasyCrypt install exposes a matching lemma). Optionally derive/remove `ms3a_pack_observable_with_digest_field_correct` and `duni_scalar_shift_reparam` from stronger library-level finite-field/hash-layout facts if available in your chosen EasyCrypt model.

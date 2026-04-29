@@ -142,6 +142,37 @@ op ms3a_make_sim_source
      ms3s_comparison_global_challenge = comp_glob;
      ms3s_transcript_digest = td |}.
 
+(* Constructor payloads: exactly the arguments to `ms3a_make_*_source`.        *)
+type ms3a_real_source_payload = {
+  ms3rp_stmt : digest;
+  ms3rp_res : bool;
+  ms3rp_bits : ms_single_bit_or_transcript list;
+  ms3rp_bitness_global_challenges : digest list;
+  ms3rp_comparison_global_challenge : digest;
+  ms3rp_transcript_digest : digest;
+}.
+
+type ms3a_sim_source_payload = {
+  ms3sp_stmt : digest;
+  ms3sp_res : bool;
+  ms3sp_bits : ms_single_bit_or_transcript list;
+  ms3sp_bitness_global_challenges : digest list;
+  ms3sp_comparison_global_challenge : digest;
+  ms3sp_transcript_digest : digest;
+}.
+
+op ms3a_bitness_layer_source_of_real_payload (p : ms3a_real_source_payload) :
+  ms3a_bitness_layer_source =
+  ms3a_make_real_source p.`ms3rp_stmt p.`ms3rp_res p.`ms3rp_bits
+    p.`ms3rp_bitness_global_challenges p.`ms3rp_comparison_global_challenge
+    p.`ms3rp_transcript_digest.
+
+op ms3a_bitness_layer_source_of_sim_payload (p : ms3a_sim_source_payload) :
+  ms3a_bitness_layer_source =
+  ms3a_make_sim_source p.`ms3sp_stmt p.`ms3sp_res p.`ms3sp_bits
+    p.`ms3sp_bitness_global_challenges p.`ms3sp_comparison_global_challenge
+    p.`ms3sp_transcript_digest.
+
 pred ms3a_source_wf (src : ms3a_bitness_layer_source) =
   ms_bitness_vector_programmed_layer src.`ms3s_stmt src.`ms3s_bits
     src.`ms3s_bitness_global_challenges.
@@ -168,11 +199,25 @@ pred ms3a_sources_have_programmed_bitness_layer
   ms_bitness_vector_programmed_layer
     sim_src.`ms3s_stmt sim_src.`ms3s_bits sim_src.`ms3s_bitness_global_challenges.
 
-(* Real/sim source distributions (still abstract), but now structured.         *)
-op d_ms3a_bitness_real_source :
-  ms_public_input -> ms3a_bitness_layer_source distr.
-op d_ms3a_bitness_sim_source :
-  ms_public_input -> seed -> ms3a_bitness_layer_source distr.
+(* Abstract payload laws (scheduling from `ms_public_input` / seed).          *)
+op d_ms3a_real_source_payload :
+  ms_public_input -> ms3a_real_source_payload distr.
+op d_ms3a_sim_source_payload :
+  ms_public_input -> seed -> ms3a_sim_source_payload distr.
+
+(* Source laws are pushforwards of payload constructors (by definition).       *)
+op d_ms3a_bitness_real_source (x : ms_public_input) : ms3a_bitness_layer_source distr =
+  dmap (d_ms3a_real_source_payload x) ms3a_bitness_layer_source_of_real_payload.
+
+op d_ms3a_bitness_sim_source (x : ms_public_input) (s : seed) :
+  ms3a_bitness_layer_source distr =
+  dmap (d_ms3a_sim_source_payload x s) ms3a_bitness_layer_source_of_sim_payload.
+
+(* Generic `dmap` support / preimage (distribution image; non-crypto).        *)
+axiom dmap_source_constructor_in_image ['a 'b] (d : 'a distr) (f : 'a -> 'b)
+  (y : 'b) :
+  y \in dmap d f =>
+  exists (x : 'a), x \in d /\ f x = y.
 
 pred ms3a_real_source_in_constructor_image
   (real_src : ms3a_bitness_layer_source) =
@@ -186,19 +231,39 @@ pred ms3a_sim_source_in_constructor_image
     (bitness_glob : digest list) (comp_glob td : digest),
     sim_src = ms3a_make_sim_source stmt res bits bitness_glob comp_glob td.
 
-(* Constructor-image closure obligations for abstract source distributions
-   (source-packaging only; non-crypto, non-ROM). *)
-axiom ms3a_real_source_distribution_in_image
+lemma ms3a_real_source_distribution_in_image
   (x : ms_public_input) :
   forall (real_src : ms3a_bitness_layer_source),
     real_src \in d_ms3a_bitness_real_source x =>
     ms3a_real_source_in_constructor_image real_src.
+proof.
+move=> real_src Hmem.
+rewrite /d_ms3a_bitness_real_source in Hmem.
+have [p [Hp Heq]] := dmap_source_constructor_in_image
+  (d_ms3a_real_source_payload x) ms3a_bitness_layer_source_of_real_payload
+  real_src Hmem.
+rewrite /ms3a_real_source_in_constructor_image.
+exists p.`ms3rp_stmt p.`ms3rp_res p.`ms3rp_bits p.`ms3rp_bitness_global_challenges
+  p.`ms3rp_comparison_global_challenge p.`ms3rp_transcript_digest.
+by rewrite -Heq /ms3a_bitness_layer_source_of_real_payload.
+qed.
 
-axiom ms3a_sim_source_distribution_in_image
+lemma ms3a_sim_source_distribution_in_image
   (x : ms_public_input) (s : seed) :
   forall (sim_src : ms3a_bitness_layer_source),
     sim_src \in d_ms3a_bitness_sim_source x s =>
     ms3a_sim_source_in_constructor_image sim_src.
+proof.
+move=> sim_src Hmem.
+rewrite /d_ms3a_bitness_sim_source in Hmem.
+have [p [Hp Heq]] := dmap_source_constructor_in_image
+  (d_ms3a_sim_source_payload x s) ms3a_bitness_layer_source_of_sim_payload
+  sim_src Hmem.
+rewrite /ms3a_sim_source_in_constructor_image.
+exists p.`ms3sp_stmt p.`ms3sp_res p.`ms3sp_bits p.`ms3sp_bitness_global_challenges
+  p.`ms3sp_comparison_global_challenge p.`ms3sp_transcript_digest.
+by rewrite -Heq /ms3a_bitness_layer_source_of_sim_payload.
+qed.
 
 lemma ms3a_real_source_constructor_image
   (x : ms_public_input) :
