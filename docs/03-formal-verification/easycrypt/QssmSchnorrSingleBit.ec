@@ -7,7 +7,10 @@ require import QssmTypes.
 (* A) Permanent algebra model (abstract scalar / point group + homomorphism   *)
 (*    on the fixed generator).                                                *)
 (* B) Uniformity on scalars: abstract `duni_scalar` + translation invariance. *)
-(* D) Temporary: one uniform-shift reparam axiom for dlet/joint law.          *)
+(* D) Uniform-shift reparam at pair level: axiom `duni_scalar_shift_reparam`. *)
+(*    Lemma `MS_3a_single_branch_schnorr_reparam` is proved from that axiom,    *)
+(*    `sch_sim_announcement_reparam`, `ms3a_schnorr_reparam_obs_eq`, and         *)
+(*    `in_eq_dlet` / `qssm_dunit_eq`.                                            *)
 (* ========================================================================== *)
 
 (* -------------------------------------------------------------------------- *)
@@ -85,7 +88,7 @@ qed.
 lemma sch_pt_add_cancel (x y : sch_point) :
   sch_sub_pt (sch_add_pt x y) y = x.
 proof.
-rewrite /sch_sub_pt sch_addA.
+rewrite /sch_sub_pt -sch_addA.
 rewrite sch_add_pt_oppR.
 by rewrite sch_neutralR.
 qed.
@@ -109,6 +112,13 @@ proof.
 rewrite /sch_pubkey -sch_smul_mul_embed.
 by rewrite sch_smul_sub_gen.
 qed.
+
+lemma qssm_pair_eq ['a 'b] (x1 x2 : 'a) (y1 y2 : 'b) :
+  x1 = x2 => y1 = y2 => (x1, y1) = (x2, y2).
+proof. by move=> -> ->. qed.
+
+lemma qssm_dunit_eq ['a] (x y : 'a) : x = y => dunit x = dunit y.
+proof. by move=> ->. qed.
 
 (* -------------------------------------------------------------------------- *)
 (* (B) Uniform scalar source (abstract; ROM / hash_to_scalar instantiates).  *)
@@ -170,14 +180,24 @@ op d_ms3a_schnorr_sim (w c : scalar) : schnorr_single_bit_obsv distr =
               (sch_smul c (sch_pubkey w))),
            z)).
 
+(* Pointwise bridge after `duni_scalar_shift_reparam` (algebra only). *)
+lemma ms3a_schnorr_reparam_obs_eq (w c z : scalar) :
+  (sch_smul (sch_s_sub z (sch_s_mul c w)) sch_generator, z) =
+  (sch_sub_pt (sch_smul z sch_generator) (sch_smul c (sch_pubkey w)), z).
+proof.
+apply (qssm_pair_eq (sch_smul (sch_s_sub z (sch_s_mul c w)) sch_generator)
+                    (sch_sub_pt (sch_smul z sch_generator) (sch_smul c (sch_pubkey w)))
+                    z z).
+by rewrite -(sch_sim_announcement_reparam w c z).
+by [].
+qed.
+
 (* (D) Joint law from uniform-shift reparam + announcement algebra bridge. *)
 lemma MS_3a_single_branch_schnorr_reparam (w c : scalar) :
   d_ms3a_schnorr_real w c = d_ms3a_schnorr_sim w c.
 proof.
 rewrite /d_ms3a_schnorr_real /d_ms3a_schnorr_sim.
-have Hshift := duni_scalar_shift_reparam (sch_s_mul c w).
-rewrite Hshift.
-apply in_eq_dlet => z _.
-rewrite -(sch_sim_announcement_reparam w c z).
-by [].
+rewrite (duni_scalar_shift_reparam (sch_s_mul c w)).
+apply in_eq_dlet=> z _.
+exact (qssm_dunit_eq _ _ (ms3a_schnorr_reparam_obs_eq w c z)).
 qed.

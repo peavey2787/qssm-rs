@@ -111,9 +111,8 @@ have Hti : msbt_stmt t = stmt /\
   by exact (Hper i Hi).
 have [_ Hprog] := Hti.
 have [_ [_ [Hsplit Hfs]]] := Hprog.
-exists witness, witness,
-       t.`msbt_challenge_zero, t.`msbt_challenge_one, t.`msbt_global_challenge,
-       (ms_single_bit_branch_digest t.`msbt_pub0),
+exists witness witness t.`msbt_challenge_zero t.`msbt_challenge_one t.`msbt_global_challenge
+       (ms_single_bit_branch_digest t.`msbt_pub0)
        (ms_single_bit_branch_digest t.`msbt_pub1).
 split.
 - exact Hfs.

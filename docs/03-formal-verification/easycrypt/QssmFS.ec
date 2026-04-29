@@ -1,9 +1,9 @@
 require import AllCore List.
 require import QssmDomains QssmTypes.
 
-(* Abstract hash/oracle surfaces *)
-op hash_domain : string -> digest list -> digest.
-op hash_to_scalar : string -> digest list -> scalar.
+(* Abstract hash/oracle surfaces (domain tags from QssmDomains.domain_label). *)
+op hash_domain : domain_label -> digest list -> digest.
+op hash_to_scalar : domain_label -> digest list -> scalar.
 
 (* MS query functions — align with docs/02-protocol-specs/qssm-zk-concrete-execution-spec.md
    section F (Engine B v2 query/challenge path). Labels in code use QssmDomains:
@@ -27,10 +27,10 @@ pred ms_bitness_fs_programmed (stmt : digest) (i : int) (d0 d1 : digest) (cglob 
 
 (* LE challenge/query digest functions *)
 op le_challenge_seed :
-  string -> string -> bool -> seed -> digest -> digest -> digest -> digest -> digest.
+  domain_label -> domain_label -> bool -> seed -> digest -> digest -> digest -> digest -> digest.
 
 op le_programmed_query_digest :
-  string -> digest -> digest -> digest -> digest -> digest -> digest.
+  domain_label -> digest -> digest -> digest -> digest -> digest -> digest.
 
 (* ROM programmability placeholders *)
 op epsilon_ms_rom_programmability : real.

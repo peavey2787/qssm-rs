@@ -93,11 +93,11 @@ op d_ms_bit_or_sim_both (w0 w1 c0 c1 : scalar) :
     dunit (o0, o1))).
 
 (* Full transcript pushforward (point mass on stmt/pub/challenges). *)
-op d_ms_bit_or_pack stmt P0 P1 w0 w1 c0 c1 cglob
+op d_ms_bit_or_pack (stmt : digest) (P0 P1 : sch_point) (w0 w1 c0 c1 cglob : scalar)
   (d_pair : (schnorr_single_bit_obsv * schnorr_single_bit_obsv) distr) :
   ms_single_bit_or_transcript distr =
-  dmap d_pair (fun p =>
-    ms_pack_single_bit_or stmt P0 P1 p.`1 p.`2 c0 c1 cglob).
+  dmap d_pair (fun (p : schnorr_single_bit_obsv * schnorr_single_bit_obsv) =>
+    ms_pack_single_bit_or stmt P0 P1 (fst p) (snd p) c0 c1 cglob).
 
 (* -------------------------------------------------------------------------- *)
 (* Distribution helpers (proved; standard Distr lemmas, not crypto).         *)

@@ -1,6 +1,6 @@
 require import AllCore List.
 
-require import QssmTypes QssmMSBitnessVector.
+require import QssmTypes QssmFS QssmMSBitnessSingle QssmMSBitnessVector.
 
 
 
@@ -56,13 +56,13 @@ op ms_transcript_digest_public_fields (o : ms_v2_transcript_observable) : digest
 
 pred ms_bitness_vector_matches_observable
 
-  (stmt : digest) (res : bool) (globdig : digest list)
+  (stmt : digest) (rbit : bool) (globdig : digest list)
 
   (o : ms_v2_transcript_observable) =
 
   o.`msv2_statement_digest = stmt /\
 
-  o.`msv2_result_bit = res /\
+  o.`msv2_result_bit = rbit /\
 
   ms_transcript_bitness_digests_match_vector o.`msv2_bitness_global_challenges globdig.
 
@@ -86,17 +86,19 @@ pred ms_transcript_digest_of_observable (o : ms_v2_transcript_observable) =
 
 lemma MS_3a_observable_bitness_challenges_consistent
 
-  (stmt : digest) (res : bool) (globdig : digest list)
+  (stmt : digest) (rbit : bool) (globdig : digest list)
 
   (o : ms_v2_transcript_observable) :
 
-  ms_bitness_vector_matches_observable stmt res globdig o =>
+  ms_bitness_vector_matches_observable stmt rbit globdig o =>
 
   ms_transcript_bitness_digests_match_vector o.`msv2_bitness_global_challenges globdig.
 
 proof.
 
-by move=> [_ _ Hmatch].
+rewrite /ms_bitness_vector_matches_observable.
+
+by move=> [_ [_ Hmatch]].
 
 qed.
 
@@ -120,7 +122,7 @@ qed.
 
 lemma MS_3a_bitness_layer_to_observable_exact_simulation
 
-  (stmt : digest) (res : bool)
+  (stmt : digest) (rbit : bool)
 
   (bits : ms_single_bit_or_transcript list) (globdig : digest list)
 
@@ -128,7 +130,7 @@ lemma MS_3a_bitness_layer_to_observable_exact_simulation
 
   ms_bitness_vector_programmed_layer stmt bits globdig =>
 
-  ms_bitness_vector_matches_observable stmt res globdig o =>
+  ms_bitness_vector_matches_observable stmt rbit globdig o =>
 
   ms_transcript_digest_of_observable o =>
 

@@ -1,0 +1,72 @@
+{
+  "version": 3,
+  "echash": "n/a",
+  "root": { "kind": "ec", "digest": "1cb04dc214acb83064d18ec5a6559a7b" },
+  "depends": {
+    "AlgTactic": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "850cd748ba64fbbb969579c57fb7186d"
+    },
+    "AllCore": {
+      "direct": true,
+      "kind": "ec",
+      "digest": "530d964738d9a6b9093986916c5225d1"
+    },
+    "Core": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "4c1f1b14433a0e81286f6af1e6795b1e"
+    },
+    "CoreInt": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "656971c528721573c2aadba8c3e474f0"
+    },
+    "CoreReal": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "71a66b712b2595af8e02fada3eaa0c67"
+    },
+    "Int": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "9e1878ac5a993a111a8528a9d7507c72"
+    },
+    "Logic": {
+      "direct": true,
+      "kind": "ec",
+      "digest": "6b500cdc50293d9b0674166fdcc73d7e"
+    },
+    "Monoid": {
+      "direct": false,
+      "kind": "eca",
+      "digest": "b94b5fd99cc42a3a5fb358ab9c0f0d32"
+    },
+    "Pervasive": {
+      "direct": true,
+      "kind": "ec",
+      "digest": "0f385a91ae1a1269de2ba2b7fad360d0"
+    },
+    "Real": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "7210cb29d07d4aa3d71558587db39e2d"
+    },
+    "Ring": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "1679a80ea225fe5d8904c9cd0f5d99c1"
+    },
+    "Tactics": {
+      "direct": true,
+      "kind": "ec",
+      "digest": "86b1b5cd82f32d0405a70279cdc8b67b"
+    },
+    "Xint": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "f8cdbe78777b5164dc57262d577911a4"
+    }
+  }
+}
