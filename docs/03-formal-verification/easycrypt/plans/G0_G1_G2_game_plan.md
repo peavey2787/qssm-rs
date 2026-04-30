@@ -75,16 +75,14 @@ From `theorem/MainTheorem.ec`:
    `A_LE_sim_projected_view_matches_G2`))
 5. `A_LE_HVZK_transition_bound` is now a **lemma** in `LEModel.ec`, layered over:
    `le_set_b_params_ok`, `le_rejection_sampling_bound_ok`,
-   `le_fs_programming_bound_ok`, `le_hvzk_bound`, and an LE-HVZK layering surface:
-   `A_LE_SetB_params_sound`, `A_LE_rejection_sampling_hiding_bound`,
-   `A_LE_fs_programming_bound`, `A_LE_real_sim_transcript_equiv_bound`.
-   `A_LE_SetB_HVZK_bound` is now a **lemma** derived from those narrower obligations.
+   `le_fs_programming_bound_ok`, `le_hvzk_bound`, and an LE-HVZK layering surface
+   (Set-B unpackaging and bridge lemmas are **proved**; remaining proof debt is
+   the named rejection/FS/view axioms listed in `plans/LE_HVZK_proof_plan.md`).
+   `A_LE_SetB_HVZK_bound` is now a **lemma** derived from that layering.
 
-Next: discharge the remaining LE-HVZK obligations
-(`A_LE_SetB_params_sound`, `A_LE_rejection_sampling_hiding_bound`,
-`A_LE_fs_programming_bound`, `A_LE_real_sim_transcript_equiv_bound`)
-from a concrete LE HVZK game skeleton (Set-B params, rejection-sampling bound,
-FS-programming surface, transcript equivalence), then revisit replacing
+Next: discharge the remaining LE-HVZK axioms (rejection-sampling chain,
+FS/ROM chain, view indistinguishability / advantage bound) from a concrete LE
+HVZK game skeleton, then revisit replacing
 `A_game_pr_LE_projection_semantics` once `game_pr` is given concrete semantics.
 Until then, keep it as the single non-crypto LE bridge/interface axiom.
 

@@ -103,10 +103,35 @@
       "kind": "ec",
       "digest": "656971c528721573c2aadba8c3e474f0"
     },
+    "CoreMap": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "4ca3e904f01727612fbbc929e0c74cf9"
+    },
     "CoreReal": {
       "direct": false,
       "kind": "ec",
       "digest": "71a66b712b2595af8e02fada3eaa0c67"
+    },
+    "DInterval": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "41362165e3905f2796f95ff650ca17fe"
+    },
+    "DJoin": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "349badb634698ec3c0a6a164a5b12416"
+    },
+    "DList": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "e5fea8f1f5b0543553ea39c5660f6fec"
+    },
+    "DProd": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "ece7b881468e9a3411abd6d8932e7eec"
     },
     "Discrete": {
       "direct": false,
@@ -123,10 +148,25 @@
       "kind": "ec",
       "digest": "28f2ff0e8b0fc8bf5d0e17fd23cabae5"
     },
+    "FMap": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "b43c597cc5536b64343655dad36bba5b"
+    },
     "FS": {
       "direct": true,
       "kind": "ec",
       "digest": "149a5d025c479be92ffa9e448a6e4e2e"
+    },
+    "FSet": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "d6644f48a81e8406088a47023a938b28"
+    },
+    "FelTactic": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "5c7f086136439a486a1c9ca927517963"
     },
     "FinType": {
       "direct": false,
@@ -183,6 +223,11 @@
       "kind": "ec",
       "digest": "6279f459fe1a0ab887f4a2112b972835"
     },
+    "Hybrid": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "513172f3ed1f39ab9f38014168b2b65a"
+    },
     "Int": {
       "direct": false,
       "kind": "ec",
@@ -198,10 +243,15 @@
       "kind": "ec",
       "digest": "6e85ff145774627ec46ac4b58a8d47c8"
     },
+    "IterProc": {
+      "direct": false,
+      "kind": "eca",
+      "digest": "2942ba76896f6f222aafee74f5961d7c"
+    },
     "LEModel": {
       "direct": true,
       "kind": "ec",
-      "digest": "ffd527f729dcf68b4661443e662554fc"
+      "digest": "1d8736fad455d819f8750c33aa36f4c3"
     },
     "List": {
       "direct": true,
@@ -218,15 +268,30 @@
       "kind": "ec",
       "digest": "deb8721f4b3a254a86171d7c440f6af4"
     },
+    "Means": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "9bb36d92eab20df2c492436d9df25dff"
+    },
     "Monoid": {
       "direct": false,
       "kind": "eca",
       "digest": "b94b5fd99cc42a3a5fb358ab9c0f0d32"
     },
+    "Mu_mem": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "eb1824761d661cc9a6d888e9e61992bd"
+    },
     "Number": {
       "direct": false,
       "kind": "ec",
       "digest": "b9016fa51385372ce8fe5e214fa6f60a"
+    },
+    "PROM": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "26a4e177d2b732b788afd26e57433834"
     },
     "Pervasive": {
       "direct": true,
@@ -278,6 +343,11 @@
       "kind": "ec",
       "digest": "1679a80ea225fe5d8904c9cd0f5d99c1"
     },
+    "SDist": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "3f549fe174f14e60a184d6d78c5cf0db"
+    },
     "SchnorrBranch": {
       "direct": true,
       "kind": "ec",
@@ -287,6 +357,11 @@
       "direct": false,
       "kind": "ec",
       "digest": "7a4003f69c53cb6a74e81821175d6973"
+    },
+    "SmtMap": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "f9765c5d991ea67cdef1572a98ea13b9"
     },
     "SourceConstructors": {
       "direct": false,
