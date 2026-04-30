@@ -67,12 +67,51 @@ pred le_hvzk_bound (x : qssm_public_input) (s : seed) (D : distinguisher) =
 pred le_hvzk_transition_bound (x : qssm_public_input) (s : seed) (D : distinguisher) =
   le_hvzk_bound x s D.
 
-axiom A_LE_SetB_HVZK_bound :
+pred le_set_b_params_sound (x : qssm_public_input) (s : seed) (D : distinguisher) =
+  le_set_b_params_ok.
+
+pred le_rejection_sampling_hiding_bound (x : qssm_public_input) (s : seed) (D : distinguisher) =
+  le_rejection_sampling_bound_ok.
+
+pred le_fs_programming_hiding_bound (x : qssm_public_input) (s : seed) (D : distinguisher) =
+  le_fs_programming_bound_ok x s.
+
+axiom A_LE_SetB_params_sound :
+  forall (x : qssm_public_input) (s : seed) (D : distinguisher),
+    le_set_b_params_ok =>
+    le_set_b_params_sound x s D.
+
+axiom A_LE_rejection_sampling_hiding_bound :
+  forall (x : qssm_public_input) (s : seed) (D : distinguisher),
+    le_rejection_sampling_bound_ok =>
+    le_rejection_sampling_hiding_bound x s D.
+
+axiom A_LE_fs_programming_bound :
+  forall (x : qssm_public_input) (s : seed) (D : distinguisher),
+    le_rejection_sampling_bound_ok =>
+    le_fs_programming_bound_ok x s =>
+    le_fs_programming_hiding_bound x s D.
+
+axiom A_LE_real_sim_transcript_equiv_bound :
+  forall (x : qssm_public_input) (s : seed) (D : distinguisher),
+    le_set_b_params_sound x s D =>
+    le_rejection_sampling_hiding_bound x s D =>
+    le_fs_programming_hiding_bound x s D =>
+    le_hvzk_bound x s D.
+
+lemma A_LE_SetB_HVZK_bound :
   forall (x : qssm_public_input) (s : seed) (D : distinguisher),
     le_set_b_params_ok =>
     le_rejection_sampling_bound_ok =>
     le_fs_programming_bound_ok x s =>
     le_hvzk_bound x s D.
+proof.
+move=> x s D Hsetb Hrej Hfs.
+have Hsetb' := A_LE_SetB_params_sound x s D Hsetb.
+have Hrej' := A_LE_rejection_sampling_hiding_bound x s D Hrej.
+have Hfs' := A_LE_fs_programming_bound x s D Hrej Hfs.
+exact (A_LE_real_sim_transcript_equiv_bound x s D Hsetb' Hrej' Hfs').
+qed.
 
 lemma A_LE_HVZK_transition_bound :
   forall (x : qssm_public_input) (s : seed) (D : distinguisher),

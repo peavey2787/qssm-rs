@@ -60,7 +60,8 @@ From `theorem/MainTheorem.ec`:
    projected-adv layout lemmas `A_LE_projected_real_adv_layout`,
    `A_LE_projected_sim_adv_layout`, game-side unfold lemmas
    `A_Adv_G1_G2_LE_unfolds_to_projected_views` (from narrower probability
-   interface axiom `A_game_pr_LE_projection_semantics`, where
+   interface axiom `A_game_pr_LE_projection_semantics` (exact non-crypto boundary:
+   generic `game_pr` agrees with LE projected probability for `G1`/`G2`), where
    `game_pr_le_projected true x s D` is the real LE projection and
    `game_pr_le_projected false x s D` is the sim LE projection; packaged by lemmas
    `A_game_pr_on_G1_uses_LE_real_projection`,
@@ -74,10 +75,18 @@ From `theorem/MainTheorem.ec`:
    `A_LE_sim_projected_view_matches_G2`))
 5. `A_LE_HVZK_transition_bound` is now a **lemma** in `LEModel.ec`, layered over:
    `le_set_b_params_ok`, `le_rejection_sampling_bound_ok`,
-   `le_fs_programming_bound_ok`, `le_hvzk_bound`, and narrow axiom
-   `A_LE_SetB_HVZK_bound` (remaining LE-local cryptographic boundary)
+   `le_fs_programming_bound_ok`, `le_hvzk_bound`, and an LE-HVZK layering surface:
+   `A_LE_SetB_params_sound`, `A_LE_rejection_sampling_hiding_bound`,
+   `A_LE_fs_programming_bound`, `A_LE_real_sim_transcript_equiv_bound`.
+   `A_LE_SetB_HVZK_bound` is now a **lemma** derived from those narrower obligations.
 
-Next: discharge `A_LE_SetB_HVZK_bound` from a concrete LE HVZK game skeleton (Set-B params, rejection-sampling bound, FS-programming surface, transcript equivalence), and then replace the remaining narrow LE bridge axiom (`A_game_pr_LE_projection_semantics`) with concrete projector/adv proofs from wired `G1`/`G2` LE views (view constructors, projected-adv layout, and `le_game_hop_adv` unfold are already definitional/proved in `Games.ec`).
+Next: discharge the remaining LE-HVZK obligations
+(`A_LE_SetB_params_sound`, `A_LE_rejection_sampling_hiding_bound`,
+`A_LE_fs_programming_bound`, `A_LE_real_sim_transcript_equiv_bound`)
+from a concrete LE HVZK game skeleton (Set-B params, rejection-sampling bound,
+FS-programming surface, transcript equivalence), then revisit replacing
+`A_game_pr_LE_projection_semantics` once `game_pr` is given concrete semantics.
+Until then, keep it as the single non-crypto LE bridge/interface axiom.
 
 ## Proof order
 

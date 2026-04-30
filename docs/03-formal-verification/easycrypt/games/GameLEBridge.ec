@@ -83,6 +83,8 @@ op game_pr_le_projected
   then le_view_distinguish_pr (d_le_real_view x s) D
   else le_view_distinguish_pr (d_le_sim_view x s) D.
 
+(* Exact non-crypto interface boundary:
+   generic game probability agrees with LE projected probability for G1/G2. *)
 axiom A_game_pr_LE_projection_semantics :
   forall (x : qssm_public_input) (xms : ms_public_input) (s : seed) (D : distinguisher),
     game_pr (G1_ms_sim_le_real x xms s) D = game_pr_le_projected true x s D /\
