@@ -12,7 +12,7 @@ This directory contains the **initial EasyCrypt scaffold only**.
 
 ## Installing EasyCrypt (for this repo)
 
-EasyCrypt was **not** detected in `PATH` on the CI-style Windows host used for development here. Install it locally before running the check script.
+EasyCrypt may not be in `PATH` on all hosts. Install it locally before running the check script.
 
 **Recommended (official):** use [OPAM](https://opam.ocaml.org/) as documented upstream:
 
@@ -52,69 +52,124 @@ Or with an explicit binary path:
 EASYCRYPT=/path/to/easycrypt ./check_easycrypt.sh
 ```
 
-The script type-checks theories in dependency order:
+The script type-checks theories in dependency order. Each file is checked with `easycrypt compile -R . <path>` so that theories in subfolders are resolved by **basename** (theory name equals the filename without `.ec`). Imports use those basenames (for example `require import QssmTypes FS.`).
 
-1. `QssmDomains.ec`
-2. `QssmTypes.ec`
-3. `QssmSchnorrSingleBit.ec`
-4. `QssmFS.ec`
-5. `QssmMSBitnessSingle.ec`
-6. `QssmMSBitnessVector.ec`
-7. `QssmMSTranscriptObservable.ec`
-8. `QssmMS.ec`
-9. `QssmLE.ec`
-10. `QssmSim.ec`
-11. `QssmGames.ec`
-12. `QssmTheorem.ec`
+**Order (see `check_easycrypt.sh`):**
+
+1. `primitives/Domains.ec`
+2. `primitives/QssmTypes.ec` (named `QssmTypes` to avoid clashing with the EasyCrypt prelude theory `Types`)
+3. `primitives/Algebra.ec`
+4. `primitives/FS.ec`
+5. `ms/SchnorrBranch.ec`
+6. `ms/BitnessOne.ec`
+7. `ms/BitnessVector.ec`
+8. `ms/TranscriptObservable.ec`
+9. `ms/TrueClause.ec`
+10. `ms/Comparison.ec`
+11. `ms/SourceModel.ec` (MS-3a observable frame: abstract transcript ops, pack, digest helpers)
+12. `ms/source/SourceTypes.ec`
+13. `ms/source/SourceConstructors.ec`
+14. `ms/source/SourceDistributions.ec`
+15. `ms/source/SourceObligations.ec`
+16. `ms/source/SourceTheorem.ec`
+17. `ms/MS.ec`
+18. `le/LEModel.ec`
+19. `sim/Simulator.ec`
+20. `games/Games.ec`
+21. `theorem/MainTheorem.ec`
 
 If your EasyCrypt build exposes the binary as `ec` instead of `easycrypt`, the script falls back automatically when `easycrypt` is missing.
 
-**Single-file check (equivalent idea):**
+**Single-file check (top of the stack):**
 
 ```bash
 cd docs/03-formal-verification/easycrypt
-easycrypt QssmTheorem.ec
+easycrypt compile -R . theorem/MainTheorem.ec
 ```
 
-(Adjust the command name if your install uses `ec`.)
+## Layout (directories)
 
-## Files
+```
+docs/03-formal-verification/easycrypt/
+├── README.md
+├── check_easycrypt.sh
+├── primitives/
+│   ├── Domains.ec
+│   ├── QssmTypes.ec
+│   ├── Algebra.ec
+│   └── FS.ec
+├── ms/
+│   ├── SchnorrBranch.ec
+│   ├── BitnessOne.ec
+│   ├── BitnessVector.ec
+│   ├── TranscriptObservable.ec
+│   ├── TrueClause.ec
+│   ├── Comparison.ec
+│   ├── SourceModel.ec
+│   ├── source/
+│   │   ├── SourceTypes.ec
+│   │   ├── SourceConstructors.ec
+│   │   ├── SourceDistributions.ec
+│   │   ├── SourceObligations.ec
+│   │   └── SourceTheorem.ec
+│   └── MS.ec
+├── le/
+│   └── LEModel.ec
+├── sim/
+│   └── Simulator.ec
+├── games/
+│   └── Games.ec
+├── theorem/
+│   └── MainTheorem.ec
+└── plans/
+    ├── MS_3a_proof_plan.md
+    ├── MS_3b_proof_plan.md
+    ├── MS_3c_proof_plan.md
+    └── G0_G1_G2_game_plan.md
+```
 
-- `QssmDomains.ec` — domain and label constants
-- `QssmTypes.ec` — abstract types for digests, transcripts, games
-- `QssmSchnorrSingleBit.ec` — single-branch Schnorr observable distributions; `MS_3a_single_branch_schnorr_reparam` proved (axiom `duni_scalar_shift_reparam` only)
-- `QssmFS.ec` — abstract FS / ROM hooks
-- `QssmMSBitnessSingle.ec` / `QssmMSBitnessVector.ec` — per-bit and 64-bit OR bitness layer
-- `QssmMSTranscriptObservable.ec` — canonical v2 transcript observable record
-- `QssmMS.ec` — MS v2 observable surface + MS-3 placeholders
-- `QssmLE.ec` — LE observable surface + Set B placeholders
-- `QssmSim.ec` — composed simulator interface
-- `QssmGames.ec` — G0/G1/G2 skeleton
-- `QssmTheorem.ec` — additive bound skeleton
-- `check_easycrypt.sh` — batch validation (dependency order)
-- `MS_3a_proof_plan.md` — first lemma proof plan
+## File map (legacy Qssm* names → current paths)
+
+| Former root file | Current location |
+|------------------|-------------------|
+| `QssmDomains.ec` | `primitives/Domains.ec` |
+| `QssmTypes.ec` | `primitives/QssmTypes.ec` (theory `QssmTypes`; see note above) |
+| `QssmFS.ec` | `primitives/FS.ec` |
+| `QssmSchnorrSingleBit.ec` | `primitives/Algebra.ec` + `ms/SchnorrBranch.ec` |
+| `QssmMSBitnessSingle.ec` | `ms/BitnessOne.ec` |
+| `QssmMSBitnessVector.ec` | `ms/BitnessVector.ec` |
+| `QssmMSTranscriptObservable.ec` | `ms/TranscriptObservable.ec` |
+| `QssmMSTrueClause.ec` | `ms/TrueClause.ec` |
+| `QssmMSComparison.ec` | `ms/Comparison.ec` |
+| `QssmMS.ec` (bulk) | `ms/SourceModel.ec` + `ms/source/*.ec` (split MS-3a material) |
+| `QssmMS.ec` (façade: hash binding + MS-3c wrapper) | `ms/MS.ec` |
+| `QssmLE.ec` | `le/LEModel.ec` |
+| `QssmSim.ec` | `sim/Simulator.ec` |
+| `QssmGames.ec` | `games/Games.ec` |
+| `QssmTheorem.ec` | `theorem/MainTheorem.ec` |
 
 ## Admitted / axiomatized placeholders (Phase 1)
 
-- **ROM / programmability (A2 surface):** `QssmFS.ec` — `A2_ms_rom_programmability_nonneg`, `A2_programmable_oracle_exists`
-- **MS:** `QssmMS.ec` — `A1_ms_hash_binding_nonneg`, `MS_3a_exact_bitness_simulation` (proves **`ms3a_bitness_real_sim_equiv`** via `MS_3a_exact_bitness_simulation_from_layers`; bitness **source** laws are **`dmap`** pushforwards of abstract `ms3a_{real,sim}_source_payload` distributions through `ms3a_make_*_source`; **`dmap` membership** in preimage lemmas uses **`supp_dmap`** from `Distr` (proved helper `distr_mem_eq`); skeleton discharged through `ms3a_source_observable_equiv_from_layer`; **MS-3a:** folded source equality **`ms3a_source_eq_from_bitness_layer`** is proved from **`ms3a_payload_schedule_equivalence`** (payload `dmap` equality under the `ms3a_ax_*` premises; no axiom states real/sim **folded** source laws are equal without those premises). **Constructor-style obligations** (`ms3a_real_source_constructor_wf`, `ms3a_sim_source_constructor_wf`, `ms3a_source_constructors_same_public_fields`, `ms3a_source_constructors_programmed_bitness`, `ms3a_source_constructors_bitness_exact`) are **proved lemmas** from the payload support axioms **`ms3a_payload_{real,sim}_support_programmed`**, **`ms3a_payload_pair_public_fields_on_support`**, and **`MS_3a_bitness_layer_exact_simulation`** (`QssmMSBitnessVector.ec`). Remaining MS-3a payload axioms are the four above plus packaging; generic digest constructor still uses **`ms3a_pack_observable_with_digest_field_correct`**; `MS_3b_true_clause_characterization`, `MS_3c_exact_comparison_simulation`
-- **LE:** `QssmLE.ec` — `set_b_parameter_well_formed` (placeholder until `Int` order is wired), `A4_le_hvzk_bound_nonneg`
-- **Simulator:** `QssmSim.ec` — `simulate_qssm_transcript_public_only`
-- **Games:** `QssmGames.ec` — `G0_to_G1_skeleton`, `G1_to_G2_skeleton`, `Adv_def`
-- **Theorem:** `QssmTheorem.ec` — `A1_ms_hash_binding`, `A2_ms_rom_programmability`, `A4_le_hvzk`, `use_MS_3a` (lemma, **`ms3a_bitness_real_sim_equiv`**) / `use_MS_3b` / `use_MS_3c` (axioms), `qssm_main_theorem_skeleton`
+- **ROM / programmability (A2 surface):** `primitives/FS.ec` — `A2_ms_rom_programmability_nonneg`, `A2_programmable_oracle_exists`
+- **MS:** `ms/SourceModel.ec` — abstract observable frame (pack / digest / alignment); **`ms/source/`** — structured source types, constructors, `d_ms3a_*` laws, payload axioms, and **`MS_3a_exact_bitness_simulation`**; `ms/MS.ec` — `epsilon_ms_hash_binding`, **`ms1_hash_binding_step`**, **`ms2_rom_programming_step`**, **`ms3a_bitness_exact_step`**, **`ms3b_true_clause_exact_step`** (MS3b: same MS-3b forall bundle as the old game axiom + frozen `GV_ms`, `AfterBitness`→`AfterComparison`; **`Algebra`**, **`List`**, **`TrueClause`** in scope), `A1_ms_hash_binding_nonneg`, **`MS_3c_exact_comparison_simulation`** (wrapper over `ms/Comparison.ec`). ROM budget **`epsilon_ms_rom_programmability`** lives in **`primitives/FS.ec`** with **`A2_ms_rom_programmability_nonneg`** and **`A2_programmable_oracle_exists`**. **MS-3b** in **`ms/TrueClause.ec`**. **MS-3c** in **`ms/Comparison.ec`** — comparison payloads (`d_ms3c_{real,sim}_comparison_payload`), `dmap` schedules, **proved** **`A_ms3c_payload_schedule_equiv`** from a narrower coupling/scheduling layer (`ms3c_real_sim_payload_coupled`, explicit coupling projections `d_ms3c_coupling_{real,sim}_projection`, `ms3c_ax_payload_support_coupling`, and coupling/marginal axioms) plus component payload obligations (see `plans/MS_3c_proof_plan.md`), proved schedule bridge, surface clause laws; **ordered announcement digest list** is **`ms3c_clause_ann_digests_from_surface`** (true then false branch digests via **`ms_single_bit_branch_digest`**), with **`A_ms3c_digest_announcement_only`** stating programmed **`mscc_query_digest`** against that projection only, and true-clause bridge **`A_ms3c_true_clause_from_ms3b_and_schnorr`** now proved from explicit MS-3b hook (`ms3c_true_clause_uses_ms3b_blinder_point`) plus Schnorr reparam readiness (`ms3c_true_clause_reparam_ready` / `MS_3a_single_branch_schnorr_reparam`).
+- **LE:** `le/LEModel.ec` — non-vacuous `set_b_parameter_well_formed` predicate, `A4_le_hvzk_bound_nonneg`, LE hop carrier `le_game_hop_adv`, transcript predicate `le_real_sim_transcript_equiv`, and narrow LE transition placeholder `A_LE_HVZK_transition_bound`
+- **Simulator:** `sim/Simulator.ec` — `simulate_qssm_transcript_public_only`
+- **Types / games:** `primitives/QssmTypes.ec` defines `ms_game_stage`, `ms_game_view_record` (QSSM public input, seed, MS public input, MS transcript observable, stage tag, optional LE observable placeholder), and `game_view` as either `GV_ms` of that record or `GV_g2_full_sim` of a small `qssm_g2_shell_record` (pub + seed). **`games/Games.ec`** — `mk_ms_game_view` builds all MS-stage views; `G0_real_qssm` / `G1_ms_sim_le_real` / every `G_MS_*` are concrete `GV_ms` constructors differing only in `msgv_stage`; `G2_full_sim` is the G2 shell variant. **MS1** uses axiom **`A_MS1_hash_binding_replacement_bound`** (`ms1_hash_binding_step` ⇒ `Adv <= epsilon_ms_hash_binding`); lemma **`A_MS1_hash_binding_transition`** packages `G_MS_real`→`G_MS_after_binding`. **MS2** uses axiom **`A_MS2_rom_programming_replacement_bound`** (`ms2_rom_programming_step` ⇒ `Adv <= epsilon_ms_rom_programmability`); lemma **`A_MS2_rom_programming_transition`** packages `G_MS_after_binding`→`G_MS_after_rom`. **MS3a** uses axiom **`A_MS3a_bitness_exact_step_bound`** (`ms3a_bitness_exact_step` ⇒ `Adv <= 0%r`); lemma **`A_MS3a_bitness_transition`** packages `G_MS_after_rom`→`G_MS_after_bitness`. **MS3b** uses axiom **`A_MS3b_true_clause_exact_step_bound`** (`ms3b_true_clause_exact_step` ⇒ `Adv <= 0%r`); lemma **`A_MS3b_true_clause_transition`** packages `G_MS_after_bitness`→`G_MS_after_comparison`. **`A_MS3c_comparison_transition`** remains the prior staged axiom shape for this pass. Advantages `Adv_G0_G1_MS` / `Adv_G1_G2_LE` / `Adv_G0_G2_QSSM` thread a shared `xms` on the G0/G1 side; proved `A_adv_gamehop_triangle`, `A_adv_ms_hop_telescope`, composed MS hop `A_G0_to_G1_ms_transition_bound`, and LE hop `A_G1_to_G2_le_transition_bound`
+- **Theorem:** `theorem/MainTheorem.ec` — non-negativity placeholders `A1_ms_hash_binding`, `A2_ms_rom_programmability`, `A4_le_hvzk`, bridge lemmas `use_MS_3a` / `use_MS_3b` / `use_MS_3c`, and proved additive game-hop lemma `qssm_main_theorem_skeleton` over `Adv_G0_G2_QSSM`
 
-- **Single-branch MS-3a (`QssmSchnorrSingleBit.ec`):** `MS_3a_single_branch_schnorr_reparam` is fully proved (no `admit`). The only Schnorr-layer root assumption is the axiom **`duni_scalar_shift_reparam`** (uniform shift on `duni_scalar` for the joint pair `(alpha*H, alpha+t)` vs `((z-t)*H, z)`), a standard finite-field-style fact, not a new hardness assumption. Structural helpers: `ms3a_schnorr_reparam_obs_eq`, `qssm_pair_eq`, `qssm_dunit_eq`.
+- **Single-branch MS-3a (`ms/SchnorrBranch.ec` + `primitives/Algebra.ec`):** `MS_3a_single_branch_schnorr_reparam` is fully proved (no `admit`). Root Schnorr-layer assumption is **`duni_scalar_shift_reparam`** on `duni_scalar`.
+
 - **Checker note:** there is **no** `admit` remaining in any `*.ec` file under this directory; open items are **named axioms** only (see each theory).
 
 ## Next proof target
 
-1. **MS-3a (residual)** — shrink the four payload axioms in `QssmMS.ec` (support programmed, pair public fields on support, schedule equivalence); see `MS_3a_proof_plan.md`.
-2. **MS-3b** — `MS_3b_true_clause_characterization` is the natural next milestone after that surface is acceptable.
+1. **MS-3a (residual)** — shrink the four payload axioms in `ms/source/SourceObligations.ec`; see `plans/MS_3a_proof_plan.md`.
+2. **MS-3b** — replace hook preds and narrow axioms in `ms/TrueClause.ec`; see `plans/MS_3b_proof_plan.md`.
 
-Then: MS-3c, `G0→G1`, `G1→G2`, final additive theorem.
+Then: shrink MS-3c axioms in **`ms/Comparison.ec`** (`plans/MS_3c_proof_plan.md`). On the game layer, discharge **`A_MS1_hash_binding_replacement_bound`** / **`A_MS2_rom_programming_replacement_bound`** from concrete games tied to **`epsilon_ms_hash_binding`** / **`epsilon_ms_rom_programmability`** (FS ROM surface); discharge **`A_MS3a_bitness_exact_step_bound`** / **`A_MS3b_true_clause_exact_step_bound`** from exact simulation / true-clause games given the step predicates; **`A_MS3c_comparison_transition`** proof debt unchanged (`plans/G0_G1_G2_game_plan.md`).
 
 ## Syntax / checker notes
 
-- Theories follow the standard EasyCrypt layout: **one theory per `.ec` file**, named after the file (no nested `theory ... end` wrapper).
-- Trivial placeholder axioms often use the proposition `true` (not `True`). MS-3a’s global lemma instead targets **`ms3a_bitness_real_sim_equiv`** (distribution equality on `ms_transcript_observable`).
-- `DOMAIN_MS` is fixed to `"QSSM-MS-v1.0"` to match `truth-engine/qssm-utils/src/hashing.rs` (not invented).
+- Theories are loaded by **basename** under this tree with `easycrypt compile -R . <file>`.
+- Trivial placeholder axioms often use the proposition `true` (not `True`). MS-3a’s global lemma targets **`ms3a_bitness_real_sim_equiv`** (distribution equality on `ms_transcript_observable`).
+- `DOMAIN_MS` is fixed to match `truth-engine/qssm-utils/src/hashing.rs` (not invented).

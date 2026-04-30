@@ -68,7 +68,7 @@ Gadget seam/bridge code anchors:
 
 ## Initial EasyCrypt module plan
 
-## `QssmDomains.ec`
+## `easycrypt/primitives/Domains.ec`
 - Rust/spec anchors:
   - `docs/02-protocol-specs/qssm-zk-concrete-execution-spec.md` (domains/labels)
   - `truth-engine/qssm-ms/src/v2/internals.rs`
@@ -81,7 +81,7 @@ Gadget seam/bridge code anchors:
 - Out of scope:
   - API/wire UX concerns, serialization ergonomics
 
-## `QssmTypes.ec`
+## `easycrypt/primitives/QssmTypes.ec`
 - Rust/spec anchors:
   - `docs/02-protocol-specs/qssm-zk-concrete-execution-spec.md` (transcript fields/order)
   - `truth-engine/qssm-proofs/src/reduction_zk/core/types_core.rs`
@@ -93,7 +93,7 @@ Gadget seam/bridge code anchors:
 - Out of scope:
   - diagnostic/attempt structs and historical transcript wrappers
 
-## `QssmFS.ec`
+## `easycrypt/primitives/FS.ec`
 - Rust/spec anchors:
   - `truth-engine/qssm-ms/src/v2/internals.rs`
   - `truth-engine/qssm-le/src/protocol/commit.rs`
@@ -107,7 +107,7 @@ Gadget seam/bridge code anchors:
 - Out of scope:
   - implementation-level optimization details
 
-## `QssmMS.ec`
+## `easycrypt/ms/SourceModel.ec` and `easycrypt/ms/MS.ec`
 - Rust/spec anchors:
   - `truth-engine/qssm-ms/src/v2/protocol.rs`
   - `truth-engine/qssm-ms/src/v2/types.rs`
@@ -120,7 +120,7 @@ Gadget seam/bridge code anchors:
 - Out of scope:
   - legacy GhostMirror/v1 APIs and historical wrappers
 
-## `QssmLE.ec`
+## `easycrypt/le/LEModel.ec`
 - Rust/spec anchors:
   - `truth-engine/qssm-le/src/protocol/commit.rs`
   - `truth-engine/qssm-le/src/protocol/params.rs`
@@ -132,7 +132,7 @@ Gadget seam/bridge code anchors:
 - Out of scope:
   - performance-oriented constant-time engineering details
 
-## `QssmSim.ec`
+## `easycrypt/sim/Simulator.ec`
 - Rust/spec anchors:
   - `truth-engine/qssm-proofs/src/reduction_zk/simulate/simulators.rs`
   - `truth-engine/qssm-proofs/src/reduction_zk/simulate/simulators_extra.rs`
@@ -145,7 +145,7 @@ Gadget seam/bridge code anchors:
 - Out of scope:
   - `Real*` sampling helpers and attempt/diagnostic report objects
 
-## `QssmGames.ec`
+## `easycrypt/games/Games.ec`
 - Rust/spec anchors:
   - `docs/02-protocol-specs/qssm-zk-theorem-spec.md`
   - `truth-engine/qssm-proofs/src/reduction_zk/core/theorem_graph.rs`
@@ -157,7 +157,7 @@ Gadget seam/bridge code anchors:
 - Out of scope:
   - CI/testing harness behavior
 
-## `QssmTheorem.ec`
+## `easycrypt/theorem/MainTheorem.ec`
 - Rust/spec anchors:
   - `docs/02-protocol-specs/qssm-zk-theorem-spec.md`
   - `truth-engine/qssm-proofs/src/reduction_zk/core/theorem_prob.rs`

@@ -1,0 +1,46 @@
+require import AllCore List.
+require import QssmTypes BitnessOne.
+require import SourceTypes.
+
+op ms3a_make_real_source
+  (stmt : digest) (rbit : bool) (bits : ms_single_bit_or_transcript list)
+  (bitness_glob : digest list) (comp_glob : digest) (td : digest) :
+  ms3a_bitness_layer_source =
+  {| ms3s_stmt = stmt;
+     ms3s_result = rbit;
+     ms3s_bits = bits;
+     ms3s_bitness_global_challenges = bitness_glob;
+     ms3s_comparison_global_challenge = comp_glob;
+     ms3s_transcript_digest = td |}.
+
+op ms3a_make_sim_source
+  (stmt : digest) (rbit : bool) (bits : ms_single_bit_or_transcript list)
+  (bitness_glob : digest list) (comp_glob : digest) (td : digest) :
+  ms3a_bitness_layer_source =
+  {| ms3s_stmt = stmt;
+     ms3s_result = rbit;
+     ms3s_bits = bits;
+     ms3s_bitness_global_challenges = bitness_glob;
+     ms3s_comparison_global_challenge = comp_glob;
+     ms3s_transcript_digest = td |}.
+
+op ms3a_bitness_layer_source_of_real_payload (p : ms3a_real_source_payload) :
+  ms3a_bitness_layer_source =
+  ms3a_make_real_source p.`ms3rp_stmt p.`ms3rp_res p.`ms3rp_bits
+    p.`ms3rp_bitness_global_challenges p.`ms3rp_comparison_global_challenge
+    p.`ms3rp_transcript_digest.
+
+op ms3a_bitness_layer_source_of_sim_payload (p : ms3a_sim_source_payload) :
+  ms3a_bitness_layer_source =
+  ms3a_make_sim_source p.`ms3sp_stmt p.`ms3sp_res p.`ms3sp_bits
+    p.`ms3sp_bitness_global_challenges p.`ms3sp_comparison_global_challenge
+    p.`ms3sp_transcript_digest.
+
+(* Payload-level: same programmed-vector obligation as `ms3a_source_wf` on the
+   constructor image of each payload (support axioms mention payload laws only,
+   not folded bitness source distributions). *)
+pred ms3a_real_payload_programmed_layer (p : ms3a_real_source_payload) =
+  ms3a_source_wf (ms3a_bitness_layer_source_of_real_payload p).
+
+pred ms3a_sim_payload_programmed_layer (p : ms3a_sim_source_payload) =
+  ms3a_source_wf (ms3a_bitness_layer_source_of_sim_payload p).
