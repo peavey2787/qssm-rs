@@ -37,9 +37,22 @@ Refine the LE Set-B HVZK boundary into narrower, named obligations while keeping
     `A_LE_real_sim_view_indistinguishable` (same conclusion from the two hiding
     bounds; view-def hypotheses are compatibility-only)
   - concrete `op le_view_statistical_distance` as `sdist (d_le_real_view x s)
-    (d_le_sim_view x s)` (EasyCrypt `SDist` theory); packaging ops/preds
-    `le_view_distinguishing_adv`, `le_view_statistical_distance_bound`
-  - axioms `A_LE_view_indist_to_sd_bound`, `A_LE_sd_bound_to_adv_bound`
+    (d_le_sim_view x s)` (EasyCrypt `SDist` theory); abstract coupling
+    `d_le_post_rejection_view` for a triangle split (rejection leg vs FS leg);
+    abstract event `le_distinguisher_event D` on `le_transcript_observable`, with
+    `le_view_distinguish_pr d D = mu d (le_distinguisher_event D)`; packaging
+    ops/preds `le_view_distinguishing_adv`, `le_view_statistical_distance_bound`
+  - axioms `A_LE_rejection_contributes_to_sdist`,
+    `A_LE_fs_contributes_to_sdist` (each bounds one leg by `(1/2) * epsilon_le`
+    under the corresponding hiding predicate); proved
+    `A_LE_combined_hiding_bounds_sdist` (`sdist_triangle` + `ler_add` + real
+    arithmetic); proved `A_LE_view_indist_to_sd_bound` (unpacks
+    `le_real_sim_view_indistinguishable` and applies the combined lemma); proved
+    `A_LE_distinguisher_event_probability_bounded_by_sdist` (one-sided
+    distinguisher gap from `sdist_upper_bound` on that event, plus real order);
+    proved wrapper `A_LE_sd_bound_to_adv_bound` (same conclusion; the
+    `le_view_statistical_distance_bound` hypothesis is not used for the core
+    inequality)
   - proved lemma `A_LE_projected_advantage_matches_view_distance`
   - proved lemma `A_LE_view_advantage_bound_from_indistinguishability` chaining
     the above into `le_hvzk_bound` / `epsilon_le`
@@ -81,11 +94,17 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
      proved `A_LE_real_sim_view_indistinguishable` /
      `A_LE_real_sim_view_indistinguishable_from_bound_ok` (crypto still lives in
      the rejection and FS axiom bundles below).
-   - Discharge `A_LE_view_indist_to_sd_bound` (view-level indistinguishability
-     implies `sdist (d_le_real_view x s) (d_le_sim_view x s) <= epsilon_le`).
-   - Discharge `A_LE_sd_bound_to_adv_bound` (abstract `le_view_distinguish_pr`
-     gap bounded by the same `sdist`; links distinguisher advantage to
-     `le_view_statistical_distance`).
+   - **Done (skeleton):** `A_LE_view_indist_to_sd_bound` is proved from
+     `A_LE_combined_hiding_bounds_sdist`, which uses `sdist_triangle` on
+     `d_le_real_view`, `d_le_post_rejection_view`, `d_le_sim_view` and the two
+     half-budget axioms above. Proof debt is instantiating
+     `d_le_post_rejection_view` and discharging the two new axioms from concrete
+     rejection / FS analyses.
+   - **Done (skeleton):** `A_LE_distinguisher_event_probability_bounded_by_sdist`
+     packages the standard event bound via `SDist.sdist_upper_bound` on
+     `le_distinguisher_event D`; `A_LE_sd_bound_to_adv_bound` is a thin wrapper.
+     Further proof debt is giving a concrete / compatible definition of
+     `le_distinguisher_event` when the distinguisher is instantiated.
    - Projected hop advantage agrees with `le_view_distinguishing_adv` via proved
      `A_LE_projected_advantage_matches_view_distance`; packaging lemma
      `A_LE_view_advantage_bound_from_indistinguishability` yields
@@ -102,8 +121,8 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
   - `A_LE_fs_programmable_oracle_available`
   - `A_LE_fs_programming_preserves_transcript_shape`
   - `A_LE_fs_programming_cost_bounded_by_epsilon_le`
-  - `A_LE_view_indist_to_sd_bound`
-  - `A_LE_sd_bound_to_adv_bound`
+  - `A_LE_rejection_contributes_to_sdist`
+  - `A_LE_fs_contributes_to_sdist`
 - `A_game_pr_LE_projection_semantics` in `games/GameLEBridge.ec` remains the
   single non-crypto interface boundary (out of scope for this plan).
 

@@ -1,6 +1,9 @@
 require import AllCore Distr.
+require import StdOrder.
 require import SDist.
 require import QssmTypes FS.
+
+(*---*) import RealOrder.
 
 (* LE transcript observable surface *)
 op le_commitment_coeffs : le_transcript_observable -> coeff_vector.
@@ -34,7 +37,16 @@ axiom A4_le_hvzk_bound_nonneg :
 op d_le_real_view : qssm_public_input -> seed -> le_transcript_observable distr.
 op d_le_sim_view : qssm_public_input -> seed -> le_transcript_observable distr.
 
-op le_view_distinguish_pr : le_transcript_observable distr -> distinguisher -> real.
+(* Intermediate projected view after rejection analysis; FS analysis relates
+   this to [d_le_sim_view]. Used only in the sdist triangle split for
+   [A_LE_view_indist_to_sd_bound]. *)
+op d_le_post_rejection_view : qssm_public_input -> seed -> le_transcript_observable distr.
+
+(* Distinguisher as an event on LE transcript observables (interface to mu / sdist). *)
+op le_distinguisher_event (D : distinguisher) : le_transcript_observable -> bool.
+
+op le_view_distinguish_pr (d : le_transcript_observable distr) (D : distinguisher) : real =
+  mu d (le_distinguisher_event D).
 
 op le_projected_real_adv_base (x : qssm_public_input) (s : seed) (D : distinguisher) : real =
   le_view_distinguish_pr (d_le_real_view x s) D.
@@ -351,18 +363,94 @@ move=> x s D _ _ Hrej Hfs.
 exact (L_LE_combined_hiding_implies_view_indist x s D Hrej Hfs).
 qed.
 
-axiom A_LE_view_indist_to_sd_bound :
+(* Rejection layer: real vs post-rejection coupling (half the [epsilon_le] budget). *)
+axiom A_LE_rejection_contributes_to_sdist :
+  forall (x : qssm_public_input) (s : seed) (D : distinguisher),
+    le_real_view_distribution_defined x s =>
+    le_sim_view_distribution_defined x s =>
+    le_rejection_sampling_hiding_bound x s D =>
+    0%r <= epsilon_le =>
+    sdist (d_le_real_view x s) (d_le_post_rejection_view x s) <= (1%r / 2%r) * epsilon_le.
+
+(* FS / ROM layer: post-rejection vs simulated view (other half of the budget). *)
+axiom A_LE_fs_contributes_to_sdist :
+  forall (x : qssm_public_input) (s : seed) (D : distinguisher),
+    le_real_view_distribution_defined x s =>
+    le_sim_view_distribution_defined x s =>
+    le_fs_programming_hiding_bound x s D =>
+    0%r <= epsilon_le =>
+    sdist (d_le_post_rejection_view x s) (d_le_sim_view x s) <= (1%r / 2%r) * epsilon_le.
+
+lemma A_LE_combined_hiding_bounds_sdist :
+  forall (x : qssm_public_input) (s : seed) (D : distinguisher),
+    le_real_view_distribution_defined x s =>
+    le_sim_view_distribution_defined x s =>
+    le_rejection_sampling_hiding_bound x s D =>
+    le_fs_programming_hiding_bound x s D =>
+    0%r <= epsilon_le =>
+    le_view_statistical_distance_bound x s D.
+proof.
+move=> x s D Hr Hs Hrej Hfs Heps.
+rewrite /le_view_statistical_distance_bound /le_view_statistical_distance.
+pose dr := d_le_real_view x s.
+pose dmid := d_le_post_rejection_view x s.
+pose ds := d_le_sim_view x s.
+have Hrej' : sdist dr dmid <= (1%r / 2%r) * epsilon_le.
+  exact (A_LE_rejection_contributes_to_sdist x s D Hr Hs Hrej Heps).
+have Hfs' : sdist dmid ds <= (1%r / 2%r) * epsilon_le.
+  exact (A_LE_fs_contributes_to_sdist x s D Hr Hs Hfs Heps).
+have Htri : sdist dr ds <= sdist dr dmid + sdist dmid ds.
+  exact (sdist_triangle dmid dr ds).
+apply (ler_trans (sdist dr dmid + sdist dmid ds)).
+  exact Htri.
+apply (ler_trans ((1%r / 2%r) * epsilon_le + (1%r / 2%r) * epsilon_le)).
+  by apply ler_add.
+have Heq :
+  (1%r / 2%r) * epsilon_le + (1%r / 2%r) * epsilon_le = epsilon_le.
+  by smt(mulrDl mul1r).
+rewrite Heq.
+by apply lerr.
+qed.
+
+lemma A_LE_view_indist_to_sd_bound :
   forall (x : qssm_public_input) (s : seed) (D : distinguisher),
     le_real_view_distribution_defined x s =>
     le_sim_view_distribution_defined x s =>
     le_real_sim_view_indistinguishable x s D =>
     0%r <= epsilon_le =>
     le_view_statistical_distance_bound x s D.
+proof.
+move=> x s D Hr Hs Hind Heps.
+case: Hind => Hrej Hfs.
+exact (A_LE_combined_hiding_bounds_sdist x s D Hr Hs Hrej Hfs Heps).
+qed.
 
-axiom A_LE_sd_bound_to_adv_bound :
+lemma A_LE_distinguisher_event_probability_bounded_by_sdist :
+  forall (x : qssm_public_input) (s : seed) (D : distinguisher),
+    le_view_distinguishing_adv x s D <= le_view_statistical_distance x s.
+proof.
+move=> x s D.
+rewrite /le_view_distinguishing_adv /le_game_hop_adv
+  /le_projected_real_adv_base /le_projected_sim_adv_base
+  /le_view_statistical_distance.
+pose dr := d_le_real_view x s.
+pose ds := d_le_sim_view x s.
+pose E := le_distinguisher_event D.
+have Habs : `|mu dr E - mu ds E| <= sdist dr ds.
+  exact (sdist_upper_bound dr ds E).
+have Hle : mu dr E - mu ds E <= `|mu dr E - mu ds E|.
+  apply ler_norm.
+by apply (ler_trans _ _ _ Hle Habs).
+qed.
+
+lemma A_LE_sd_bound_to_adv_bound :
   forall (x : qssm_public_input) (s : seed) (D : distinguisher),
     le_view_statistical_distance_bound x s D =>
     le_view_distinguishing_adv x s D <= le_view_statistical_distance x s.
+proof.
+move=> x s D _.
+exact (A_LE_distinguisher_event_probability_bounded_by_sdist x s D).
+qed.
 
 lemma A_LE_projected_advantage_matches_view_distance :
   forall (x : qssm_public_input) (s : seed) (D : distinguisher),
