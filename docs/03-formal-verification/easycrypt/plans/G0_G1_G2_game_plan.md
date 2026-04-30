@@ -42,7 +42,7 @@ From `theorem/MainTheorem.ec`:
   - **MS2 (ROM / FS programmability):** `A_MS2_rom_programming_replacement_bound` (**axiom**) — `ms2_rom_programming_step src dst xms` (same frozen boundary, `AfterBinding`→`AfterRom`) ⇒ `Adv src dst D <= epsilon_ms_rom_programmability`; canonical step `L_ms2_rom_programming_step_canonical`; **`A_MS2_rom_programming_transition`** is a **proved lemma** for the telescope. Budget and FS interface: `primitives/FS.ec` (`epsilon_ms_rom_programmability`, `A2_ms_rom_programmability_nonneg`, `A2_programmable_oracle_exists`); theorem `A2_ms_rom_programmability`.
   - **MS3a (bitness exact simulation):** `A_MS3a_bitness_exact_step_bound` (**axiom**) — `ms3a_bitness_exact_step src dst xms s` (includes **`ms3a_bitness_real_sim_equiv`**, frozen `msgv_ms_obs` / pub / seed / LE, `AfterRom`→`AfterBitness`) ⇒ `Adv src dst D <= 0%r`. Canonical pair **`L_ms3a_bitness_exact_step_canonical`**. **`A_MS3a_bitness_transition`** is a **proved lemma** for the telescope. Source proof debt stays in **`ms/source/`** (`MS_3a_exact_bitness_simulation` / `SourceTheorem`); this axiom is the narrow game-hop interface.
   - **MS3b (true clause):** `A_MS3b_true_clause_exact_step_bound` (**axiom**) — `ms3b_true_clause_exact_step src dst xms` (MS-3b forall bundle + frozen boundary, `AfterBitness`→`AfterComparison`) ⇒ `Adv src dst D <= 0%r`; **`L_ms3b_true_clause_exact_step_canonical`**; **`A_MS3b_true_clause_transition`** is a **proved lemma** for the telescope. Proof debt in **`ms/TrueClause.ec`** (`MS_3b_true_clause_characterization` and hooks); this axiom is the narrow game-hop interface.
-  - `A_MS3c_comparison_transition` — after-comparison → sim; MS-3c implication bundle (feeds **`MS_3c_exact_comparison_simulation`** / `Comparison`)
+  - **MS3c (comparison exact simulation):** `A_MS3c_comparison_exact_step_bound` (**axiom**) — `ms3c_comparison_exact_step src dst xms s` (MS-3c implication bundle + frozen boundary, `AfterComparison`->`Sim`) => `Adv src dst D <= 0%r`; **`L_ms3c_comparison_exact_step_canonical`**; **`A_MS3c_comparison_transition`** is a **proved lemma** for the telescope. Proof debt in **`ms/Comparison.ec`** (`MS_3c_exact_comparison_simulation` and payload/scheduling obligations); this axiom is the narrow game-hop interface.
 
 ### G1 -> G2 (LE side)
 
@@ -51,10 +51,33 @@ From `theorem/MainTheorem.ec`:
 1. `set_b_parameter_well_formed`
 2. `0%r <= epsilon_le` (via `A4_le_hvzk` at call sites, or `A4_le_hvzk_bound_nonneg` directly)
 3. `le_real_sim_transcript_equiv x s`
-4. `Adv_G1_G2_LE x xms s D = le_game_hop_adv x s D` (G1 still carries `xms` for MS alignment; LE bridge does not depend on it)
-5. `A_LE_HVZK_transition_bound` (remaining LE-local axiom)
+4. `A_LE_game_bridge_consistency` is now a **lemma**, proved from narrow LE bridge obligations:
+   constructor-correctness lemmas `A_G1_LE_view_constructor_correct`,
+   `A_G2_LE_view_constructor_correct` (now definitional via
+   `le_real_view_from_G1`, `le_sim_view_from_G2`), projection lemmas
+   `A_G1_LE_view_projects_to_real`, `A_G2_LE_view_projects_to_sim`, and
+   bridge lemma `A_LE_projected_adv_matches_game_adv` (itself derived from
+   projected-adv layout lemmas `A_LE_projected_real_adv_layout`,
+   `A_LE_projected_sim_adv_layout`, game-side unfold lemmas
+   `A_Adv_G1_G2_LE_unfolds_to_projected_views` (from narrower probability
+   interface axiom `A_game_pr_LE_projection_semantics`, where
+   `game_pr_le_projected true x s D` is the real LE projection and
+   `game_pr_le_projected false x s D` is the sim LE projection; packaged by lemmas
+   `A_game_pr_on_G1_uses_LE_real_projection`,
+   `A_game_pr_on_G2_uses_LE_sim_projection`,
+   `A_game_pr_G1_LE_real_view_correct`,
+   `A_game_pr_G2_LE_sim_view_correct` and then
+   `A_game_pr_G1_equals_projected_real`,
+   `A_game_pr_G2_equals_projected_sim`) and
+   `A_le_game_hop_adv_unfolds_to_projected_views`
+   (packaged by lemmas `A_LE_real_projected_view_matches_G1`,
+   `A_LE_sim_projected_view_matches_G2`))
+5. `A_LE_HVZK_transition_bound` is now a **lemma** in `LEModel.ec`, layered over:
+   `le_set_b_params_ok`, `le_rejection_sampling_bound_ok`,
+   `le_fs_programming_bound_ok`, `le_hvzk_bound`, and narrow axiom
+   `A_LE_SetB_HVZK_bound` (remaining LE-local cryptographic boundary)
 
-Next: discharge `A_LE_HVZK_transition_bound` from a concrete LE HVZK game, and prove the `Adv_G1_G2_LE = le_game_hop_adv` bridge from wired `G1`/`G2` views.
+Next: discharge `A_LE_SetB_HVZK_bound` from a concrete LE HVZK game skeleton (Set-B params, rejection-sampling bound, FS-programming surface, transcript equivalence), and then replace the remaining narrow LE bridge axiom (`A_game_pr_LE_projection_semantics`) with concrete projector/adv proofs from wired `G1`/`G2` LE views (view constructors, projected-adv layout, and `le_game_hop_adv` unfold are already definitional/proved in `Games.ec`).
 
 ## Proof order
 

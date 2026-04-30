@@ -1,7 +1,7 @@
 {
   "version": 3,
   "echash": "n/a",
-  "root": { "kind": "ec", "digest": "8e27b83a365406cf465fed4a562439f1" },
+  "root": { "kind": "ec", "digest": "96a85cf1e3d20033f23057b9e5ae4381" },
   "depends": {
     "AlgTactic": {
       "direct": false,
@@ -116,7 +116,7 @@
     "LEModel": {
       "direct": true,
       "kind": "ec",
-      "digest": "b433ed1d97ab1536247ff7f873736997"
+      "digest": "894d8f60f7639933961a1283f74f5905"
     },
     "List": {
       "direct": true,
@@ -131,7 +131,7 @@
     "MS": {
       "direct": true,
       "kind": "ec",
-      "digest": "35acea8368914618c2df6969a6d6b458"
+      "digest": "a1ef08468db7cd1d0bf2ed35de2a8221"
     },
     "Monoid": {
       "direct": false,

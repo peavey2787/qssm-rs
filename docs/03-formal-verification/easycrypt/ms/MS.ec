@@ -103,6 +103,27 @@ pred ms3b_true_clause_exact_step (src dst : game_view) (xms : ms_public_input) =
     r1.`msgv_stage = MSGameStageAfterBitness /\
     r2.`msgv_stage = MSGameStageAfterComparison.
 
+(* MS3c comparison hop: AfterComparison -> Sim; first conjunct is the existing MS-3c
+   implication bundle ending in `ms_comparison_exact_simulation_equiv`.
+   Game-layer zero advantage: `A_MS3c_comparison_exact_step_bound` in `games/Games.ec`. *)
+pred ms3c_comparison_exact_step (src dst : game_view) (xms : ms_public_input) (s : seed) =
+  (ms3c_comparison_query_digest_ann_only xms s =>
+    ms3c_comparison_global_programmable_under_A2 xms s =>
+    ms3c_false_clauses_simulator_generated xms s =>
+    ms3c_true_clause_schnorr_from_blinder xms s =>
+    ms3c_clause_challenge_shares_sum xms s =>
+    ms_comparison_exact_simulation_equiv xms s) /\
+  exists (r1 r2 : ms_game_view_record),
+    src = GV_ms r1 /\
+    dst = GV_ms r2 /\
+    r1.`msgv_ms_pub = xms /\ r2.`msgv_ms_pub = xms /\
+    r1.`msgv_ms_obs = r2.`msgv_ms_obs /\
+    r1.`msgv_qssm_pub = r2.`msgv_qssm_pub /\
+    r1.`msgv_seed = r2.`msgv_seed /\
+    r1.`msgv_le_placeholder = r2.`msgv_le_placeholder /\
+    r1.`msgv_stage = MSGameStageAfterComparison /\
+    r2.`msgv_stage = MSGameStageSim.
+
 (* MS-3a / MS-3b / MS-3c: MS-3a layered lemmas in `ms/source/SourceTheorem.ec`; MS-3b in
    `ms/TrueClause.ec`; MS-3c core in `ms/Comparison.ec` (narrow axioms +
    `ms_comparison_exact_*` pred). *)
