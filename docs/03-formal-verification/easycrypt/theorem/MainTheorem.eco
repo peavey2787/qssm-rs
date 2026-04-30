@@ -1,7 +1,7 @@
 {
   "version": 3,
   "echash": "n/a",
-  "root": { "kind": "ec", "digest": "cfc6c2697d9a9e3261595daa993949ee" },
+  "root": { "kind": "ec", "digest": "1fd2ec2d1cf2667f70610cd2b08b2c0e" },
   "depends": {
     "AlgTactic": {
       "direct": false,
@@ -51,7 +51,47 @@
     "Comparison": {
       "direct": true,
       "kind": "ec",
-      "digest": "9b659321db5dc5aa18dbb33bed261a5b"
+      "digest": "5fc0dad234034ade225a6cc811574f0f"
+    },
+    "ComparisonCoupling": {
+      "direct": true,
+      "kind": "ec",
+      "digest": "52fe89edc1434bc8553ea38ec18880f4"
+    },
+    "ComparisonCouplingAxioms": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "e1ebea48d22c7e2b60c9b74f2505936e"
+    },
+    "ComparisonCouplingTheorem": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "6447da17bac27435e557102b6fc03eeb"
+    },
+    "ComparisonCouplingTypes": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "7b03eece54784a36bc806782c024d2b4"
+    },
+    "ComparisonDigests": {
+      "direct": true,
+      "kind": "ec",
+      "digest": "35a274f23c560d278fe70bcaf0c30bfa"
+    },
+    "ComparisonPayloads": {
+      "direct": true,
+      "kind": "ec",
+      "digest": "0774f20709b2ab4ca229c8a2b8e113bf"
+    },
+    "ComparisonTheorem": {
+      "direct": true,
+      "kind": "ec",
+      "digest": "cb4d093791e6f0bd9eab7cd23146e48d"
+    },
+    "ComparisonTypes": {
+      "direct": true,
+      "kind": "ec",
+      "digest": "46fd849bfe0e90c47d5d583a9bf58f93"
     },
     "Core": {
       "direct": false,
@@ -98,10 +138,50 @@
       "kind": "ec",
       "digest": "b97d32983e1fb562a4ce3233cef9e7b6"
     },
+    "GameAdvantage": {
+      "direct": true,
+      "kind": "ec",
+      "digest": "8cdba3b3aba971f7942955553d397831"
+    },
+    "GameLEBridge": {
+      "direct": true,
+      "kind": "ec",
+      "digest": "76c3fe3951925b8db6669396b272e9dc"
+    },
+    "GameMSHopComposition": {
+      "direct": true,
+      "kind": "ec",
+      "digest": "317b64d9740f64023566ef57dce203f9"
+    },
+    "GameMSHopTransitions": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "144d1e4bcf3d1a4c4ee83b5585c298b4"
+    },
+    "GameMSHopTypes": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "3aefa711584ffd97cedec00d03d6148e"
+    },
+    "GameMSHops": {
+      "direct": true,
+      "kind": "ec",
+      "digest": "75b9181b861ac064310138c47619109b"
+    },
+    "GameTypes": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "82485fabb55fc79e620c2b1768ce2894"
+    },
+    "GameViews": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "e1c4b4a7ea4cce5aec4107af8d3f91f6"
+    },
     "Games": {
       "direct": true,
       "kind": "ec",
-      "digest": "96a85cf1e3d20033f23057b9e5ae4381"
+      "digest": "6279f459fe1a0ab887f4a2112b972835"
     },
     "Int": {
       "direct": false,
@@ -136,7 +216,7 @@
     "MS": {
       "direct": true,
       "kind": "ec",
-      "digest": "a1ef08468db7cd1d0bf2ed35de2a8221"
+      "digest": "deb8721f4b3a254a86171d7c440f6af4"
     },
     "Monoid": {
       "direct": false,
@@ -221,7 +301,7 @@
     "SourceModel": {
       "direct": false,
       "kind": "ec",
-      "digest": "15b86d2278571fee930a6bfca6b4a40e"
+      "digest": "46ccb31ba17efcd0e4cfa24b8adba6f5"
     },
     "SourceObligations": {
       "direct": false,
@@ -231,7 +311,7 @@
     "SourceTheorem": {
       "direct": true,
       "kind": "ec",
-      "digest": "d3a6b785ce425bfb6384ecdca0cd258e"
+      "digest": "bd3432c9063e41ed24f42613b27c6d0c"
     },
     "SourceTypes": {
       "direct": false,

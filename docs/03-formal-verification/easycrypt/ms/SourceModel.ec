@@ -2,7 +2,7 @@ require import AllCore List Distr.
 require import QssmTypes FS.
 require import SchnorrBranch.
 require import BitnessOne BitnessVector TranscriptObservable.
-require import TrueClause Comparison.
+require import TrueClause Comparison ComparisonTypes ComparisonDigests ComparisonPayloads ComparisonCoupling ComparisonTheorem.
 
 (* MS v2 transcript observable surface (abstract, aligned to execution spec). *)
 op ms_statement_digest : ms_transcript_observable -> digest.

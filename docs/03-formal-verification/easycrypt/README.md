@@ -65,18 +65,34 @@ The script type-checks theories in dependency order. Each file is checked with `
 7. `ms/BitnessVector.ec`
 8. `ms/TranscriptObservable.ec`
 9. `ms/TrueClause.ec`
-10. `ms/Comparison.ec`
-11. `ms/SourceModel.ec` (MS-3a observable frame: abstract transcript ops, pack, digest helpers)
-12. `ms/source/SourceTypes.ec`
-13. `ms/source/SourceConstructors.ec`
-14. `ms/source/SourceDistributions.ec`
-15. `ms/source/SourceObligations.ec`
-16. `ms/source/SourceTheorem.ec`
-17. `ms/MS.ec`
-18. `le/LEModel.ec`
-19. `sim/Simulator.ec`
-20. `games/Games.ec`
-21. `theorem/MainTheorem.ec`
+10. `ms/comparison/ComparisonTypes.ec`
+11. `ms/comparison/ComparisonDigests.ec`
+12. `ms/comparison/ComparisonPayloads.ec`
+13. `ms/comparison/ComparisonCouplingTypes.ec`
+14. `ms/comparison/ComparisonCouplingAxioms.ec`
+15. `ms/comparison/ComparisonCouplingTheorem.ec`
+16. `ms/comparison/ComparisonCoupling.ec` (facade)
+17. `ms/comparison/ComparisonTheorem.ec`
+18. `ms/Comparison.ec` (facade)
+19. `ms/SourceModel.ec` (MS-3a observable frame: abstract transcript ops, pack, digest helpers)
+20. `ms/source/SourceTypes.ec`
+21. `ms/source/SourceConstructors.ec`
+22. `ms/source/SourceDistributions.ec`
+23. `ms/source/SourceObligations.ec`
+24. `ms/source/SourceTheorem.ec`
+25. `ms/MS.ec`
+26. `le/LEModel.ec`
+27. `sim/Simulator.ec`
+28. `games/GameTypes.ec`
+29. `games/GameViews.ec`
+30. `games/GameAdvantage.ec`
+31. `games/GameMSHopTypes.ec`
+32. `games/GameMSHopTransitions.ec`
+33. `games/GameMSHopComposition.ec`
+34. `games/GameMSHops.ec` (facade)
+35. `games/GameLEBridge.ec`
+36. `games/Games.ec` (facade)
+37. `theorem/MainTheorem.ec`
 
 If your EasyCrypt build exposes the binary as `ec` instead of `easycrypt`, the script falls back automatically when `easycrypt` is missing.
 
@@ -104,6 +120,15 @@ docs/03-formal-verification/easycrypt/
 │   ├── BitnessVector.ec
 │   ├── TranscriptObservable.ec
 │   ├── TrueClause.ec
+│   ├── comparison/
+│   │   ├── ComparisonTypes.ec
+│   │   ├── ComparisonDigests.ec
+│   │   ├── ComparisonPayloads.ec
+│   │   ├── ComparisonCouplingTypes.ec
+│   │   ├── ComparisonCouplingAxioms.ec
+│   │   ├── ComparisonCouplingTheorem.ec
+│   │   ├── ComparisonCoupling.ec
+│   │   └── ComparisonTheorem.ec
 │   ├── Comparison.ec
 │   ├── SourceModel.ec
 │   ├── source/
@@ -118,6 +143,14 @@ docs/03-formal-verification/easycrypt/
 ├── sim/
 │   └── Simulator.ec
 ├── games/
+│   ├── GameTypes.ec
+│   ├── GameViews.ec
+│   ├── GameAdvantage.ec
+│   ├── GameMSHopTypes.ec
+│   ├── GameMSHopTransitions.ec
+│   ├── GameMSHopComposition.ec
+│   ├── GameMSHops.ec
+│   ├── GameLEBridge.ec
 │   └── Games.ec
 ├── theorem/
 │   └── MainTheorem.ec
@@ -140,12 +173,12 @@ docs/03-formal-verification/easycrypt/
 | `QssmMSBitnessVector.ec` | `ms/BitnessVector.ec` |
 | `QssmMSTranscriptObservable.ec` | `ms/TranscriptObservable.ec` |
 | `QssmMSTrueClause.ec` | `ms/TrueClause.ec` |
-| `QssmMSComparison.ec` | `ms/Comparison.ec` |
+| `QssmMSComparison.ec` | `ms/Comparison.ec` (facade) + `ms/comparison/*.ec` split modules |
 | `QssmMS.ec` (bulk) | `ms/SourceModel.ec` + `ms/source/*.ec` (split MS-3a material) |
 | `QssmMS.ec` (façade: hash binding + MS-3c wrapper) | `ms/MS.ec` |
 | `QssmLE.ec` | `le/LEModel.ec` |
 | `QssmSim.ec` | `sim/Simulator.ec` |
-| `QssmGames.ec` | `games/Games.ec` |
+| `QssmGames.ec` | `games/Games.ec` (facade) + `games/Game*.ec` split modules |
 | `QssmTheorem.ec` | `theorem/MainTheorem.ec` |
 
 ## Admitted / axiomatized placeholders (Phase 1)
@@ -154,7 +187,7 @@ docs/03-formal-verification/easycrypt/
 - **MS:** `ms/SourceModel.ec` — abstract observable frame (pack / digest / alignment); **`ms/source/`** — structured source types, constructors, `d_ms3a_*` laws, payload axioms, and **`MS_3a_exact_bitness_simulation`**; `ms/MS.ec` — `epsilon_ms_hash_binding`, **`ms1_hash_binding_step`**, **`ms2_rom_programming_step`**, **`ms3a_bitness_exact_step`**, **`ms3b_true_clause_exact_step`** (MS3b: same MS-3b forall bundle as the old game axiom + frozen `GV_ms`, `AfterBitness`→`AfterComparison`; **`Algebra`**, **`List`**, **`TrueClause`** in scope), `A1_ms_hash_binding_nonneg`, **`MS_3c_exact_comparison_simulation`** (wrapper over `ms/Comparison.ec`). ROM budget **`epsilon_ms_rom_programmability`** lives in **`primitives/FS.ec`** with **`A2_ms_rom_programmability_nonneg`** and **`A2_programmable_oracle_exists`**. **MS-3b** in **`ms/TrueClause.ec`**. **MS-3c** in **`ms/Comparison.ec`** — comparison payloads (`d_ms3c_{real,sim}_comparison_payload`), `dmap` schedules, **proved** **`A_ms3c_payload_schedule_equiv`** from a narrower coupling/scheduling layer (`ms3c_real_sim_payload_coupled`, explicit coupling projections `d_ms3c_coupling_{real,sim}_projection`, `ms3c_ax_payload_support_coupling`, and coupling/marginal axioms) plus component payload obligations (see `plans/MS_3c_proof_plan.md`), proved schedule bridge, surface clause laws; **ordered announcement digest list** is **`ms3c_clause_ann_digests_from_surface`** (true then false branch digests via **`ms_single_bit_branch_digest`**), with **`A_ms3c_digest_announcement_only`** stating programmed **`mscc_query_digest`** against that projection only, and true-clause bridge **`A_ms3c_true_clause_from_ms3b_and_schnorr`** now proved from explicit MS-3b hook (`ms3c_true_clause_uses_ms3b_blinder_point`) plus Schnorr reparam readiness (`ms3c_true_clause_reparam_ready` / `MS_3a_single_branch_schnorr_reparam`).
 - **LE:** `le/LEModel.ec` — non-vacuous `set_b_parameter_well_formed` predicate, `A4_le_hvzk_bound_nonneg`, LE hop carrier `le_game_hop_adv`, transcript predicate `le_real_sim_transcript_equiv`, and layered LE-HVZK interface predicates `le_set_b_params_ok`, `le_rejection_sampling_bound_ok`, `le_fs_programming_bound_ok`, `le_hvzk_bound`; narrow axiom `A_LE_SetB_HVZK_bound`; wrapper lemma `A_LE_HVZK_transition_bound`
 - **Simulator:** `sim/Simulator.ec` — `simulate_qssm_transcript_public_only`
-- **Types / games:** `primitives/QssmTypes.ec` defines `ms_game_stage`, `ms_game_view_record` (QSSM public input, seed, MS public input, MS transcript observable, stage tag, optional LE observable placeholder), and `game_view` as either `GV_ms` of that record or `GV_g2_full_sim` of a small `qssm_g2_shell_record` (pub + seed). **`games/Games.ec`** — `mk_ms_game_view` builds all MS-stage views; `G0_real_qssm` / `G1_ms_sim_le_real` / every `G_MS_*` are concrete `GV_ms` constructors differing only in `msgv_stage`; `G2_full_sim` is the G2 shell variant. **MS1** uses axiom **`A_MS1_hash_binding_replacement_bound`** (`ms1_hash_binding_step` ⇒ `Adv <= epsilon_ms_hash_binding`); lemma **`A_MS1_hash_binding_transition`** packages `G_MS_real`→`G_MS_after_binding`. **MS2** uses axiom **`A_MS2_rom_programming_replacement_bound`** (`ms2_rom_programming_step` ⇒ `Adv <= epsilon_ms_rom_programmability`); lemma **`A_MS2_rom_programming_transition`** packages `G_MS_after_binding`→`G_MS_after_rom`. **MS3a** uses axiom **`A_MS3a_bitness_exact_step_bound`** (`ms3a_bitness_exact_step` ⇒ `Adv <= 0%r`); lemma **`A_MS3a_bitness_transition`** packages `G_MS_after_rom`→`G_MS_after_bitness`. **MS3b** uses axiom **`A_MS3b_true_clause_exact_step_bound`** (`ms3b_true_clause_exact_step` ⇒ `Adv <= 0%r`); lemma **`A_MS3b_true_clause_transition`** packages `G_MS_after_bitness`→`G_MS_after_comparison`. **MS3c** uses axiom **`A_MS3c_comparison_exact_step_bound`** (`ms3c_comparison_exact_step` => `Adv <= 0%r`); lemma **`A_MS3c_comparison_transition`** packages `G_MS_after_comparison`->`G_MS_sim`. LE bridge predicate remains **`le_game_bridge_consistent x xms s D`**, and `A_LE_game_bridge_consistency` remains a **lemma**; LE projection statements are lemmas (`A_G1_LE_view_projects_to_real`, `A_G2_LE_view_projects_to_sim`) and constructor correctness is now also lemma-level/definitional (`le_real_view_from_G1`, `le_sim_view_from_G2` are defined from `le_view_of_game` on canonical `G1`/`G2` constructors). `le_game_hop_adv` and projected adv bases are laid out over explicit LE view distributions in `LEModel` (`d_le_real_view`, `d_le_sim_view`, `le_view_distinguish_pr`, `le_projected_real_adv_base`, `le_projected_sim_adv_base`), and game-side projected adv ops are definitional wrappers over those bases (`A_LE_projected_real_adv_layout`, `A_LE_projected_sim_adv_layout` are lemmas). Bridge lemmas `A_LE_real_projected_view_matches_G1` and `A_LE_sim_projected_view_matches_G2` use game-side unfold lemmas **`A_Adv_G1_G2_LE_unfolds_to_projected_views`** (proved via a single LE-facing probability interface axiom **`A_game_pr_LE_projection_semantics`**, where `game_pr_le_projected true x s D` is the real projected LE probability and `game_pr_le_projected false x s D` is the sim projected LE probability, then specialized through lemmas `A_game_pr_on_G1_uses_LE_real_projection` / `A_game_pr_on_G2_uses_LE_sim_projection`, `A_game_pr_G1_LE_real_view_correct` / `A_game_pr_G2_LE_sim_view_correct`, and `A_game_pr_G1_equals_projected_real` / `A_game_pr_G2_equals_projected_sim`) and **`A_le_game_hop_adv_unfolds_to_projected_views`** (proved by unfolding `le_game_hop_adv` plus projected-adv layout lemmas); `A_LE_projected_adv_matches_game_adv` is derived from those lemmas. Advantages `Adv_G0_G1_MS` / `Adv_G1_G2_LE` / `Adv_G0_G2_QSSM` thread a shared `xms` on the G0/G1 side; proved `A_adv_gamehop_triangle`, `A_adv_ms_hop_telescope`, composed MS hop `A_G0_to_G1_ms_transition_bound`, and LE hop `A_G1_to_G2_le_transition_bound`
+- **Types / games:** `primitives/QssmTypes.ec` defines `ms_game_stage`, `ms_game_view_record`, and `game_view` (`GV_ms` vs `GV_g2_full_sim`). The game layer is now split under `games/`: `GameTypes.ec` (MS view helpers/stage predicates), `GameViews.ec` (G0/G1/G2 and `G_MS_*` constructors), `GameAdvantage.ec` (`game_pr`, `Adv`, `Adv_*`, arithmetic lemmas), `GameMSHops.ec` (MS1..MS3c transition axioms/lemmas + composed `A_G0_to_G1_ms_transition_bound`), and `GameLEBridge.ec` (LE view/projector bridge, projected-adv lemmas, `A_G1_to_G2_le_transition_bound`). `Games.ec` is a thin facade importing those split modules; theorem-facing names remain unchanged.
 - **Theorem:** `theorem/MainTheorem.ec` — non-negativity placeholders `A1_ms_hash_binding`, `A2_ms_rom_programmability`, `A4_le_hvzk`, bridge lemmas `use_MS_3a` / `use_MS_3b` / `use_MS_3c`, and proved additive game-hop lemma `qssm_main_theorem_skeleton` over `Adv_G0_G2_QSSM`
 
 - **Single-branch MS-3a (`ms/SchnorrBranch.ec` + `primitives/Algebra.ec`):** `MS_3a_single_branch_schnorr_reparam` is fully proved (no `admit`). Root Schnorr-layer assumption is **`duni_scalar_shift_reparam`** on `duni_scalar`.

@@ -1,7 +1,7 @@
 {
   "version": 3,
   "echash": "n/a",
-  "root": { "kind": "ec", "digest": "15b86d2278571fee930a6bfca6b4a40e" },
+  "root": { "kind": "ec", "digest": "46ccb31ba17efcd0e4cfa24b8adba6f5" },
   "depends": {
     "AlgTactic": {
       "direct": false,
@@ -51,7 +51,47 @@
     "Comparison": {
       "direct": true,
       "kind": "ec",
-      "digest": "9b659321db5dc5aa18dbb33bed261a5b"
+      "digest": "5fc0dad234034ade225a6cc811574f0f"
+    },
+    "ComparisonCoupling": {
+      "direct": true,
+      "kind": "ec",
+      "digest": "52fe89edc1434bc8553ea38ec18880f4"
+    },
+    "ComparisonCouplingAxioms": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "e1ebea48d22c7e2b60c9b74f2505936e"
+    },
+    "ComparisonCouplingTheorem": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "6447da17bac27435e557102b6fc03eeb"
+    },
+    "ComparisonCouplingTypes": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "7b03eece54784a36bc806782c024d2b4"
+    },
+    "ComparisonDigests": {
+      "direct": true,
+      "kind": "ec",
+      "digest": "35a274f23c560d278fe70bcaf0c30bfa"
+    },
+    "ComparisonPayloads": {
+      "direct": true,
+      "kind": "ec",
+      "digest": "0774f20709b2ab4ca229c8a2b8e113bf"
+    },
+    "ComparisonTheorem": {
+      "direct": true,
+      "kind": "ec",
+      "digest": "cb4d093791e6f0bd9eab7cd23146e48d"
+    },
+    "ComparisonTypes": {
+      "direct": true,
+      "kind": "ec",
+      "digest": "46fd849bfe0e90c47d5d583a9bf58f93"
     },
     "Core": {
       "direct": false,

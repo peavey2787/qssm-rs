@@ -1,12 +1,12 @@
 # MS-3c Proof Plan (EasyCrypt)
 
-This note tracks **exact comparison-clause simulation** under programmed Fiat–Shamir. Definitions and the main skeleton lemma live in **`ms/Comparison.ec`**; **`ms/MS.ec`** exports the wrapper lemma **`MS_3c_exact_comparison_simulation`** (same proof as `MS_3c_exact_comparison_simulation_from_clauses` in `ms/Comparison.ec`).
+This note tracks **exact comparison-clause simulation** under programmed Fiat–Shamir. Definitions and the main skeleton lemma live in the split MS-3c modules under **`ms/comparison/*.ec`** (re-exported by **`ms/Comparison.ec`**); coupling logic is split across **`ComparisonCouplingTypes.ec`**, **`ComparisonCouplingAxioms.ec`**, **`ComparisonCouplingTheorem.ec`** with **`ComparisonCoupling.ec`** as a facade; **`ms/MS.ec`** exports the wrapper lemma **`MS_3c_exact_comparison_simulation`** (same proof as `MS_3c_exact_comparison_simulation_from_clauses` in `ms/comparison/ComparisonTheorem.ec`).
 
 ## Goal (informal)
 
 The comparison lane should be **distributionally identical** real vs sim on `ms_comparison_clause_surface`: false branches simulator-shaped, true branch consistent with **MS-3b** blinder points and Schnorr reparameterization, FS query digest from **announcement-only** material, ROM programmability (**A2**), and challenge-share / global-challenge packaging.
 
-## Surface and payloads (`ms/Comparison.ec`)
+## Surface and payloads (`ms/comparison/*.ec`)
 
 - Record **`ms_comparison_clause_surface`** (indices, announcements, shares, global / query / programmed digests).
 - Canonical payload **`ms3c_comparison_clause_payload`** with `mscp_*` fields (same shape as the surface record); named aliases **`ms3c_real_comparison_payload`** and **`ms3c_sim_comparison_payload`** (currently identical to the canonical payload type).
@@ -33,7 +33,7 @@ The comparison lane should be **distributionally identical** real vs sim on `ms_
 
 **Structural packaging:** **`ms3c_clause_shares_sum_matches_global c`** is **`mscc_programmed_challenge = mscc_global_challenge`** (not `true`).
 
-## Payload-level structure (`ms/Comparison.ec`)
+## Payload-level structure (`ms/comparison/*.ec`)
 
 Support and pairing:
 

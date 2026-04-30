@@ -13,11 +13,11 @@ final QSSM theorem is composed from concrete hops:
 
 `primitives/QssmTypes.ec` fixes **`game_view`** as a sum type: MS hops use **`GV_ms`** carrying **`ms_game_view_record`** (`msgv_qssm_pub`, `msgv_seed`, `msgv_ms_pub`, `msgv_ms_obs`, **`msgv_stage`** : `ms_game_stage`, `msgv_le_placeholder`). The G2 endpoint uses **`GV_g2_full_sim`** with **`qssm_g2_shell_record`** until LE wiring refines that branch.
 
-In **`games/Games.ec`**, **`G_MS_real`** … **`G_MS_sim`** are **`mk_ms_game_view`** at the matching stage; **`G_MS_real` = `G0_real_qssm`** and **`G_MS_sim` = `G1_ms_sim_le_real`**. Predicate aliases **`ms_game_real_stage`**, **`ms_game_after_binding_stage`**, … **`ms_game_sim_stage`**, plus **`ms_game_view_ms_pub`** and **`ms_game_view_qssm_seed`**, appear as explicit premises on **`A_MS1_*`** … **`A_MS3c_*`**. Canonical pairs **`(G_MS_* x xms s)`** satisfy those premises via proved lemmas **`L_ms_MS1_stage_premises`** … **`L_ms_MS3c_stage_premises`**, which the composed MS hop proof uses when applying the segment axioms.
+In the split game layer (`games/GameTypes.ec`, `games/GameViews.ec`, `games/GameMSHopTypes.ec`, `games/GameMSHopTransitions.ec`, `games/GameMSHopComposition.ec`, re-exported by `games/GameMSHops.ec`), **`G_MS_real`** … **`G_MS_sim`** are **`mk_ms_game_view`** at the matching stage; **`G_MS_real` = `G0_real_qssm`** and **`G_MS_sim` = `G1_ms_sim_le_real`**. Predicate aliases **`ms_game_real_stage`**, **`ms_game_after_binding_stage`**, … **`ms_game_sim_stage`**, plus **`ms_game_view_ms_pub`** and **`ms_game_view_qssm_seed`**, appear as explicit premises on **`A_MS1_*`** … **`A_MS3c_*`**. Canonical pairs **`(G_MS_* x xms s)`** satisfy those premises via proved lemmas **`L_ms_MS1_stage_premises`** … **`L_ms_MS3c_stage_premises`**, which the composed MS hop proof uses when applying the segment axioms.
 
 ## Current non-vacuous obligations
 
-From `games/Games.ec`:
+From the split game layer (`games/GameAdvantage.ec`, `games/GameMSHops.ec`, `games/GameLEBridge.ec`, re-exported by `games/Games.ec`):
 
 - `A_adv_gamehop_triangle` (**lemma**, derived from `Adv_def` + real arithmetic)
 - `A_G0_to_G1_ms_transition_bound` (**lemma**, telescope `A_adv_ms_hop_telescope` + segment axioms `A_MS1_*` … `A_MS3c_*`)
@@ -46,7 +46,7 @@ From `theorem/MainTheorem.ec`:
 
 ### G1 -> G2 (LE side)
 
-`A_G1_to_G2_le_transition_bound` is now a **proved lemma** in `games/Games.ec` from:
+`A_G1_to_G2_le_transition_bound` is now a **proved lemma** in `games/GameLEBridge.ec` (re-exported by `games/Games.ec`) from:
 
 1. `set_b_parameter_well_formed`
 2. `0%r <= epsilon_le` (via `A4_le_hvzk` at call sites, or `A4_le_hvzk_bound_nonneg` directly)

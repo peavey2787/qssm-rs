@@ -1,7 +1,7 @@
 require import AllCore List.
-require import QssmTypes Algebra FS SchnorrBranch TrueClause Comparison MS.
+require import QssmTypes Algebra FS SchnorrBranch TrueClause Comparison ComparisonTypes ComparisonDigests ComparisonPayloads ComparisonCoupling ComparisonTheorem MS.
 require import SourceDistributions SourceTheorem.
-require import LEModel Games.
+require import LEModel Games GameAdvantage GameMSHops GameMSHopComposition GameLEBridge.
 
 axiom A1_ms_hash_binding :
   forall (D : distinguisher), 0%r <= epsilon_ms_hash_binding.

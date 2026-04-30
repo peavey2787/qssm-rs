@@ -26,6 +26,14 @@ FILES=(
   ms/BitnessVector.ec
   ms/TranscriptObservable.ec
   ms/TrueClause.ec
+  ms/comparison/ComparisonTypes.ec
+  ms/comparison/ComparisonDigests.ec
+  ms/comparison/ComparisonPayloads.ec
+  ms/comparison/ComparisonCouplingTypes.ec
+  ms/comparison/ComparisonCouplingAxioms.ec
+  ms/comparison/ComparisonCouplingTheorem.ec
+  ms/comparison/ComparisonCoupling.ec
+  ms/comparison/ComparisonTheorem.ec
   ms/Comparison.ec
   ms/SourceModel.ec
   ms/source/SourceTypes.ec
@@ -36,6 +44,14 @@ FILES=(
   ms/MS.ec
   le/LEModel.ec
   sim/Simulator.ec
+  games/GameTypes.ec
+  games/GameViews.ec
+  games/GameAdvantage.ec
+  games/GameMSHopTypes.ec
+  games/GameMSHopTransitions.ec
+  games/GameMSHopComposition.ec
+  games/GameMSHops.ec
+  games/GameLEBridge.ec
   games/Games.ec
   theorem/MainTheorem.ec
 )

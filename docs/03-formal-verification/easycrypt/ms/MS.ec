@@ -1,5 +1,5 @@
 require import AllCore List.
-require import Algebra QssmTypes Comparison.
+require import Algebra QssmTypes Comparison ComparisonTypes ComparisonDigests ComparisonPayloads ComparisonCoupling ComparisonTheorem.
 require import SourceDistributions.
 require import TrueClause.
 

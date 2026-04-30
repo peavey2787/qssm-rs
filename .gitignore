@@ -20,3 +20,6 @@ Thumbs.db
 # Node
 node_modules/
 dist/
+
+# EasyCrypt compiled artifacts
+docs/03-formal-verification/easycrypt/**/*.eco
