@@ -1,7 +1,7 @@
 {
   "version": 3,
   "echash": "n/a",
-  "root": { "kind": "ec", "digest": "6a451835c73c45ecf72b903b91cb4985" },
+  "root": { "kind": "ec", "digest": "397145b87e4d5fbc572f2702dd88f241" },
   "depends": {
     "AlgTactic": {
       "direct": false,
@@ -9,7 +9,7 @@
       "digest": "850cd748ba64fbbb969579c57fb7186d"
     },
     "AllCore": {
-      "direct": true,
+      "direct": false,
       "kind": "ec",
       "digest": "530d964738d9a6b9093986916c5225d1"
     },
@@ -79,7 +79,7 @@
       "digest": "7bfc7bffc1442385fc98161d37676888"
     },
     "Distr": {
-      "direct": true,
+      "direct": false,
       "kind": "ec",
       "digest": "97f21c11171f5d46d4b4289b18fa9c04"
     },
@@ -94,7 +94,7 @@
       "digest": "b43c597cc5536b64343655dad36bba5b"
     },
     "FS": {
-      "direct": true,
+      "direct": false,
       "kind": "ec",
       "digest": "26953118e6bc27d327cf2df3e839f870"
     },
@@ -143,6 +143,41 @@
       "kind": "eca",
       "digest": "2942ba76896f6f222aafee74f5961d7c"
     },
+    "LEFsProgramming": {
+      "direct": true,
+      "kind": "ec",
+      "digest": "30728e047890d40ed9a7a3d3ec53ca3d"
+    },
+    "LEHVZK": {
+      "direct": true,
+      "kind": "ec",
+      "digest": "888b6f8f89b354b065c5cdec674aa980"
+    },
+    "LERejection": {
+      "direct": true,
+      "kind": "ec",
+      "digest": "d21bfdfd13d2090cf6f24b96fcacf800"
+    },
+    "LESetB": {
+      "direct": true,
+      "kind": "ec",
+      "digest": "3e313ee89f42011c37121ba2996a6a40"
+    },
+    "LEStatisticalDistance": {
+      "direct": true,
+      "kind": "ec",
+      "digest": "8d4fb886be2457a40fd93f18de524e38"
+    },
+    "LESurface": {
+      "direct": true,
+      "kind": "ec",
+      "digest": "e355235a5adab1756e4f016315c52644"
+    },
+    "LEViewIndist": {
+      "direct": true,
+      "kind": "ec",
+      "digest": "4cf5f2efaf048b5fe7813dcb790a170d"
+    },
     "List": {
       "direct": false,
       "kind": "ec",
@@ -184,12 +219,12 @@
       "digest": "0f385a91ae1a1269de2ba2b7fad360d0"
     },
     "QssmTypes": {
-      "direct": true,
+      "direct": false,
       "kind": "ec",
       "digest": "a01add13b9a617f8cee8c968779c907c"
     },
     "Real": {
-      "direct": true,
+      "direct": false,
       "kind": "ec",
       "digest": "7210cb29d07d4aa3d71558587db39e2d"
     },
@@ -229,7 +264,7 @@
       "digest": "1679a80ea225fe5d8904c9cd0f5d99c1"
     },
     "SDist": {
-      "direct": true,
+      "direct": false,
       "kind": "ec",
       "digest": "3f549fe174f14e60a184d6d78c5cf0db"
     },
@@ -244,7 +279,7 @@
       "digest": "3ef933d3ba2a743f395e2153324b9e4c"
     },
     "StdOrder": {
-      "direct": true,
+      "direct": false,
       "kind": "ec",
       "digest": "82265e9586f68a8a961d27de80735728"
     },

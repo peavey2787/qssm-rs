@@ -1,6 +1,6 @@
 require import AllCore List.
 require import QssmTypes Algebra Simulator FS TrueClause Comparison ComparisonTypes ComparisonDigests ComparisonPayloads ComparisonCoupling ComparisonTheorem.
-require import SourceDistributions SourceTheorem MS LEModel.
+require import SourceDistributions SourceTheorem MS LESurface LEModel LEHVZK.
 require import GameTypes GameViews GameAdvantage.
 
 pred le_game_bridge_consistent

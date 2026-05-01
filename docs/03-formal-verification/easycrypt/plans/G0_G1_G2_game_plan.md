@@ -73,7 +73,7 @@ From `theorem/MainTheorem.ec`:
    `A_le_game_hop_adv_unfolds_to_projected_views`
    (packaged by lemmas `A_LE_real_projected_view_matches_G1`,
    `A_LE_sim_projected_view_matches_G2`))
-5. `A_LE_HVZK_transition_bound` is now a **lemma** in `LEModel.ec`, layered over:
+5. `A_LE_HVZK_transition_bound` is now a **lemma** in `le/LEHVZK.ec` (imported via `LEModel.ec`), layered over:
    `le_set_b_params_ok`, `le_rejection_sampling_bound_ok`,
    `le_fs_programming_bound_ok`, `le_hvzk_bound`, and an LE-HVZK layering surface
    (Set-B unpackaging and bridge lemmas are **proved**; remaining proof debt is

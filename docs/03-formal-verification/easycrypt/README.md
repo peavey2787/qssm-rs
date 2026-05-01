@@ -81,18 +81,25 @@ The script type-checks theories in dependency order. Each file is checked with `
 23. `ms/source/SourceObligations.ec`
 24. `ms/source/SourceTheorem.ec`
 25. `ms/MS.ec`
-26. `le/LEModel.ec`
-27. `sim/Simulator.ec`
-28. `games/GameTypes.ec`
-29. `games/GameViews.ec`
-30. `games/GameAdvantage.ec`
-31. `games/GameMSHopTypes.ec`
-32. `games/GameMSHopTransitions.ec`
-33. `games/GameMSHopComposition.ec`
-34. `games/GameMSHops.ec` (facade)
-35. `games/GameLEBridge.ec`
-36. `games/Games.ec` (facade)
-37. `theorem/MainTheorem.ec`
+26. `le/LESurface.ec`
+27. `le/LESetB.ec`
+28. `le/LERejection.ec`
+29. `le/LEFsProgramming.ec`
+30. `le/LEViewIndist.ec`
+31. `le/LEStatisticalDistance.ec`
+32. `le/LEHVZK.ec`
+33. `le/LEModel.ec` (facade)
+34. `sim/Simulator.ec`
+35. `games/GameTypes.ec`
+36. `games/GameViews.ec`
+37. `games/GameAdvantage.ec`
+38. `games/GameMSHopTypes.ec`
+39. `games/GameMSHopTransitions.ec`
+40. `games/GameMSHopComposition.ec`
+41. `games/GameMSHops.ec` (facade)
+42. `games/GameLEBridge.ec`
+43. `games/Games.ec` (facade)
+44. `theorem/MainTheorem.ec`
 
 If your EasyCrypt build exposes the binary as `ec` instead of `easycrypt`, the script falls back automatically when `easycrypt` is missing.
 
@@ -139,6 +146,13 @@ docs/03-formal-verification/easycrypt/
 │   │   └── SourceTheorem.ec
 │   └── MS.ec
 ├── le/
+│   ├── LESurface.ec
+│   ├── LESetB.ec
+│   ├── LERejection.ec
+│   ├── LEFsProgramming.ec
+│   ├── LEViewIndist.ec
+│   ├── LEStatisticalDistance.ec
+│   ├── LEHVZK.ec
 │   └── LEModel.ec
 ├── sim/
 │   └── Simulator.ec
@@ -177,7 +191,7 @@ docs/03-formal-verification/easycrypt/
 | `QssmMSComparison.ec` | `ms/Comparison.ec` (facade) + `ms/comparison/*.ec` split modules |
 | `QssmMS.ec` (bulk) | `ms/SourceModel.ec` + `ms/source/*.ec` (split MS-3a material) |
 | `QssmMS.ec` (façade: hash binding + MS-3c wrapper) | `ms/MS.ec` |
-| `QssmLE.ec` | `le/LEModel.ec` |
+| `QssmLE.ec` | `le/LEModel.ec` (facade) + `le/LESurface.ec` … `le/LEHVZK.ec` |
 | `QssmSim.ec` | `sim/Simulator.ec` |
 | `QssmGames.ec` | `games/Games.ec` (facade) + `games/Game*.ec` split modules |
 | `QssmTheorem.ec` | `theorem/MainTheorem.ec` |
@@ -185,8 +199,8 @@ docs/03-formal-verification/easycrypt/
 ## Admitted / axiomatized placeholders (Phase 1)
 
 - **ROM / programmability (A2 surface):** `primitives/FS.ec` — `A2_ms_rom_programmability_nonneg`, `A2_programmable_oracle_exists`
-- **MS:** `ms/SourceModel.ec` — abstract observable frame (pack / digest / alignment); **`ms/source/`** — structured source types, constructors, `d_ms3a_*` laws; **MS-3a payload laws** are **`dmap`** pushforwards of abstract **`d_ms3a_{real,sim}_payload_seed`** through **`ms3a_{real,sim}_payload_from_seed`** (`SourceDistributions` / `SourceConstructors` / seed types in **`SourceTypes`**); **`ms3a_payload_real_support_programmed`**, **`ms3a_payload_sim_support_programmed`**, **`ms3a_payload_pair_public_fields_on_support`** are **proved lemmas** from three **narrower seed-support axioms** (**`A_ms3a_real_seed_programmed_on_support`**, **`A_ms3a_sim_seed_programmed_on_support`**, **`A_ms3a_seed_pair_public_fields_on_support`**); **remaining MS-3a coupling debt** = **`A_ms3a_payload_dmap_bitness_layer_schedule`** plus concrete seed laws/constructors when linking to execution/games; proved **`ms3a_ax_*`** layer lemmas; legacy compatibility wrapper **`ms3a_payload_schedule_equivalence`** (prefer the schedule axiom or **`ms3a_source_eq_from_bitness_layer`** for new work); **`MS_3a_exact_bitness_simulation`**; `ms/MS.ec` — `epsilon_ms_hash_binding`, **`ms1_hash_binding_step`**, **`ms2_rom_programming_step`**, **`ms3a_bitness_exact_step`**, **`ms3b_true_clause_exact_step`** (MS3b: same MS-3b forall bundle as the old game axiom + frozen `GV_ms`, `AfterBitness`→`AfterComparison`; **`Algebra`**, **`List`**, **`TrueClause`** in scope), `A1_ms_hash_binding_nonneg`, **`MS_3c_exact_comparison_simulation`** (wrapper over `ms/Comparison.ec`). ROM budget **`epsilon_ms_rom_programmability`** lives in **`primitives/FS.ec`** with **`A2_ms_rom_programmability_nonneg`** and **`A2_programmable_oracle_exists`**. **MS-3b** in **`ms/TrueClause.ec`** (structural **`ms3b_comparison_operand_bits`** / **`ms3b_clause_opening_binds`**; proved **`A_ms3b_bit_decomposition_correct`** / **`A_ms3b_pedersen_opening_correct`**; axiom **`A_ms3b_highest_differing_bit_correct`**). **MS-3c** in **`ms/Comparison.ec`** — comparison payloads (`d_ms3c_{real,sim}_comparison_payload`), `dmap` schedules, **proved** **`A_ms3c_payload_schedule_equiv`** from a narrower coupling/scheduling layer (`ms3c_real_sim_payload_coupled`, explicit coupling projections `d_ms3c_coupling_{real,sim}_projection`, `ms3c_ax_payload_support_coupling`, and coupling/marginal axioms) plus component payload obligations (see `plans/MS_3c_proof_plan.md`), proved schedule bridge, surface clause laws; **ordered announcement digest list** is **`ms3c_clause_ann_digests_from_surface`** (true then false branch digests via **`ms_single_bit_branch_digest`**), with **`A_ms3c_digest_announcement_only`** stating programmed **`mscc_query_digest`** against that projection only, and true-clause bridge **`A_ms3c_true_clause_from_ms3b_and_schnorr`** now proved from explicit MS-3b hook (`ms3c_true_clause_uses_ms3b_blinder_point`) plus Schnorr reparam readiness (`ms3c_true_clause_reparam_ready` / `MS_3a_single_branch_schnorr_reparam`).
-- **LE:** `le/LEModel.ec` — non-vacuous `set_b_parameter_well_formed` / `le_set_b_params_ok`, `A4_le_hvzk_bound_nonneg`, LE hop carrier `le_game_hop_adv`, `le_view_statistical_distance` as `sdist` on `d_le_{real,sim}_view` (`require SDist`), `d_le_post_rejection_view` **defined** as `dmap (d_le_real_view x s) le_post_rejection_surrogate` and `d_le_sim_view` as `dmap (d_le_post_rejection_view x s) le_fs_view_surrogate` with abstract `le_post_rejection_surrogate` / `le_fs_view_surrogate`, abstract `le_distinguisher_event` with `le_view_distinguish_pr d D = mu d (le_distinguisher_event D)`, packaging `le_view_distinguishing_adv` / `le_view_statistical_distance_bound`, transcript predicate `le_real_sim_transcript_equiv`, and layered predicates `le_rejection_sampling_bound_ok`, `le_fs_programming_bound_ok`, `le_hvzk_bound`; **proved** Set-B unpackaging (`le_set_b_ring_dimension_valid`, `le_set_b_challenge_size_valid`, `le_set_b_norm_bounds_valid`, `le_set_b_eta_gamma_relation_valid`, lemmas `A_LE_SetB_ring_dimension_valid` … `A_LE_SetB_params_sound`, `L_LE_set_b_params_sound_implies_ok`); rejection-sampling obligations `A_LE_rejection_distribution_defined`, `A_LE_rejection_acceptance_probability_bounded`, `A_LE_rejection_output_shape_preserved`, axiom `A_LE_rejection_surrogate_preserves_shape`, proved `A_LE_rejection_witness_hiding_statistical_bound` / `A_LE_rejection_surrogate_hides_witness` / chain lemmas; LE FS/ROM obligations `A_LE_fs_query_surface_defined`, `A_LE_fs_programmable_oracle_available`, `A_LE_fs_programming_preserves_transcript_shape`, axiom `A_LE_fs_surrogate_preserves_shape`, proved `A_LE_fs_programming_cost_bounded_by_epsilon_le`; proved view distribution lemmas `A_LE_real_view_distribution_defined`, `A_LE_sim_view_distribution_defined`; proved view indistinguishability packaging `L_LE_combined_hiding_implies_view_indist`, `A_LE_real_sim_view_indistinguishable_from_bound_ok`, `A_LE_real_sim_view_indistinguishable`; axioms `A_LE_rejection_surrogate_sdist_bound`, `A_LE_fs_surrogate_sdist_bound`; proved `A_LE_post_rejection_to_sim_distribution_link`, `A_LE_rejection_half_sdist_bound`, `A_LE_fs_half_sdist_bound`, `A_LE_real_to_post_rejection_distribution_link`, `A_LE_rejection_contributes_to_sdist`, `A_LE_fs_contributes_to_sdist`, `A_LE_combined_hiding_bounds_sdist` (`sdist_triangle` + `ler_add`), `A_LE_view_indist_to_sd_bound`; proved `A_LE_distinguisher_event_probability_bounded_by_sdist` (`SDist.sdist_upper_bound` + `RealOrder`) and proved `A_LE_sd_bound_to_adv_bound` (wrapper); proved `A_LE_projected_advantage_matches_view_distance` and `A_LE_view_advantage_bound_from_indistinguishability`; derived lemmas `A_LE_rejection_sampling_hiding_bound`, `A_LE_fs_programming_bound`, `A_LE_real_sim_transcript_equiv_bound`, `A_LE_SetB_HVZK_bound`; wrapper lemma `A_LE_HVZK_transition_bound`
+- **MS:** `ms/SourceModel.ec` — abstract observable frame (pack / digest / alignment); **`ms/source/`** — structured source types, constructors, `d_ms3a_*` laws; **MS-3a payload laws** are **`dmap`** pushforwards of abstract **`d_ms3a_{real,sim}_payload_seed`** through **`ms3a_{real,sim}_payload_from_seed`** (`SourceDistributions` / `SourceConstructors` / seed types in **`SourceTypes`**); **`ms3a_payload_real_support_programmed`**, **`ms3a_payload_sim_support_programmed`**, **`ms3a_payload_pair_public_fields_on_support`** are **proved lemmas** from three **narrower seed-support axioms** (**`A_ms3a_real_seed_programmed_on_support`**, **`A_ms3a_sim_seed_programmed_on_support`**, **`A_ms3a_seed_pair_public_fields_on_support`**); **remaining MS-3a coupling debt** = **`A_ms3a_payload_dmap_bitness_layer_schedule`** plus concrete seed laws/constructors when linking to execution/games; proved **`ms3a_ax_*`** layer lemmas; legacy compatibility wrapper **`ms3a_payload_schedule_equivalence`** (prefer the schedule axiom or **`ms3a_source_eq_from_bitness_layer`** for new work); **`MS_3a_exact_bitness_simulation`**; `ms/MS.ec` — `epsilon_ms_hash_binding`, **`ms1_hash_binding_step`**, **`ms2_rom_programming_step`**, **`ms3a_bitness_exact_step`**, **`ms3b_true_clause_exact_step`** (MS3b: same MS-3b forall bundle as the old game axiom + frozen `GV_ms`, `AfterBitness`→`AfterComparison`; **`Algebra`**, **`List`**, **`TrueClause`** in scope), `A1_ms_hash_binding_nonneg`, **`MS_3c_exact_comparison_simulation`** (wrapper over `ms/Comparison.ec`). ROM budget **`epsilon_ms_rom_programmability`** lives in **`primitives/FS.ec`** with **`A2_ms_rom_programmability_nonneg`** and **`A2_programmable_oracle_exists`**. **MS-3b** in **`ms/TrueClause.ec`** (structural **`ms3b_comparison_operand_bits`** / **`ms3b_clause_opening_binds`**; proved **`A_ms3b_bit_decomposition_correct`**, **`A_ms3b_pedersen_opening_correct`**, and **`A_ms3b_highest_differing_bit_correct`**; **remaining local semantic debt** = axiom **`A_ms3b_comparison_semantics`** only). **MS-3c** in **`ms/Comparison.ec`** — comparison payloads (`d_ms3c_{real,sim}_comparison_payload`), `dmap` schedules, **proved** **`A_ms3c_payload_schedule_equiv`** from a narrower coupling/scheduling layer (`ms3c_real_sim_payload_coupled`, explicit coupling projections `d_ms3c_coupling_{real,sim}_projection`, `ms3c_ax_payload_support_coupling`, and coupling/marginal axioms) plus component payload obligations (see `plans/MS_3c_proof_plan.md`), proved schedule bridge, surface clause laws; **ordered announcement digest list** is **`ms3c_clause_ann_digests_from_surface`** (true then false branch digests via **`ms_single_bit_branch_digest`**), with **`A_ms3c_digest_announcement_only`** stating programmed **`mscc_query_digest`** against that projection only, and true-clause bridge **`A_ms3c_true_clause_from_ms3b_and_schnorr`** now proved from explicit MS-3b hook (`ms3c_true_clause_uses_ms3b_blinder_point`) plus Schnorr reparam readiness (`ms3c_true_clause_reparam_ready` / `MS_3a_single_branch_schnorr_reparam`).
+- **LE:** split under `le/` — `LESurface.ec` (core ops, `epsilon_le`, views, surrogates, game-hop / sdist surface, Set-B and hiding predicates), `LESetB.ec` (Set-B lemmas + `A_LE_{real,sim}_view_distribution_defined`), `LERejection.ec` (rejection layer + `A_LE_rejection_surrogate_sdist_bound` / half-bound), `LEFsProgramming.ec` (FS layer + `A_LE_fs_surrogate_preserves_shape` / `A_LE_fs_surrogate_sdist_bound`), `LEViewIndist.ec` (view indistinguishability + distribution links), `LEStatisticalDistance.ec` (triangle / distinguisher bridge + `A_LE_view_advantage_bound_from_indistinguishability`), `LEHVZK.ec` (`A_LE_real_sim_transcript_equiv_bound`, `A_LE_SetB_HVZK_bound`, `A_LE_HVZK_transition_bound`); **`le/LEModel.ec`** is a thin facade that imports the chain so `require import LEModel` pulls lemmas from the split modules. Theories that use LE **operators** (for example `le_game_hop_adv`, `le_transcript_observable`) also **`require import LESurface`** before `LEModel`, because EasyCrypt does not re-export transitive imports into the client scope. Same named axioms/lemmas and semantics as before the split.
 - **LE bridge interface:** `games/GameLEBridge.ec` keeps a single non-crypto boundary axiom `A_game_pr_LE_projection_semantics` (generic `game_pr` agrees with LE projected probability for `G1`/`G2` via `game_pr_le_projected`).
 - **Simulator:** `sim/Simulator.ec` — `simulate_qssm_transcript_public_only`
 - **Types / games:** `primitives/QssmTypes.ec` defines `ms_game_stage`, `ms_game_view_record`, and `game_view` (`GV_ms` vs `GV_g2_full_sim`). The game layer is now split under `games/`: `GameTypes.ec` (MS view helpers/stage predicates), `GameViews.ec` (G0/G1/G2 and `G_MS_*` constructors), `GameAdvantage.ec` (`game_pr`, `Adv`, `Adv_*`, arithmetic lemmas), `GameMSHops.ec` (MS1..MS3c transition axioms/lemmas + composed `A_G0_to_G1_ms_transition_bound`), and `GameLEBridge.ec` (LE view/projector bridge, projected-adv lemmas, `A_G1_to_G2_le_transition_bound`). `Games.ec` is a thin facade importing those split modules; theorem-facing names remain unchanged.

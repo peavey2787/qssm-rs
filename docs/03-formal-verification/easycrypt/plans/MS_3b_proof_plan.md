@@ -2,6 +2,12 @@
 
 This note tracks the **true-clause / highest-differing-bit** characterization (MS v2 comparison). The checker-facing entry point is **`ms/TrueClause.ec`**.
 
+## Proof-debt checkpoint (current)
+
+- **Only remaining MS-3b semantic axiom:** **`A_ms3b_comparison_semantics`** (MSB-first comparison direction at the highest-differing index).
+- **Proved lemma (not debt):** **`A_ms3b_highest_differing_bit_correct`** — composes **`A_ms3b_hdb_implies_value_one_target_zero`** (itself proved from **`A_ms3b_comparison_semantics`** + **`A_ms3b_hdb_directionality`**) with **`A_ms3b_hdb_implies_true_clause_position`**.
+- **Structural only (predicates, not axioms):** **`ms3b_comparison_operand_bits`**, **`ms3b_clause_opening_binds`**, and the geometry predicates (`ms_highest_differing_bit`, `ms_true_clause_position`, …).
+
 ## Goal (informal)
 
 Under MS v2 comparison geometry: if the published operands decode to `value_bits` and `target_bits`, the **highest differing bit** is at index `p`, and the **true** branch is the one where the target bit is `0` and the value bit is `1` at that index (with all more significant bits matching), then the **clause public point** exposed on that branch is a **blinder point** on the Schnorr generator `H`, i.e. of the form `P = r * H` (`sch_pubkey r` in the formalization).

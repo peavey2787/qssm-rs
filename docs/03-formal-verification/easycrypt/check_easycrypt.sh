@@ -42,6 +42,13 @@ FILES=(
   ms/source/SourceObligations.ec
   ms/source/SourceTheorem.ec
   ms/MS.ec
+  le/LESurface.ec
+  le/LESetB.ec
+  le/LERejection.ec
+  le/LEFsProgramming.ec
+  le/LEViewIndist.ec
+  le/LEStatisticalDistance.ec
+  le/LEHVZK.ec
   le/LEModel.ec
   sim/Simulator.ec
   games/GameTypes.ec

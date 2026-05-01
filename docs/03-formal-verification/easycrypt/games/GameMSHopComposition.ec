@@ -2,7 +2,7 @@ require import AllCore List.
 require import StdOrder.
 (*---*) import RealOrder.
 require import QssmTypes Algebra Simulator FS TrueClause Comparison ComparisonTypes ComparisonDigests ComparisonPayloads ComparisonCoupling ComparisonCouplingTypes ComparisonCouplingAxioms ComparisonCouplingTheorem ComparisonTheorem.
-require import SourceDistributions SourceTheorem MS LEModel.
+require import SourceDistributions SourceTheorem MS LESurface LEModel.
 require import GameTypes GameViews GameAdvantage GameMSHopTypes GameMSHopTransitions.
 
 (* G0→G1 MS hop: composed bound from MS1..MS3c segment obligations + telescope. *)

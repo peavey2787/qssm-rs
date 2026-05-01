@@ -1,7 +1,7 @@
 {
   "version": 3,
   "echash": "n/a",
-  "root": { "kind": "ec", "digest": "7a4003f69c53cb6a74e81821175d6973" },
+  "root": { "kind": "ec", "digest": "ea49af68124e8caf90f89b484061e625" },
   "depends": {
     "AlgTactic": {
       "direct": false,
@@ -203,10 +203,45 @@
       "kind": "eca",
       "digest": "2942ba76896f6f222aafee74f5961d7c"
     },
+    "LEFsProgramming": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "30728e047890d40ed9a7a3d3ec53ca3d"
+    },
+    "LEHVZK": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "888b6f8f89b354b065c5cdec674aa980"
+    },
     "LEModel": {
       "direct": true,
       "kind": "ec",
-      "digest": "6a451835c73c45ecf72b903b91cb4985"
+      "digest": "397145b87e4d5fbc572f2702dd88f241"
+    },
+    "LERejection": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "d21bfdfd13d2090cf6f24b96fcacf800"
+    },
+    "LESetB": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "3e313ee89f42011c37121ba2996a6a40"
+    },
+    "LEStatisticalDistance": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "8d4fb886be2457a40fd93f18de524e38"
+    },
+    "LESurface": {
+      "direct": true,
+      "kind": "ec",
+      "digest": "e355235a5adab1756e4f016315c52644"
+    },
+    "LEViewIndist": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "4cf5f2efaf048b5fe7813dcb790a170d"
     },
     "List": {
       "direct": false,

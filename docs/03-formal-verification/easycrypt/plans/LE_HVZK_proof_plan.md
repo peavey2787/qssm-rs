@@ -7,7 +7,26 @@ Refine the LE Set-B HVZK boundary into narrower, named obligations while keeping
 
 ## Current Layering
 
-`le/LEModel.ec` now uses the following layered obligations:
+The LE theory is split across `le/LESurface.ec`, `le/LESetB.ec`, `le/LERejection.ec`,
+`le/LEFsProgramming.ec`, `le/LEViewIndist.ec`, `le/LEStatisticalDistance.ec`, and
+`le/LEHVZK.ec`, with `le/LEModel.ec` as a facade that imports them in dependency order.
+Symbols and proof obligations are unchanged from the former monolithic layout; the
+following describes where each layer lives:
+
+**Client imports:** EasyCrypt does not re-export symbols from transitive `require import`
+chains. Theories that use LE **operators** (for example `le_game_hop_adv`) should
+`require import LESurface` (in addition to `LEModel` if they need the full lemma closure).
+`games/GameLEBridge.ec` also `require import LEHVZK` for `A_LE_HVZK_transition_bound`.
+
+- **Surface / Set-B / views (ops + basic preds):** `le/LESurface.ec`
+- **Set-B projection lemmas + view-defined-from-sound:** `le/LESetB.ec`
+- **Rejection sampling / surrogate / rejection sdist axiom:** `le/LERejection.ec`
+- **FS programming chain + FS surrogate shape + FS sdist axiom:** `le/LEFsProgramming.ec`
+- **View indistinguishability + distribution links:** `le/LEViewIndist.ec`
+- **Triangle / distinguisher–sdist / advantage from indistinguishability:** `le/LEStatisticalDistance.ec`
+- **Top-level HVZK packaging lemmas:** `le/LEHVZK.ec`
+
+The obligations below are organized by topic (same names as in the `.ec` files):
 
 - Set-B parameter soundness (proved from `set_b_parameter_well_formed` / `le_set_b_params_ok`):
   - predicates `le_set_b_ring_dimension_valid`, `le_set_b_challenge_size_valid`,
