@@ -159,22 +159,40 @@ lemma ms3a_default_source_eq
   (x : ms_public_input) (s : seed) :
   d_ms3a_bitness_real_source x = d_ms3a_bitness_sim_source x s.
 proof.
-have Hrwf : ms3a_ax_real_wf x.
-- rewrite /ms3a_ax_real_wf => real_src Hmem.
-  exact (ms3a_source_wf_of_real_mem x real_src Hmem).
-have Hswf : ms3a_ax_sim_wf x s.
-- rewrite /ms3a_ax_sim_wf => sim_src Hmem.
-  exact (ms3a_source_wf_of_sim_mem x s sim_src Hmem).
-have Hpub : ms3a_ax_public_fields x s.
-- rewrite /ms3a_ax_public_fields => real_src sim_src Hr Hs.
-  exact (ms3a_public_fields_of_mem_pair x s real_src sim_src Hr Hs).
-have Hprog : ms3a_ax_prog_layer x s.
-- rewrite /ms3a_ax_prog_layer => real_src sim_src Hr Hs.
-  exact (ms3a_prog_layer_of_mem_pair x s real_src sim_src Hr Hs).
-have Hex : ms3a_ax_bitness_exact x s.
-- rewrite /ms3a_ax_bitness_exact => real_src sim_src Hr Hs i Hi.
-  exact (ms3a_bitness_exact_of_mem_pair x s real_src sim_src Hr Hs i Hi).
-exact (ms3a_source_eq_from_bitness_layer x s Hrwf Hswf Hpub Hprog Hex).
+exact (ms3a_source_eq_from_bitness_layer x s).
+qed.
+
+(* The `ms3a_ax_*` predicates follow from the three payload support axioms and
+   the defining `dmap` laws (no schedule axiom needed). *)
+lemma ms3a_ax_real_wf_from_axioms (x : ms_public_input) : ms3a_ax_real_wf x.
+proof.
+exact (ms3a_ax_real_wf_from_payload_support x (ms3a_payload_real_support_programmed x)).
+qed.
+
+lemma ms3a_ax_sim_wf_from_axioms (x : ms_public_input) (s : seed) : ms3a_ax_sim_wf x s.
+proof.
+exact (ms3a_ax_sim_wf_from_payload_support x s (ms3a_payload_sim_support_programmed x s)).
+qed.
+
+lemma ms3a_ax_public_fields_from_axioms (x : ms_public_input) (s : seed) :
+  ms3a_ax_public_fields x s.
+proof.
+exact (ms3a_ax_public_fields_from_payload_pair_support x s
+  (ms3a_payload_pair_public_fields_on_support x s)).
+qed.
+
+lemma ms3a_ax_prog_layer_from_axioms (x : ms_public_input) (s : seed) :
+  ms3a_ax_prog_layer x s.
+proof.
+exact (ms3a_ax_prog_layer_from_real_sim_wf x s
+  (ms3a_ax_real_wf_from_axioms x) (ms3a_ax_sim_wf_from_axioms x s)).
+qed.
+
+lemma ms3a_ax_bitness_exact_from_axioms (x : ms_public_input) (s : seed) :
+  ms3a_ax_bitness_exact x s.
+proof.
+exact (ms3a_ax_bitness_exact_from_payload_support x s
+  (ms3a_payload_real_support_programmed x)).
 qed.
 
 op ms3a_default_observable_v2 : ms_v2_transcript_observable =
