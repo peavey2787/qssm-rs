@@ -1,5 +1,5 @@
 require import AllCore List.
-require import QssmTypes BitnessOne.
+require import QssmTypes BitnessOne BitnessVector.
 require import SourceTypes.
 
 op ms3a_make_real_source
@@ -36,12 +36,23 @@ op ms3a_bitness_layer_source_of_sim_payload (p : ms3a_sim_source_payload) :
     p.`ms3sp_bitness_global_challenges p.`ms3sp_comparison_global_challenge
     p.`ms3sp_transcript_digest.
 
-(* Seed-level constructors (abstract until execution spec fixes sampling). *)
+(* Seed → payload: identity on the shared record type (`SourceTypes.ec`). `x` / `s` are
+   retained for API stability when linking to keyed samplers from execution. *)
 op ms3a_real_payload_from_seed (x : ms_public_input) (sigma : ms3a_real_payload_seed) :
-  ms3a_real_source_payload.
+  ms3a_real_source_payload =
+  sigma.
 
 op ms3a_sim_payload_from_seed (x : ms_public_input) (s : seed) (sigma : ms3a_sim_payload_seed) :
-  ms3a_sim_source_payload.
+  ms3a_sim_source_payload =
+  sigma.
+
+lemma ms3a_real_payload_from_seed_def (x : ms_public_input) (sigma : ms3a_real_payload_seed) :
+  ms3a_real_payload_from_seed x sigma = sigma.
+proof. by []. qed.
+
+lemma ms3a_sim_payload_from_seed_def (x : ms_public_input) (s : seed) (sigma : ms3a_sim_payload_seed) :
+  ms3a_sim_payload_from_seed x s sigma = sigma.
+proof. by []. qed.
 
 (* Payload-level: same programmed-vector obligation as `ms3a_source_wf` on the
    constructor image of each payload (support axioms mention payload laws only,
@@ -49,5 +60,27 @@ op ms3a_sim_payload_from_seed (x : ms_public_input) (s : seed) (sigma : ms3a_sim
 pred ms3a_real_payload_programmed_layer (p : ms3a_real_source_payload) =
   ms3a_source_wf (ms3a_bitness_layer_source_of_real_payload p).
 
+lemma ms3a_real_payload_programmed_layer_as_bitness_vector
+  (p : ms3a_real_source_payload) :
+  ms3a_real_payload_programmed_layer p <=>
+  ms_bitness_vector_programmed_layer p.`ms3rp_stmt p.`ms3rp_bits
+    p.`ms3rp_bitness_global_challenges.
+proof.
+rewrite /ms3a_real_payload_programmed_layer /ms3a_bitness_layer_source_of_real_payload
+  /ms3a_make_real_source /ms3a_source_wf.
+by [].
+qed.
+
 pred ms3a_sim_payload_programmed_layer (p : ms3a_sim_source_payload) =
   ms3a_source_wf (ms3a_bitness_layer_source_of_sim_payload p).
+
+lemma ms3a_sim_payload_programmed_layer_as_bitness_vector
+  (p : ms3a_sim_source_payload) :
+  ms3a_sim_payload_programmed_layer p <=>
+  ms_bitness_vector_programmed_layer p.`ms3sp_stmt p.`ms3sp_bits
+    p.`ms3sp_bitness_global_challenges.
+proof.
+rewrite /ms3a_sim_payload_programmed_layer /ms3a_bitness_layer_source_of_sim_payload
+  /ms3a_make_sim_source /ms3a_source_wf.
+by [].
+qed.

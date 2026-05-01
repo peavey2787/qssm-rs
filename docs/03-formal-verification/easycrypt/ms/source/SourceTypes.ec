@@ -30,12 +30,17 @@ type ms3a_sim_source_payload = {
   ms3sp_transcript_digest : digest;
 }.
 
-(* Abstract seeds for payload laws (MS-3a tightening): `d_ms3a_{real,sim}_source_payload`
-   are pushforwards of `d_ms3a_{real,sim}_payload_seed` through `ms3a_*_payload_from_seed`
-   in `SourceConstructors` / `SourceDistributions`. Support/programmed and paired-public
-   obligations on payloads derive from seed-level axioms via `supp_dmap`. *)
-type ms3a_real_payload_seed.
-type ms3a_sim_payload_seed.
+(* Seeds for MS-3a payload laws: structurally the same records as constructor payloads
+   (`ms3a_{real,sim}_source_payload`). Sampling laws `d_ms3a_{real,sim}_payload_seed` remain
+   abstract; `ms3a_{real,sim}_payload_from_seed` is the identity (see `SourceConstructors.ec`)
+   so execution/games can refine `d_ms3a_*_payload_seed` without changing the payload field
+   surface. Paired-public support is split into four field-level axioms in
+   `SourceObligations.ec` plus a derived lemma. Programmed-on-seed-support for each
+   side is lemma `A_ms3a_{real,sim}_seed_programmed_on_support` from two field axioms
+   (`*_bits_programmed_on_support`, `*_bitness_globals_programmed_on_support`) matching
+   `ms_bitness_vector_programmed_layer` (`BitnessVector.ec`). *)
+type ms3a_real_payload_seed = ms3a_real_source_payload.
+type ms3a_sim_payload_seed = ms3a_sim_source_payload.
 
 pred ms3a_source_wf (src : ms3a_bitness_layer_source) =
   ms_bitness_vector_programmed_layer src.`ms3s_stmt src.`ms3s_bits
