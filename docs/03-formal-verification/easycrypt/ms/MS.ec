@@ -35,7 +35,7 @@ axiom A1_ms_hash_binding_nonneg :
 (* MS1 (hash-binding) hop interface: only the stage tag moves Real -> AfterBinding;
    QSSM/MS public slices, seed, LE placeholder, and MS transcript observable stay fixed.
    This is the semantic side of the hash-binding replacement step; the game-layer bound
-   is `A_MS1_hash_binding_replacement_bound` in `games/Games.ec`, using the same
+   is `A_MS1_canonical_hash_binding_bound` in `games/Games.ec`, using the same
    `epsilon_ms_hash_binding` budget as `A1_ms_hash_binding_nonneg` / theorem-level `A1_ms_hash_binding`. *)
 pred ms1_hash_binding_step (src dst : game_view) (xms : ms_public_input) =
   exists (r1 r2 : ms_game_view_record),
@@ -51,7 +51,7 @@ pred ms1_hash_binding_step (src dst : game_view) (xms : ms_public_input) =
 
 (* MS2 (ROM / FS programmability) hop: only AfterBinding -> AfterRom; same QSSM/MS pub,
    seed, LE placeholder, and MS transcript observable on both sides. Game-layer bound:
-   `A_MS2_rom_programming_replacement_bound` in `games/Games.ec` with budget
+   `A_MS2_canonical_rom_programming_bound` in `games/Games.ec` with budget
    `epsilon_ms_rom_programmability` from `primitives/FS.ec` (`A2_ms_rom_programmability_nonneg`,
    theorem-level `A2_ms_rom_programmability`; programmable oracle surface `A2_programmable_oracle_exists`). *)
 pred ms2_rom_programming_step (src dst : game_view) (xms : ms_public_input) =
@@ -68,7 +68,7 @@ pred ms2_rom_programming_step (src dst : game_view) (xms : ms_public_input) =
 
 (* MS3a bitness exact-simulation hop: AfterRom -> AfterBitness with frozen `GV_ms` fields;
    first conjunct is `ms3a_bitness_real_sim_equiv` (source/observable layer, `SourceTheorem`).
-   Game-layer zero advantage: `A_MS3a_bitness_exact_step_bound` in `games/Games.ec`. *)
+   Game-layer zero advantage: `A_MS3a_canonical_bitness_exact_bound` in `games/Games.ec`. *)
 pred ms3a_bitness_exact_step (src dst : game_view) (xms : ms_public_input) (s : seed) =
   ms3a_bitness_real_sim_equiv xms s /\
   exists (r1 r2 : ms_game_view_record),
@@ -84,7 +84,7 @@ pred ms3a_bitness_exact_step (src dst : game_view) (xms : ms_public_input) (s : 
 
 (* MS3b true-clause hop: AfterBitness -> AfterComparison; first conjunct is the MS-3b
    forall bundle (same hypotheses as `MS_3b_true_clause_characterization` in `TrueClause.ec`).
-   Game-layer zero advantage: `A_MS3b_true_clause_exact_step_bound` in `games/Games.ec`. *)
+   Game-layer zero advantage: `A_MS3b_canonical_true_clause_bound` in `games/Games.ec`. *)
 pred ms3b_true_clause_exact_step (src dst : game_view) (xms : ms_public_input) =
   (forall (vb : bool list) (tb : bool list) (p : int) (clause_pub : sch_point) (r : scalar),
     ms3b_comparison_operand_bits xms vb tb =>
@@ -105,7 +105,7 @@ pred ms3b_true_clause_exact_step (src dst : game_view) (xms : ms_public_input) =
 
 (* MS3c comparison hop: AfterComparison -> Sim; first conjunct is the existing MS-3c
    implication bundle ending in `ms_comparison_exact_simulation_equiv`.
-   Game-layer zero advantage: `A_MS3c_comparison_exact_step_bound` in `games/Games.ec`. *)
+   Game-layer zero advantage: `A_MS3c_canonical_comparison_exact_bound` in `games/Games.ec`. *)
 pred ms3c_comparison_exact_step (src dst : game_view) (xms : ms_public_input) (s : seed) =
   (ms3c_comparison_query_digest_ann_only xms s =>
     ms3c_comparison_global_programmable_under_A2 xms s =>
@@ -129,10 +129,10 @@ pred ms3c_comparison_exact_step (src dst : game_view) (xms : ms_public_input) (s
    `ms_comparison_exact_*` pred). *)
 (* G0→G1 game hop in `games/Games.ec` is decomposed into segment obligations
    `A_MS1_hash_binding_transition` / `A_MS2_rom_programming_transition` (lemmas from
-   `A_MS1_hash_binding_replacement_bound` / `A_MS2_rom_programming_replacement_bound` +
+   `A_MS1_canonical_hash_binding_bound` / `A_MS2_canonical_rom_programming_bound` +
    `ms1_hash_binding_step` / `ms2_rom_programming_step`), `A_MS3a_bitness_transition`
-   (lemma from `A_MS3a_bitness_exact_step_bound` + `ms3a_bitness_exact_step`),
-   `A_MS3b_true_clause_transition` (lemma from `A_MS3b_true_clause_exact_step_bound` +
+   (lemma from `A_MS3a_canonical_bitness_exact_bound` + `ms3a_bitness_exact_step`),
+   `A_MS3b_true_clause_transition` (lemma from `A_MS3b_canonical_true_clause_bound` +
    `ms3b_true_clause_exact_step`), … `A_MS3c_*`
    over intermediate views `G_MS_after_*`; the composed bound `A_G0_to_G1_ms_transition_bound`
    is a lemma (telescope + segment bounds). *)

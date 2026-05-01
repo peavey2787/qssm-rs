@@ -38,26 +38,69 @@ pred ms3a_ax_bitness_exact (x : ms_public_input) (s : seed) =
 
 (* MS-3a hardening: scheduling debt is axiomatized as a **single** unconditional
    payload-level `dmap` equality (`A_ms3a_payload_dmap_bitness_layer_schedule`).
-   The five `ms3a_ax_*` predicates are **proved lemmas** below from the three
-   support/public-field axioms (they unpack the defining `d_ms3a_bitness_*_source`
-   `dmap`s). Legacy packaging: `ms3a_payload_schedule_equivalence` (comment above
-   its statement). *)
+   Support/public-field facts on **payload** support are **proved lemmas**
+   (`ms3a_payload_*_support_programmed`, `ms3a_payload_pair_public_fields_on_support`)
+   from **narrower seed-support axioms** (`A_ms3a_real_seed_programmed_on_support`,
+   `A_ms3a_sim_seed_programmed_on_support`, `A_ms3a_seed_pair_public_fields_on_support`)
+   plus the defining pushforwards `d_ms3a_{real,sim}_source_payload` =
+   `dmap (d_ms3a_*_payload_seed) …` in `SourceDistributions.ec`. The five `ms3a_ax_*`
+   predicates are **proved lemmas** below from those payload-support lemmas. Legacy
+   packaging: `ms3a_payload_schedule_equivalence` (comment above its statement). *)
 
-(* Narrow payload obligations (support of abstract payload laws only).          *)
-axiom ms3a_payload_real_support_programmed (x : ms_public_input) :
+(* Seed-level obligations (narrower than payload support: quantify over seeds in
+   `d_ms3a_{real,sim}_payload_seed` only). Payload support lemmas below follow by
+   `supp_dmap` from the defining pushforwards of `d_ms3a_{real,sim}_source_payload`. *)
+
+axiom A_ms3a_real_seed_programmed_on_support (x : ms_public_input) :
+  forall (sigma : ms3a_real_payload_seed),
+    sigma \in d_ms3a_real_payload_seed x =>
+    ms3a_real_payload_programmed_layer (ms3a_real_payload_from_seed x sigma).
+
+axiom A_ms3a_sim_seed_programmed_on_support (x : ms_public_input) (s : seed) :
+  forall (sigma : ms3a_sim_payload_seed),
+    sigma \in d_ms3a_sim_payload_seed x s =>
+    ms3a_sim_payload_programmed_layer (ms3a_sim_payload_from_seed x s sigma).
+
+axiom A_ms3a_seed_pair_public_fields_on_support
+  (x : ms_public_input) (s : seed) :
+  forall (sr : ms3a_real_payload_seed) (ss : ms3a_sim_payload_seed),
+    sr \in d_ms3a_real_payload_seed x =>
+    ss \in d_ms3a_sim_payload_seed x s =>
+    ms3a_payload_pair_public_fields_match
+      (ms3a_real_payload_from_seed x sr) (ms3a_sim_payload_from_seed x s ss).
+
+lemma ms3a_payload_real_support_programmed (x : ms_public_input) :
   forall (p : ms3a_real_source_payload),
     p \in d_ms3a_real_source_payload x => ms3a_real_payload_programmed_layer p.
+proof.
+move=> p Hp; move: Hp; rewrite /d_ms3a_real_source_payload => Hp.
+case/supp_dmap: Hp=> [sigma [Hsig Heq]].
+rewrite Heq; exact (A_ms3a_real_seed_programmed_on_support x sigma Hsig).
+qed.
 
-axiom ms3a_payload_sim_support_programmed (x : ms_public_input) (s : seed) :
+lemma ms3a_payload_sim_support_programmed (x : ms_public_input) (s : seed) :
   forall (p : ms3a_sim_source_payload),
     p \in d_ms3a_sim_source_payload x s => ms3a_sim_payload_programmed_layer p.
+proof.
+move=> p Hp; move: Hp; rewrite /d_ms3a_sim_source_payload => Hp.
+case/supp_dmap: Hp=> [sigma [Hsig Heq]].
+rewrite Heq; exact (A_ms3a_sim_seed_programmed_on_support x s sigma Hsig).
+qed.
 
-axiom ms3a_payload_pair_public_fields_on_support
+lemma ms3a_payload_pair_public_fields_on_support
   (x : ms_public_input) (s : seed) :
   forall (pr : ms3a_real_source_payload) (ps : ms3a_sim_source_payload),
     pr \in d_ms3a_real_source_payload x =>
     ps \in d_ms3a_sim_source_payload x s =>
     ms3a_payload_pair_public_fields_match pr ps.
+proof.
+move=> pr ps Hpr Hps; move: Hpr Hps.
+rewrite /d_ms3a_real_source_payload /d_ms3a_sim_source_payload => Hpr Hps.
+case/supp_dmap: Hpr=> [sr [Hsr Heqr]].
+case/supp_dmap: Hps=> [ss [Hss Heqs]].
+have Hm := A_ms3a_seed_pair_public_fields_on_support x s sr ss Hsr Hss.
+by rewrite Heqr Heqs.
+qed.
 
 (* Core residual MS-3a payload coupling obligation: equality of the abstract real
    and sim payload laws after the same bitness-layer constructor (`dmap` through

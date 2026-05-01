@@ -75,14 +75,40 @@ proof.
 by move=> Hhd; case: Hhd => Hwf _; exact Hwf.
 qed.
 
-(* Narrow residual: MS v2 / comparison protocol places the true clause on the branch
-   with value_bit = true and target_bit = false at the highest-differing index. *)
-axiom A_ms3b_hdb_implies_value_one_target_zero :
+(* Narrow residual split:
+   - directionality is definitional from `ms_highest_differing_bit`;
+   - comparison semantics (value > target under MSB-first scan) picks the true
+     direction at the highest-differing bit. *)
+lemma A_ms3b_hdb_directionality (vb : bool list) (tb : bool list) (p : int) :
+  ms_highest_differing_bit vb tb p =>
+  nth witness vb p <> nth witness tb p.
+proof.
+by move=> Hhd; case: Hhd => _ [Hneq _]; exact Hneq.
+qed.
+
+axiom A_ms3b_comparison_semantics :
+  forall (x : ms_public_input) (vb : bool list) (tb : bool list) (p : int),
+    ms3b_comparison_operand_bits x vb tb =>
+    ms_highest_differing_bit vb tb p =>
+    nth witness vb p = true.
+
+lemma A_ms3b_hdb_implies_value_one_target_zero :
   forall (x : ms_public_input) (vb : bool list) (tb : bool list) (p : int),
     ms3b_comparison_operand_bits x vb tb =>
     ms_highest_differing_bit vb tb p =>
     nth witness vb p = true /\
     nth witness tb p = false.
+proof.
+move=> x vb tb p Hop Hhd.
+have Hvp : nth witness vb p = true by exact (A_ms3b_comparison_semantics x vb tb p Hop Hhd).
+have Hneq : nth witness vb p <> nth witness tb p by exact (A_ms3b_hdb_directionality vb tb p Hhd).
+have Htn : nth witness tb p = false.
+  have Hneq' := Hneq.
+  rewrite Hvp in Hneq'.
+  by case (nth witness tb p) Hneq'.
+split; first exact Hvp.
+exact Htn.
+qed.
 
 lemma A_ms3b_hdb_implies_true_clause_position (vb : bool list) (tb : bool list) (p : int) :
   ms_highest_differing_bit vb tb p =>

@@ -1,7 +1,7 @@
 {
   "version": 3,
   "echash": "n/a",
-  "root": { "kind": "ec", "digest": "8c5a81377cf2400b08e5728a784a5953" },
+  "root": { "kind": "ec", "digest": "8f614e2a9e8429ca3895a12b07dee1ea" },
   "depends": {
     "AlgTactic": {
       "direct": false,
@@ -231,12 +231,12 @@
     "SourceConstructors": {
       "direct": true,
       "kind": "ec",
-      "digest": "6ff62b8182b4839b4dc9633d277b05ba"
+      "digest": "c445e8e7ca40293721fbc3d6bac6d1b8"
     },
     "SourceDistributions": {
       "direct": true,
       "kind": "ec",
-      "digest": "9d2b7dc1c81182dc98512e3c45daff2a"
+      "digest": "2ce10bc38b8c55bb22556529a8e5ec8c"
     },
     "SourceModel": {
       "direct": false,
@@ -246,7 +246,7 @@
     "SourceTypes": {
       "direct": true,
       "kind": "ec",
-      "digest": "c146ad9ac1f44323737d360a96b353d4"
+      "digest": "21adf1011e77578a9b088a4ef175a5cd"
     },
     "StdBigop": {
       "direct": false,
@@ -276,7 +276,7 @@
     "TrueClause": {
       "direct": false,
       "kind": "ec",
-      "digest": "57138578d9927ab72c9ef9ec8eb60e52"
+      "digest": "047b6a95a709444b5af7bf92336a503b"
     },
     "Xint": {
       "direct": false,

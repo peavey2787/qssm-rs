@@ -5,11 +5,15 @@ require import SourceModel.
 require import SourceTypes SourceConstructors.
 require import BitnessOne.
 
-(* Abstract payload laws (scheduling from `ms_public_input` / seed).          *)
-op d_ms3a_real_source_payload :
-  ms_public_input -> ms3a_real_source_payload distr.
-op d_ms3a_sim_source_payload :
-  ms_public_input -> seed -> ms3a_sim_source_payload distr.
+(* Payload laws as pushforwards of abstract seed distributions (MS-3a tightening). *)
+op d_ms3a_real_payload_seed (x : ms_public_input) : ms3a_real_payload_seed distr.
+op d_ms3a_sim_payload_seed (x : ms_public_input) (s : seed) : ms3a_sim_payload_seed distr.
+
+op d_ms3a_real_source_payload (x : ms_public_input) : ms3a_real_source_payload distr =
+  dmap (d_ms3a_real_payload_seed x) (fun sigma => ms3a_real_payload_from_seed x sigma).
+
+op d_ms3a_sim_source_payload (x : ms_public_input) (s : seed) : ms3a_sim_source_payload distr =
+  dmap (d_ms3a_sim_payload_seed x s) (fun sigma => ms3a_sim_payload_from_seed x s sigma).
 
 (* Source laws are pushforwards of payload constructors (by definition).       *)
 op d_ms3a_bitness_real_source (x : ms_public_input) : ms3a_bitness_layer_source distr =

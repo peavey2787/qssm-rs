@@ -30,6 +30,13 @@ type ms3a_sim_source_payload = {
   ms3sp_transcript_digest : digest;
 }.
 
+(* Abstract seeds for payload laws (MS-3a tightening): `d_ms3a_{real,sim}_source_payload`
+   are pushforwards of `d_ms3a_{real,sim}_payload_seed` through `ms3a_*_payload_from_seed`
+   in `SourceConstructors` / `SourceDistributions`. Support/programmed and paired-public
+   obligations on payloads derive from seed-level axioms via `supp_dmap`. *)
+type ms3a_real_payload_seed.
+type ms3a_sim_payload_seed.
+
 pred ms3a_source_wf (src : ms3a_bitness_layer_source) =
   ms_bitness_vector_programmed_layer src.`ms3s_stmt src.`ms3s_bits
     src.`ms3s_bitness_global_challenges.

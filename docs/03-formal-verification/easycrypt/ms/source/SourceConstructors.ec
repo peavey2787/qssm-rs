@@ -36,6 +36,13 @@ op ms3a_bitness_layer_source_of_sim_payload (p : ms3a_sim_source_payload) :
     p.`ms3sp_bitness_global_challenges p.`ms3sp_comparison_global_challenge
     p.`ms3sp_transcript_digest.
 
+(* Seed-level constructors (abstract until execution spec fixes sampling). *)
+op ms3a_real_payload_from_seed (x : ms_public_input) (sigma : ms3a_real_payload_seed) :
+  ms3a_real_source_payload.
+
+op ms3a_sim_payload_from_seed (x : ms_public_input) (s : seed) (sigma : ms3a_sim_payload_seed) :
+  ms3a_sim_source_payload.
+
 (* Payload-level: same programmed-vector obligation as `ms3a_source_wf` on the
    constructor image of each payload (support axioms mention payload laws only,
    not folded bitness source distributions). *)
