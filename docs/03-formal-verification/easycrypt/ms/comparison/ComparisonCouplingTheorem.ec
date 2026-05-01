@@ -2,6 +2,22 @@ require import AllCore List Distr.
 require import Algebra QssmTypes FS SchnorrBranch TrueClause BitnessOne.
 require import ComparisonTypes ComparisonDigests ComparisonPayloads ComparisonCouplingTypes ComparisonCouplingAxioms.
 
+lemma L_mu1_eq0_of_notin ['a] (d : 'a distr) (x : 'a) :
+  x \notin d => mu1 d x = 0%r.
+proof.
+move=> hxn.
+have Hfwd :=
+  iffLR (x \notin d) (mu1 d x = 0%r) (supportPn d x).
+exact (Hfwd hxn).
+qed.
+
+lemma L_mu1_eq0_of_nmem ['a] (d : 'a distr) (x : 'a) :
+  !(x \in d) => mu1 d x = 0%r.
+proof.
+move=> hxn.
+exact (L_mu1_eq0_of_notin d x hxn).
+qed.
+
 lemma L_ms3c_true_clause_schnorr_equiv_from_ms3a
   (x : ms_public_input) (s : seed) :
   ms3c_true_clause_schnorr_equiv x s.
@@ -46,6 +62,98 @@ split.
 by rewrite Hpg.
 qed.
 
+lemma L_ms3c_coupling_real_marginal_eq (x : ms_public_input) (s : seed) :
+  (forall (pr : ms3c_real_comparison_payload),
+    pr \in d_ms3c_coupling_real_projection x s <=>
+    pr \in d_ms3c_real_comparison_payload x) =>
+  (forall (pr : ms3c_real_comparison_payload),
+    pr \in d_ms3c_real_comparison_payload x =>
+    mu1 (d_ms3c_coupling_real_projection x s) pr =
+    mu1 (d_ms3c_real_comparison_payload x) pr) =>
+  d_ms3c_coupling_real_projection x s = d_ms3c_real_comparison_payload x.
+proof.
+move=> Hs Hmu; apply eq_distr => pr.
+case (pr \in d_ms3c_real_comparison_payload x) => [Hin|Hn2].
+  exact (Hmu pr Hin).
+have ->: mu1 (d_ms3c_real_comparison_payload x) pr = 0%r.
+  exact (L_mu1_eq0_of_notin (d_ms3c_real_comparison_payload x) pr Hn2).
+have hpq := iffLR (pr \in d_ms3c_coupling_real_projection x s)
+  (pr \in d_ms3c_real_comparison_payload x) (Hs pr).
+have Hneg : !(pr \in d_ms3c_coupling_real_projection x s).
+  exact (contra (pr \in d_ms3c_coupling_real_projection x s)
+    (pr \in d_ms3c_real_comparison_payload x) hpq Hn2).
+have ->: mu1 (d_ms3c_coupling_real_projection x s) pr = 0%r.
+  exact (L_mu1_eq0_of_nmem (d_ms3c_coupling_real_projection x s) pr Hneg).
+by [].
+qed.
+
+lemma L_ms3c_coupling_sim_marginal_eq (x : ms_public_input) (s : seed) :
+  (forall (ps : ms3c_sim_comparison_payload),
+    ps \in d_ms3c_coupling_sim_projection x s <=>
+    ps \in d_ms3c_sim_comparison_payload x s) =>
+  (forall (ps : ms3c_sim_comparison_payload),
+    ps \in d_ms3c_sim_comparison_payload x s =>
+    mu1 (d_ms3c_coupling_sim_projection x s) ps =
+    mu1 (d_ms3c_sim_comparison_payload x s) ps) =>
+  d_ms3c_coupling_sim_projection x s = d_ms3c_sim_comparison_payload x s.
+proof.
+move=> Hs Hmu; apply eq_distr => ps.
+case (ps \in d_ms3c_sim_comparison_payload x s) => [Hin|Hn2].
+  exact (Hmu ps Hin).
+have ->: mu1 (d_ms3c_sim_comparison_payload x s) ps = 0%r.
+  exact (L_mu1_eq0_of_notin (d_ms3c_sim_comparison_payload x s) ps Hn2).
+have hpq := iffLR (ps \in d_ms3c_coupling_sim_projection x s)
+  (ps \in d_ms3c_sim_comparison_payload x s) (Hs ps).
+have Hneg : !(ps \in d_ms3c_coupling_sim_projection x s).
+  exact (contra (ps \in d_ms3c_coupling_sim_projection x s)
+    (ps \in d_ms3c_sim_comparison_payload x s) hpq Hn2).
+have ->: mu1 (d_ms3c_coupling_sim_projection x s) ps = 0%r.
+  exact (L_mu1_eq0_of_nmem (d_ms3c_coupling_sim_projection x s) ps Hneg).
+by [].
+qed.
+
+lemma L_dmap_dprod_fst_lossless ['a 'b] (da : 'a distr) (db : 'b distr) :
+  is_lossless db =>
+  dmap (da `*` db) fst = da.
+proof.
+move=> Hll.
+rewrite (dprod_marginalL da db (fun (a : 'a) => a)).
+rewrite dmap_id.
+have Hw: weight db = 1%r by apply (is_losslessP _ Hll).
+rewrite Hw dscalar1.
+by [].
+qed.
+
+lemma L_dmap_dprod_snd_lossless ['a 'b] (da : 'a distr) (db : 'b distr) :
+  is_lossless da =>
+  dmap (da `*` db) snd = db.
+proof.
+move=> Hll.
+rewrite (dprod_marginalR da db (fun (b : 'b) => b)).
+rewrite dmap_id.
+have Hw: weight da = 1%r by apply (is_losslessP _ Hll).
+rewrite Hw dscalar1.
+by [].
+qed.
+
+lemma L_ms3c_coupling_real_projection_eq_payload (x : ms_public_input) (s : seed) :
+  is_lossless (d_ms3c_sim_comparison_payload x s) =>
+  d_ms3c_coupling_real_projection x s = d_ms3c_real_comparison_payload x.
+proof.
+move=> Hll.
+rewrite /d_ms3c_coupling_real_projection /d_ms3c_real_sim_payload_coupling.
+exact (L_dmap_dprod_fst_lossless (d_ms3c_real_comparison_payload x) (d_ms3c_sim_comparison_payload x s) Hll).
+qed.
+
+lemma L_ms3c_coupling_sim_projection_eq_payload (x : ms_public_input) (s : seed) :
+  is_lossless (d_ms3c_real_comparison_payload x) =>
+  d_ms3c_coupling_sim_projection x s = d_ms3c_sim_comparison_payload x s.
+proof.
+move=> Hll.
+rewrite /d_ms3c_coupling_sim_projection /d_ms3c_real_sim_payload_coupling.
+exact (L_dmap_dprod_snd_lossless (d_ms3c_real_comparison_payload x) (d_ms3c_sim_comparison_payload x s) Hll).
+qed.
+
 lemma A_ms3c_payload_support_coupling_from_components :
   forall (x : ms_public_input) (s : seed),
     ms3c_ax_payload_public_fields_match x s =>
@@ -60,9 +168,17 @@ proof.
 move=> x s Hpub Hshr Hann_dig Hann_sh Hcons Hfalse Htrue.
 rewrite /ms3c_ax_payload_support_coupling.
 split.
-  exact (A_ms3c_coupling_real_marginal x s Hpub Hshr Hann_dig Hann_sh Hcons Hfalse Htrue).
+  have Hll_sim := L_ms3c_sim_comparison_payload_law_lossless x s.
+  have Heq := L_ms3c_coupling_real_projection_eq_payload x s Hll_sim.
+  apply (L_ms3c_coupling_real_marginal_eq x s).
+    by move=> pr; rewrite Heq.
+  by move=> pr Hpr; rewrite -Heq.
 split.
-  exact (A_ms3c_coupling_sim_marginal x s Hpub Hshr Hann_dig Hann_sh Hcons Hfalse Htrue).
+  have Hll_real := L_ms3c_real_comparison_payload_law_lossless x.
+  have Heq := L_ms3c_coupling_sim_projection_eq_payload x s Hll_real.
+  apply (L_ms3c_coupling_sim_marginal_eq x s).
+    by move=> ps; rewrite Heq.
+  by move=> ps Hps; rewrite -Heq.
 exact (A_ms3c_coupling_pair_relation x s Hpub Hshr Hann_dig Hann_sh Hcons Hfalse Htrue).
 qed.
 
@@ -77,6 +193,29 @@ move=> [Hpub [Hshr _]].
 move: Hpub=> [Htr [Hfr [Hatr [Hafr [Hqd [Hgc Hpc]]]]]].
 move: Hshr=> [Hstr Hsfr].
 by subst.
+qed.
+
+lemma L_ms3c_coupling_fst_snd_eq_from_pair_relation
+  (x : ms_public_input) (s : seed) :
+  ms3c_ax_payload_coupling_pair_relation x s =>
+  d_ms3c_coupling_real_projection x s = d_ms3c_coupling_sim_projection x s.
+proof.
+move=> Hpair.
+rewrite /d_ms3c_coupling_real_projection /d_ms3c_coupling_sim_projection.
+apply eq_dmap_in.
+move=> [] pr ps Hmem.
+have Hcpl := Hpair pr ps Hmem.
+exact (L_ms3c_payload_eq_of_coupled pr ps Hcpl).
+qed.
+
+lemma A_ms3c_payload_schedule_eq_from_coupling
+  (x : ms_public_input) (s : seed) :
+  ms3c_ax_payload_support_coupling x s =>
+  d_ms3c_real_comparison_payload x = d_ms3c_sim_comparison_payload x s.
+proof.
+move=> [Hre [Hsi Hpr]].
+have HeqJ := L_ms3c_coupling_fst_snd_eq_from_pair_relation x s Hpr.
+by rewrite -Hre HeqJ Hsi.
 qed.
 
 lemma L_ms3c_payload_announcement_digests_preserved_from_public_fields
@@ -158,11 +297,11 @@ move=> x s Hann Ha2 Hfalse Htrue Hsum.
 have Hreal : forall (pr : ms3c_real_comparison_payload),
     ms3c_real_payload_on_support x pr =>
     ms_comparison_clause_simulatable (ms3c_make_real_clause_surface pr).
-  by move=> pr Hpr; apply (A_ms3c_real_payload_support_simulatable x pr Hpr).
+  by move=> pr Hpr; apply (L_ms3c_real_payload_support_simulatable x pr Hpr).
 have Hsim : forall (ps : ms3c_sim_comparison_payload),
     ms3c_sim_payload_on_support x s ps =>
     ms_comparison_clause_simulatable (ms3c_make_sim_clause_surface ps).
-  by move=> ps Hps; apply (A_ms3c_sim_payload_support_simulatable x s ps Hps).
+  by move=> ps Hps; apply (L_ms3c_sim_payload_support_simulatable x s ps Hps).
 have Hpub := A_ms3c_payload_public_fields_match x s Hann Ha2 Hfalse Htrue Hsum.
 have Hshr := A_ms3c_payload_challenge_shares_match x s Hann Ha2 Hfalse Htrue Hsum.
 have Hann_dig :=
@@ -171,7 +310,8 @@ have Hann_shape :=
   L_ms3c_payload_announcements_match_shape_from_ann_hook x s Hreal Hsim.
 have Hcons :=
   L_ms3c_payload_challenge_share_consistency_from_sum_hook x s Hsum Hreal Hsim.
-have Hfalse_payload := A_ms3c_false_clause_simulation x s Hfalse.
+have Hfalse_nt := A_ms3c_false_clauses_hook_implies_schedule_nontrivial x s Hfalse.
+have Hfalse_payload := A_ms3c_false_clause_simulation x s Hfalse_nt.
 have Htrue_payload := L_ms3c_payload_true_clause_simulated_from_true_hook x s Htrue.
 have Hcpl :=
   A_ms3c_payload_support_coupling_from_components x s

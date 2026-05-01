@@ -1,4 +1,6 @@
 require import AllCore List.
+require import StdOrder.
+(*---*) import RealOrder.
 require import QssmTypes Algebra FS SchnorrBranch TrueClause Comparison ComparisonTypes ComparisonDigests ComparisonPayloads ComparisonCoupling ComparisonTheorem MS.
 require import SourceDistributions SourceTheorem.
 require import LEModel Games GameAdvantage GameMSHops GameMSHopComposition GameLEBridge.
@@ -69,5 +71,8 @@ have H12p : Adv_G1_G2_LE x xms s D <= epsilon_le.
   exact (A_G1_to_G2_le_transition_bound x xms s D Hsetb (A4_le_hvzk D) Hleeqv).
 have Htri : Adv_G0_G2_QSSM x xms s D <= Adv_G0_G1_MS x xms s D + Adv_G1_G2_LE x xms s D.
   exact (A_adv_gamehop_triangle x xms s D).
-by smt().
+have Hadd : Adv_G0_G1_MS x xms s D + Adv_G1_G2_LE x xms s D <=
+  epsilon_ms_hash_binding + epsilon_ms_rom_programmability + epsilon_le.
+  by apply (ler_add _ _ _ _ H01p H12p).
+by apply (ler_trans _ _ _ Htri Hadd).
 qed.

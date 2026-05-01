@@ -11,8 +11,10 @@ op hash_to_scalar : domain_label -> digest list -> scalar.
 op ms_bitness_query_digest :
   digest -> int -> digest -> digest -> digest.
 
-op ms_comparison_query_digest :
-  digest -> digest list -> digest.
+(* Comparison programmed query digest: statement digest followed by the ordered
+   per-branch announcement digests (Engine B v2 comparison query path). *)
+op ms_comparison_query_digest (stmt : digest) (ann_digests : digest list) : digest =
+  hash_domain LABEL_MS_V2_COMPARISON_QUERY (stmt :: ann_digests).
 
 op ms_query_to_scalar :
   digest -> scalar.

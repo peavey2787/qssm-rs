@@ -1,4 +1,5 @@
 require import AllCore List.
+require import Ring.
 require import QssmTypes.
 require import GameViews.
 
@@ -27,7 +28,8 @@ lemma A_adv_ms_hop_telescope (xq : qssm_public_input) (xms : ms_public_input) (s
   Adv (G_MS_after_bitness xq xms sq) (G_MS_after_comparison xq xms sq) Dq +
   Adv (G_MS_after_comparison xq xms sq) (G_MS_sim xq xms sq) Dq.
 proof.
-smt(Adv_def).
+rewrite !(Adv_def _ _ Dq).
+ring.
 qed.
 
 (* Standard game-hop arithmetic over advantage differences. *)
@@ -38,5 +40,10 @@ proof.
 move=> x xms s D.
 rewrite /Adv_G0_G2_QSSM /Adv_G0_G1_MS /Adv_G1_G2_LE.
 rewrite !(Adv_def _ _ D).
-smt().
+have ->:
+    game_pr (G0_real_qssm x xms s) D - game_pr (G2_full_sim x s) D =
+    (game_pr (G0_real_qssm x xms s) D - game_pr (G1_ms_sim_le_real x xms s) D) +
+    (game_pr (G1_ms_sim_le_real x xms s) D - game_pr (G2_full_sim x s) D).
+  ring.
+by [].
 qed.

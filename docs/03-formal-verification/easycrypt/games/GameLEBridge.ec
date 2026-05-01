@@ -97,8 +97,8 @@ lemma A_game_pr_on_G1_uses_LE_real_projection :
 proof.
 move=> x xms s D.
 have [Hg1 _] := A_game_pr_LE_projection_semantics x xms s D.
-rewrite Hg1 /game_pr_le_projected.
-by smt().
+rewrite Hg1 /game_pr_le_projected /=.
+by [].
 qed.
 
 lemma A_game_pr_on_G2_uses_LE_sim_projection :
@@ -108,8 +108,8 @@ lemma A_game_pr_on_G2_uses_LE_sim_projection :
 proof.
 move=> x s D.
 have [_ Hg2] := A_game_pr_LE_projection_semantics x witness s D.
-rewrite Hg2 /game_pr_le_projected.
-by smt().
+rewrite Hg2 /game_pr_le_projected /=.
+by [].
 qed.
 
 lemma A_game_pr_G1_LE_real_view_correct :

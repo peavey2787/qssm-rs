@@ -30,3 +30,43 @@ op G_MS_after_comparison (x : qssm_public_input) (xms : ms_public_input) (s : se
 
 op G_MS_sim (x : qssm_public_input) (xms : ms_public_input) (s : seed) : game_view =
   G1_ms_sim_le_real x xms s.
+
+lemma L_ms_game_view_stage_mk (x : qssm_public_input) (s : seed) (xms : ms_public_input)
+  (obs : ms_transcript_observable) (st : ms_game_stage)
+  (lep : le_transcript_observable option) :
+  ms_game_view_stage (mk_ms_game_view x s xms obs st lep) st.
+proof.
+rewrite /ms_game_view_stage /mk_ms_game_view /=.
+exists {| msgv_qssm_pub = x; msgv_seed = s; msgv_ms_pub = xms;
+  msgv_ms_obs = obs; msgv_stage = st; msgv_le_placeholder = lep |}.
+by [].
+qed.
+
+lemma L_ms_game_view_ms_pub_mk (x : qssm_public_input) (s : seed) (xms : ms_public_input)
+  (obs : ms_transcript_observable) (st : ms_game_stage)
+  (lep : le_transcript_observable option) :
+  ms_game_view_ms_pub (mk_ms_game_view x s xms obs st lep) xms.
+proof.
+rewrite /ms_game_view_ms_pub /mk_ms_game_view /=.
+exists {| msgv_qssm_pub = x; msgv_seed = s; msgv_ms_pub = xms;
+  msgv_ms_obs = obs; msgv_stage = st; msgv_le_placeholder = lep |}.
+by [].
+qed.
+
+lemma L_ms_game_view_qssm_seed_mk (x : qssm_public_input) (s : seed) (xms : ms_public_input)
+  (obs : ms_transcript_observable) (st : ms_game_stage)
+  (lep : le_transcript_observable option) :
+  ms_game_view_qssm_seed (mk_ms_game_view x s xms obs st lep) x s.
+proof.
+rewrite /ms_game_view_qssm_seed /mk_ms_game_view /=.
+exists {| msgv_qssm_pub = x; msgv_seed = s; msgv_ms_pub = xms;
+  msgv_ms_obs = obs; msgv_stage = st; msgv_le_placeholder = lep |}.
+by [].
+qed.
+
+lemma L_ms_game_after_binding_stage_G (x : qssm_public_input) (xms : ms_public_input) (s : seed) :
+  ms_game_after_binding_stage (G_MS_after_binding x xms s).
+proof.
+rewrite /ms_game_after_binding_stage /G_MS_after_binding.
+apply (L_ms_game_view_stage_mk x s xms witness MSGameStageAfterBinding None).
+qed.

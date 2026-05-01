@@ -33,9 +33,10 @@ lemma MS_3c_comparison_clause_obligations (x : ms_public_input) (s : seed) :
     ms_comparison_challenges_split c).
 proof.
 move=> Hann Hfalse Htrue Hsum.
-split; first by move=> stmt c Hsim; apply (A_ms3c_digest_announcement_only x s Hann stmt c Hsim).
+split; first by move=> stmt c Hsim; apply (L_ms3c_digest_announcement_only x s Hann stmt c Hsim).
 split.
-  move: (A_ms3c_false_clause_simulation x s Hfalse).
+  have Hfalse_nt := A_ms3c_false_clauses_hook_implies_schedule_nontrivial x s Hfalse.
+  move: (A_ms3c_false_clause_simulation x s Hfalse_nt).
   rewrite /ms3c_ax_payload_false_clauses_simulated; case=> Hfr Hfs.
   split; first by move=> pr Hpr; apply (Hfr pr Hpr).
   by move=> ps Hps; apply (Hfs ps Hps).

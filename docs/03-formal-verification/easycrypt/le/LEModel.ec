@@ -1,5 +1,6 @@
 require import AllCore Distr.
 require import StdOrder.
+require import Real.
 require import SDist.
 require import QssmTypes FS.
 
@@ -554,11 +555,13 @@ have Htri : sdist dr ds <= sdist dr dmid + sdist dmid ds.
   exact (sdist_triangle dmid dr ds).
 apply (ler_trans (sdist dr dmid + sdist dmid ds)).
   exact Htri.
-apply (ler_trans ((1%r / 2%r) * epsilon_le + (1%r / 2%r) * epsilon_le)).
+apply (ler_trans (((1%r / 2%r) * epsilon_le) + ((1%r / 2%r) * epsilon_le))).
   by apply ler_add.
 have Heq :
-  (1%r / 2%r) * epsilon_le + (1%r / 2%r) * epsilon_le = epsilon_le.
-  by smt(mulrDl mul1r).
+  ((1%r / 2%r) * epsilon_le) + ((1%r / 2%r) * epsilon_le) = epsilon_le.
+  rewrite -(RField.mulrDl (1%r / 2%r) (1%r / 2%r) epsilon_le).
+  have ->: (1%r / 2%r) + (1%r / 2%r) = 1%r by exact (RField.double_half 1%r).
+  by rewrite RField.mul1r.
 rewrite Heq.
 by apply lerr.
 qed.
@@ -630,7 +633,7 @@ have Hadvhop : le_game_hop_adv x s D <= le_view_statistical_distance x s.
   rewrite -(A_LE_projected_advantage_matches_view_distance x s D).
   exact Hadv.
 have Hfin : le_game_hop_adv x s D <= epsilon_le.
-  smt().
+  by apply (ler_trans _ _ _ Hadvhop Hdist).
 by exact Hfin.
 qed.
 
