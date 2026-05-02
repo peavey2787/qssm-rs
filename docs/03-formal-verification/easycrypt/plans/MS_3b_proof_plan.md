@@ -14,7 +14,7 @@ This note tracks the **true-clause / highest-differing-bit** characterization (M
 
 Under MS v2 comparison geometry: if the published operands decode to `value_bits` and `target_bits`, the **highest differing bit** is at index `p`, and the **true** branch is the one where the target bit is `0` and the value bit is `1` at that index (with all more significant bits matching), then the **clause public point** exposed on that branch is a **blinder point** on the Schnorr generator `H`, i.e. of the form `P = r * H` (`sch_pubkey r` in the formalization).
 
-## Formalized predicates (`ms/TrueClause.ec`)
+## Formalized predicates (`ms/true_clause/*.ec`, facade `ms/TrueClause.ec`)
 
 | Name | Role |
 |------|------|

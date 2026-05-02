@@ -3,6 +3,44 @@ require import Algebra QssmTypes FS SchnorrBranch TrueClause BitnessOne.
 require import ComparisonTypes ComparisonDigests ComparisonPayload ComparisonCouplingTypes
   ComparisonCouplingAxioms ComparisonCouplingMarginals.
 
+lemma L_ms3c_payload_announcement_digests_preserved_from_public_fields
+  (x : ms_public_input) (s : seed) :
+  ms3c_ax_payload_public_fields_match x s =>
+  ms3c_ax_payload_announcement_digests_preserved x s.
+proof.
+move=> Hpub pr ps Hpr Hps.
+have Hm := Hpub pr ps Hpr Hps.
+move: Hm => [_ [_ [Hann_t [Hann_f _]]]].
+by rewrite /ms3c_clause_ann_digests_from_surface /ms3c_make_real_clause_surface
+  /ms3c_make_sim_clause_surface /ms3c_make_clause_surface
+  /ms3c_digest_true_announcement /ms3c_digest_false_announcements /= Hann_t Hann_f.
+qed.
+
+lemma A_ms3c_coupling_pair_relation :
+  forall (x : ms_public_input) (s : seed),
+    ms3c_ax_payload_public_fields_match x s =>
+    ms3c_ax_payload_challenge_shares_match x s =>
+    ms3c_ax_payload_challenge_share_consistency x s =>
+    ms3c_ax_payload_false_clauses_simulated x s =>
+    ms3c_ax_payload_true_clause_simulated x s =>
+    ms3c_ax_payload_coupling_pair_relation x s.
+proof.
+move=> x s Hpub Hshr _ Hfalse _.
+rewrite /ms3c_ax_payload_coupling_pair_relation => pr ps Hmem.
+have [Hpr Hps] := L_ms3c_coupling_mem_components x s pr ps Hmem.
+have Hpr' : ms3c_real_payload_on_support x pr by rewrite /ms3c_real_payload_on_support.
+have Hps' : ms3c_sim_payload_on_support x s ps by rewrite /ms3c_sim_payload_on_support.
+rewrite /ms3c_real_sim_payload_coupled.
+split; first by apply (Hpub pr ps Hpr' Hps').
+split; first by apply (Hshr pr ps Hpr' Hps').
+split.
+  have Hdig := L_ms3c_payload_announcement_digests_preserved_from_public_fields x s Hpub.
+  by apply (Hdig pr ps Hpr' Hps').
+have [Hfa Hfb] := Hfalse.
+split; first by apply (Hfa pr Hpr').
+by apply (Hfb ps Hps').
+qed.
+
 lemma A_ms3c_payload_support_coupling_from_components :
   forall (x : ms_public_input) (s : seed),
     ms3c_ax_payload_public_fields_match x s =>
@@ -63,19 +101,6 @@ proof.
 move=> [Hre [Hsi Hpr]].
 have HeqJ := L_ms3c_coupling_fst_snd_eq_from_pair_relation x s Hpr.
 by rewrite -Hre HeqJ Hsi.
-qed.
-
-lemma L_ms3c_payload_announcement_digests_preserved_from_public_fields
-  (x : ms_public_input) (s : seed) :
-  ms3c_ax_payload_public_fields_match x s =>
-  ms3c_ax_payload_announcement_digests_preserved x s.
-proof.
-move=> Hpub pr ps Hpr Hps.
-have Hm := Hpub pr ps Hpr Hps.
-move: Hm => [_ [_ [Hann_t [Hann_f _]]]].
-by rewrite /ms3c_clause_ann_digests_from_surface /ms3c_make_real_clause_surface
-  /ms3c_make_sim_clause_surface /ms3c_make_clause_surface
-  /ms3c_digest_true_announcement /ms3c_digest_false_announcements /= Hann_t Hann_f.
 qed.
 
 lemma L_ms3c_payload_announcements_match_shape_from_ann_hook

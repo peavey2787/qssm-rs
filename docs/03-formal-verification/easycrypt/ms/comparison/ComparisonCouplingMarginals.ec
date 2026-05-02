@@ -153,3 +153,15 @@ move=> Hll.
 rewrite /d_ms3c_coupling_sim_projection /d_ms3c_real_sim_payload_coupling.
 exact (L_dmap_dprod_snd_lossless (d_ms3c_real_comparison_payload x) (d_ms3c_sim_comparison_payload x s) Hll).
 qed.
+
+lemma L_ms3c_coupling_mem_components (x : ms_public_input) (s : seed)
+  (pr : ms3c_real_comparison_payload) (ps : ms3c_sim_comparison_payload) :
+  (pr, ps) \in d_ms3c_real_sim_payload_coupling x s =>
+  pr \in d_ms3c_real_comparison_payload x /\
+  ps \in d_ms3c_sim_comparison_payload x s.
+proof.
+move=> Hmem.
+rewrite /d_ms3c_real_sim_payload_coupling in Hmem.
+rewrite supp_dprod in Hmem.
+by case: Hmem.
+qed.

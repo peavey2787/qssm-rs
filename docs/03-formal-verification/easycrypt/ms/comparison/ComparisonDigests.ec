@@ -57,12 +57,23 @@ proof.
 by rewrite /ms3c_clause_ann_digests.
 qed.
 
-(* Programmed query digest matches the ROM comparison hash on
-   `stmt :: ms3c_clause_ann_digests_from_surface c` (announcement-only list). *)
-axiom A_ms3c_query_digest_statement_bound :
+(* Wiring: the stored `mscc_query_digest` field agrees with the ROM comparison
+   query hash on `stmt :: ms3c_clause_ann_digests_from_surface c`. Not derivable
+   from `ms_comparison_clause_simulatable` alone (that predicate does not mention
+   the digest field); discharge from game / transcript construction once surfaces
+   are tied to programmed FS queries. *)
+axiom A_ms3c_surface_query_digest_field_correct :
   forall (stmt : digest) (c : ms_comparison_clause_surface),
     ms_comparison_clause_simulatable c =>
     c.`mscc_query_digest = ms_comparison_query_digest stmt (ms3c_clause_ann_digests_from_surface c).
+
+lemma A_ms3c_query_digest_statement_bound :
+  forall (stmt : digest) (c : ms_comparison_clause_surface),
+    ms_comparison_clause_simulatable c =>
+    c.`mscc_query_digest = ms_comparison_query_digest stmt (ms3c_clause_ann_digests_from_surface c).
+proof.
+by move=> stmt c Hsim; apply (A_ms3c_surface_query_digest_field_correct stmt c Hsim).
+qed.
 
 (* Ordered announcement digest list used in the comparison query (true branch
    digest first, then false-branch digests). *)

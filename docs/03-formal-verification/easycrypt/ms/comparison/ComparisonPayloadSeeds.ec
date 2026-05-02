@@ -2,7 +2,27 @@ require import AllCore List Distr.
 require import Algebra QssmTypes FS SchnorrBranch TrueClause BitnessOne.
 require import ComparisonTypes ComparisonDigests ComparisonPayloadTypes.
 
-(* Seed laws, shape axioms, and payload laws as `dmap` pushforwards of seeds. *)
+(* Seed laws, shape axioms, and payload laws as `dmap` pushforwards of seeds.
+
+   **Discharge path (current gap):** The eight axioms below are not provable here
+   because the four component laws **`d_ms3c_{real,sim}_seed_{challenge,announcement}`**
+   are abstract **`op`**s (no defining bodies) and **`ms3c_{real,sim}_payload_from_seed`**
+   are abstract maps from seeds to payloads.
+
+   - Losslessness (×4): Once each d_ms3c_*_seed_* law is defined as a standard
+     EasyCrypt distribution on a finite or full-support carrier (e.g. duniform on
+     Finite carriers, dunit, dmap of a lossless ROM read, or a product of such),
+     discharge with the corresponding library lemmas (duniform_ll and similar) and
+     dprod_ll_auto where the seed law is a product.
+
+   - **Length/index shape (×4):** Once **`ms3c_{real,sim}_payload_from_seed`** are
+     defined as the transcript/game constructor building **`ms3c_comparison_clause_payload`**,
+     these become proof obligations that the implementation keeps
+     **`size ann_false = size share_false`**, **`0 <= true_clause_ix`**, and
+     **`size ann_false = size false_clause_ixs`** for every seed tuple.
+
+   **Missing for proofs:** concrete definitions (equations) for the four **`d_ms3c_*`**
+   operators and the two **`ms3c_*_payload_from_seed`** operators. *)
 
 op d_ms3c_real_seed_challenge (x : ms_public_input) : ms3c_real_seed_challenge distr.
 op d_ms3c_real_seed_announcement (x : ms_public_input) : ms3c_real_seed_announcement distr.

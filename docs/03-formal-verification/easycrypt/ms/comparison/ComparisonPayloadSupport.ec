@@ -20,10 +20,41 @@ pred ms3c_payload_pair_public_fields_match
   pr.`mscp_global_challenge = ps.`mscp_global_challenge /\
   pr.`mscp_programmed_challenge = ps.`mscp_programmed_challenge.
 
+pred ms3c_payload_pair_index_fields_match
+  (pr : ms3c_real_comparison_payload) (ps : ms3c_sim_comparison_payload) =
+  pr.`mscp_true_clause_ix = ps.`mscp_true_clause_ix /\
+  pr.`mscp_false_clause_ixs = ps.`mscp_false_clause_ixs.
+
+pred ms3c_payload_pair_ann_fields_match
+  (pr : ms3c_real_comparison_payload) (ps : ms3c_sim_comparison_payload) =
+  pr.`mscp_ann_true = ps.`mscp_ann_true /\
+  pr.`mscp_ann_false = ps.`mscp_ann_false.
+
+pred ms3c_payload_pair_stmt_fields_match
+  (pr : ms3c_real_comparison_payload) (ps : ms3c_sim_comparison_payload) =
+  pr.`mscp_query_digest = ps.`mscp_query_digest.
+
+pred ms3c_payload_pair_result_fields_match
+  (pr : ms3c_real_comparison_payload) (ps : ms3c_sim_comparison_payload) =
+  pr.`mscp_global_challenge = ps.`mscp_global_challenge /\
+  pr.`mscp_programmed_challenge = ps.`mscp_programmed_challenge.
+
 pred ms3c_payload_pair_challenge_shares_match
   (pr : ms3c_real_comparison_payload) (ps : ms3c_sim_comparison_payload) =
   pr.`mscp_share_true = ps.`mscp_share_true /\
   pr.`mscp_share_false = ps.`mscp_share_false.
+
+pred ms3c_payload_pair_true_challenge_share_match
+  (pr : ms3c_real_comparison_payload) (ps : ms3c_sim_comparison_payload) =
+  pr.`mscp_share_true = ps.`mscp_share_true.
+
+pred ms3c_payload_pair_false_challenge_shares_match
+  (pr : ms3c_real_comparison_payload) (ps : ms3c_sim_comparison_payload) =
+  pr.`mscp_share_false = ps.`mscp_share_false.
+
+pred ms3c_payload_pair_challenge_share_lengths_match
+  (pr : ms3c_real_comparison_payload) (ps : ms3c_sim_comparison_payload) =
+  size pr.`mscp_share_false = size ps.`mscp_share_false.
 
 pred ms3c_payload_ann_digest_list_shape_ok (p : ms3c_comparison_clause_payload) =
   ms3c_ann_digest_list_shape (ms3c_make_clause_surface p).
@@ -76,11 +107,93 @@ pred ms3c_ax_payload_public_fields_match (x : ms_public_input) (s : seed) =
     ms3c_sim_payload_on_support x s ps =>
     ms3c_payload_pair_public_fields_match pr ps.
 
+pred ms3c_ax_payload_index_fields_match (x : ms_public_input) (s : seed) =
+  forall (pr : ms3c_real_comparison_payload) (ps : ms3c_sim_comparison_payload),
+    ms3c_real_payload_on_support x pr =>
+    ms3c_sim_payload_on_support x s ps =>
+    ms3c_payload_pair_index_fields_match pr ps.
+
+pred ms3c_ax_payload_ann_fields_match (x : ms_public_input) (s : seed) =
+  forall (pr : ms3c_real_comparison_payload) (ps : ms3c_sim_comparison_payload),
+    ms3c_real_payload_on_support x pr =>
+    ms3c_sim_payload_on_support x s ps =>
+    ms3c_payload_pair_ann_fields_match pr ps.
+
+pred ms3c_ax_payload_stmt_fields_match (x : ms_public_input) (s : seed) =
+  forall (pr : ms3c_real_comparison_payload) (ps : ms3c_sim_comparison_payload),
+    ms3c_real_payload_on_support x pr =>
+    ms3c_sim_payload_on_support x s ps =>
+    ms3c_payload_pair_stmt_fields_match pr ps.
+
+pred ms3c_ax_payload_result_fields_match (x : ms_public_input) (s : seed) =
+  forall (pr : ms3c_real_comparison_payload) (ps : ms3c_sim_comparison_payload),
+    ms3c_real_payload_on_support x pr =>
+    ms3c_sim_payload_on_support x s ps =>
+    ms3c_payload_pair_result_fields_match pr ps.
+
+lemma L_ms3c_ax_payload_public_fields_match_from_fragments
+  (x : ms_public_input) (s : seed) :
+  ms3c_ax_payload_index_fields_match x s =>
+  ms3c_ax_payload_ann_fields_match x s =>
+  ms3c_ax_payload_stmt_fields_match x s =>
+  ms3c_ax_payload_result_fields_match x s =>
+  ms3c_ax_payload_public_fields_match x s.
+proof.
+move=> Hix Hann Hstmt Hres.
+rewrite /ms3c_ax_payload_public_fields_match => pr ps Hpr Hps.
+move: (Hix pr ps Hpr Hps) (Hann pr ps Hpr Hps) (Hstmt pr ps Hpr Hps) (Hres pr ps Hpr Hps).
+move=> [Hi1 Hi2] [Ha1 Ha2] Hq [Hg Hp].
+rewrite /ms3c_payload_pair_public_fields_match.
+split; first exact Hi1.
+split; first exact Hi2.
+split; first exact Ha1.
+split; first exact Ha2.
+split; first exact Hq.
+split; first exact Hg.
+exact Hp.
+qed.
+
 pred ms3c_ax_payload_challenge_shares_match (x : ms_public_input) (s : seed) =
   forall (pr : ms3c_real_comparison_payload) (ps : ms3c_sim_comparison_payload),
     ms3c_real_payload_on_support x pr =>
     ms3c_sim_payload_on_support x s ps =>
     ms3c_payload_pair_challenge_shares_match pr ps.
+
+pred ms3c_ax_payload_true_challenge_share_match (x : ms_public_input) (s : seed) =
+  forall (pr : ms3c_real_comparison_payload) (ps : ms3c_sim_comparison_payload),
+    ms3c_real_payload_on_support x pr =>
+    ms3c_sim_payload_on_support x s ps =>
+    ms3c_payload_pair_true_challenge_share_match pr ps.
+
+pred ms3c_ax_payload_false_challenge_shares_match (x : ms_public_input) (s : seed) =
+  forall (pr : ms3c_real_comparison_payload) (ps : ms3c_sim_comparison_payload),
+    ms3c_real_payload_on_support x pr =>
+    ms3c_sim_payload_on_support x s ps =>
+    ms3c_payload_pair_false_challenge_shares_match pr ps.
+
+pred ms3c_ax_payload_challenge_share_lengths_match (x : ms_public_input) (s : seed) =
+  forall (pr : ms3c_real_comparison_payload) (ps : ms3c_sim_comparison_payload),
+    ms3c_real_payload_on_support x pr =>
+    ms3c_sim_payload_on_support x s ps =>
+    ms3c_payload_pair_challenge_share_lengths_match pr ps.
+
+(* `ms3c_ax_payload_challenge_share_lengths_match` is not used in the proof body
+   below: list equality from the false-branch fragment implies matching lengths.
+   The separate length obligation is for incremental game discharges (e.g. shape
+   before pointwise list agreement). *)
+lemma L_ms3c_ax_payload_challenge_shares_match_from_fragments
+  (x : ms_public_input) (s : seed) :
+  ms3c_ax_payload_true_challenge_share_match x s =>
+  ms3c_ax_payload_false_challenge_shares_match x s =>
+  ms3c_ax_payload_challenge_share_lengths_match x s =>
+  ms3c_ax_payload_challenge_shares_match x s.
+proof.
+move=> Ht Hf _Hlen pr ps Hpr Hps.
+have Ht' := Ht pr ps Hpr Hps.
+have Hf' := Hf pr ps Hpr Hps.
+rewrite /ms3c_payload_pair_challenge_shares_match.
+by split.
+qed.
 
 pred ms3c_ax_payload_announcement_digests_preserved (x : ms_public_input) (s : seed) =
   forall (pr : ms3c_real_comparison_payload) (ps : ms3c_sim_comparison_payload),

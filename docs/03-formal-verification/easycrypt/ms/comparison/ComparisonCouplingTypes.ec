@@ -6,9 +6,10 @@ require import ComparisonTypes ComparisonDigests ComparisonPayload.
    Joint law is the **independent product** of the abstract payload laws. Fst/snd
    marginals then match the standalone laws under **`is_lossless`** on the opposite
    law (see `ComparisonCouplingTheorem.ec`). Correlated behaviour for schedule
-   equality still comes from A_ms3c_coupling_pair_relation (not implied by
-   the product alone; announcement-shape and ann-digest list agreement need not be
-   listed as separate coupling premises; see ComparisonCouplingAxioms.ec). *)
+   equality still comes from lemma A_ms3c_coupling_pair_relation in
+   ComparisonCouplingSchedule.ec (not implied by the product alone;
+   announcement-shape and ann-digest list agreement need not be listed as separate
+   coupling premises; hook bridges remain axioms in ComparisonCouplingAxioms.ec). *)
 
 pred ms3c_real_sim_payload_coupled
   (pr : ms3c_real_comparison_payload) (ps : ms3c_sim_comparison_payload) =
