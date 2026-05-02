@@ -44,8 +44,13 @@ pred ms3a_ax_bitness_exact (x : ms_public_input) (s : seed) =
    `A_ms3a_real_seed_bitness_globals_programmed_on_support` with lemma
    `A_ms3a_real_seed_programmed_on_support`; sim: `A_ms3a_sim_seed_bits_programmed_on_support`,
    `A_ms3a_sim_seed_bitness_globals_programmed_on_support` with lemma
-   `A_ms3a_sim_seed_programmed_on_support`; the four `A_ms3a_seed_pair_*_on_support`
-   field obligations, with `A_ms3a_seed_pair_public_fields_on_support` proved as a lemma)
+   `A_ms3a_sim_seed_programmed_on_support`; paired public fields: axiom
+   `A_ms3a_seed_pair_stmt_source_shared` plus lemma `A_ms3a_seed_pair_stmt_on_support`,
+   `A_ms3a_seed_pair_res_source_shared` plus lemma `A_ms3a_seed_pair_res_on_support`,
+   `A_ms3a_seed_pair_comparison_global_source_shared` plus lemma
+   `A_ms3a_seed_pair_comparison_global_on_support`, and axiom
+   `A_ms3a_seed_pair_bitness_globals_on_support`, with
+   `A_ms3a_seed_pair_public_fields_on_support` proved as a lemma)
    plus the defining pushforwards `d_ms3a_{real,sim}_source_payload` =
    `dmap (d_ms3a_*_payload_seed) …` in `SourceDistributions.ec`. The five `ms3a_ax_*`
    predicates are **proved lemmas** below from those payload-support lemmas. Legacy
@@ -109,25 +114,66 @@ split.
 - exact (A_ms3a_sim_seed_bitness_globals_programmed_on_support x s sigma Hsig).
 qed.
 
-(* Narrow paired-public obligations: one axiom per constructor field that must agree on
-   joint seed support (stmt, result bit, comparison global challenge, bitness globals). *)
-axiom A_ms3a_seed_pair_stmt_on_support (x : ms_public_input) (s : seed) :
+(* Narrow paired-public obligations: joint seed support (stmt, result bit, comparison
+   global challenge, bitness globals). Stmt / res / comparison-global: **axioms**
+   `A_ms3a_seed_pair_stmt_source_shared`, `A_ms3a_seed_pair_res_source_shared`,
+   `A_ms3a_seed_pair_comparison_global_source_shared` on seed record fields; **lemmata**
+   `A_ms3a_seed_pair_stmt_on_support`, `A_ms3a_seed_pair_res_on_support`,
+   `A_ms3a_seed_pair_comparison_global_on_support` for `from_seed` payloads. *)
+axiom A_ms3a_seed_pair_stmt_source_shared (x : ms_public_input) (s : seed) :
   forall (sr : ms3a_real_payload_seed) (ss : ms3a_sim_payload_seed),
     sr \in d_ms3a_real_payload_seed x =>
     ss \in d_ms3a_sim_payload_seed x s =>
     sr.`ms3rp_stmt = ss.`ms3sp_stmt.
 
-axiom A_ms3a_seed_pair_res_on_support (x : ms_public_input) (s : seed) :
+lemma A_ms3a_seed_pair_stmt_on_support (x : ms_public_input) (s : seed) :
+  forall (sr : ms3a_real_payload_seed) (ss : ms3a_sim_payload_seed),
+    sr \in d_ms3a_real_payload_seed x =>
+    ss \in d_ms3a_sim_payload_seed x s =>
+    (ms3a_real_payload_from_seed x sr).`ms3rp_stmt =
+      (ms3a_sim_payload_from_seed x s ss).`ms3sp_stmt.
+proof.
+move=> sr ss Hsr Hss.
+exact (ms3a_payload_pair_stmt_eq_from_seed_of_seed_stmt_eq x s sr ss
+  (A_ms3a_seed_pair_stmt_source_shared x s sr ss Hsr Hss)).
+qed.
+
+axiom A_ms3a_seed_pair_res_source_shared (x : ms_public_input) (s : seed) :
   forall (sr : ms3a_real_payload_seed) (ss : ms3a_sim_payload_seed),
     sr \in d_ms3a_real_payload_seed x =>
     ss \in d_ms3a_sim_payload_seed x s =>
     sr.`ms3rp_res = ss.`ms3sp_res.
 
-axiom A_ms3a_seed_pair_comparison_global_on_support (x : ms_public_input) (s : seed) :
+lemma A_ms3a_seed_pair_res_on_support (x : ms_public_input) (s : seed) :
+  forall (sr : ms3a_real_payload_seed) (ss : ms3a_sim_payload_seed),
+    sr \in d_ms3a_real_payload_seed x =>
+    ss \in d_ms3a_sim_payload_seed x s =>
+    (ms3a_real_payload_from_seed x sr).`ms3rp_res =
+      (ms3a_sim_payload_from_seed x s ss).`ms3sp_res.
+proof.
+move=> sr ss Hsr Hss.
+exact (ms3a_payload_pair_res_eq_from_seed_of_seed_res_eq x s sr ss
+  (A_ms3a_seed_pair_res_source_shared x s sr ss Hsr Hss)).
+qed.
+
+axiom A_ms3a_seed_pair_comparison_global_source_shared
+  (x : ms_public_input) (s : seed) :
   forall (sr : ms3a_real_payload_seed) (ss : ms3a_sim_payload_seed),
     sr \in d_ms3a_real_payload_seed x =>
     ss \in d_ms3a_sim_payload_seed x s =>
     sr.`ms3rp_comparison_global_challenge = ss.`ms3sp_comparison_global_challenge.
+
+lemma A_ms3a_seed_pair_comparison_global_on_support (x : ms_public_input) (s : seed) :
+  forall (sr : ms3a_real_payload_seed) (ss : ms3a_sim_payload_seed),
+    sr \in d_ms3a_real_payload_seed x =>
+    ss \in d_ms3a_sim_payload_seed x s =>
+    (ms3a_real_payload_from_seed x sr).`ms3rp_comparison_global_challenge =
+      (ms3a_sim_payload_from_seed x s ss).`ms3sp_comparison_global_challenge.
+proof.
+move=> sr ss Hsr Hss.
+exact (ms3a_payload_pair_comparison_global_challenge_eq_from_seed_of_seed_eq x s sr ss
+  (A_ms3a_seed_pair_comparison_global_source_shared x s sr ss Hsr Hss)).
+qed.
 
 axiom A_ms3a_seed_pair_bitness_globals_on_support (x : ms_public_input) (s : seed) :
   forall (sr : ms3a_real_payload_seed) (ss : ms3a_sim_payload_seed),

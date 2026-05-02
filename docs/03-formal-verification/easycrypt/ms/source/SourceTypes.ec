@@ -68,6 +68,12 @@ pred ms3a_sources_have_programmed_bitness_layer
   ms_bitness_vector_programmed_layer
     sim_src.`ms3s_stmt sim_src.`ms3s_bits sim_src.`ms3s_bitness_global_challenges.
 
+(* Stmt / res / comparison-global conjuncts: joint seed support uses axioms
+   `A_ms3a_seed_pair_stmt_source_shared`, `A_ms3a_seed_pair_res_source_shared`,
+   `A_ms3a_seed_pair_comparison_global_source_shared`; lemmata
+   `A_ms3a_seed_pair_stmt_on_support`, `A_ms3a_seed_pair_res_on_support`,
+   `A_ms3a_seed_pair_comparison_global_on_support` restate for `from_seed` payloads
+   (`SourceObligations` / `SourceConstructors`). *)
 pred ms3a_payload_pair_public_fields_match
   (pr : ms3a_real_source_payload) (ps : ms3a_sim_source_payload) =
   pr.`ms3rp_stmt = ps.`ms3sp_stmt /\

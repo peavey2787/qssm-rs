@@ -54,6 +54,30 @@ lemma ms3a_sim_payload_from_seed_def (x : ms_public_input) (s : seed) (sigma : m
   ms3a_sim_payload_from_seed x s sigma = sigma.
 proof. by []. qed.
 
+(* Statement digest after `from_seed` agrees with seed-record fields (identity packaging). *)
+lemma ms3a_payload_pair_stmt_eq_from_seed_of_seed_stmt_eq
+  (x : ms_public_input) (s : seed) (sr : ms3a_real_payload_seed) (ss : ms3a_sim_payload_seed) :
+  sr.`ms3rp_stmt = ss.`ms3sp_stmt =>
+  (ms3a_real_payload_from_seed x sr).`ms3rp_stmt =
+    (ms3a_sim_payload_from_seed x s ss).`ms3sp_stmt.
+proof. by rewrite ms3a_real_payload_from_seed_def ms3a_sim_payload_from_seed_def. qed.
+
+(* Result bit after `from_seed` agrees with seed-record fields (identity packaging). *)
+lemma ms3a_payload_pair_res_eq_from_seed_of_seed_res_eq
+  (x : ms_public_input) (s : seed) (sr : ms3a_real_payload_seed) (ss : ms3a_sim_payload_seed) :
+  sr.`ms3rp_res = ss.`ms3sp_res =>
+  (ms3a_real_payload_from_seed x sr).`ms3rp_res =
+    (ms3a_sim_payload_from_seed x s ss).`ms3sp_res.
+proof. by rewrite ms3a_real_payload_from_seed_def ms3a_sim_payload_from_seed_def. qed.
+
+(* Comparison-global digest after `from_seed` agrees with seed-record fields. *)
+lemma ms3a_payload_pair_comparison_global_challenge_eq_from_seed_of_seed_eq
+  (x : ms_public_input) (s : seed) (sr : ms3a_real_payload_seed) (ss : ms3a_sim_payload_seed) :
+  sr.`ms3rp_comparison_global_challenge = ss.`ms3sp_comparison_global_challenge =>
+  (ms3a_real_payload_from_seed x sr).`ms3rp_comparison_global_challenge =
+    (ms3a_sim_payload_from_seed x s ss).`ms3sp_comparison_global_challenge.
+proof. by rewrite ms3a_real_payload_from_seed_def ms3a_sim_payload_from_seed_def. qed.
+
 (* Payload-level: same programmed-vector obligation as `ms3a_source_wf` on the
    constructor image of each payload (support axioms mention payload laws only,
    not folded bitness source distributions). *)
