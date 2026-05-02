@@ -48,6 +48,41 @@ op ms3c_make_sim_clause_surface (p : ms3c_sim_comparison_payload) : ms_compariso
 
 op ms3c_comparison_stmt_digest (x : ms_public_input) : digest = witness.
 
+(* MS-3c projection surface: bridge abstract ms_public_input and
+   ms_transcript_observable to future concrete ms3c_*_payload_from_seed.
+   Bodies are Phase-1 placeholders (witness / 0 / []) until public input and
+   transcript observables are refined; ms3c_comparison_stmt_digest stays separate
+   until a deliberate alignment with ms3c_public_stmt_digest (or
+   ms_statement_digest on obs) is added. *)
+
+op ms3c_public_stmt_digest (x : ms_public_input) : digest = witness.
+
+op ms3c_public_false_branch_count (_x : ms_public_input) : int = 0.
+
+op ms3c_public_true_clause_index (_x : ms_public_input) : int = 0.
+
+op ms3c_public_false_clause_indices (_x : ms_public_input) : int list = [].
+
+op ms3c_obs_programmed_challenge (_obs : ms_transcript_observable) : digest = witness.
+
+op ms3c_obs_share_true (_obs : ms_transcript_observable) : scalar = witness.
+
+op ms3c_obs_shares_false (_obs : ms_transcript_observable) : scalar list = [].
+
+op ms3c_obs_ann_true (_obs : ms_transcript_observable) : sch_point = witness.
+
+op ms3c_obs_anns_false (_obs : ms_transcript_observable) : sch_point list = [].
+
+pred ms3c_public_shape_ok (x : ms_public_input) =
+  0 <= ms3c_public_true_clause_index x /\
+  0 <= ms3c_public_false_branch_count x /\
+  size (ms3c_public_false_clause_indices x) = ms3c_public_false_branch_count x.
+
+pred ms3c_observable_shape_ok (x : ms_public_input) (obs : ms_transcript_observable) =
+  ms3c_public_shape_ok x /\
+  size (ms3c_obs_shares_false obs) = ms3c_public_false_branch_count x /\
+  size (ms3c_obs_anns_false obs) = ms3c_public_false_branch_count x.
+
 pred ms_comparison_clause_simulatable (c : ms_comparison_clause_surface) =
   0 <= c.`mscc_true_clause_ix /\
   size c.`mscc_ann_false = size c.`mscc_share_false /\

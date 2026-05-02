@@ -110,7 +110,7 @@ qed.
    Payload-law losslessness: lemmas L_ms3c_real_comparison_payload_law_lossless and
    L_ms3c_sim_comparison_payload_law_lossless in ComparisonPayload.ec via dmap_ll from
    L_ms3c_real_payload_seed_lossless / L_ms3c_sim_payload_seed_lossless (dprod_ll_auto
-   from the four component axioms A_ms3c_*_seed_{challenge,announcement}_lossless).
+   from the four component losslessness lemmata in ComparisonPayloadSeeds.ec).
    Predicate ms3c_ax_payload_announcements_match_shape is proved for all x,s as
    L_ms3c_ax_payload_announcements_match_shape_total (ComparisonPayload.ec), hence it
    is not a premise below. Likewise ms3c_ax_payload_announcement_digests_preserved

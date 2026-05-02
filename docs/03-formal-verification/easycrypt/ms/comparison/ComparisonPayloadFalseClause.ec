@@ -33,7 +33,9 @@ lemma A_ms3c_real_seed_false_clause_nonempty :
 proof.
 move=> x sr.
 have Hix_pos := A_ms3c_real_seed_false_index_nonempty x sr.
-have [_ Hshape] := A_ms3c_real_seed_index_shape_valid x sr.
+have Hanchor : ms3c_real_from_seed_public_index_anchor x sr
+  by exact (A_ms3c_real_from_seed_uses_public_indices x sr).
+have [_ Hshape] := L_ms3c_real_seed_index_shape_valid x sr Hanchor.
 rewrite Hshape.
 exact Hix_pos.
 qed.
@@ -44,7 +46,9 @@ lemma A_ms3c_sim_seed_false_clause_nonempty :
 proof.
 move=> x s ss.
 have Hix_pos := A_ms3c_sim_seed_false_index_nonempty x s ss.
-have [_ Hshape] := A_ms3c_sim_seed_index_shape_valid x s ss.
+have Hanchor : ms3c_sim_from_seed_public_index_anchor x s ss
+  by exact (A_ms3c_sim_from_seed_uses_public_indices x s ss).
+have [_ Hshape] := L_ms3c_sim_seed_index_shape_valid x s ss Hanchor.
 rewrite Hshape.
 exact Hix_pos.
 qed.

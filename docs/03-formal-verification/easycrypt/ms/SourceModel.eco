@@ -61,7 +61,7 @@
     "ComparisonCouplingAxioms": {
       "direct": false,
       "kind": "ec",
-      "digest": "856dc72603a5d4e4c65dc7ded5d2d39d"
+      "digest": "e09a0e00792851c8d26111b04e0b1bca"
     },
     "ComparisonCouplingMarginals": {
       "direct": false,
@@ -96,22 +96,22 @@
     "ComparisonPayloadFalseClause": {
       "direct": false,
       "kind": "ec",
-      "digest": "3fb66affd41c9bd2ff61e586cbe84ae5"
+      "digest": "6811d3d89763e4594ae5628556f91160"
     },
     "ComparisonPayloadSeeds": {
       "direct": false,
       "kind": "ec",
-      "digest": "a2fe8faa33644411d528993e848ec354"
+      "digest": "0e3bb3bf75cd163e7c64074f8736f00d"
     },
     "ComparisonPayloadSupport": {
       "direct": false,
       "kind": "ec",
-      "digest": "ed85cd7fec1f77289b41377989068f27"
+      "digest": "d30af4b76ea292d1fa91f0430ad96cd3"
     },
     "ComparisonPayloadTypes": {
       "direct": false,
       "kind": "ec",
-      "digest": "b826f0804d566a04881409bd46d2689c"
+      "digest": "dac01ae187151c063f59e88c9bff3837"
     },
     "ComparisonTheorem": {
       "direct": true,
@@ -121,7 +121,7 @@
     "ComparisonTypes": {
       "direct": true,
       "kind": "ec",
-      "digest": "46fd849bfe0e90c47d5d583a9bf58f93"
+      "digest": "8f32a56f14e0750f50909cf42c922b52"
     },
     "Core": {
       "direct": false,

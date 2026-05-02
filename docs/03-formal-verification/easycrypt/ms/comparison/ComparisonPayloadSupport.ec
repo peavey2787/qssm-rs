@@ -266,8 +266,12 @@ have Hseed : exists (sr : ms3c_real_payload_seed),
   by split.
 case: Hseed => sr [Hsr Hpr].
 rewrite Hpr /ms3c_payload_length_index_shapes_ok.
-have Hlen := A_ms3c_real_seed_length_shape_valid x sr.
-have [Hix Hidx] := A_ms3c_real_seed_index_shape_valid x sr.
+have Hshare : ms3c_real_from_seed_share_length_anchor x sr
+  by exact (A_ms3c_real_from_seed_uses_share_length x sr).
+have Hlen := L_ms3c_real_seed_length_shape_valid x sr Hshare.
+have Hanchor : ms3c_real_from_seed_public_index_anchor x sr
+  by exact (A_ms3c_real_from_seed_uses_public_indices x sr).
+have [Hix Hidx] := L_ms3c_real_seed_index_shape_valid x sr Hanchor.
 by split; [exact Hix | split; [exact Hlen | exact Hidx] ].
 qed.
 
@@ -285,8 +289,12 @@ have Hseed : exists (ss : ms3c_sim_payload_seed),
   by split.
 case: Hseed => ss [Hss Hps].
 rewrite Hps /ms3c_payload_length_index_shapes_ok.
-have Hlen := A_ms3c_sim_seed_length_shape_valid x s ss.
-have [Hix Hidx] := A_ms3c_sim_seed_index_shape_valid x s ss.
+have Hshare : ms3c_sim_from_seed_share_length_anchor x s ss
+  by exact (A_ms3c_sim_from_seed_uses_share_length x s ss).
+have Hlen := L_ms3c_sim_seed_length_shape_valid x s ss Hshare.
+have Hanchor : ms3c_sim_from_seed_public_index_anchor x s ss
+  by exact (A_ms3c_sim_from_seed_uses_public_indices x s ss).
+have [Hix Hidx] := L_ms3c_sim_seed_index_shape_valid x s ss Hanchor.
 by split; [exact Hix | split; [exact Hlen | exact Hidx] ].
 qed.
 
