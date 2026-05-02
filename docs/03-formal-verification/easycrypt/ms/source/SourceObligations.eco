@@ -288,20 +288,40 @@
       "kind": "ec",
       "digest": "412f88972028a1faf35fcbe2d02b210f"
     },
+    "SourceBitnessDistributions": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "cdacb8406507d3a427b25f47af489ee6"
+    },
     "SourceConstructors": {
       "direct": false,
       "kind": "ec",
       "digest": "87c10eabbd18924459d212e0965d8061"
     },
+    "SourceDistributionLemmas": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "f1d29bbe7ec2638e2b074f006403bcfe"
+    },
     "SourceDistributions": {
       "direct": false,
       "kind": "ec",
-      "digest": "670ec39bbaab7447c457cb1c105f8b2b"
+      "digest": "403c65d4768182ea94a22fe3a9882e61"
     },
     "SourceModel": {
       "direct": false,
       "kind": "ec",
-      "digest": "eff88e1487906840b7c139d3f017464b"
+      "digest": "869290faca59a92aa7973a41b21594eb"
+    },
+    "SourceObservableDistributions": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "1c172cad0a7182f0364711c99d48e812"
+    },
+    "SourcePayloadDistributions": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "ce569d698197692c1f19456ae1980826"
     },
     "SourceProgrammedObligations": {
       "direct": true,
@@ -316,12 +336,12 @@
     "SourceScheduleObligations": {
       "direct": true,
       "kind": "ec",
-      "digest": "fa050682bf185dc1d2a495feabd62576"
+      "digest": "e012105ffd2e6e44403f3a0d786819f1"
     },
     "SourceTypes": {
       "direct": false,
       "kind": "ec",
-      "digest": "07708439fc723d846786320a8dc6d832"
+      "digest": "c532bacce7f1047d1e4f183b92602234"
     },
     "StdBigop": {
       "direct": false,

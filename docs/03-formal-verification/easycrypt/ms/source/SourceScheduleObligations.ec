@@ -4,13 +4,26 @@ require import SourceTypes SourceConstructors SourceDistributions.
 require import SourceProgrammedObligations SourcePublicFieldObligations.
 
 (* Schedule: seed-level coupling axiom + payload form proved via `dmap_comp`
-   (`ms3a_bitness_*_source_as_seed_dmap` in `SourceDistributions.ec`). *)
+   (`ms3a_bitness_*_source_as_seed_dmap` in `SourceBitnessDistributions.ec`).
+   Stated as a single `dmap` per side off abstract seed laws through the layer maps
+   (no `from_seed` composition): extensionally equal to the legacy composed form by
+   `L_ms3a_bitness_layer_seed_push_{real,sim}_eq_layer_dmap` in
+   `SourceBitnessDistributions.ec`. *)
 
 axiom A_ms3a_bitness_layer_seed_schedule (x : ms_public_input) (s : seed) :
+  dmap (d_ms3a_real_payload_seed x) ms3a_bitness_layer_source_of_real_payload =
+  dmap (d_ms3a_sim_payload_seed x s) ms3a_bitness_layer_source_of_sim_payload.
+
+lemma L_ms3a_bitness_layer_seed_schedule_composed_form (x : ms_public_input) (s : seed) :
   dmap (d_ms3a_real_payload_seed x)
     (ms3a_bitness_layer_source_of_real_payload \o ms3a_real_payload_from_seed x) =
   dmap (d_ms3a_sim_payload_seed x s)
     (ms3a_bitness_layer_source_of_sim_payload \o ms3a_sim_payload_from_seed x s).
+proof.
+rewrite (L_ms3a_bitness_layer_seed_push_real_eq_layer_dmap x)
+  (L_ms3a_bitness_layer_seed_push_sim_eq_layer_dmap x s).
+exact (A_ms3a_bitness_layer_seed_schedule x s).
+qed.
 
 lemma A_ms3a_payload_dmap_bitness_layer_schedule (x : ms_public_input) (s : seed) :
   dmap (d_ms3a_real_source_payload x) ms3a_bitness_layer_source_of_real_payload =
@@ -24,6 +37,8 @@ rewrite (_ : dmap (d_ms3a_sim_source_payload x s) ms3a_bitness_layer_source_of_s
   by rewrite /d_ms3a_bitness_sim_source.
 rewrite (ms3a_bitness_real_source_as_seed_dmap x)
   (ms3a_bitness_sim_source_as_seed_dmap x s).
+rewrite (L_ms3a_bitness_layer_seed_push_real_eq_layer_dmap x)
+  (L_ms3a_bitness_layer_seed_push_sim_eq_layer_dmap x s).
 exact (A_ms3a_bitness_layer_seed_schedule x s).
 qed.
 

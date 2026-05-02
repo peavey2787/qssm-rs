@@ -11,6 +11,19 @@ op ms_bitness_global_challenges : ms_transcript_observable -> digest list.
 op ms_comparison_global_challenge : ms_transcript_observable -> digest.
 op ms_transcript_digest : ms_transcript_observable -> digest.
 
+(* ------------------------------------------------------------------------- *)
+(* MS-3a public spine: six field projections from `ms_public_input`, aligned  *)
+(* to `ms3a_{real,sim}_payload_seed` / v2 observable surface (`SourceTypes`). *)
+(* Uninterpreted `op`s only — future seed laws / games may assume equalities   *)
+(* tying these to sampled seeds; no axioms bundled here.                      *)
+
+op ms3a_public_stmt_digest (x : ms_public_input) : digest.
+op ms3a_public_result_bit (x : ms_public_input) : bool.
+op ms3a_public_bits (x : ms_public_input) : ms_single_bit_or_transcript list.
+op ms3a_public_bitness_globals (x : ms_public_input) : digest list.
+op ms3a_public_comparison_global (x : ms_public_input) : digest.
+op ms3a_public_transcript_digest (x : ms_public_input) : digest.
+
 (* Abstract observable agrees with the canonical v2 record (linking layer).   *)
 pred ms_abstract_observable_aligns_v2
   (obs : ms_transcript_observable) (o : ms_v2_transcript_observable) =
@@ -37,6 +50,17 @@ op ms3a_pack_observable
      msv2_bitness_global_challenges = bitness_glob;
      msv2_comparison_global_challenge = comp_glob;
      msv2_transcript_digest = td |}.
+
+(* Length / digest-cell shape on the public spine (no ROM or per-bit programming). *)
+pred ms3a_public_bitness_shape_ok (x : ms_public_input) =
+  ms_bitness_vector_length_ok (ms3a_public_bits x) /\
+  ms_bitness_global_challenge_vector_length_ok (ms3a_public_bitness_globals x).
+
+pred ms3a_public_transcript_shape_ok (x : ms_public_input) =
+  ms_transcript_digest_of_observable
+    (ms3a_pack_observable (ms3a_public_stmt_digest x) (ms3a_public_result_bit x)
+      (ms3a_public_bitness_globals x) (ms3a_public_comparison_global x)
+      (ms3a_public_transcript_digest x)).
 
 (* Projection from canonical v2 observable to abstract observable carrier.      *)
 op ms3a_observable_of_v2 : ms_v2_transcript_observable -> ms_transcript_observable.

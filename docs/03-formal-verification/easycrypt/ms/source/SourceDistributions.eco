@@ -1,7 +1,7 @@
 {
   "version": 3,
   "echash": "n/a",
-  "root": { "kind": "ec", "digest": "670ec39bbaab7447c457cb1c105f8b2b" },
+  "root": { "kind": "ec", "digest": "403c65d4768182ea94a22fe3a9882e61" },
   "depends": {
     "AlgTactic": {
       "direct": false,
@@ -14,7 +14,7 @@
       "digest": "6d90bb1582a128e4d4b11a31736c5ac6"
     },
     "AllCore": {
-      "direct": true,
+      "direct": false,
       "kind": "ec",
       "digest": "530d964738d9a6b9093986916c5225d1"
     },
@@ -34,7 +34,7 @@
       "digest": "1e23893cdbfac8da97b831166366c823"
     },
     "BitnessOne": {
-      "direct": true,
+      "direct": false,
       "kind": "ec",
       "digest": "4f169808b32bf66afa4c45a2da8e454b"
     },
@@ -174,7 +174,7 @@
       "digest": "7bfc7bffc1442385fc98161d37676888"
     },
     "Distr": {
-      "direct": true,
+      "direct": false,
       "kind": "ec",
       "digest": "97f21c11171f5d46d4b4289b18fa9c04"
     },
@@ -214,7 +214,7 @@
       "digest": "6e85ff145774627ec46ac4b58a8d47c8"
     },
     "List": {
-      "direct": true,
+      "direct": false,
       "kind": "ec",
       "digest": "87827651d8c61e60ac841ce62b9867e5"
     },
@@ -239,7 +239,7 @@
       "digest": "0f385a91ae1a1269de2ba2b7fad360d0"
     },
     "QssmTypes": {
-      "direct": true,
+      "direct": false,
       "kind": "ec",
       "digest": "a01add13b9a617f8cee8c968779c907c"
     },
@@ -288,20 +288,40 @@
       "kind": "ec",
       "digest": "412f88972028a1faf35fcbe2d02b210f"
     },
-    "SourceConstructors": {
+    "SourceBitnessDistributions": {
       "direct": true,
+      "kind": "ec",
+      "digest": "cdacb8406507d3a427b25f47af489ee6"
+    },
+    "SourceConstructors": {
+      "direct": false,
       "kind": "ec",
       "digest": "87c10eabbd18924459d212e0965d8061"
     },
-    "SourceModel": {
+    "SourceDistributionLemmas": {
       "direct": true,
       "kind": "ec",
-      "digest": "eff88e1487906840b7c139d3f017464b"
+      "digest": "f1d29bbe7ec2638e2b074f006403bcfe"
+    },
+    "SourceModel": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "869290faca59a92aa7973a41b21594eb"
+    },
+    "SourceObservableDistributions": {
+      "direct": true,
+      "kind": "ec",
+      "digest": "1c172cad0a7182f0364711c99d48e812"
+    },
+    "SourcePayloadDistributions": {
+      "direct": true,
+      "kind": "ec",
+      "digest": "ce569d698197692c1f19456ae1980826"
     },
     "SourceTypes": {
-      "direct": true,
+      "direct": false,
       "kind": "ec",
-      "digest": "07708439fc723d846786320a8dc6d832"
+      "digest": "c532bacce7f1047d1e4f183b92602234"
     },
     "StdBigop": {
       "direct": false,
@@ -324,7 +344,7 @@
       "digest": "86b1b5cd82f32d0405a70279cdc8b67b"
     },
     "TranscriptObservable": {
-      "direct": true,
+      "direct": false,
       "kind": "ec",
       "digest": "f9f12f3848552d05c4ea3bc28ae27024"
     },

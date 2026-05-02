@@ -34,7 +34,8 @@ type ms3a_sim_source_payload = {
    (`ms3a_{real,sim}_source_payload`). Sampling laws `d_ms3a_{real,sim}_payload_seed` remain
    abstract; `ms3a_{real,sim}_payload_from_seed` is the identity (see `SourceConstructors.ec`)
    so execution/games can refine `d_ms3a_*_payload_seed` without changing the payload field
-   surface. Paired-public alignment: four `A_ms3a_seed_pair_*_source_shared` axioms on
+   surface. Public-input spine projections mirroring those six fields live in
+   `ms/SourceModel.ec` (`ms3a_public_*`). Paired-public alignment: four `A_ms3a_seed_pair_*_source_shared` axioms on
    joint seed support feed four proved `A_ms3a_seed_pair_*_on_support` lemmas for
    `from_seed` payloads, which feed proved lemma `A_ms3a_seed_pair_public_fields_on_support`
    (`SourcePublicFieldObligations.ec` / `SourceConstructors.ec`; re-exported via

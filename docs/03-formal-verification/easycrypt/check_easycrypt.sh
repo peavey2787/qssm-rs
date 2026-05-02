@@ -53,6 +53,10 @@ FILES=(
   ms/SourceModel.ec
   ms/source/SourceTypes.ec
   ms/source/SourceConstructors.ec
+  ms/source/SourcePayloadDistributions.ec
+  ms/source/SourceBitnessDistributions.ec
+  ms/source/SourceDistributionLemmas.ec
+  ms/source/SourceObservableDistributions.ec
   ms/source/SourceDistributions.ec
   ms/source/SourceProgrammedObligations.ec
   ms/source/SourcePublicFieldObligations.ec
