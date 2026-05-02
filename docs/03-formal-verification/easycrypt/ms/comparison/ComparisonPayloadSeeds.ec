@@ -4,31 +4,32 @@ require import ComparisonTypes ComparisonDigests ComparisonPayloadTypes.
 
 (* Seed laws, shape axioms, and payload laws as `dmap` pushforwards of seeds.
 
-   Discharge path: d_ms3c_real_seed_challenge and d_ms3c_sim_seed_challenge are
-   dunit tt on unit with lemmas L_ms3c_real_seed_challenge_lossless and
-   L_ms3c_sim_seed_challenge_lossless (Phase-1 scaffolding, not final ROM or FS
-   challenge samplers). The remaining two component losslessness axioms and four
-   shape axioms still need concrete laws and ms3c real and sim payload from seed.
+   Discharge path: d_ms3c_real_seed_challenge, d_ms3c_sim_seed_challenge, and
+   d_ms3c_real_seed_announcement are dunit tt on unit with proved losslessness
+   lemmata (Phase-1 scaffolding; not final ROM, FS, or Schnorr announcement
+   samplers). One component losslessness axiom remains for sim announcement; four
+   shape axioms still need concrete from_seed and transcript wiring.
 
-   - Losslessness (remaining x2): define d_ms3c_real_seed_announcement and
-     d_ms3c_sim_seed_announcement as standard lossless distributions; discharge
-     with duniform_ll, dmap_ll, dprod_ll_auto as appropriate.
+   - Losslessness (remaining x1): define d_ms3c_sim_seed_announcement as a
+     standard lossless distribution; discharge with duniform_ll, dmap_ll,
+     dprod_ll_auto as appropriate.
 
    - Length and index shape (x4): once ms3c real and sim payload from seed are
      defined as transcript or game constructors for ms3c_comparison_clause_payload,
      these become proof obligations for size ann_false vs share_false,
      nonnegative true_clause_ix, and size ann_false vs false_clause_ixs.
 
-   Missing for proofs: concrete op bodies for d_ms3c_real_seed_announcement and
-   d_ms3c_sim_seed_announcement, and defining equations for ms3c real and sim
-   payload from seed. *)
+   Missing for proofs: concrete op body for d_ms3c_sim_seed_announcement, and
+   defining equations for ms3c real and sim payload from seed. *)
 
 (* Trivial real challenge-side law: placeholder until FS/challenge material is
    modeled in `ms3c_real_seed_challenge`; lossless by `dunit_ll`. *)
 op d_ms3c_real_seed_challenge (_x : ms_public_input) : ms3c_real_seed_challenge distr =
   dunit tt.
 
-op d_ms3c_real_seed_announcement (x : ms_public_input) : ms3c_real_seed_announcement distr.
+(* Phase-1 scaffolding: ignores x; not the final real announcement sampler. *)
+op d_ms3c_real_seed_announcement (_x : ms_public_input) : ms3c_real_seed_announcement distr =
+  dunit tt.
 
 (* Phase-1 scaffolding: not the final semantic sim ROM or FS challenge sampler. *)
 op d_ms3c_sim_seed_challenge (_x : ms_public_input) (_s : seed) : ms3c_sim_seed_challenge distr =
@@ -54,8 +55,11 @@ proof.
 by rewrite /d_ms3c_sim_seed_challenge; apply dunit_ll.
 qed.
 
-axiom A_ms3c_real_seed_announcement_lossless :
-  forall (x : ms_public_input), is_lossless (d_ms3c_real_seed_announcement x).
+lemma L_ms3c_real_seed_announcement_lossless (x : ms_public_input) :
+  is_lossless (d_ms3c_real_seed_announcement x).
+proof.
+by rewrite /d_ms3c_real_seed_announcement; apply dunit_ll.
+qed.
 
 axiom A_ms3c_sim_seed_announcement_lossless :
   forall (x : ms_public_input) (s : seed), is_lossless (d_ms3c_sim_seed_announcement x s).
@@ -65,7 +69,7 @@ lemma L_ms3c_real_payload_seed_lossless (x : ms_public_input) :
 proof.
 by rewrite /d_ms3c_real_payload_seed; apply dprod_ll_auto;
   [apply (L_ms3c_real_seed_challenge_lossless x) |
-   apply (A_ms3c_real_seed_announcement_lossless x)].
+   apply (L_ms3c_real_seed_announcement_lossless x)].
 qed.
 
 lemma L_ms3c_sim_payload_seed_lossless (x : ms_public_input) (s : seed) :
