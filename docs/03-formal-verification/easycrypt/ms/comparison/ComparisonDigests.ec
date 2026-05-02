@@ -57,15 +57,38 @@ proof.
 by rewrite /ms3c_clause_ann_digests.
 qed.
 
-(* Wiring: the stored `mscc_query_digest` field agrees with the ROM comparison
-   query hash on `stmt :: ms3c_clause_ann_digests_from_surface c`. Not derivable
-   from `ms_comparison_clause_simulatable` alone (that predicate does not mention
-   the digest field); discharge from game / transcript construction once surfaces
-   are tied to programmed FS queries. *)
-axiom A_ms3c_surface_query_digest_field_correct :
-  forall (stmt : digest) (c : ms_comparison_clause_surface),
-    ms_comparison_clause_simulatable c =>
-    c.`mscc_query_digest = ms_comparison_query_digest stmt (ms3c_clause_ann_digests_from_surface c).
+(* Constructor wiring: payloads that fold to simulatable clause surfaces store
+   `mscp_query_digest` as the ROM comparison query hash on `stmt` and the
+   ordered announcement digests from the folded surface. This is the narrow
+   obligation to discharge from `from_seed` / transcript construction. *)
+axiom A_ms3c_clause_surface_query_digest_constructed :
+  forall (stmt : digest) (p : ms3c_comparison_clause_payload),
+    ms_comparison_clause_simulatable (ms3c_make_clause_surface p) =>
+    p.`mscp_query_digest =
+      ms_comparison_query_digest stmt
+        (ms3c_clause_ann_digests_from_surface (ms3c_make_clause_surface p)).
+
+(* Any simulatable surface is `ms3c_make_clause_surface (ms3c_clause_surface_to_payload c)`,
+   so digest correctness follows from the constructor axiom on that payload. *)
+lemma A_ms3c_surface_query_digest_field_correct (stmt : digest) (c : ms_comparison_clause_surface) :
+  ms_comparison_clause_simulatable c =>
+  c.`mscc_query_digest = ms_comparison_query_digest stmt (ms3c_clause_ann_digests_from_surface c).
+proof.
+move=> Hsim.
+pose p := ms3c_clause_surface_to_payload c.
+have Heq : ms3c_make_clause_surface p = c by exact (L_ms3c_make_clause_surface_clause_surface_to_payload c).
+have Hsimp : ms_comparison_clause_simulatable (ms3c_make_clause_surface p).
+  by rewrite Heq.
+have Hd := A_ms3c_clause_surface_query_digest_constructed stmt p Hsimp.
+have Hann :
+  ms3c_clause_ann_digests_from_surface (ms3c_make_clause_surface p) =
+  ms3c_clause_ann_digests_from_surface c
+  by rewrite Heq.
+have Hfield : c.`mscc_query_digest = p.`mscp_query_digest.
+  by rewrite -Heq /ms3c_make_clause_surface /=.
+rewrite Hfield -Hann.
+exact Hd.
+qed.
 
 lemma A_ms3c_query_digest_statement_bound :
   forall (stmt : digest) (c : ms_comparison_clause_surface),

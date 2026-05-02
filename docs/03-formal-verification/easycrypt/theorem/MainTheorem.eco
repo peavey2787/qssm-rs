@@ -86,7 +86,7 @@
     "ComparisonDigests": {
       "direct": true,
       "kind": "ec",
-      "digest": "2f1df19bcfa4eee0423cda2248fccf8a"
+      "digest": "06f5470a4223173837b23701c1f6875e"
     },
     "ComparisonPayload": {
       "direct": true,
@@ -106,7 +106,22 @@
     "ComparisonPayloadSupport": {
       "direct": false,
       "kind": "ec",
-      "digest": "d30af4b76ea292d1fa91f0430ad96cd3"
+      "digest": "a0c3a1ef6a2025a5eaf8823c20659a4e"
+    },
+    "ComparisonPayloadSupportPublic": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "896be89dcc3069985afcb0a4bdee7455"
+    },
+    "ComparisonPayloadSupportShares": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "da16aca07f831a1b8bb60bd21d209c6c"
+    },
+    "ComparisonPayloadSupportTypes": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "4f6df88202fdbd59336a8f343f9751d5"
     },
     "ComparisonPayloadTypes": {
       "direct": false,
@@ -121,7 +136,7 @@
     "ComparisonTypes": {
       "direct": true,
       "kind": "ec",
-      "digest": "c0c318891b6bbba2821610f5cee1e3fa"
+      "digest": "311898e55745619188dbba64a96b6899"
     },
     "Core": {
       "direct": false,

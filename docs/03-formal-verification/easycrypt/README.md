@@ -73,46 +73,49 @@ The script type-checks theories in dependency order. Each file is checked with `
 14. `ms/comparison/ComparisonDigests.ec`
 15. `ms/comparison/ComparisonPayloadTypes.ec`
 16. `ms/comparison/ComparisonPayloadSeeds.ec`
-17. `ms/comparison/ComparisonPayloadSupport.ec`
-18. `ms/comparison/ComparisonPayloadFalseClause.ec`
-19. `ms/comparison/ComparisonPayload.ec` (facade)
-20. `ms/comparison/ComparisonCouplingTypes.ec`
-21. `ms/comparison/ComparisonCouplingAxioms.ec`
-22. `ms/comparison/ComparisonCouplingMarginals.ec`
-23. `ms/comparison/ComparisonCouplingSchedule.ec`
-24. `ms/comparison/ComparisonCouplingTheorem.ec` (facade)
-25. `ms/comparison/ComparisonCoupling.ec` (facade)
-26. `ms/comparison/ComparisonTheorem.ec`
-27. `ms/Comparison.ec` (facade)
-28. `ms/SourceModel.ec` (MS-3a observable frame: abstract transcript ops, pack, digest helpers)
-29. `ms/source/SourceTypes.ec`
-30. `ms/source/SourceConstructors.ec`
-31. `ms/source/SourceDistributions.ec`
-32. `ms/source/SourceProgrammedObligations.ec`
-33. `ms/source/SourcePublicFieldObligations.ec`
-34. `ms/source/SourceScheduleObligations.ec`
-35. `ms/source/SourceObligations.ec` (facade)
-36. `ms/source/SourceTheorem.ec`
-37. `ms/MS.ec`
-38. `le/LESurface.ec`
-39. `le/LESetB.ec`
-40. `le/LERejection.ec`
-41. `le/LEFsProgramming.ec`
-42. `le/LEViewIndist.ec`
-43. `le/LEStatisticalDistance.ec`
-44. `le/LEHVZK.ec`
-45. `le/LEModel.ec` (facade)
-46. `sim/Simulator.ec`
-47. `games/GameTypes.ec`
-48. `games/GameViews.ec`
-49. `games/GameAdvantage.ec`
-50. `games/GameMSHopTypes.ec`
-51. `games/GameMSHopTransitions.ec`
-52. `games/GameMSHopComposition.ec`
-53. `games/GameMSHops.ec` (facade)
-54. `games/GameLEBridge.ec`
-55. `games/Games.ec` (facade)
-56. `theorem/MainTheorem.ec`
+17. `ms/comparison/ComparisonPayloadSupportTypes.ec`
+18. `ms/comparison/ComparisonPayloadSupportPublic.ec`
+19. `ms/comparison/ComparisonPayloadSupportShares.ec`
+20. `ms/comparison/ComparisonPayloadSupport.ec` (facade)
+21. `ms/comparison/ComparisonPayloadFalseClause.ec`
+22. `ms/comparison/ComparisonPayload.ec` (facade)
+23. `ms/comparison/ComparisonCouplingTypes.ec`
+24. `ms/comparison/ComparisonCouplingAxioms.ec`
+25. `ms/comparison/ComparisonCouplingMarginals.ec`
+26. `ms/comparison/ComparisonCouplingSchedule.ec`
+27. `ms/comparison/ComparisonCouplingTheorem.ec` (facade)
+28. `ms/comparison/ComparisonCoupling.ec` (facade)
+29. `ms/comparison/ComparisonTheorem.ec`
+30. `ms/Comparison.ec` (facade)
+31. `ms/SourceModel.ec` (MS-3a observable frame: abstract transcript ops, pack, digest helpers)
+32. `ms/source/SourceTypes.ec`
+33. `ms/source/SourceConstructors.ec`
+34. `ms/source/SourceDistributions.ec`
+35. `ms/source/SourceProgrammedObligations.ec`
+36. `ms/source/SourcePublicFieldObligations.ec`
+37. `ms/source/SourceScheduleObligations.ec`
+38. `ms/source/SourceObligations.ec` (facade)
+39. `ms/source/SourceTheorem.ec`
+40. `ms/MS.ec`
+41. `le/LESurface.ec`
+42. `le/LESetB.ec`
+43. `le/LERejection.ec`
+44. `le/LEFsProgramming.ec`
+45. `le/LEViewIndist.ec`
+46. `le/LEStatisticalDistance.ec`
+47. `le/LEHVZK.ec`
+48. `le/LEModel.ec` (facade)
+49. `sim/Simulator.ec`
+50. `games/GameTypes.ec`
+51. `games/GameViews.ec`
+52. `games/GameAdvantage.ec`
+53. `games/GameMSHopTypes.ec`
+54. `games/GameMSHopTransitions.ec`
+55. `games/GameMSHopComposition.ec`
+56. `games/GameMSHops.ec` (facade)
+57. `games/GameLEBridge.ec`
+58. `games/Games.ec` (facade)
+59. `theorem/MainTheorem.ec`
 
 If your EasyCrypt build exposes the binary as `ec` instead of `easycrypt`, the script falls back automatically when `easycrypt` is missing.
 
@@ -149,6 +152,9 @@ docs/03-formal-verification/easycrypt/
 │   │   ├── ComparisonDigests.ec
 │   │   ├── ComparisonPayloadTypes.ec
 │   │   ├── ComparisonPayloadSeeds.ec
+│   │   ├── ComparisonPayloadSupportTypes.ec
+│   │   ├── ComparisonPayloadSupportPublic.ec
+│   │   ├── ComparisonPayloadSupportShares.ec
 │   │   ├── ComparisonPayloadSupport.ec
 │   │   ├── ComparisonPayloadFalseClause.ec
 │   │   ├── ComparisonPayload.ec
@@ -243,7 +249,7 @@ docs/03-formal-verification/easycrypt/
 1. **MS-3a (residual)** — discharge **`A_ms3a_payload_dmap_bitness_layer_schedule`** and the remaining **seed-support** surface: four programmed-on-support **axioms** (**`A_ms3a_{real,sim}_seed_bits_programmed_on_support`**, **`A_ms3a_{real,sim}_seed_bitness_globals_programmed_on_support`**, packaged by proved lemmas **`A_ms3a_{real,sim}_seed_programmed_on_support`**); four paired-public **source_shared** **axioms** with proved **`A_ms3a_seed_pair_*_on_support`** lemmata for **`from_seed`** payloads; instantiate abstract **`d_ms3a_{real,sim}_payload_seed`** from execution/games (payload **`ms3a_*_payload_from_seed`** is definitional identity on payload-shaped seeds); **`A_ms3a_seed_pair_public_fields_on_support`** is already a **proved lemma**; see `plans/MS_3a_proof_plan.md`.
 2. **MS-3b** — discharge axiom **`A_ms3b_operand_hdb_implies_msb_first_strict_gt`** (operands + highest-differing geometry ⇒ MSB-first **`ms3b_msb_first_strict_gt_at`**). Lemma **`A_ms3b_comparison_semantics`** (`nth` value bit) is proved from that axiom; **`A_ms3b_hdb_implies_value_one_target_zero`** still composes semantics + directionality. Tie **`ms3b_comparison_operand_bits`** / **`ms3b_clause_opening_binds`** to transcript / execution material in **`ms/true_clause/`** (via theory **`TrueClause`**, facade **`ms/TrueClause.ec`**); see `plans/MS_3b_proof_plan.md`.
 
-Then: shrink MS-3c axioms in **`ms/Comparison.ec`** (`plans/MS_3c_proof_plan.md`; **`d_ms3c_real_sim_payload_coupling`** is the **product** of the payload laws; each payload law is a **`dmap`** of **`d_ms3c_{real,sim}_payload_seed`**, itself the **product** of **Phase-1** **`dunit tt`** on **`unit`** for all four seed components (real/sim challenge and real/sim announcement); **`L_ms3c_{real,sim}_payload_seed_lossless`** and **`L_ms3c_{real,sim}_comparison_payload_law_lossless`** are **proved** from **`dprod_ll_auto`** / **`dmap_ll`** and the four component losslessness lemmata (**`L_ms3c_{real,sim}_seed_challenge_lossless`**, **`L_ms3c_real_seed_announcement_lossless`**, **`L_ms3c_sim_seed_announcement_lossless`**); **projection surface** in **`ComparisonTypes.ec`** (**`ms3c_public_*`**, **`ms3c_obs_*`**, **`ms3c_public_shape_ok`**, **`ms3c_observable_shape_ok`**, placeholder bodies) is the intended bridge before **`from_seed`** is concrete; only narrow **`A_ms3c_{real,sim}_from_seed_uses_public_indices`** and **`A_ms3c_{real,sim}_from_seed_uses_share_length`** remain until **`from_seed`** is fully concrete (**`L_ms3c_{real,sim}_seed_index_shape_valid`**, **`L_ms3c_{real,sim}_seed_length_shape_valid`**; see **`ComparisonPayloadSeeds.ec`**); marginal equality of **`d_ms3c_coupling_{real,sim}_projection`** vs standalone laws is **proved** from **`Distr`** given those lemmas; **`A_ms3c_coupling_pair_relation`** is a **proved** lemma in **`ComparisonCouplingSchedule.ec`** (marginal **`ms3c_ax_payload_*`** facts on joint payload support ⇒ pointwise **`ms3c_real_sim_payload_coupled`** via **`supp_dprod`** and digest list agreement); remaining coupling debt is discharging four field-level public-carrier axioms (**`A_ms3c_payload_index_fields_match`**, **`A_ms3c_payload_ann_fields_match`**, **`A_ms3c_payload_stmt_fields_match`**, **`A_ms3c_payload_result_fields_match`**) packaged by proved lemma **`A_ms3c_payload_public_fields_match`**, plus three share-level axioms (**`A_ms3c_payload_true_challenge_share_match`**, **`A_ms3c_payload_false_challenge_shares_match`**, **`A_ms3c_payload_challenge_share_lengths_match`**) packaged by proved lemma **`A_ms3c_payload_challenge_shares_match`**, and related hooks. **`ms3c_ax_payload_announcements_match_shape`** is unconditional via **`L_ms3c_ax_payload_announcements_match_shape_total`** in **`ComparisonPayloadSupport.ec`**; **`ms3c_ax_payload_announcement_digests_preserved`** follows from **`ms3c_ax_payload_public_fields_match`** via **`L_ms3c_payload_announcement_digests_preserved_from_public_fields`** in **`ComparisonCouplingSchedule.ec`**; projection and marginal packaging lemmas live in **`ComparisonCouplingMarginals.ec`**; **`A_ms3c_payload_schedule_eq_from_coupling`** is a **proved** lemma in **`ComparisonCouplingSchedule.ec`** (re-exported by **`ComparisonCouplingTheorem.ec`** / **`ComparisonCoupling.ec`**). Payload support uses two share-length anchor axioms (**`A_ms3c_{real,sim}_from_seed_uses_share_length`**, lemmata **`L_ms3c_{real,sim}_seed_length_shape_valid`**) plus two public-index anchor axioms (**`A_ms3c_{real,sim}_from_seed_uses_public_indices`**) and derives support-shape as lemmas (**`A_ms3c_{real,sim}_payload_support_length_index_shapes`**) via `supp_dmap`, then uses proved **`L_ms3c_{real,sim}_payload_support_simulatable`**; announcement list shape on payloads is **proved** (**`L_ms3c_*_payload_ann_digest_list_shape_ok`**). False-clause path uses proved constructor lemmas **`L_ms3c_{real,sim}_constructor_false_index_nonempty`** (**`ms3c_public_false_branch_nonempty`** + public-index anchors + **`ms3c_public_shape_ok`**), placeholder **`L_ms3c_public_false_branch_nonempty_placeholder`** (`ComparisonTypes.ec` singleton false-branch placeholders), seed-level wrappers (**`A_ms3c_{real,sim}_seed_false_index_nonempty`**), narrow support axioms **`A_ms3c_{real,sim}_false_announcements_match_shares_on_support`** (false announcements vs **`sch_pubkey`** of false shares on support), and proved **`L_ms3c_false_clause_generation_on_support`** (**`ms3c_ax_payload_false_clauses_simulated`**); false-announcement nonempty is proved as lemmas (**`A_ms3c_real_seed_false_clause_nonempty`**, **`A_ms3c_sim_seed_false_clause_nonempty`**), and **`A_ms3c_false_clauses_hook_implies_schedule_nontrivial`** / **`A_ms3c_false_clause_simulation`** remain proved lemmas. Query digest: proved ann projection lemmas (**`L_ms3c_ann_digest_projection_correct`**, **`L_ms3c_ann_digests_alias`**), axiom **`A_ms3c_surface_query_digest_field_correct`** (programmed **`mscc_query_digest`** vs ROM **`ms_comparison_query_digest`** in **`primitives/FS.ec`** ), proved lemma **`A_ms3c_query_digest_statement_bound`** (same statement), proved **`L_ms3c_query_digest_uses_ann_digest_projection`** (alias), **`L_ms3c_query_digest_ordered_announcements_bound`**, **`L_ms3c_query_digest_statement_bound_hash`**, same-announcement lemmas **`L_ms3c_query_digest_no_witness_fields`** / **`L_ms3c_query_digest_excludes_witness_fields`**, and packaging **`L_ms3c_digest_announcement_only`** ( **`Hann`** is redundant with **`L_ms3c_ann_digest_list_shape`**). On the game layer, discharge canonical MS1 bound **`A_MS1_canonical_hash_binding_bound`** as a lemma layered over narrower hash-binding obligations **`A_MS1_hash_binding_surface_defined`**, **`A_MS1_hash_binding_bad_event_bounded`**, and **`A_MS1_hash_binding_replacement_advantage_bound`**; discharge canonical MS2 bound **`A_MS2_canonical_rom_programming_bound`** as a lemma layered over narrower ROM obligations **`A_MS2_rom_query_surface_defined`**, **`A_MS2_rom_programmed_points_bounded`**, and **`A_MS2_rom_reprogramming_advantage_bound`**; keep **`A_MS3a_canonical_bitness_exact_bound`**, **`A_MS3b_canonical_true_clause_bound`**, and **`A_MS3c_canonical_comparison_exact_bound`** as current canonical axioms. Generic step-wrapper axioms were removed, because canonical bounds on fixed `G_MS_*` views do not by themselves imply bounds for all arbitrary step-related `src`/`dst` views without an additional `Adv`-invariance theory over frozen observable/public fields. On LE, discharge **`A_LE_rejection_surrogate_sdist_bound`**, **`A_LE_fs_surrogate_sdist_bound`**, **`A_LE_rejection_surrogate_preserves_shape`**, **`A_LE_fs_surrogate_preserves_shape`** (and instantiate **`le_post_rejection_surrogate`** / **`le_fs_view_surrogate`**) from concrete rejection/FS distribution analysis alongside the remaining rejection/FS axiom bundles (`plans/LE_HVZK_proof_plan.md`); instantiate or relate **`le_distinguisher_event`** when bridging to concrete games; keep **`A_game_pr_LE_projection_semantics`** as the exact LE bridge/interface boundary until `game_pr` is concretized (`plans/G0_G1_G2_game_plan.md`).
+Then: shrink MS-3c axioms in **`ms/Comparison.ec`** (`plans/MS_3c_proof_plan.md`; **`d_ms3c_real_sim_payload_coupling`** is the **product** of the payload laws; each payload law is a **`dmap`** of **`d_ms3c_{real,sim}_payload_seed`**, itself the **product** of **Phase-1** **`dunit tt`** on **`unit`** for all four seed components (real/sim challenge and real/sim announcement); **`L_ms3c_{real,sim}_payload_seed_lossless`** and **`L_ms3c_{real,sim}_comparison_payload_law_lossless`** are **proved** from **`dprod_ll_auto`** / **`dmap_ll`** and the four component losslessness lemmata (**`L_ms3c_{real,sim}_seed_challenge_lossless`**, **`L_ms3c_real_seed_announcement_lossless`**, **`L_ms3c_sim_seed_announcement_lossless`**); **projection surface** in **`ComparisonTypes.ec`** (**`ms3c_public_*`**, **`ms3c_obs_*`**, **`ms3c_public_shape_ok`**, **`ms3c_observable_shape_ok`**, placeholder bodies) is the intended bridge before **`from_seed`** is concrete; only narrow **`A_ms3c_{real,sim}_from_seed_uses_public_indices`** and **`A_ms3c_{real,sim}_from_seed_uses_share_length`** remain until **`from_seed`** is fully concrete (**`L_ms3c_{real,sim}_seed_index_shape_valid`**, **`L_ms3c_{real,sim}_seed_length_shape_valid`**; see **`ComparisonPayloadSeeds.ec`**); marginal equality of **`d_ms3c_coupling_{real,sim}_projection`** vs standalone laws is **proved** from **`Distr`** given those lemmas; **`A_ms3c_coupling_pair_relation`** is a **proved** lemma in **`ComparisonCouplingSchedule.ec`** (marginal **`ms3c_ax_payload_*`** facts on joint payload support ⇒ pointwise **`ms3c_real_sim_payload_coupled`** via **`supp_dprod`** and digest list agreement); remaining coupling debt is discharging four field-level public-carrier axioms (**`A_ms3c_payload_index_fields_match`**, **`A_ms3c_payload_ann_fields_match`**, **`A_ms3c_payload_stmt_fields_match`**, **`A_ms3c_payload_result_fields_match`**) packaged by proved lemma **`A_ms3c_payload_public_fields_match`**, plus three share-level axioms (**`A_ms3c_payload_true_challenge_share_match`**, **`A_ms3c_payload_false_challenge_shares_match`**, **`A_ms3c_payload_challenge_share_lengths_match`**) packaged by proved lemma **`A_ms3c_payload_challenge_shares_match`**, and related hooks. **`ms3c_ax_payload_announcements_match_shape`** is unconditional via **`L_ms3c_ax_payload_announcements_match_shape_total`** in **`ComparisonPayloadSupportPublic.ec`** (re-exported by **`ComparisonPayloadSupport.ec`**); **`ms3c_ax_payload_announcement_digests_preserved`** follows from **`ms3c_ax_payload_public_fields_match`** via **`L_ms3c_payload_announcement_digests_preserved_from_public_fields`** in **`ComparisonCouplingSchedule.ec`**; projection and marginal packaging lemmas live in **`ComparisonCouplingMarginals.ec`**; **`A_ms3c_payload_schedule_eq_from_coupling`** is a **proved** lemma in **`ComparisonCouplingSchedule.ec`** (re-exported by **`ComparisonCouplingTheorem.ec`** / **`ComparisonCoupling.ec`**). Payload support uses two share-length anchor axioms (**`A_ms3c_{real,sim}_from_seed_uses_share_length`**, lemmata **`L_ms3c_{real,sim}_seed_length_shape_valid`**) plus two public-index anchor axioms (**`A_ms3c_{real,sim}_from_seed_uses_public_indices`**) and derives support-shape as lemmas (**`A_ms3c_{real,sim}_payload_support_length_index_shapes`**) via `supp_dmap`, then uses proved **`L_ms3c_{real,sim}_payload_support_simulatable`**; announcement list shape on payloads is **proved** (**`L_ms3c_*_payload_ann_digest_list_shape_ok`**). False-clause path uses proved constructor lemmas **`L_ms3c_{real,sim}_constructor_false_index_nonempty`** (**`ms3c_public_false_branch_nonempty`** + public-index anchors + **`ms3c_public_shape_ok`**), placeholder **`L_ms3c_public_false_branch_nonempty_placeholder`** (`ComparisonTypes.ec` singleton false-branch placeholders), seed-level wrappers (**`A_ms3c_{real,sim}_seed_false_index_nonempty`**), narrow support axioms **`A_ms3c_{real,sim}_false_announcements_match_shares_on_support`** (false announcements vs **`sch_pubkey`** of false shares on support), and proved **`L_ms3c_false_clause_generation_on_support`** (**`ms3c_ax_payload_false_clauses_simulated`**); false-announcement nonempty is proved as lemmas (**`A_ms3c_real_seed_false_clause_nonempty`**, **`A_ms3c_sim_seed_false_clause_nonempty`**), and **`A_ms3c_false_clauses_hook_implies_schedule_nontrivial`** / **`A_ms3c_false_clause_simulation`** remain proved lemmas. Query digest: proved ann projection lemmas (**`L_ms3c_ann_digest_projection_correct`**, **`L_ms3c_ann_digests_alias`**), axiom **`A_ms3c_clause_surface_query_digest_constructed`** (payload **`mscp_query_digest`** vs ROM **`ms_comparison_query_digest`** on folded announcement digests when **`ms_comparison_clause_simulatable (ms3c_make_clause_surface p)`**; discharge from **`from_seed`**), proved lemmas **`A_ms3c_surface_query_digest_field_correct`** / **`A_ms3c_query_digest_statement_bound`** (same equality on simulatable **`ms_comparison_clause_surface`**, via **`ms3c_clause_surface_to_payload`**), proved **`L_ms3c_query_digest_uses_ann_digest_projection`** (alias), **`L_ms3c_query_digest_ordered_announcements_bound`**, **`L_ms3c_query_digest_statement_bound_hash`**, same-announcement lemmas **`L_ms3c_query_digest_no_witness_fields`** / **`L_ms3c_query_digest_excludes_witness_fields`**, and packaging **`L_ms3c_digest_announcement_only`** ( **`Hann`** is redundant with **`L_ms3c_ann_digest_list_shape`**). On the game layer, discharge canonical MS1 bound **`A_MS1_canonical_hash_binding_bound`** as a lemma layered over narrower hash-binding obligations **`A_MS1_hash_binding_surface_defined`**, **`A_MS1_hash_binding_bad_event_bounded`**, and **`A_MS1_hash_binding_replacement_advantage_bound`**; discharge canonical MS2 bound **`A_MS2_canonical_rom_programming_bound`** as a lemma layered over narrower ROM obligations **`A_MS2_rom_query_surface_defined`**, **`A_MS2_rom_programmed_points_bounded`**, and **`A_MS2_rom_reprogramming_advantage_bound`**; keep **`A_MS3a_canonical_bitness_exact_bound`**, **`A_MS3b_canonical_true_clause_bound`**, and **`A_MS3c_canonical_comparison_exact_bound`** as current canonical axioms. Generic step-wrapper axioms were removed, because canonical bounds on fixed `G_MS_*` views do not by themselves imply bounds for all arbitrary step-related `src`/`dst` views without an additional `Adv`-invariance theory over frozen observable/public fields. On LE, discharge **`A_LE_rejection_surrogate_sdist_bound`**, **`A_LE_fs_surrogate_sdist_bound`**, **`A_LE_rejection_surrogate_preserves_shape`**, **`A_LE_fs_surrogate_preserves_shape`** (and instantiate **`le_post_rejection_surrogate`** / **`le_fs_view_surrogate`**) from concrete rejection/FS distribution analysis alongside the remaining rejection/FS axiom bundles (`plans/LE_HVZK_proof_plan.md`); instantiate or relate **`le_distinguisher_event`** when bridging to concrete games; keep **`A_game_pr_LE_projection_semantics`** as the exact LE bridge/interface boundary until `game_pr` is concretized (`plans/G0_G1_G2_game_plan.md`).
 
 ## Syntax / checker notes
 

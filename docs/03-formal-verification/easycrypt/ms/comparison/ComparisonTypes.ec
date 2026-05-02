@@ -40,6 +40,24 @@ op ms3c_make_clause_surface (p : ms3c_comparison_clause_payload) : ms_comparison
      mscc_query_digest = p.`mscp_query_digest;
      mscc_programmed_challenge = p.`mscp_programmed_challenge |}.
 
+(* Inverse of `ms3c_make_clause_surface` (definitional bijection on carriers). *)
+op ms3c_clause_surface_to_payload (c : ms_comparison_clause_surface) : ms3c_comparison_clause_payload =
+  {| mscp_true_clause_ix = c.`mscc_true_clause_ix;
+     mscp_false_clause_ixs = c.`mscc_false_clause_ixs;
+     mscp_ann_true = c.`mscc_ann_true;
+     mscp_ann_false = c.`mscc_ann_false;
+     mscp_share_true = c.`mscc_share_true;
+     mscp_share_false = c.`mscc_share_false;
+     mscp_global_challenge = c.`mscc_global_challenge;
+     mscp_query_digest = c.`mscc_query_digest;
+     mscp_programmed_challenge = c.`mscc_programmed_challenge |}.
+
+lemma L_ms3c_make_clause_surface_clause_surface_to_payload (c : ms_comparison_clause_surface) :
+  ms3c_make_clause_surface (ms3c_clause_surface_to_payload c) = c.
+proof.
+by rewrite /ms3c_make_clause_surface /ms3c_clause_surface_to_payload; case: c.
+qed.
+
 op ms3c_make_real_clause_surface (p : ms3c_real_comparison_payload) : ms_comparison_clause_surface =
   ms3c_make_clause_surface p.
 
@@ -97,6 +115,14 @@ pred ms_comparison_clause_simulatable (c : ms_comparison_clause_surface) =
   0 <= c.`mscc_true_clause_ix /\
   size c.`mscc_ann_false = size c.`mscc_share_false /\
   size c.`mscc_ann_false = size c.`mscc_false_clause_ixs.
+
+lemma L_ms3c_comparison_clause_simulatable_make_surface_to_payload (c : ms_comparison_clause_surface) :
+  ms_comparison_clause_simulatable (ms3c_make_clause_surface (ms3c_clause_surface_to_payload c)) <=>
+  ms_comparison_clause_simulatable c.
+proof.
+rewrite L_ms3c_make_clause_surface_clause_surface_to_payload.
+by [].
+qed.
 
 pred ms_false_clause_simulated (c : ms_comparison_clause_surface) =
   forall (i : int), 0 <= i => i < size c.`mscc_ann_false =>

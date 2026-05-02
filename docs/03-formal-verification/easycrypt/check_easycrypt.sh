@@ -33,6 +33,9 @@ FILES=(
   ms/comparison/ComparisonDigests.ec
   ms/comparison/ComparisonPayloadTypes.ec
   ms/comparison/ComparisonPayloadSeeds.ec
+  ms/comparison/ComparisonPayloadSupportTypes.ec
+  ms/comparison/ComparisonPayloadSupportPublic.ec
+  ms/comparison/ComparisonPayloadSupportShares.ec
   ms/comparison/ComparisonPayloadSupport.ec
   ms/comparison/ComparisonPayloadFalseClause.ec
   ms/comparison/ComparisonPayload.ec
