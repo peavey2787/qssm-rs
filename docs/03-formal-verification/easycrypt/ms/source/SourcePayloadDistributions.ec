@@ -2,7 +2,8 @@ require import AllCore List Distr.
 require import QssmTypes.
 require import SourceTypes SourceConstructors.
 
-(* Abstract seed laws and payload-level `dmap` pushforwards (MS-3a). *)
+(* Abstract seed laws and payload-level `dmap` pushforwards (MS-3a). Joint real/sim
+   seed coupling scaffold: `SourceCouplingTypes.ec` (`d_ms3a_real_sim_payload_seed_coupling`). *)
 op d_ms3a_real_payload_seed (x : ms_public_input) : ms3a_real_payload_seed distr.
 op d_ms3a_sim_payload_seed (x : ms_public_input) (s : seed) : ms3a_sim_payload_seed distr.
 

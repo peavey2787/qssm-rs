@@ -296,7 +296,17 @@
     "SourceConstructors": {
       "direct": false,
       "kind": "ec",
-      "digest": "87c10eabbd18924459d212e0965d8061"
+      "digest": "5212c5288bdd936ee6b4f669502085e5"
+    },
+    "SourceCouplingTheorem": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "aad8127dd08daea28291f66fe43a9ee2"
+    },
+    "SourceCouplingTypes": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "c94944ca9a06a5b53ac0e7e26de8061e"
     },
     "SourceDistributionLemmas": {
       "direct": false,
@@ -306,7 +316,7 @@
     "SourceDistributions": {
       "direct": true,
       "kind": "ec",
-      "digest": "403c65d4768182ea94a22fe3a9882e61"
+      "digest": "ef069e2f3a41a1922a095dc5e6f0a548"
     },
     "SourceModel": {
       "direct": false,
@@ -321,12 +331,12 @@
     "SourcePayloadDistributions": {
       "direct": false,
       "kind": "ec",
-      "digest": "ce569d698197692c1f19456ae1980826"
+      "digest": "0f020038dbaf2838be05a37c547cd262"
     },
     "SourceTypes": {
       "direct": false,
       "kind": "ec",
-      "digest": "c532bacce7f1047d1e4f183b92602234"
+      "digest": "7d4db2dfc01f5a04a4b7eb7d237f4a82"
     },
     "StdBigop": {
       "direct": false,

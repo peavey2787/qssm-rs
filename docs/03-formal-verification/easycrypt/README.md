@@ -92,37 +92,40 @@ The script type-checks theories in dependency order. Each file is checked with `
 33. `ms/Comparison.ec` (facade)
 34. `ms/SourceModel.ec` (MS-3a observable frame: abstract transcript ops, pack, digest helpers; abstract **`ms3a_public_*`** spine projections + **`ms3a_public_{bitness,transcript}_shape_ok`** from `ms_public_input`)
 35. `ms/source/SourceTypes.ec`
-36. `ms/source/SourceConstructors.ec`
+36. `ms/source/SourceConstructors.ec` (constructors + Phase-1 **`ms3a_phase1_{real,sim}_payload_from_public_input`** from **`ms3a_public_*`**; imports **`SourceModel`**)
 37. `ms/source/SourcePayloadDistributions.ec` (payload seed + `dmap` payload laws)
-38. `ms/source/SourceBitnessDistributions.ec` (bitness-layer `dmap` + `dmap_comp` folds)
-39. `ms/source/SourceDistributionLemmas.ec` (support / constructor-image / payload-pair helpers)
-40. `ms/source/SourceObservableDistributions.ec` (observable pushforwards + layer bridge)
-41. `ms/source/SourceDistributions.ec` (facade: `require export` of 37–40)
-42. `ms/source/SourceProgrammedObligations.ec`
-43. `ms/source/SourcePublicFieldObligations.ec`
-44. `ms/source/SourceScheduleObligations.ec`
-45. `ms/source/SourceObligations.ec` (facade)
-46. `ms/source/SourceTheorem.ec`
-47. `ms/MS.ec`
-48. `le/LESurface.ec`
-49. `le/LESetB.ec`
-50. `le/LERejection.ec`
-51. `le/LEFsProgramming.ec`
-52. `le/LEViewIndist.ec`
-53. `le/LEStatisticalDistance.ec`
-54. `le/LEHVZK.ec`
-55. `le/LEModel.ec` (facade)
-56. `sim/Simulator.ec`
-57. `games/GameTypes.ec`
-58. `games/GameViews.ec`
-59. `games/GameAdvantage.ec`
-60. `games/GameMSHopTypes.ec`
-61. `games/GameMSHopTransitions.ec`
-62. `games/GameMSHopComposition.ec`
-63. `games/GameMSHops.ec` (facade)
-64. `games/GameLEBridge.ec`
-65. `games/Games.ec` (facade)
-66. `theorem/MainTheorem.ec`
+38. `ms/source/SourceCouplingTypes.ec` (MS-3a joint seed law: product + coupled predicate + projection ops)
+39. `ms/source/SourceCouplingAxioms.ec` (comments + definitional unfold hook; narrow game axioms reserved)
+40. `ms/source/SourceCouplingTheorem.ec` (marginal / `supp_dprod` / layer-map lemmas for the coupling)
+41. `ms/source/SourceBitnessDistributions.ec` (bitness-layer `dmap` + `dmap_comp` folds)
+42. `ms/source/SourceDistributionLemmas.ec` (support / constructor-image / payload-pair helpers)
+43. `ms/source/SourceObservableDistributions.ec` (observable pushforwards + layer bridge)
+44. `ms/source/SourceDistributions.ec` (facade: `require export` of payload, **`SourceCouplingTheorem`**, bitness, distribution lemmas, observable)
+45. `ms/source/SourceProgrammedObligations.ec`
+46. `ms/source/SourcePublicFieldObligations.ec` (paired-public axioms + **`L_ms3a_seed_pair_*_when_seeds_are_phase1`** conditional spine lemmas)
+47. `ms/source/SourceScheduleObligations.ec`
+48. `ms/source/SourceObligations.ec` (facade)
+49. `ms/source/SourceTheorem.ec`
+50. `ms/MS.ec`
+51. `le/LESurface.ec`
+52. `le/LESetB.ec`
+53. `le/LERejection.ec`
+54. `le/LEFsProgramming.ec`
+55. `le/LEViewIndist.ec`
+56. `le/LEStatisticalDistance.ec`
+57. `le/LEHVZK.ec`
+58. `le/LEModel.ec` (facade)
+59. `sim/Simulator.ec`
+60. `games/GameTypes.ec`
+61. `games/GameViews.ec`
+62. `games/GameAdvantage.ec`
+63. `games/GameMSHopTypes.ec`
+64. `games/GameMSHopTransitions.ec`
+65. `games/GameMSHopComposition.ec`
+66. `games/GameMSHops.ec` (facade)
+67. `games/GameLEBridge.ec`
+68. `games/Games.ec` (facade)
+69. `theorem/MainTheorem.ec`
 
 If your EasyCrypt build exposes the binary as `ec` instead of `easycrypt`, the script falls back automatically when `easycrypt` is missing.
 
@@ -181,6 +184,9 @@ docs/03-formal-verification/easycrypt/
 │   │   ├── SourceTypes.ec
 │   │   ├── SourceConstructors.ec
 │   │   ├── SourcePayloadDistributions.ec
+│   │   ├── SourceCouplingTypes.ec
+│   │   ├── SourceCouplingAxioms.ec
+│   │   ├── SourceCouplingTheorem.ec
 │   │   ├── SourceBitnessDistributions.ec
 │   │   ├── SourceDistributionLemmas.ec
 │   │   ├── SourceObservableDistributions.ec

@@ -54,6 +54,9 @@ FILES=(
   ms/source/SourceTypes.ec
   ms/source/SourceConstructors.ec
   ms/source/SourcePayloadDistributions.ec
+  ms/source/SourceCouplingTypes.ec
+  ms/source/SourceCouplingAxioms.ec
+  ms/source/SourceCouplingTheorem.ec
   ms/source/SourceBitnessDistributions.ec
   ms/source/SourceDistributionLemmas.ec
   ms/source/SourceObservableDistributions.ec

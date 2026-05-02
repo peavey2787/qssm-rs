@@ -35,7 +35,11 @@ type ms3a_sim_source_payload = {
    abstract; `ms3a_{real,sim}_payload_from_seed` is the identity (see `SourceConstructors.ec`)
    so execution/games can refine `d_ms3a_*_payload_seed` without changing the payload field
    surface. Public-input spine projections mirroring those six fields live in
-   `ms/SourceModel.ec` (`ms3a_public_*`). Paired-public alignment: four `A_ms3a_seed_pair_*_source_shared` axioms on
+   `ms/SourceModel.ec` (`ms3a_public_*`); Phase-1 nominal payload records from that spine
+   are `ms3a_phase1_{real,sim}_payload_from_public_input` in `SourceConstructors.ec`.
+   Joint seed coupling scaffold (product law + projections + coupled-predicate
+   packaging): `SourceCouplingTypes.ec` / `SourceCouplingTheorem.ec` (re-exported via
+   `SourceDistributions.ec`). Paired-public alignment: four `A_ms3a_seed_pair_*_source_shared` axioms on
    joint seed support feed four proved `A_ms3a_seed_pair_*_on_support` lemmas for
    `from_seed` payloads, which feed proved lemma `A_ms3a_seed_pair_public_fields_on_support`
    (`SourcePublicFieldObligations.ec` / `SourceConstructors.ec`; re-exported via
