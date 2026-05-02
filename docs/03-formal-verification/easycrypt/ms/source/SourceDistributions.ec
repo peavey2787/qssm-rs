@@ -23,6 +23,27 @@ op d_ms3a_bitness_sim_source (x : ms_public_input) (s : seed) :
   ms3a_bitness_layer_source distr =
   dmap (d_ms3a_sim_source_payload x s) ms3a_bitness_layer_source_of_sim_payload.
 
+(* Bitness-layer sources factor through abstract seed laws (`Distr.dmap_comp`). *)
+lemma ms3a_bitness_real_source_as_seed_dmap (x : ms_public_input) :
+  d_ms3a_bitness_real_source x =
+  dmap (d_ms3a_real_payload_seed x)
+    (ms3a_bitness_layer_source_of_real_payload \o ms3a_real_payload_from_seed x).
+proof.
+rewrite /d_ms3a_bitness_real_source /d_ms3a_real_source_payload.
+by rewrite (dmap_comp (ms3a_real_payload_from_seed x)
+  ms3a_bitness_layer_source_of_real_payload (d_ms3a_real_payload_seed x)).
+qed.
+
+lemma ms3a_bitness_sim_source_as_seed_dmap (x : ms_public_input) (s : seed) :
+  d_ms3a_bitness_sim_source x s =
+  dmap (d_ms3a_sim_payload_seed x s)
+    (ms3a_bitness_layer_source_of_sim_payload \o ms3a_sim_payload_from_seed x s).
+proof.
+rewrite /d_ms3a_bitness_sim_source /d_ms3a_sim_source_payload.
+by rewrite (dmap_comp (ms3a_sim_payload_from_seed x s)
+  ms3a_bitness_layer_source_of_sim_payload (d_ms3a_sim_payload_seed x s)).
+qed.
+
 (* `dmap` membership / preimage: `Distr.supp_dmap` (proved), not an axiom.     *)
 
 lemma distr_mem_eq ['a] (d : 'a distr) (z z' : 'a) :

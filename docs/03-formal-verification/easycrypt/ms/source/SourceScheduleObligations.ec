@@ -3,11 +3,29 @@ require import QssmTypes FS SchnorrBranch BitnessOne BitnessVector.
 require import SourceTypes SourceConstructors SourceDistributions.
 require import SourceProgrammedObligations SourcePublicFieldObligations.
 
-(* Schedule axiom, `ms3a_ax_*` bridges from payload support, and constructor lemmas. *)
+(* Schedule: seed-level coupling axiom + payload form proved via `dmap_comp`
+   (`ms3a_bitness_*_source_as_seed_dmap` in `SourceDistributions.ec`). *)
 
-axiom A_ms3a_payload_dmap_bitness_layer_schedule (x : ms_public_input) (s : seed) :
+axiom A_ms3a_bitness_layer_seed_schedule (x : ms_public_input) (s : seed) :
+  dmap (d_ms3a_real_payload_seed x)
+    (ms3a_bitness_layer_source_of_real_payload \o ms3a_real_payload_from_seed x) =
+  dmap (d_ms3a_sim_payload_seed x s)
+    (ms3a_bitness_layer_source_of_sim_payload \o ms3a_sim_payload_from_seed x s).
+
+lemma A_ms3a_payload_dmap_bitness_layer_schedule (x : ms_public_input) (s : seed) :
   dmap (d_ms3a_real_source_payload x) ms3a_bitness_layer_source_of_real_payload =
   dmap (d_ms3a_sim_source_payload x s) ms3a_bitness_layer_source_of_sim_payload.
+proof.
+rewrite (_ : dmap (d_ms3a_real_source_payload x) ms3a_bitness_layer_source_of_real_payload
+           = d_ms3a_bitness_real_source x).
+  by rewrite /d_ms3a_bitness_real_source.
+rewrite (_ : dmap (d_ms3a_sim_source_payload x s) ms3a_bitness_layer_source_of_sim_payload
+           = d_ms3a_bitness_sim_source x s).
+  by rewrite /d_ms3a_bitness_sim_source.
+rewrite (ms3a_bitness_real_source_as_seed_dmap x)
+  (ms3a_bitness_sim_source_as_seed_dmap x s).
+exact (A_ms3a_bitness_layer_seed_schedule x s).
+qed.
 
 lemma ms3a_ax_real_wf_from_payload_support (x : ms_public_input) :
   (forall (p : ms3a_real_source_payload),

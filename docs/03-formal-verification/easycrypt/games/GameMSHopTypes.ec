@@ -1,4 +1,6 @@
-require import AllCore List.
+require import AllCore List Ring.
+require import StdOrder.
+(*---*) import RealOrder.
 require import QssmTypes Algebra Simulator FS TrueClause Comparison ComparisonTypes ComparisonDigests ComparisonPayload ComparisonCoupling ComparisonCouplingTypes ComparisonCouplingAxioms ComparisonCouplingTheorem ComparisonTheorem.
 require import SourceDistributions SourceTheorem MS LESurface LEModel.
 require import GameTypes GameViews GameAdvantage.
@@ -204,9 +206,24 @@ axiom A_MS3b_canonical_true_clause_bound :
       ms_true_clause_points_are_blinder_points vb tb p clause_pub r) =>
     Adv (G_MS_after_bitness x xms s) (G_MS_after_comparison x xms s) D <= 0%r.
 
-(* MS3c canonical comparison exact-simulation obligation on the concrete stage
-   pair used in the G0->G1 telescope. *)
-axiom A_MS3c_canonical_comparison_exact_bound :
+(* MS3c game layer: the comparison MS-3c implication bundle (same shape as
+   `ms3c_comparison_exact_step` / `MS_3c_exact_comparison_simulation`) is assumed
+   to make the two canonical stage views **indistinguishable** to `game_pr` for
+   every distinguisher. The schedule-level fact `ms_comparison_exact_simulation_equiv`
+   is proved in `ms/comparison/`; linking it (and the bundle) to `game_pr` is the
+   remaining execution-semantics gap. *)
+axiom A_MS3c_comparison_bundle_implies_game_pr_equality :
+  forall (x : qssm_public_input) (xms : ms_public_input) (s : seed) (D : distinguisher),
+    (ms3c_comparison_query_digest_ann_only xms s =>
+      ms3c_comparison_global_programmable_under_A2 xms s =>
+      ms3c_false_clauses_simulator_generated xms s =>
+      ms3c_true_clause_schnorr_from_blinder xms s =>
+      ms3c_clause_challenge_shares_sum xms s =>
+      ms_comparison_exact_simulation_equiv xms s) =>
+    game_pr (G_MS_after_comparison x xms s) D = game_pr (G_MS_sim x xms s) D.
+
+(* Canonical MS3c hop bound: zero advantage from `Adv_def` once `game_pr` agrees. *)
+lemma A_MS3c_canonical_comparison_exact_bound :
   forall (x : qssm_public_input) (xms : ms_public_input) (s : seed) (D : distinguisher),
     (ms3c_comparison_query_digest_ann_only xms s =>
       ms3c_comparison_global_programmable_under_A2 xms s =>
@@ -215,9 +232,19 @@ axiom A_MS3c_canonical_comparison_exact_bound :
       ms3c_clause_challenge_shares_sum xms s =>
       ms_comparison_exact_simulation_equiv xms s) =>
     Adv (G_MS_after_comparison x xms s) (G_MS_sim x xms s) D <= 0%r.
+proof.
+move=> x xms s D Hb.
+have Heq := A_MS3c_comparison_bundle_implies_game_pr_equality x xms s D Hb.
+rewrite Adv_def Heq.
+have ->: game_pr (G_MS_sim x xms s) D - game_pr (G_MS_sim x xms s) D = 0%r by ring.
+by apply lerr.
+qed.
 
 (* Generic src/dst wrapper bounds were removed: the step predicates permit
    arbitrary frozen observable/public payloads, so canonical bounds on
    `G_MS_*` do not imply uniform bounds on all step-related views without an
-   additional invariance theory for `Adv`. Canonical bounds above are the only
-   remaining MS game-hop proof obligations. *)
+   additional invariance theory for `Adv`. Remaining MS game-hop proof
+   obligations are the axioms above (MS1/MS2/MS3a/MS3b narrow obligations plus
+   **`A_MS3c_comparison_bundle_implies_game_pr_equality`** for the MS3c hop);
+   **`A_MS3c_canonical_comparison_exact_bound`** is a proved lemma from
+   **`Adv_def`** once that bridge holds. *)
