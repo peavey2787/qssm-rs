@@ -6,7 +6,7 @@ require import ComparisonTypes.
    ms3c_real_seed_challenge and ms3c_sim_seed_challenge are intentionally unit for
    now: challenge-side randomness for real and sim will move into richer carriers
    when transcript and ROM wiring land; laws are dunit on unit (see
-   ComparisonPayloadSeeds.ec) so losslessness is proved without axioms.
+   ComparisonPayloadSeedTypes.ec) so losslessness is proved without axioms.
    ms3c_real_seed_announcement and ms3c_sim_seed_announcement are unit for
    Phase-1 scaffolding only; not the final semantic announcement or Schnorr
    samplers (transcript and simulator wiring still open). *)

@@ -3,7 +3,7 @@ require import Algebra QssmTypes FS SchnorrBranch TrueClause BitnessOne.
 require import ComparisonTypes ComparisonDigests ComparisonPayload ComparisonCouplingTypes.
 
 (* Field-level hook bridges: real vs sim payload laws are independent `dmap`
-   pushforwards of seeds (`ComparisonPayloadSeeds.ec`). Under Phase-1, all
+   pushforwards of seeds (`ComparisonPayloadSeeds.ec` facade). Under Phase-1, all
    public-field fragments (including query digest / `mscp_query_digest`) follow
    from shared `from_seed` + `L_ms3c_cross_support_real_sim_payload_equal`
    (`pr = ps` on cross-support). Reintroduce fragment axioms if real/sim
@@ -154,7 +154,7 @@ qed.
    Payload-law losslessness: lemmas L_ms3c_real_comparison_payload_law_lossless and
    L_ms3c_sim_comparison_payload_law_lossless in ComparisonPayload.ec via dmap_ll from
    L_ms3c_real_payload_seed_lossless / L_ms3c_sim_payload_seed_lossless (dprod_ll_auto
-   from the four component losslessness lemmata in ComparisonPayloadSeeds.ec).
+   from the four component losslessness lemmata in ComparisonPayloadSeedTypes.ec).
    Predicate ms3c_ax_payload_announcements_match_shape is proved for all x,s as
    L_ms3c_ax_payload_announcements_match_shape_total (ComparisonPayload.ec), hence it
    is not a premise below. Likewise ms3c_ax_payload_announcement_digests_preserved

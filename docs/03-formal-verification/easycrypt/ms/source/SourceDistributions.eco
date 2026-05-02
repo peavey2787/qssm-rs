@@ -61,7 +61,7 @@
     "ComparisonCouplingAxioms": {
       "direct": false,
       "kind": "ec",
-      "digest": "62cfc23d6acd58a8fe3247fbbfd61e29"
+      "digest": "ff5bc3e79fcb37aea469fa5502ac05b6"
     },
     "ComparisonCouplingMarginals": {
       "direct": false,
@@ -96,12 +96,27 @@
     "ComparisonPayloadFalseClause": {
       "direct": false,
       "kind": "ec",
-      "digest": "b1084861fdb40fdd3f8a3c7efe6c2639"
+      "digest": "5c4c8fb8724f1e989f04a4b5f6747646"
+    },
+    "ComparisonPayloadFromSeed": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "98ce3462031067dd1e968137cddcc030"
+    },
+    "ComparisonPayloadSeedAnchors": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "ea383f3e139cf9458d80f563307a5039"
+    },
+    "ComparisonPayloadSeedTypes": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "2759c4c3619b161f37142587d2666224"
     },
     "ComparisonPayloadSeeds": {
       "direct": false,
       "kind": "ec",
-      "digest": "f97347386e5184025841fdfd986703fb"
+      "digest": "30b3acab92ba8477d76b9ac823583e7c"
     },
     "ComparisonPayloadSupport": {
       "direct": false,
@@ -121,12 +136,12 @@
     "ComparisonPayloadSupportTypes": {
       "direct": false,
       "kind": "ec",
-      "digest": "4f6df88202fdbd59336a8f343f9751d5"
+      "digest": "6985af51ea9ec269e4064dfe3544406f"
     },
     "ComparisonPayloadTypes": {
       "direct": false,
       "kind": "ec",
-      "digest": "4b18f33c7fb52e34c4926aebd7b4d1c4"
+      "digest": "c9ead760b770aaa1d78b6d553ddeee26"
     },
     "ComparisonTheorem": {
       "direct": false,

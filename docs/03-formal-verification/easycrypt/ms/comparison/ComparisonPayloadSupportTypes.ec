@@ -10,6 +10,25 @@ pred ms3c_real_payload_on_support (x : ms_public_input) (pr : ms3c_real_comparis
 pred ms3c_sim_payload_on_support (x : ms_public_input) (s : seed) (ps : ms3c_sim_comparison_payload) =
   ps \in d_ms3c_sim_comparison_payload x s.
 
+lemma L_ms3c_real_payload_on_support_eq_phase1 (x : ms_public_input) (pr : ms3c_real_comparison_payload) :
+  ms3c_real_payload_on_support x pr => pr = ms3c_phase1_payload_from_public_input x.
+proof.
+move=> Hsup.
+rewrite /ms3c_real_payload_on_support /d_ms3c_real_comparison_payload in Hsup.
+case/supp_dmap: Hsup => sr [_ Heq].
+by rewrite Heq /ms3c_real_payload_from_seed.
+qed.
+
+lemma L_ms3c_sim_payload_on_support_eq_phase1
+  (x : ms_public_input) (s : seed) (ps : ms3c_sim_comparison_payload) :
+  ms3c_sim_payload_on_support x s ps => ps = ms3c_phase1_payload_from_public_input x.
+proof.
+move=> Hsup.
+rewrite /ms3c_sim_payload_on_support /d_ms3c_sim_comparison_payload in Hsup.
+case/supp_dmap: Hsup => ss [_ Heq].
+by rewrite Heq /ms3c_sim_payload_from_seed.
+qed.
+
 pred ms3c_payload_pair_public_fields_match
   (pr : ms3c_real_comparison_payload) (ps : ms3c_sim_comparison_payload) =
   pr.`mscp_true_clause_ix = ps.`mscp_true_clause_ix /\

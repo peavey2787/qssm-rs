@@ -103,18 +103,28 @@ split.
 exact (A_ms3c_real_seed_false_clause_nonempty x sr).
 qed.
 
-(* Narrow support-local obligations: false announcements are Schnorr public keys
-   of the corresponding false-branch shares (discharge from sim constructor /
-   transcript wiring; real side from honest construction or same algebraic law). *)
-axiom A_ms3c_real_false_announcements_match_shares_on_support :
+(* Phase-1 payloads on support are exactly `ms3c_phase1_payload_from_public_input x`,
+   whose false announcements are `map sch_pubkey` of the false shares; hence
+   `ms_false_clause_simulated` holds without extra axioms. *)
+lemma A_ms3c_real_false_announcements_match_shares_on_support :
   forall (x : ms_public_input) (pr : ms3c_real_comparison_payload),
     ms3c_real_payload_on_support x pr =>
     ms_false_clause_simulated (ms3c_make_real_clause_surface pr).
+proof.
+move=> x pr Hsup.
+rewrite (L_ms3c_real_payload_on_support_eq_phase1 x pr Hsup).
+exact (L_ms_false_clause_simulated_phase1_from_public_input x).
+qed.
 
-axiom A_ms3c_sim_false_announcements_match_shares_on_support :
+lemma A_ms3c_sim_false_announcements_match_shares_on_support :
   forall (x : ms_public_input) (s : seed) (ps : ms3c_sim_comparison_payload),
     ms3c_sim_payload_on_support x s ps =>
     ms_false_clause_simulated (ms3c_make_sim_clause_surface ps).
+proof.
+move=> x s ps Hsup.
+rewrite (L_ms3c_sim_payload_on_support_eq_phase1 x s ps Hsup).
+exact (L_ms_false_clause_simulated_phase1_from_public_input x).
+qed.
 
 lemma L_ms3c_false_clause_generation_on_support (x : ms_public_input) (s : seed) :
   ms3c_ax_payload_false_clauses_simulated x s.
