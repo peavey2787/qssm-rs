@@ -57,21 +57,31 @@ op ms3c_comparison_stmt_digest (x : ms_public_input) : digest = witness.
 
 op ms3c_public_stmt_digest (x : ms_public_input) : digest = witness.
 
-op ms3c_public_false_branch_count (_x : ms_public_input) : int = 0.
+op ms3c_public_false_branch_count (_x : ms_public_input) : int = 1.
 
 op ms3c_public_true_clause_index (_x : ms_public_input) : int = 0.
 
-op ms3c_public_false_clause_indices (_x : ms_public_input) : int list = [].
+op ms3c_public_false_clause_indices (_x : ms_public_input) : int list = [0].
 
 op ms3c_obs_programmed_challenge (_obs : ms_transcript_observable) : digest = witness.
 
 op ms3c_obs_share_true (_obs : ms_transcript_observable) : scalar = witness.
 
-op ms3c_obs_shares_false (_obs : ms_transcript_observable) : scalar list = [].
+op ms3c_obs_shares_false (_obs : ms_transcript_observable) : scalar list = [witness].
 
 op ms3c_obs_ann_true (_obs : ms_transcript_observable) : sch_point = witness.
 
-op ms3c_obs_anns_false (_obs : ms_transcript_observable) : sch_point list = [].
+op ms3c_obs_anns_false (_obs : ms_transcript_observable) : sch_point list = [witness].
+
+(* Strict positivity of public false-branch arity (comparison has ≥1 false clause). *)
+pred ms3c_public_false_branch_nonempty (x : ms_public_input) =
+  0 < ms3c_public_false_branch_count x.
+
+lemma L_ms3c_public_false_branch_nonempty_placeholder (x : ms_public_input) :
+  ms3c_public_false_branch_nonempty x.
+proof.
+by rewrite /ms3c_public_false_branch_nonempty /=.
+qed.
 
 pred ms3c_public_shape_ok (x : ms_public_input) =
   0 <= ms3c_public_true_clause_index x /\

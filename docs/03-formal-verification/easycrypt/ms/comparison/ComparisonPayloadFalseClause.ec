@@ -5,26 +5,53 @@ require import ComparisonTypes ComparisonDigests ComparisonPayloadTypes
 
 (* False-branch width, simulation on support, and simulatable packaging. *)
 
-axiom A_ms3c_real_constructor_false_index_nonempty :
-  forall (x : ms_public_input) (sr : ms3c_real_payload_seed),
-    0 < size (ms3c_real_payload_from_seed x sr).`mscp_false_clause_ixs.
+lemma L_ms3c_real_constructor_false_index_nonempty (x : ms_public_input) (sr : ms3c_real_payload_seed) :
+  ms3c_public_false_branch_nonempty x =>
+  ms3c_real_from_seed_public_index_anchor x sr =>
+  0 < size (ms3c_real_payload_from_seed x sr).`mscp_false_clause_ixs.
+proof.
+move=> Hnb [Hixs _].
+have -> : size (ms3c_real_payload_from_seed x sr).`mscp_false_clause_ixs =
+           size (ms3c_public_false_clause_indices x).
+  by rewrite Hixs.
+have [_ [_ Hsz]] : ms3c_public_shape_ok x.
+  by rewrite /ms3c_public_shape_ok /=; split=> //; split=> //.
+by rewrite Hsz; exact Hnb.
+qed.
 
-axiom A_ms3c_sim_constructor_false_index_nonempty :
-  forall (x : ms_public_input) (s : seed) (ss : ms3c_sim_payload_seed),
-    0 < size (ms3c_sim_payload_from_seed x s ss).`mscp_false_clause_ixs.
+lemma L_ms3c_sim_constructor_false_index_nonempty
+  (x : ms_public_input) (s : seed) (ss : ms3c_sim_payload_seed) :
+  ms3c_public_false_branch_nonempty x =>
+  ms3c_sim_from_seed_public_index_anchor x s ss =>
+  0 < size (ms3c_sim_payload_from_seed x s ss).`mscp_false_clause_ixs.
+proof.
+move=> Hnb [Hixs _].
+have -> : size (ms3c_sim_payload_from_seed x s ss).`mscp_false_clause_ixs =
+           size (ms3c_public_false_clause_indices x).
+  by rewrite Hixs.
+have [_ [_ Hsz]] : ms3c_public_shape_ok x.
+  by rewrite /ms3c_public_shape_ok /=; split=> //; split=> //.
+by rewrite Hsz; exact Hnb.
+qed.
 
 lemma A_ms3c_real_seed_false_index_nonempty :
   forall (x : ms_public_input) (sr : ms3c_real_payload_seed),
     0 < size (ms3c_real_payload_from_seed x sr).`mscp_false_clause_ixs.
 proof.
-by move=> x sr; exact (A_ms3c_real_constructor_false_index_nonempty x sr).
+move=> x sr.
+exact (L_ms3c_real_constructor_false_index_nonempty x sr
+  (L_ms3c_public_false_branch_nonempty_placeholder x)
+  (A_ms3c_real_from_seed_uses_public_indices x sr)).
 qed.
 
 lemma A_ms3c_sim_seed_false_index_nonempty :
   forall (x : ms_public_input) (s : seed) (ss : ms3c_sim_payload_seed),
     0 < size (ms3c_sim_payload_from_seed x s ss).`mscp_false_clause_ixs.
 proof.
-by move=> x s ss; exact (A_ms3c_sim_constructor_false_index_nonempty x s ss).
+move=> x s ss.
+exact (L_ms3c_sim_constructor_false_index_nonempty x s ss
+  (L_ms3c_public_false_branch_nonempty_placeholder x)
+  (A_ms3c_sim_from_seed_uses_public_indices x s ss)).
 qed.
 
 lemma A_ms3c_real_seed_false_clause_nonempty :
@@ -76,16 +103,34 @@ split.
 exact (A_ms3c_real_seed_false_clause_nonempty x sr).
 qed.
 
-axiom A_ms3c_false_clause_generation_on_support :
-  forall (x : ms_public_input) (s : seed),
-    ms3c_ax_payload_false_clauses_simulated x s.
+(* Narrow support-local obligations: false announcements are Schnorr public keys
+   of the corresponding false-branch shares (discharge from sim constructor /
+   transcript wiring; real side from honest construction or same algebraic law). *)
+axiom A_ms3c_real_false_announcements_match_shares_on_support :
+  forall (x : ms_public_input) (pr : ms3c_real_comparison_payload),
+    ms3c_real_payload_on_support x pr =>
+    ms_false_clause_simulated (ms3c_make_real_clause_surface pr).
+
+axiom A_ms3c_sim_false_announcements_match_shares_on_support :
+  forall (x : ms_public_input) (s : seed) (ps : ms3c_sim_comparison_payload),
+    ms3c_sim_payload_on_support x s ps =>
+    ms_false_clause_simulated (ms3c_make_sim_clause_surface ps).
+
+lemma L_ms3c_false_clause_generation_on_support (x : ms_public_input) (s : seed) :
+  ms3c_ax_payload_false_clauses_simulated x s.
+proof.
+rewrite /ms3c_ax_payload_false_clauses_simulated /=.
+split.
+  by move=> pr Hsup; apply (A_ms3c_real_false_announcements_match_shares_on_support x pr Hsup).
+by move=> ps Hsup; apply (A_ms3c_sim_false_announcements_match_shares_on_support x s ps Hsup).
+qed.
 
 lemma A_ms3c_false_clause_simulation :
   forall (x : ms_public_input) (s : seed),
     ms3c_false_clauses_payload_schedule_nontrivial x s =>
     ms3c_ax_payload_false_clauses_simulated x s.
 proof.
-by move=> x s _; exact (A_ms3c_false_clause_generation_on_support x s).
+by move=> x s _; exact (L_ms3c_false_clause_generation_on_support x s).
 qed.
 
 lemma L_ms_comparison_clause_simulatable_of_payload_length_index
