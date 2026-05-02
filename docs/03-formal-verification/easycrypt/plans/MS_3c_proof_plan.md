@@ -106,8 +106,9 @@ Proof path:
 | **`ms3c_real_sim_payload_coupled`** / **`ms3c_ax_payload_coupling_pair_relation`** / **`ms3c_ax_payload_support_coupling`** | predicate | Pairwise payload coupling, pair-relation on support, and bundled support-coupling predicate. |
 | **`d_ms3c_real_sim_payload_coupling`** | **definition** | **Independent product** **`d_ms3c_real_comparison_payload x `*` d_ms3c_sim_comparison_payload x s`** (`ComparisonCouplingTypes.ec`). |
 | **`d_ms3c_coupling_{real,sim}_projection`** | operator | Marginals: **`dmap`** of the joint law through **`fst`** / **`snd`**. |
-| **`d_ms3c_{real,sim}_seed_{challenge,announcement}`**, **`d_ms3c_{real,sim}_payload_seed`**, **`ms3c_{real,sim}_payload_from_seed`** | operator | Real/sim payload seed is a **pair** (challenge material `*` announcement material); joint seed law = **independent product** of the two component laws; **`d_ms3c_{real,sim}_comparison_payload`** = **`dmap`** pushforward (`ComparisonPayloadSeeds.ec`). Bodies for the four **`d_ms3c_*_seed_*`** laws and the two **`from_seed`** maps are **still abstract**—see comment block in **`ComparisonPayloadSeeds.ec`**. |
-| **`A_ms3c_{real,sim}_seed_{challenge,announcement}_lossless`** | axiom (×4) | Each component sampler **`is_lossless`**; should follow from concrete **`d_ms3c_*`** definitions (e.g. **`duniform_ll`**, ROM products). **No proof** while those **`op`**s lack defining equations. |
+| **`d_ms3c_{real,sim}_seed_{challenge,announcement}`**, **`d_ms3c_{real,sim}_payload_seed`**, **`ms3c_{real,sim}_payload_from_seed`** | operator | Real/sim payload seed is a **pair** (challenge material `*` announcement material); joint seed law = **independent product** of the two component laws; **`d_ms3c_{real,sim}_comparison_payload`** = **`dmap`** pushforward (`ComparisonPayloadSeeds.ec`). **`d_ms3c_real_seed_challenge`** is defined (**`dunit tt`** on **`unit`**); the other three component laws and both **`from_seed`** maps remain abstract—see **`ComparisonPayloadSeeds.ec`**. |
+| **`L_ms3c_real_seed_challenge_lossless`** | **lemma** (`ComparisonPayloadSeeds.ec`) | **`d_ms3c_real_seed_challenge`** is **`dunit tt`** on **`ms3c_real_seed_challenge = unit`** (Phase-1 scaffolding until FS challenge material is modeled). |
+| **`A_ms3c_{real,sim}_seed_{announcement,challenge}_lossless`** (remaining) | axiom (×3) | **`d_ms3c_real_seed_announcement`**, **`d_ms3c_sim_seed_challenge`**, **`d_ms3c_sim_seed_announcement`** still abstract; each should become **`is_lossless`** from concrete definitions (**`duniform_ll`**, ROM products, etc.). |
 | **`L_ms3c_real_payload_seed_lossless`** / **`L_ms3c_sim_payload_seed_lossless`** | **lemma** (`ComparisonPayloadSeeds.ec`) | **`dprod_ll_auto`** combines the two component losslessness facts per side. |
 | **`L_ms3c_real_comparison_payload_law_lossless`** / **`L_ms3c_sim_comparison_payload_law_lossless`** | **lemma** (`ComparisonPayloadSeeds.ec`) | **`dmap_ll`** + **`L_ms3c_*_payload_seed_lossless`** ⇒ payload laws lossless (enables **`dprod_marginalL`** / **`dprod_marginalR`**). |
 | **`L_dmap_dprod_fst_lossless`** / **`L_dmap_dprod_snd_lossless`** | **lemma** (`ComparisonCouplingMarginals.ec`) | Generic: lossless opposite side ⇒ **`dmap (da `*` db) fst = da`** (resp. **`snd = db`**). |
@@ -125,8 +126,93 @@ Proof path:
 | **`MS_3c_comparison_clause_obligations`** | lemma | Bundles digest / false / true / share obligations. |
 | **`L_ms3c_rom_scalar_response_for_any_digest`** | lemma | **`Ha2`** ⇒ pointwise ROM responses. |
 
-**Still open:** instantiate the four component samplers **`d_ms3c_{real,sim}_seed_{challenge,announcement}`** and **`ms3c_{real,sim}_payload_from_seed`** from transcript / game material; **prove** the four **`A_ms3c_*_seed_*_lossless`** facts from concrete lossless draws (e.g. **`duniform`** / ROM products). Per-point announcement hashing (**`ms_single_bit_branch_digest`**). **`A_ms3c_coupling_pair_relation`** is now a **proved lemma** (pointwise **`ms3c_real_sim_payload_coupled`** on **`d_ms3c_real_sim_payload_coupling`** support follows from the five **`ms3c_ax_payload_*`** predicates and **`supp_dprod`**); remaining coupling **proof debt** is the hook-to-**`ms3c_ax_payload_*`** bridges: four field-level public-carrier axioms packaged by proved lemma **`A_ms3c_payload_public_fields_match`**; three share-level axioms (**`A_ms3c_payload_true_challenge_share_match`**, **`A_ms3c_payload_false_challenge_shares_match`**, **`A_ms3c_payload_challenge_share_lengths_match`**) packaged by proved lemma **`A_ms3c_payload_challenge_shares_match`**; plus false/true clause packaging. Also: support-shape bridge lemmas (**`A_ms3c_{real,sim}_payload_support_length_index_shapes`**) and their four seed-shape axioms, the false-clause narrowing axioms (**`A_ms3c_{real,sim}_seed_false_index_nonempty`**, **`A_ms3c_false_clause_generation_on_support`**), **`A_ms3c_surface_query_digest_field_correct`** (query digest field = ROM hash on statement + ordered announcement digests; lemma **`A_ms3c_query_digest_statement_bound`** is the same fact), and the MS-3b/reparam packaging hooks (**`ms3c_true_clause_uses_ms3b_blinder_point`**, **`ms3c_true_clause_reparam_ready`**) from the game. **`A_ms3c_payload_schedule_eq_from_coupling`** remains a **proved** lemma: it follows from **`ms3c_ax_payload_support_coupling`** once the packaged equalities hold.
+**Still open:** instantiate the remaining three component samplers (**`d_ms3c_real_seed_announcement`**, **`d_ms3c_sim_seed_challenge`**, **`d_ms3c_sim_seed_announcement`**) and **`ms3c_{real,sim}_payload_from_seed`** from transcript / game material (**`d_ms3c_real_seed_challenge`** is already **`dunit tt`** with proved **`L_ms3c_real_seed_challenge_lossless`**); **prove** the three remaining **`A_ms3c_*_seed_*_lossless`** facts from concrete lossless draws (e.g. **`duniform`** / ROM products). Per-point announcement hashing (**`ms_single_bit_branch_digest`**). **`A_ms3c_coupling_pair_relation`** is now a **proved lemma** (pointwise **`ms3c_real_sim_payload_coupled`** on **`d_ms3c_real_sim_payload_coupling`** support follows from the five **`ms3c_ax_payload_*`** predicates and **`supp_dprod`**); remaining coupling **proof debt** is the hook-to-**`ms3c_ax_payload_*`** bridges: four field-level public-carrier axioms packaged by proved lemma **`A_ms3c_payload_public_fields_match`**; three share-level axioms (**`A_ms3c_payload_true_challenge_share_match`**, **`A_ms3c_payload_false_challenge_shares_match`**, **`A_ms3c_payload_challenge_share_lengths_match`**) packaged by proved lemma **`A_ms3c_payload_challenge_shares_match`**; plus false/true clause packaging. Also: support-shape bridge lemmas (**`A_ms3c_{real,sim}_payload_support_length_index_shapes`**) and their four seed-shape axioms, the false-clause narrowing axioms (**`A_ms3c_{real,sim}_seed_false_index_nonempty`**, **`A_ms3c_false_clause_generation_on_support`**), **`A_ms3c_surface_query_digest_field_correct`** (query digest field = ROM hash on statement + ordered announcement digests; lemma **`A_ms3c_query_digest_statement_bound`** is the same fact), and the MS-3b/reparam packaging hooks (**`ms3c_true_clause_uses_ms3b_blinder_point`**, **`ms3c_true_clause_reparam_ready`**) from the game. **`A_ms3c_payload_schedule_eq_from_coupling`** remains a **proved** lemma: it follows from **`ms3c_ax_payload_support_coupling`** once the packaged equalities hold.
+
+## Concrete MS-3c payload constructor design (architecture)
+
+This section is a **design-only** blueprint to discharge the **19** remaining **`A_ms3c_*`** axioms in **`ms/comparison/`** without changing existing **theorem statements** (only definitions and proofs behind abstract ops). It aligns **`ComparisonPayloadTypes.ec`**, **`ComparisonPayloadSeeds.ec`**, and later **game hops** with **`ms_transcript_observable`** / **`ms_v2_transcript_observable`** (`ms/TranscriptObservable.ec`, `ms/SourceModel.ec`).
+
+### 1. Seed carriers (replace abstract types)
+
+**Goal:** make **`ms3c_real_seed_challenge`**, **`ms3c_real_seed_announcement`**, **`ms3c_sim_seed_challenge`**, **`ms3c_sim_seed_announcement`** concrete record or tuple types large enough to hold every **`mscp_*`** field that is **not** fixed deterministically from **`ms_public_input`** alone.
+
+**Suggested split (conceptual):**
+
+- **Challenge side (`*_seed_challenge`):** material that fixes comparison **indices**, **challenge digests** (**`mscp_global_challenge`**, **`mscp_programmed_challenge`**), and **scalar shares** (**`mscp_share_true`**, **`mscp_share_false`**) after FS / split logic—typically finite-domain draws or ROM-derived scalars/digests bounded by the MS comparison arity implied by **`x`** (needs a length discipline from **`ms_public_input`** or a separate arity field once **`ms_public_input`** is structured).
+
+- **Announcement side (`*_seed_announcement`):** material that fixes **Schnorr announcement points** (**`mscp_ann_true`**, **`mscp_ann_false`**) and any auxiliary randomness for **simulated** false branches on the sim side; real side uses honest announcement construction, sim side uses simulator map from shares (per **`ms_false_clause_simulated`**).
+
+**Real vs sim:** types may **coincide** structurally (same tuple shape) with different **`d_ms3c_*`** laws, or differ if sim packs extra simulator coins; the abstract API already separates real vs sim theory names.
+
+### 2. **`ms3c_real_payload_from_seed` / `ms3c_sim_payload_from_seed`**
+
+Define both as **total** functions **`ms_public_input` → seed → `ms3c_comparison_clause_payload`**, assembling the canonical payload record:
+
+1. **Indices** **`mscp_true_clause_ix`**, **`mscp_false_clause_ixs`:** from challenge seed (or from **`x`** if fixed by statement); must satisfy **`0 <= true_ix`** and list length consistency for **`A_ms3c_*_seed_index_shape_valid`** and **`A_ms3c_{real,sim}_constructor_false_index_nonempty`** (nonempty false list when comparison is nontrivial).
+
+2. **Shares** **`mscp_share_true`**, **`mscp_share_false`:** from challenge seed; lengths must match **`mscp_false_clause_ixs`** / **`mscp_ann_false`** arity.
+
+3. **Announcements** **`mscp_ann_true`**, **`mscp_ann_false`:** from announcement seed (real: honest openings; sim: **`sch_pubkey`** of false shares entrywise for **`ms_false_clause_simulated`** on support).
+
+4. **Digests** **`mscp_global_challenge`**, **`mscp_programmed_challenge`:** from challenge seed; enforce **`mscp_programmed_challenge = mscp_global_challenge`** on all seeds if the hook **`ms3c_clause_challenge_shares_sum`** is to be discharged by construction.
+
+5. **Query digest** **`mscp_query_digest`:** set **after** announcement points are fixed, as  
+   **`ms_comparison_query_digest stmt ann_digests`**  
+   where **`stmt`** is the comparison statement digest tied to **`x`** (today **`ms3c_comparison_stmt_digest x`** is **`witness`**—must be aligned with **`ms_statement_digest`** / **`msv2_statement_digest`** path via **`ms/SourceModel.ec`** and transcript bridges), and **`ann_digests`** is **`ms3c_clause_ann_digests_from_surface`** applied to the **folded** surface built from the same payload (or built directly from the same announcement fields). This is exactly the obligation behind **`A_ms3c_surface_query_digest_field_correct`**.
+
+### 3. Component distributions **`d_ms3c_*_seed_*`**
+
+Define each as a **composition** of finitely many **`duniform`**, **`dunit`**, **`dmap`** of ROM query (lossless when the ROM read is lossless on its domain), and **independent products** where the spec samples independently. Then:
+
+- **`A_ms3c_*_seed_*_lossless`:** real challenge done (**`L_ms3c_real_seed_challenge_lossless`**); remaining three `by` **`duniform_ll`**, **`dmap_ll`**, **`dprod_ll_auto`** once defined.
+
+**Dependency:** finite **`Finite`**/`enum` carriers or proved full-support for each draw; arity of false-branch lists must be fixed from **`x`** (or carried inside **`ms_public_input`**) so **`duniform`** domains are well-typed.
+
+### 4. Coupling vs transcript spine (risk)
+
+The abstract coupling law is the **independent product** of real and sim **marginal** payload laws. The **seven** public/share **fragment axioms** assert cross-marginal **field equality** for arbitrary **`(pr, ps)`** on joint support—something **not** forced by the product alone. **Transcript-level design:** if the **game** builds real and sim comparison payloads from the **same** observable slice **`ms_transcript_observable`** (or same coupling variable) by **deterministic** maps, then those equalities become **`supp_dmap` / preimage** lemmas rather than axioms. If the game truly uses **independent** RNG for the two sides, the abstract axioms remain the honest semantic interface.
+
+**`games/GameViews.ec`** today uses **`witness`** for **`ms_transcript_observable`** in **`mk_ms_game_view`**—constructor work must eventually pass **real** **`obs`** per stage so **`from_seed`** (or a renamed pipeline) can read comparison fields.
+
+### 5. Axiom → discharge map (target definitions)
+
+| Axiom group | Discharged by (intended) |
+|-------------|---------------------------|
+| **Seed losslessness** | **`d_ms3c_real_seed_challenge`** done (**`dunit`**); three remaining component laws + standard lossless lemmas. |
+| **Seed shape ×4** | **`ms3c_*_payload_from_seed`** definitions + list arithmetic on fixed arities from **`x`**. |
+| **Public-field fragments ×4** | Same transcript spine or shared coupling map ⇒ pointwise equality of index / ann / stmt / result fields on joint support; or retained axioms if margins stay independent. |
+| **Challenge-share fragments ×3** | Same; **`A_ms3c_payload_challenge_share_lengths_match`** may become definitional once false-list equality is proved. |
+| **False-index nonempty ×2** | Constructor chooses **`0 < size false_clause_ixs`** whenever comparison hop is active; may need **`ms_public_input`** predicate “comparison nontrivial”. |
+| **`A_ms3c_false_clause_generation_on_support`** | **`from_seed`** sim path sets **`ms_false_clause_simulated`** on all support payloads (sim announcements = **`sch_pubkey`** of shares). |
+| **`A_ms3c_surface_query_digest_field_correct`** | **`mscp_query_digest`** assigned as **`ms_comparison_query_digest stmt (…ann digests…)`** with **`stmt`** matching ROM programming; proof via **`/=`** + **`L_ms3c_ann_digest_projection_correct`** once **`stmt`** is the programmed statement digest. |
+
+### 6. Dependency risks
+
+| Risk | Mitigation |
+|------|------------|
+| **`ms_transcript_observable`** abstract | Use **`ms/SourceModel.ec`** accessors (**`ms_statement_digest`**, **`ms_comparison_global_challenge`**, …) and **`ms_v2_transcript_observable`** refinements; add **`ms3c_observable_comparison_slice`** bridge ops or refine **`ms_public_input`** to carry statement + arity. |
+| **`ms_public_input`** abstract | Need digest arity / clause count for **`duniform`** domains; may require **`ms_public_input`** refinement or side conditions on games. |
+| **Game view `witness` observable** | **`games/GameMSHop*.ec`** / **`GameViews.ec`**: thread **`obs`** through stages so comparison sampling can depend on frozen transcript fields. |
+| **ROM / FS** | **`A_ms3c_surface_query_digest_field_correct`** and **`ms3c_clause_challenge_shares_sum`** tie to **`hash_domain`** / ROM programming lemmas (`primitives/FS.ec`, **`ms_query_to_scalar`** path). |
+
+### 7. Recommended implementation sequence
+
+1. **Smallest safe patch (comments + one witness reduction only if needed):** extend **`ComparisonPayloadSeeds.ec`** comment block with **arity source** for false lists (pointer to future **`ms_public_input`** refinement); **no** theorem statement changes.
+
+2. **Types (`ComparisonPayloadTypes.ec`):** replace abstract seed types with concrete tuples (or records) documented in this plan; keep **`ms3c_*_payload_seed`** as product type.
+
+3. **Constructors (`ComparisonPayloadSeeds.ec`):** define **`ms3c_real_payload_from_seed`**, **`ms3c_sim_payload_from_seed`**; define **`d_ms3c_*_seed_*`**; prove **`L_ms3c_*_payload_seed_lossless`** lemmas replace axioms; prove **shape** lemmas replace shape axioms.
+
+4. **Digest (`ComparisonDigests.ec`):** prove **`A_ms3c_surface_query_digest_field_correct`** from constructor step (5) + **`ms_comparison_query_digest`** definition.
+
+5. **False clause (`ComparisonPayloadFalseClause.ec`):** discharge constructor nonemptiness + **`A_ms3c_false_clause_generation_on_support`** from sim constructor + transcript invariants.
+
+6. **Coupling axioms (`ComparisonCouplingAxioms.ec`):** replace fragment axioms with lemmas under **shared-spine** sampling theorem, **or** keep axioms until game coupling is modeled.
+
+7. **Games:** replace **`witness`** **`obs`** with constructed observable; lemmas **`L_ms_game_view_*_mk`** pattern extend to real **`obs`**.
+
+**Expected to remain axiomatic after first patch:** any property that is **true in the execution spec** but not forced by EasyCrypt definitions (e.g. ROM collision resistance, MS-3b operand hooks) should stay outside this constructor layer; the **first** patch should leave **all 19 axioms** until step 3 removes them in bulk.
 
 ## Next target
 
-Discharge the four **`A_ms3c_payload_{index,ann,stmt,result}_fields_match`** axioms and the three share-level axioms (**`A_ms3c_payload_true_challenge_share_match`**, **`A_ms3c_payload_false_challenge_shares_match`**, **`A_ms3c_payload_challenge_share_lengths_match`**), or instantiate **`ms3c_{real,sim}_payload_from_seed`** so real/sim carriers agree on support by construction. In parallel: instantiate the **four** component samplers and **`ms3c_{real,sim}_payload_from_seed`**, then prove the four **`A_ms3c_*_seed_*_lossless`** axioms from the game; refine payload carriers if the execution spec diverges; add `dmap` preimage lemmas for obligation predicates on **support**; and/or wire the comparison marginal in **`games/Games.ec`** (G0→G1).
+See **§ Concrete MS-3c payload constructor design** above: prefer **defining seed types + `from_seed` + component laws** before spending more proof effort on the seven cross-marginal fragment axioms in isolation. In parallel: thread **`ms_transcript_observable`** through **`games/GameViews.ec`** / hop modules; align **`ms3c_comparison_stmt_digest`** with transcript statement digest. Narrower incremental work (fragment axioms, digest axiom alone) remains valid if constructor work is blocked on **`ms_public_input`** structure.
