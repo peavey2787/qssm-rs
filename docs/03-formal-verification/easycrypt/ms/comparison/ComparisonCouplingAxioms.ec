@@ -3,13 +3,15 @@ require import Algebra QssmTypes FS SchnorrBranch TrueClause BitnessOne.
 require import ComparisonTypes ComparisonDigests ComparisonPayload ComparisonCouplingTypes.
 
 (* Field-level hook bridges: real vs sim payload laws are independent `dmap`
-   pushforwards of abstract seeds (`ComparisonPayloadSeeds.ec`); matching public
-   fields or challenge-share carriers on **cross-marginal** support is not
-   derivable from the five hooks alone without instantiating
-   `ms3c_{real,sim}_payload_from_seed`. Split by carrier fragment so games can
-   discharge obligations incrementally. *)
+   pushforwards of seeds (`ComparisonPayloadSeeds.ec`). Under Phase-1, all
+   public-field fragments (including query digest / `mscp_query_digest`) follow
+   from shared `from_seed` + `L_ms3c_cross_support_real_sim_payload_equal`
+   (`pr = ps` on cross-support). Reintroduce fragment axioms if real/sim
+   `from_seed` diverge. Digest *surface* wiring vs ROM is
+   `A_ms3c_clause_surface_query_digest_constructed` (proved lemma) in
+   `ComparisonDigests.ec`. *)
 
-axiom A_ms3c_payload_index_fields_match :
+lemma A_ms3c_payload_index_fields_match :
   forall (x : ms_public_input) (s : seed),
     ms3c_comparison_query_digest_ann_only x s =>
     ms3c_comparison_global_programmable_under_A2 x s =>
@@ -17,8 +19,14 @@ axiom A_ms3c_payload_index_fields_match :
     ms3c_true_clause_schnorr_from_blinder x s =>
     ms3c_clause_challenge_shares_sum x s =>
     ms3c_ax_payload_index_fields_match x s.
+proof.
+move=> x s _ _ _ _ _.
+rewrite /ms3c_ax_payload_index_fields_match => pr ps Hpr Hps.
+have Heq := L_ms3c_cross_support_real_sim_payload_equal x s pr ps Hpr Hps.
+by rewrite /ms3c_payload_pair_index_fields_match Heq.
+qed.
 
-axiom A_ms3c_payload_ann_fields_match :
+lemma A_ms3c_payload_ann_fields_match :
   forall (x : ms_public_input) (s : seed),
     ms3c_comparison_query_digest_ann_only x s =>
     ms3c_comparison_global_programmable_under_A2 x s =>
@@ -26,8 +34,14 @@ axiom A_ms3c_payload_ann_fields_match :
     ms3c_true_clause_schnorr_from_blinder x s =>
     ms3c_clause_challenge_shares_sum x s =>
     ms3c_ax_payload_ann_fields_match x s.
+proof.
+move=> x s _ _ _ _ _.
+rewrite /ms3c_ax_payload_ann_fields_match => pr ps Hpr Hps.
+have Heq := L_ms3c_cross_support_real_sim_payload_equal x s pr ps Hpr Hps.
+by rewrite /ms3c_payload_pair_ann_fields_match Heq.
+qed.
 
-axiom A_ms3c_payload_stmt_fields_match :
+lemma A_ms3c_payload_stmt_fields_match :
   forall (x : ms_public_input) (s : seed),
     ms3c_comparison_query_digest_ann_only x s =>
     ms3c_comparison_global_programmable_under_A2 x s =>
@@ -35,8 +49,14 @@ axiom A_ms3c_payload_stmt_fields_match :
     ms3c_true_clause_schnorr_from_blinder x s =>
     ms3c_clause_challenge_shares_sum x s =>
     ms3c_ax_payload_stmt_fields_match x s.
+proof.
+move=> x s _ _ _ _ _.
+rewrite /ms3c_ax_payload_stmt_fields_match => pr ps Hpr Hps.
+have Heq := L_ms3c_cross_support_real_sim_payload_equal x s pr ps Hpr Hps.
+by rewrite /ms3c_payload_pair_stmt_fields_match Heq.
+qed.
 
-axiom A_ms3c_payload_result_fields_match :
+lemma A_ms3c_payload_result_fields_match :
   forall (x : ms_public_input) (s : seed),
     ms3c_comparison_query_digest_ann_only x s =>
     ms3c_comparison_global_programmable_under_A2 x s =>
@@ -44,6 +64,12 @@ axiom A_ms3c_payload_result_fields_match :
     ms3c_true_clause_schnorr_from_blinder x s =>
     ms3c_clause_challenge_shares_sum x s =>
     ms3c_ax_payload_result_fields_match x s.
+proof.
+move=> x s _ _ _ _ _.
+rewrite /ms3c_ax_payload_result_fields_match => pr ps Hpr Hps.
+have Heq := L_ms3c_cross_support_real_sim_payload_equal x s pr ps Hpr Hps.
+by rewrite /ms3c_payload_pair_result_fields_match Heq.
+qed.
 
 lemma A_ms3c_payload_public_fields_match :
   forall (x : ms_public_input) (s : seed),
@@ -62,7 +88,7 @@ have Hres := A_ms3c_payload_result_fields_match x s H1 H2 H3 H4 H5.
 exact (L_ms3c_ax_payload_public_fields_match_from_fragments x s Hix Hann Hstmt Hres).
 qed.
 
-axiom A_ms3c_payload_true_challenge_share_match :
+lemma A_ms3c_payload_true_challenge_share_match :
   forall (x : ms_public_input) (s : seed),
     ms3c_comparison_query_digest_ann_only x s =>
     ms3c_comparison_global_programmable_under_A2 x s =>
@@ -70,8 +96,14 @@ axiom A_ms3c_payload_true_challenge_share_match :
     ms3c_true_clause_schnorr_from_blinder x s =>
     ms3c_clause_challenge_shares_sum x s =>
     ms3c_ax_payload_true_challenge_share_match x s.
+proof.
+move=> x s _ _ _ _ _.
+rewrite /ms3c_ax_payload_true_challenge_share_match => pr ps Hpr Hps.
+have Heq := L_ms3c_cross_support_real_sim_payload_equal x s pr ps Hpr Hps.
+by rewrite /ms3c_payload_pair_true_challenge_share_match Heq.
+qed.
 
-axiom A_ms3c_payload_false_challenge_shares_match :
+lemma A_ms3c_payload_false_challenge_shares_match :
   forall (x : ms_public_input) (s : seed),
     ms3c_comparison_query_digest_ann_only x s =>
     ms3c_comparison_global_programmable_under_A2 x s =>
@@ -79,8 +111,14 @@ axiom A_ms3c_payload_false_challenge_shares_match :
     ms3c_true_clause_schnorr_from_blinder x s =>
     ms3c_clause_challenge_shares_sum x s =>
     ms3c_ax_payload_false_challenge_shares_match x s.
+proof.
+move=> x s _ _ _ _ _.
+rewrite /ms3c_ax_payload_false_challenge_shares_match => pr ps Hpr Hps.
+have Heq := L_ms3c_cross_support_real_sim_payload_equal x s pr ps Hpr Hps.
+by rewrite /ms3c_payload_pair_false_challenge_shares_match Heq.
+qed.
 
-axiom A_ms3c_payload_challenge_share_lengths_match :
+lemma A_ms3c_payload_challenge_share_lengths_match :
   forall (x : ms_public_input) (s : seed),
     ms3c_comparison_query_digest_ann_only x s =>
     ms3c_comparison_global_programmable_under_A2 x s =>
@@ -88,6 +126,12 @@ axiom A_ms3c_payload_challenge_share_lengths_match :
     ms3c_true_clause_schnorr_from_blinder x s =>
     ms3c_clause_challenge_shares_sum x s =>
     ms3c_ax_payload_challenge_share_lengths_match x s.
+proof.
+move=> x s _ _ _ _ _.
+rewrite /ms3c_ax_payload_challenge_share_lengths_match => pr ps Hpr Hps.
+have Heq := L_ms3c_cross_support_real_sim_payload_equal x s pr ps Hpr Hps.
+by rewrite /ms3c_payload_pair_challenge_share_lengths_match Heq.
+qed.
 
 lemma A_ms3c_payload_challenge_shares_match :
   forall (x : ms_public_input) (s : seed),

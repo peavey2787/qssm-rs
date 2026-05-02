@@ -1,6 +1,6 @@
 require import AllCore List Distr.
 require import Algebra QssmTypes FS SchnorrBranch TrueClause BitnessOne.
-require import ComparisonTypes ComparisonDigests ComparisonPayloadTypes.
+require import ComparisonTypes ComparisonPayloadTypes.
 
 (* Seed laws, shape axioms, and payload laws as `dmap` pushforwards of seeds.
 
@@ -9,14 +9,18 @@ require import ComparisonTypes ComparisonDigests ComparisonPayloadTypes.
    d_ms3c_sim_seed_announcement are dunit tt on unit with proved losslessness
    lemmata (Phase-1 scaffolding; not final ROM, FS, or Schnorr announcement
    samplers). Real/sim index-shape are lemmata L_ms3c_{real,sim}_seed_index_shape_valid
-   from ms3c_public_shape_ok (placeholder public ops) plus narrow axioms
+   from ms3c_public_shape_ok (placeholder public ops) plus proved
    A_ms3c_{real,sim}_from_seed_uses_public_indices. Real/sim ann/share lengths are
-   lemmata L_ms3c_{real,sim}_seed_length_shape_valid from narrow
-   A_ms3c_{real,sim}_from_seed_uses_share_length. Remaining: from_seed wiring beyond
-   anchors until constructors are concrete.
+   lemmata L_ms3c_{real,sim}_seed_length_shape_valid from proved
+   A_ms3c_{real,sim}_from_seed_uses_share_length.
 
-   Missing for proofs: defining equations for ms3c real and sim payload from seed
-   beyond the narrow anchor axioms. *)
+   Phase-1 constructors (`ms3c_phase1_payload_from_public_input`) are deterministic
+   in the seed (`unit` carriers): indices and false-branch list lengths follow
+   `ms3c_public_false_clause_indices x`; per-branch announcements/shares/digests
+   are `witness` scaffolding only — not final Schnorr/ROM/transcript semantics.
+   `mscp_query_digest` is `ms_comparison_query_digest (ms3c_public_stmt_digest x)`
+   on the announcement digest list from `ms3c_make_clause_surface` of the same
+   Phase-1 carriers (see `A_ms3c_clause_surface_query_digest_constructed`). *)
 
 (* Trivial real challenge-side law: placeholder until FS/challenge material is
    modeled in `ms3c_real_seed_challenge`; lossless by `dunit_ll`. *)
@@ -81,23 +85,61 @@ by rewrite /d_ms3c_sim_payload_seed; apply dprod_ll_auto;
    apply (L_ms3c_sim_seed_announcement_lossless x s)].
 qed.
 
-op ms3c_real_payload_from_seed (x : ms_public_input) :
-  ms3c_real_payload_seed -> ms3c_real_comparison_payload.
+(* Phase-1 structural payload: public indices, false-branch arity from
+   `size (ms3c_public_false_clause_indices x)` (equals `ms3c_public_false_branch_count x`
+   under `ms3c_public_shape_ok x`); placeholder points/scalars/digests. *)
+op ms3c_phase1_payload_from_public_input (x : ms_public_input) : ms3c_comparison_clause_payload =
+  {| mscp_true_clause_ix = ms3c_public_true_clause_index x;
+     mscp_false_clause_ixs = ms3c_public_false_clause_indices x;
+     mscp_ann_true = witness;
+     mscp_ann_false =
+       map (fun (_i : int) => witness) (ms3c_public_false_clause_indices x);
+     mscp_share_true = witness;
+     mscp_share_false =
+       map (fun (_i : int) => witness) (ms3c_public_false_clause_indices x);
+     mscp_global_challenge = witness;
+     mscp_query_digest =
+       ms_comparison_query_digest (ms3c_public_stmt_digest x)
+         (ms3c_clause_ann_digests_from_surface
+           (ms3c_make_clause_surface
+             {| mscp_true_clause_ix = ms3c_public_true_clause_index x;
+                mscp_false_clause_ixs = ms3c_public_false_clause_indices x;
+                mscp_ann_true = witness;
+                mscp_ann_false =
+                  map (fun (_i : int) => witness) (ms3c_public_false_clause_indices x);
+                mscp_share_true = witness;
+                mscp_share_false =
+                  map (fun (_i : int) => witness) (ms3c_public_false_clause_indices x);
+                mscp_global_challenge = witness;
+                mscp_query_digest = witness;
+                mscp_programmed_challenge = witness |}));
+     mscp_programmed_challenge = witness |}.
 
-op ms3c_sim_payload_from_seed (x : ms_public_input) (s : seed) :
-  ms3c_sim_payload_seed -> ms3c_sim_comparison_payload.
+op ms3c_real_payload_from_seed (x : ms_public_input) (sr : ms3c_real_payload_seed) :
+  ms3c_real_comparison_payload =
+  ms3c_phase1_payload_from_public_input x.
+
+op ms3c_sim_payload_from_seed (x : ms_public_input) (s : seed) (ss : ms3c_sim_payload_seed) :
+  ms3c_sim_comparison_payload =
+  ms3c_phase1_payload_from_public_input x.
 
 (* Share-length wiring: index anchor ties ann_false to false_clause_ixs / public
-   indices but does not constrain mscp_share_false; discharge via constructor or
-   this narrow anchor until from_seed is concrete. *)
+   indices but does not constrain mscp_share_false; discharged by Phase-1 map
+   construction (same length lists from `ms3c_public_false_clause_indices x`). *)
 pred ms3c_real_from_seed_share_length_anchor
   (x : ms_public_input) (sr : ms3c_real_payload_seed) =
   size (ms3c_real_payload_from_seed x sr).`mscp_share_false =
   size (ms3c_real_payload_from_seed x sr).`mscp_ann_false.
 
-axiom A_ms3c_real_from_seed_uses_share_length :
+lemma A_ms3c_real_from_seed_uses_share_length :
   forall (x : ms_public_input) (sr : ms3c_real_payload_seed),
     ms3c_real_from_seed_share_length_anchor x sr.
+proof.
+move=> x sr.
+rewrite /ms3c_real_from_seed_share_length_anchor /ms3c_real_payload_from_seed
+  /ms3c_phase1_payload_from_public_input /=.
+by rewrite !size_map.
+qed.
 
 lemma L_ms3c_real_seed_length_shape_valid (x : ms_public_input) (sr : ms3c_real_payload_seed) :
   ms3c_real_from_seed_share_length_anchor x sr =>
@@ -118,9 +160,15 @@ pred ms3c_real_from_seed_public_index_anchor (x : ms_public_input) (sr : ms3c_re
   size (ms3c_real_payload_from_seed x sr).`mscp_ann_false =
     size (ms3c_real_payload_from_seed x sr).`mscp_false_clause_ixs.
 
-axiom A_ms3c_real_from_seed_uses_public_indices :
+lemma A_ms3c_real_from_seed_uses_public_indices :
   forall (x : ms_public_input) (sr : ms3c_real_payload_seed),
     ms3c_real_from_seed_public_index_anchor x sr.
+proof.
+move=> x sr.
+rewrite /ms3c_real_from_seed_public_index_anchor /ms3c_real_payload_from_seed
+  /ms3c_phase1_payload_from_public_input /=.
+by split=> //; rewrite size_map.
+qed.
 
 lemma L_ms3c_real_seed_index_shape_valid (x : ms_public_input) (sr : ms3c_real_payload_seed) :
   ms3c_real_from_seed_public_index_anchor x sr =>
@@ -143,9 +191,15 @@ pred ms3c_sim_from_seed_share_length_anchor
   size (ms3c_sim_payload_from_seed x s ss).`mscp_share_false =
   size (ms3c_sim_payload_from_seed x s ss).`mscp_ann_false.
 
-axiom A_ms3c_sim_from_seed_uses_share_length :
+lemma A_ms3c_sim_from_seed_uses_share_length :
   forall (x : ms_public_input) (s : seed) (ss : ms3c_sim_payload_seed),
     ms3c_sim_from_seed_share_length_anchor x s ss.
+proof.
+move=> x s ss.
+rewrite /ms3c_sim_from_seed_share_length_anchor /ms3c_sim_payload_from_seed
+  /ms3c_phase1_payload_from_public_input /=.
+by rewrite !size_map.
+qed.
 
 lemma L_ms3c_sim_seed_length_shape_valid
   (x : ms_public_input) (s : seed) (ss : ms3c_sim_payload_seed) :
@@ -168,9 +222,15 @@ pred ms3c_sim_from_seed_public_index_anchor
   size (ms3c_sim_payload_from_seed x s ss).`mscp_ann_false =
     size (ms3c_sim_payload_from_seed x s ss).`mscp_false_clause_ixs.
 
-axiom A_ms3c_sim_from_seed_uses_public_indices :
+lemma A_ms3c_sim_from_seed_uses_public_indices :
   forall (x : ms_public_input) (s : seed) (ss : ms3c_sim_payload_seed),
     ms3c_sim_from_seed_public_index_anchor x s ss.
+proof.
+move=> x s ss.
+rewrite /ms3c_sim_from_seed_public_index_anchor /ms3c_sim_payload_from_seed
+  /ms3c_phase1_payload_from_public_input /=.
+by split=> //; rewrite size_map.
+qed.
 
 lemma L_ms3c_sim_seed_index_shape_valid
   (x : ms_public_input) (s : seed) (ss : ms3c_sim_payload_seed) :
@@ -193,6 +253,22 @@ op d_ms3c_real_comparison_payload (x : ms_public_input) : ms3c_real_comparison_p
 
 op d_ms3c_sim_comparison_payload (x : ms_public_input) (s : seed) : ms3c_sim_comparison_payload distr =
   dmap (d_ms3c_sim_payload_seed x s) (ms3c_sim_payload_from_seed x s).
+
+(* Real and sim payload laws are independent `dmap`s of seeds, but Phase-1
+   `from_seed` ignores seeds: every support point is the same
+   `ms3c_phase1_payload_from_public_input x`, hence cross-marginal equality. *)
+lemma L_ms3c_cross_support_real_sim_payload_equal
+  (x : ms_public_input) (s : seed)
+  (pr : ms3c_real_comparison_payload) (ps : ms3c_sim_comparison_payload) :
+  pr \in d_ms3c_real_comparison_payload x =>
+  ps \in d_ms3c_sim_comparison_payload x s =>
+  pr = ps.
+proof.
+move=> Hpr Hps.
+case/supp_dmap: Hpr => sr [_ Heqpr].
+case/supp_dmap: Hps => ss [_ Heqps].
+by rewrite Heqpr Heqps /ms3c_real_payload_from_seed /ms3c_sim_payload_from_seed.
+qed.
 
 lemma L_ms3c_real_comparison_payload_law_lossless (x : ms_public_input) :
   is_lossless (d_ms3c_real_comparison_payload x).

@@ -40,6 +40,21 @@ op ms3c_make_clause_surface (p : ms3c_comparison_clause_payload) : ms_comparison
      mscc_query_digest = p.`mscp_query_digest;
      mscc_programmed_challenge = p.`mscp_programmed_challenge |}.
 
+(* Ordered announcement digest material (true branch first, then false branches).
+   Lives in `ComparisonTypes` so Phase-1 `from_seed` can hash without importing
+   `ComparisonDigests` (acyclic module order). *)
+op ms3c_digest_true_announcement (a : sch_point) : digest =
+  ms_single_bit_branch_digest a.
+
+op ms3c_digest_false_announcements (anns : sch_point list) : digest list =
+  map ms_single_bit_branch_digest anns.
+
+op ms3c_clause_ann_digests_from_surface (c : ms_comparison_clause_surface) : digest list =
+  ms3c_digest_true_announcement c.`mscc_ann_true :: ms3c_digest_false_announcements c.`mscc_ann_false.
+
+op ms3c_clause_ann_digests (c : ms_comparison_clause_surface) : digest list =
+  ms3c_clause_ann_digests_from_surface c.
+
 (* Inverse of `ms3c_make_clause_surface` (definitional bijection on carriers). *)
 op ms3c_clause_surface_to_payload (c : ms_comparison_clause_surface) : ms3c_comparison_clause_payload =
   {| mscp_true_clause_ix = c.`mscc_true_clause_ix;
@@ -64,16 +79,18 @@ op ms3c_make_real_clause_surface (p : ms3c_real_comparison_payload) : ms_compari
 op ms3c_make_sim_clause_surface (p : ms3c_sim_comparison_payload) : ms_comparison_clause_surface =
   ms3c_make_clause_surface p.
 
-op ms3c_comparison_stmt_digest (x : ms_public_input) : digest = witness.
-
 (* MS-3c projection surface: bridge abstract ms_public_input and
    ms_transcript_observable to future concrete ms3c_*_payload_from_seed.
    Bodies are Phase-1 placeholders (witness / 0 / []) until public input and
-   transcript observables are refined; ms3c_comparison_stmt_digest stays separate
-   until a deliberate alignment with ms3c_public_stmt_digest (or
-   ms_statement_digest on obs) is added. *)
+   transcript observables are refined.
+
+   Canonical comparison statement digest for ROM query hashing is
+   `ms3c_public_stmt_digest x` (single source of truth). `ms3c_comparison_stmt_digest`
+   aliases it so legacy call sites stay aligned. *)
 
 op ms3c_public_stmt_digest (x : ms_public_input) : digest = witness.
+
+op ms3c_comparison_stmt_digest (x : ms_public_input) : digest = ms3c_public_stmt_digest x.
 
 op ms3c_public_false_branch_count (_x : ms_public_input) : int = 1.
 

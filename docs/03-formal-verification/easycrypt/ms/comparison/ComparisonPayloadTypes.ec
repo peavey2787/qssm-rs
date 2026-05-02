@@ -1,6 +1,6 @@
 require import AllCore.
 require import Algebra QssmTypes FS SchnorrBranch TrueClause BitnessOne.
-require import ComparisonTypes ComparisonDigests.
+require import ComparisonTypes.
 
 (* MS-3c seed component types (challenge vs announcement material).
    ms3c_real_seed_challenge and ms3c_sim_seed_challenge are intentionally unit for

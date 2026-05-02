@@ -15,9 +15,12 @@ lemma MS_3c_comparison_clause_obligations (x : ms_public_input) (s : seed) :
   ms3c_false_clauses_simulator_generated x s =>
   ms3c_true_clause_schnorr_from_blinder x s =>
   ms3c_clause_challenge_shares_sum x s =>
-  (forall (stmt : digest) (c : ms_comparison_clause_surface),
+  (forall (c : ms_comparison_clause_surface),
+    ms3c_clause_surface_to_payload c = ms3c_phase1_payload_from_public_input x =>
     ms_comparison_clause_simulatable c =>
-    c.`mscc_query_digest = ms_comparison_query_digest stmt (ms3c_clause_ann_digests_from_surface c)) /\
+    c.`mscc_query_digest =
+      ms_comparison_query_digest (ms3c_public_stmt_digest x)
+        (ms3c_clause_ann_digests_from_surface c)) /\
   ((forall (pr : ms3c_real_comparison_payload),
     ms3c_real_payload_on_support x pr =>
     ms_false_clause_simulated (ms3c_make_real_clause_surface pr)) /\
@@ -33,7 +36,8 @@ lemma MS_3c_comparison_clause_obligations (x : ms_public_input) (s : seed) :
     ms_comparison_challenges_split c).
 proof.
 move=> Hann Hfalse Htrue Hsum.
-split; first by move=> stmt c Hsim; apply (L_ms3c_digest_announcement_only x s Hann stmt c Hsim).
+split; first by move=> c Hpayload Hsim;
+  apply (L_ms3c_digest_announcement_only x s Hann c Hpayload Hsim).
 split.
   have Hfalse_nt := A_ms3c_false_clauses_hook_implies_schedule_nontrivial x s Hfalse.
   move: (A_ms3c_false_clause_simulation x s Hfalse_nt).
