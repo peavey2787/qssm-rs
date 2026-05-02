@@ -101,7 +101,7 @@
     "ComparisonPayloadSeeds": {
       "direct": false,
       "kind": "ec",
-      "digest": "bde8504e0e17107d24cc98a7b5bacdae"
+      "digest": "36bf0b1d2f7bd6cb03d5e4f31d900c93"
     },
     "ComparisonPayloadSupport": {
       "direct": false,
@@ -111,7 +111,7 @@
     "ComparisonPayloadTypes": {
       "direct": false,
       "kind": "ec",
-      "digest": "c7ba109a9b04ec74e27063cb1c1d4814"
+      "digest": "3782d2e48273f8058e3936aebf6eac4b"
     },
     "ComparisonTheorem": {
       "direct": true,
