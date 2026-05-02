@@ -25,12 +25,21 @@ FILES=(
   ms/BitnessOne.ec
   ms/BitnessVector.ec
   ms/TranscriptObservable.ec
+  ms/true_clause/TrueClauseTypes.ec
+  ms/true_clause/TrueClauseMSB.ec
+  ms/true_clause/TrueClauseTheorem.ec
   ms/TrueClause.ec
   ms/comparison/ComparisonTypes.ec
   ms/comparison/ComparisonDigests.ec
-  ms/comparison/ComparisonPayloads.ec
+  ms/comparison/ComparisonPayloadTypes.ec
+  ms/comparison/ComparisonPayloadSeeds.ec
+  ms/comparison/ComparisonPayloadSupport.ec
+  ms/comparison/ComparisonPayloadFalseClause.ec
+  ms/comparison/ComparisonPayload.ec
   ms/comparison/ComparisonCouplingTypes.ec
   ms/comparison/ComparisonCouplingAxioms.ec
+  ms/comparison/ComparisonCouplingMarginals.ec
+  ms/comparison/ComparisonCouplingSchedule.ec
   ms/comparison/ComparisonCouplingTheorem.ec
   ms/comparison/ComparisonCoupling.ec
   ms/comparison/ComparisonTheorem.ec
@@ -39,6 +48,9 @@ FILES=(
   ms/source/SourceTypes.ec
   ms/source/SourceConstructors.ec
   ms/source/SourceDistributions.ec
+  ms/source/SourceProgrammedObligations.ec
+  ms/source/SourcePublicFieldObligations.ec
+  ms/source/SourceScheduleObligations.ec
   ms/source/SourceObligations.ec
   ms/source/SourceTheorem.ec
   ms/MS.ec

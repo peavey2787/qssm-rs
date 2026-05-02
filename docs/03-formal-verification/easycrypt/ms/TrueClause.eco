@@ -1,7 +1,7 @@
 {
   "version": 3,
   "echash": "n/a",
-  "root": { "kind": "ec", "digest": "047b6a95a709444b5af7bf92336a503b" },
+  "root": { "kind": "ec", "digest": "0492baa0dc475f6dde96a8007eb74eb1" },
   "depends": {
     "AlgTactic": {
       "direct": false,
@@ -9,12 +9,12 @@
       "digest": "850cd748ba64fbbb969579c57fb7186d"
     },
     "Algebra": {
-      "direct": true,
+      "direct": false,
       "kind": "ec",
       "digest": "6d90bb1582a128e4d4b11a31736c5ac6"
     },
     "AllCore": {
-      "direct": true,
+      "direct": false,
       "kind": "ec",
       "digest": "530d964738d9a6b9093986916c5225d1"
     },
@@ -89,7 +89,7 @@
       "digest": "6e85ff145774627ec46ac4b58a8d47c8"
     },
     "List": {
-      "direct": true,
+      "direct": false,
       "kind": "ec",
       "digest": "87827651d8c61e60ac841ce62b9867e5"
     },
@@ -114,7 +114,7 @@
       "digest": "0f385a91ae1a1269de2ba2b7fad360d0"
     },
     "QssmTypes": {
-      "direct": true,
+      "direct": false,
       "kind": "ec",
       "digest": "a01add13b9a617f8cee8c968779c907c"
     },
@@ -159,7 +159,7 @@
       "digest": "1679a80ea225fe5d8904c9cd0f5d99c1"
     },
     "SchnorrBranch": {
-      "direct": true,
+      "direct": false,
       "kind": "ec",
       "digest": "412f88972028a1faf35fcbe2d02b210f"
     },
@@ -182,6 +182,21 @@
       "direct": true,
       "kind": "ec",
       "digest": "86b1b5cd82f32d0405a70279cdc8b67b"
+    },
+    "TrueClauseMSB": {
+      "direct": true,
+      "kind": "ec",
+      "digest": "ac6c248fd4c7be209f241fc9ab145b9b"
+    },
+    "TrueClauseTheorem": {
+      "direct": true,
+      "kind": "ec",
+      "digest": "ec44e820320274fac2734b7c3eb8d7d4"
+    },
+    "TrueClauseTypes": {
+      "direct": true,
+      "kind": "ec",
+      "digest": "754d7c7490274ad6b0abf184d28c0802"
     },
     "Xint": {
       "direct": false,

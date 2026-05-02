@@ -1,5 +1,5 @@
 require import AllCore List.
-require import Algebra QssmTypes Comparison ComparisonTypes ComparisonDigests ComparisonPayloads ComparisonCoupling ComparisonTheorem.
+require import Algebra QssmTypes Comparison ComparisonTypes ComparisonDigests ComparisonPayload ComparisonCoupling ComparisonTheorem.
 require import SourceDistributions.
 require import TrueClause.
 
@@ -83,7 +83,7 @@ pred ms3a_bitness_exact_step (src dst : game_view) (xms : ms_public_input) (s : 
     r2.`msgv_stage = MSGameStageAfterBitness.
 
 (* MS3b true-clause hop: AfterBitness -> AfterComparison; first conjunct is the MS-3b
-   forall bundle (same hypotheses as `MS_3b_true_clause_characterization` in `TrueClause.ec`).
+   forall bundle (same hypotheses as `MS_3b_true_clause_characterization` in `TrueClauseTheorem`).
    Game-layer zero advantage: `A_MS3b_canonical_true_clause_bound` in `games/Games.ec`. *)
 pred ms3b_true_clause_exact_step (src dst : game_view) (xms : ms_public_input) =
   (forall (vb : bool list) (tb : bool list) (p : int) (clause_pub : sch_point) (r : scalar),
@@ -125,7 +125,7 @@ pred ms3c_comparison_exact_step (src dst : game_view) (xms : ms_public_input) (s
     r2.`msgv_stage = MSGameStageSim.
 
 (* MS-3a / MS-3b / MS-3c: MS-3a layered lemmas in `ms/source/SourceTheorem.ec`; MS-3b in
-   `ms/TrueClause.ec`; MS-3c core in `ms/Comparison.ec` (narrow axioms +
+   `ms/true_clause/` (facade `ms/TrueClause.ec`); MS-3c core in `ms/Comparison.ec` (narrow axioms +
    `ms_comparison_exact_*` pred). *)
 (* G0→G1 game hop in `games/Games.ec` is decomposed into segment obligations
    `A_MS1_hash_binding_transition` / `A_MS2_rom_programming_transition` (lemmas from

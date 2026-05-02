@@ -1,6 +1,6 @@
 require import AllCore List Distr.
 require import Algebra QssmTypes FS SchnorrBranch TrueClause BitnessOne.
-require import ComparisonTypes ComparisonDigests ComparisonPayloads ComparisonCouplingTypes ComparisonCouplingAxioms ComparisonCouplingTheorem.
+require import ComparisonTypes ComparisonDigests ComparisonPayload ComparisonCouplingTypes ComparisonCouplingAxioms ComparisonCouplingTheorem.
 
 lemma L_ms3c_rom_scalar_response_for_any_digest (x : ms_public_input) (s : seed) :
   ms3c_comparison_global_programmable_under_A2 x s =>

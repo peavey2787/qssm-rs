@@ -34,8 +34,11 @@ type ms3a_sim_source_payload = {
    (`ms3a_{real,sim}_source_payload`). Sampling laws `d_ms3a_{real,sim}_payload_seed` remain
    abstract; `ms3a_{real,sim}_payload_from_seed` is the identity (see `SourceConstructors.ec`)
    so execution/games can refine `d_ms3a_*_payload_seed` without changing the payload field
-   surface. Paired-public support is split into four field-level axioms in
-   `SourceObligations.ec` plus a derived lemma. Programmed-on-seed-support for each
+   surface. Paired-public alignment: four `A_ms3a_seed_pair_*_source_shared` axioms on
+   joint seed support feed four proved `A_ms3a_seed_pair_*_on_support` lemmas for
+   `from_seed` payloads, which feed proved lemma `A_ms3a_seed_pair_public_fields_on_support`
+   (`SourcePublicFieldObligations.ec` / `SourceConstructors.ec`; re-exported via
+   `SourceObligations.ec`). Programmed-on-seed-support for each
    side is lemma `A_ms3a_{real,sim}_seed_programmed_on_support` from two field axioms
    (`*_bits_programmed_on_support`, `*_bitness_globals_programmed_on_support`) matching
    `ms_bitness_vector_programmed_layer` (`BitnessVector.ec`). *)
@@ -68,12 +71,9 @@ pred ms3a_sources_have_programmed_bitness_layer
   ms_bitness_vector_programmed_layer
     sim_src.`ms3s_stmt sim_src.`ms3s_bits sim_src.`ms3s_bitness_global_challenges.
 
-(* Stmt / res / comparison-global conjuncts: joint seed support uses axioms
-   `A_ms3a_seed_pair_stmt_source_shared`, `A_ms3a_seed_pair_res_source_shared`,
-   `A_ms3a_seed_pair_comparison_global_source_shared`; lemmata
-   `A_ms3a_seed_pair_stmt_on_support`, `A_ms3a_seed_pair_res_on_support`,
-   `A_ms3a_seed_pair_comparison_global_on_support` restate for `from_seed` payloads
-   (`SourceObligations` / `SourceConstructors`). *)
+(* Public-field conjuncts: four `*_source_shared` axioms on joint seed support; four
+   `*_on_support` lemmata for `from_seed` payloads (`SourceObligations` /
+   `SourceConstructors`). *)
 pred ms3a_payload_pair_public_fields_match
   (pr : ms3a_real_source_payload) (ps : ms3a_sim_source_payload) =
   pr.`ms3rp_stmt = ps.`ms3sp_stmt /\

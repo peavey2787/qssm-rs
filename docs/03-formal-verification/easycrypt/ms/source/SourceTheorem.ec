@@ -1,5 +1,5 @@
 require import AllCore List Distr.
-require import QssmTypes FS BitnessOne BitnessVector Comparison ComparisonTypes ComparisonDigests ComparisonPayloads ComparisonCoupling ComparisonTheorem TranscriptObservable.
+require import QssmTypes FS BitnessOne BitnessVector Comparison ComparisonTypes ComparisonDigests ComparisonPayload ComparisonCoupling ComparisonTheorem TranscriptObservable.
 require import SourceModel.
 require import SourceTypes SourceConstructors SourceDistributions SourceObligations.
 

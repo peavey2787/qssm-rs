@@ -1,7 +1,7 @@
 {
   "version": 3,
   "echash": "n/a",
-  "root": { "kind": "ec", "digest": "5fc0dad234034ade225a6cc811574f0f" },
+  "root": { "kind": "ec", "digest": "35c2e7a29c6b994887b916d4d8cf02d7" },
   "depends": {
     "AlgTactic": {
       "direct": false,
@@ -51,32 +51,62 @@
     "ComparisonCouplingAxioms": {
       "direct": false,
       "kind": "ec",
-      "digest": "31a8f652dfe3f82a0f64c2a39dcbea44"
+      "digest": "0acb5f9dbe4da55cbb37d0d9517cbc34"
+    },
+    "ComparisonCouplingMarginals": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "f4bdbd93df9c336cfcf1e5c58d59ae74"
+    },
+    "ComparisonCouplingSchedule": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "34fbb1feb792c706eb1d4b78e380bc4b"
     },
     "ComparisonCouplingTheorem": {
       "direct": false,
       "kind": "ec",
-      "digest": "c73432b3e9809682bc8d044a8fb3f861"
+      "digest": "015f7abdaa586aa71fd35288f69b3912"
     },
     "ComparisonCouplingTypes": {
       "direct": false,
       "kind": "ec",
-      "digest": "fb8e9a17d5543339d2534eeaed63661b"
+      "digest": "a7067bb8d79bb416b3aa07f985ed8391"
     },
     "ComparisonDigests": {
       "direct": true,
       "kind": "ec",
       "digest": "253300c516d28c8443851e39196530e5"
     },
-    "ComparisonPayloads": {
+    "ComparisonPayload": {
       "direct": true,
       "kind": "ec",
-      "digest": "c7c4e946520a7f735acb3684de449441"
+      "digest": "ca41a98e23a45158c48b8cba1937ce89"
+    },
+    "ComparisonPayloadFalseClause": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "3fb66affd41c9bd2ff61e586cbe84ae5"
+    },
+    "ComparisonPayloadSeeds": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "6e4a5a91e6cd466527f3988d687bc3d1"
+    },
+    "ComparisonPayloadSupport": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "1fa1fc0731f8853063c541ec4f29ab1d"
+    },
+    "ComparisonPayloadTypes": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "c2030b039000151088ab8cf0b94a0802"
     },
     "ComparisonTheorem": {
       "direct": true,
       "kind": "ec",
-      "digest": "ab6f2232853a635f5ecb5e19e33de18d"
+      "digest": "5d5af327bef01a6461b11997f1055c78"
     },
     "ComparisonTypes": {
       "direct": true,
@@ -241,7 +271,22 @@
     "TrueClause": {
       "direct": false,
       "kind": "ec",
-      "digest": "047b6a95a709444b5af7bf92336a503b"
+      "digest": "0492baa0dc475f6dde96a8007eb74eb1"
+    },
+    "TrueClauseMSB": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "ac6c248fd4c7be209f241fc9ab145b9b"
+    },
+    "TrueClauseTheorem": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "ec44e820320274fac2734b7c3eb8d7d4"
+    },
+    "TrueClauseTypes": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "754d7c7490274ad6b0abf184d28c0802"
     },
     "Xint": {
       "direct": false,

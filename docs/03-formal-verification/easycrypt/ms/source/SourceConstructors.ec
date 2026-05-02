@@ -78,6 +78,14 @@ lemma ms3a_payload_pair_comparison_global_challenge_eq_from_seed_of_seed_eq
     (ms3a_sim_payload_from_seed x s ss).`ms3sp_comparison_global_challenge.
 proof. by rewrite ms3a_real_payload_from_seed_def ms3a_sim_payload_from_seed_def. qed.
 
+(* Bitness-global challenge list after `from_seed` agrees with seed-record fields. *)
+lemma ms3a_payload_pair_bitness_global_challenges_eq_from_seed_of_seed_eq
+  (x : ms_public_input) (s : seed) (sr : ms3a_real_payload_seed) (ss : ms3a_sim_payload_seed) :
+  sr.`ms3rp_bitness_global_challenges = ss.`ms3sp_bitness_global_challenges =>
+  (ms3a_real_payload_from_seed x sr).`ms3rp_bitness_global_challenges =
+    (ms3a_sim_payload_from_seed x s ss).`ms3sp_bitness_global_challenges.
+proof. by rewrite ms3a_real_payload_from_seed_def ms3a_sim_payload_from_seed_def. qed.
+
 (* Payload-level: same programmed-vector obligation as `ms3a_source_wf` on the
    constructor image of each payload (support axioms mention payload laws only,
    not folded bitness source distributions). *)

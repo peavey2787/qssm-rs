@@ -1,5 +1,5 @@
 require import AllCore List.
-require import QssmTypes Algebra Simulator FS TrueClause Comparison ComparisonTypes ComparisonDigests ComparisonPayloads ComparisonCoupling ComparisonTheorem.
+require import QssmTypes Algebra Simulator FS TrueClause Comparison ComparisonTypes ComparisonDigests ComparisonPayload ComparisonCoupling ComparisonTheorem.
 require import SourceDistributions SourceTheorem MS LESurface LEModel LEHVZK.
 require import GameTypes GameViews GameAdvantage.
 

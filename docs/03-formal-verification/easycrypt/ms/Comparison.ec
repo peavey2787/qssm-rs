@@ -1,1 +1,1 @@
-require import ComparisonTypes ComparisonDigests ComparisonPayloads ComparisonCoupling ComparisonTheorem.
+require import ComparisonTypes ComparisonDigests ComparisonPayload ComparisonCoupling ComparisonTheorem.

@@ -1,6 +1,6 @@
 require import AllCore List Distr.
 require import Algebra QssmTypes FS SchnorrBranch TrueClause BitnessOne.
-require import ComparisonTypes ComparisonDigests ComparisonPayloads ComparisonCouplingTypes.
+require import ComparisonTypes ComparisonDigests ComparisonPayload ComparisonCouplingTypes.
 
 (* Narrow payload obligations (still proof debt until laws are instantiated). *)
 axiom A_ms3c_payload_public_fields_match :
@@ -24,16 +24,20 @@ axiom A_ms3c_payload_challenge_shares_match :
 (* Product coupling: fst/snd marginals match standalone laws when the opposite
    marginal is lossless (dprod_marginalL / dprod_marginalR in Distr).
    Payload-law losslessness: lemmas L_ms3c_real_comparison_payload_law_lossless and
-   L_ms3c_sim_comparison_payload_law_lossless in ComparisonPayloads.ec via dmap_ll from
+   L_ms3c_sim_comparison_payload_law_lossless in ComparisonPayload.ec via dmap_ll from
    L_ms3c_real_payload_seed_lossless / L_ms3c_sim_payload_seed_lossless (dprod_ll_auto
-   from the four component axioms A_ms3c_*_seed_{challenge,announcement}_lossless). *)
+   from the four component axioms A_ms3c_*_seed_{challenge,announcement}_lossless).
+   Predicate ms3c_ax_payload_announcements_match_shape is proved for all x,s as
+   L_ms3c_ax_payload_announcements_match_shape_total (ComparisonPayload.ec), hence it
+   is not a premise below. Likewise ms3c_ax_payload_announcement_digests_preserved
+   follows from ms3c_ax_payload_public_fields_match via lemma
+   L_ms3c_payload_announcement_digests_preserved_from_public_fields
+   (ComparisonCouplingTheorem.ec), hence it is not a premise below. *)
 
 axiom A_ms3c_coupling_pair_relation :
   forall (x : ms_public_input) (s : seed),
     ms3c_ax_payload_public_fields_match x s =>
     ms3c_ax_payload_challenge_shares_match x s =>
-    ms3c_ax_payload_announcement_digests_preserved x s =>
-    ms3c_ax_payload_announcements_match_shape x s =>
     ms3c_ax_payload_challenge_share_consistency x s =>
     ms3c_ax_payload_false_clauses_simulated x s =>
     ms3c_ax_payload_true_clause_simulated x s =>
