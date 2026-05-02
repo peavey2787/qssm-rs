@@ -321,12 +321,12 @@
     "TrueClauseMSB": {
       "direct": false,
       "kind": "ec",
-      "digest": "ac6c248fd4c7be209f241fc9ab145b9b"
+      "digest": "3a7edb44654d242c60970ff22313f166"
     },
     "TrueClauseTheorem": {
       "direct": false,
       "kind": "ec",
-      "digest": "ec44e820320274fac2734b7c3eb8d7d4"
+      "digest": "fc96e252fbb2e80428b12367f601a156"
     },
     "TrueClauseTypes": {
       "direct": false,

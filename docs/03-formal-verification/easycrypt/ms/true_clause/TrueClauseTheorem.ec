@@ -2,13 +2,25 @@ require import AllCore List.
 require import Algebra QssmTypes SchnorrBranch.
 require import TrueClauseTypes TrueClauseMSB.
 
-(* Semantic axiom, value-bit corollary, and MS_3b_true_clause_characterization chain. *)
+(* Semantic leaf: operands + HDB ⇒ value>target at p; MSB-first strict-greater is
+   pure list geometry once HDB and the two `nth` facts are available. *)
 
-axiom A_ms3b_operand_hdb_implies_msb_first_strict_gt :
+axiom A_ms3b_operand_hdb_implies_value_gt_target :
+  forall (x : ms_public_input) (vb : bool list) (tb : bool list) (p : int),
+    ms3b_comparison_operand_bits x vb tb =>
+    ms_highest_differing_bit vb tb p =>
+    ms3b_value_gt_target_at vb tb p.
+
+lemma A_ms3b_operand_hdb_implies_msb_first_strict_gt :
   forall (x : ms_public_input) (vb : bool list) (tb : bool list) (p : int),
     ms3b_comparison_operand_bits x vb tb =>
     ms_highest_differing_bit vb tb p =>
     ms3b_msb_first_strict_gt_at vb tb p.
+proof.
+move=> x vb tb p Hop Hhd.
+have Hvg := A_ms3b_operand_hdb_implies_value_gt_target x vb tb p Hop Hhd.
+exact (L_ms3b_hdb_value_gt_target_implies_msb_first_strict_gt vb tb p Hhd Hvg).
+qed.
 
 lemma A_ms3b_comparison_semantics :
   forall (x : ms_public_input) (vb : bool list) (tb : bool list) (p : int),
@@ -17,8 +29,7 @@ lemma A_ms3b_comparison_semantics :
     nth witness vb p = true.
 proof.
 move=> x vb tb p Hop Hhd.
-have Hgt := A_ms3b_operand_hdb_implies_msb_first_strict_gt x vb tb p Hop Hhd.
-case: Hgt=> _ [_ [Hvp _]].
+have [Hvp _] := A_ms3b_operand_hdb_implies_value_gt_target x vb tb p Hop Hhd.
 exact Hvp.
 qed.
 
@@ -30,14 +41,7 @@ lemma A_ms3b_hdb_implies_value_one_target_zero :
     nth witness tb p = false.
 proof.
 move=> x vb tb p Hop Hhd.
-have Hvp : nth witness vb p = true by exact (A_ms3b_comparison_semantics x vb tb p Hop Hhd).
-have Hneq : nth witness vb p <> nth witness tb p by exact (A_ms3b_hdb_directionality vb tb p Hhd).
-have Htn : nth witness tb p = false.
-  have Hneq' := Hneq.
-  rewrite Hvp in Hneq'.
-  by case (nth witness tb p) Hneq'.
-split; first exact Hvp.
-exact Htn.
+exact (A_ms3b_operand_hdb_implies_value_gt_target x vb tb p Hop Hhd).
 qed.
 
 lemma A_ms3b_hdb_implies_true_clause_position (vb : bool list) (tb : bool list) (p : int) :

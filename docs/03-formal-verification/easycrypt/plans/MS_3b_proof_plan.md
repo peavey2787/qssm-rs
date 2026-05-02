@@ -4,11 +4,12 @@ This note tracks the **true-clause / highest-differing-bit** characterization (M
 
 ## Proof-debt checkpoint (current)
 
-- **Only remaining MS-3b semantic axiom:** **`A_ms3b_operand_hdb_implies_msb_first_strict_gt`** — well-formed operands plus **`ms_highest_differing_bit`** imply the **MSB-first unsigned strict-greater** bit pattern at `p` (**`ms3b_msb_first_strict_gt_at`**).
-- **Why not purely definitional:** **`ms_highest_differing_bit`** only forces disagreement at `p` and agreement on more significant indices. It does **not** determine which side is `true` (counterexample: `vb = [false]`, `tb = [true]`, `p = 0`). The axiom pins the execution-spec direction: **value 1 / target 0** at the highest differing index.
-- **Proved lemma (not debt):** **`A_ms3b_comparison_semantics`** — **`nth witness vb p = true`**, derived from **`A_ms3b_operand_hdb_implies_msb_first_strict_gt`** by projection.
-- **Proved lemma (not debt):** **`A_ms3b_highest_differing_bit_correct`** — composes **`A_ms3b_hdb_implies_value_one_target_zero`** (from **`A_ms3b_comparison_semantics`** + **`A_ms3b_hdb_directionality`**) with **`A_ms3b_hdb_implies_true_clause_position`**.
-- **Structural / definitional:** **`ms3b_comparison_operand_bits`**, **`ms3b_clause_opening_binds`**, **`ms3b_msb_first_strict_gt_at`**, and the geometry predicates (`ms_highest_differing_bit`, `ms_true_clause_position`, …).
+- **Only remaining MS-3b semantic axiom:** **`A_ms3b_operand_hdb_implies_value_gt_target`** — well-formed operands plus **`ms_highest_differing_bit`** imply **`ms3b_value_gt_target_at`** (`nth` value `true`, target `false` at `p`). This is the **narrow bit-direction leaf**; it is **not** provable from **`ms_highest_differing_bit`** + **`ms3b_comparison_operand_bits`** alone (counterexample: `vb = [false]`, `tb = [true]`, `p = 0`).
+- **Proved packaging (not debt):** **`L_ms3b_hdb_value_gt_target_implies_msb_first_strict_gt`** — **`ms_highest_differing_bit`** + **`ms3b_value_gt_target_at`** ⇒ **`ms3b_msb_first_strict_gt_at`** (pure list / definition unpack).
+- **Proved lemma (not debt):** **`A_ms3b_operand_hdb_implies_msb_first_strict_gt`** — follows from the axiom + **`L_ms3b_hdb_value_gt_target_implies_msb_first_strict_gt`** (replaces the former single axiom on **`ms3b_msb_first_strict_gt_at`**).
+- **Proved lemma (not debt):** **`A_ms3b_comparison_semantics`** — **`nth witness vb p = true`**, by projection from **`A_ms3b_operand_hdb_implies_value_gt_target`**.
+- **Proved lemma (not debt):** **`A_ms3b_highest_differing_bit_correct`** — composes **`A_ms3b_hdb_implies_value_one_target_zero`** (now **`exact`** the value-gt axiom) with **`A_ms3b_hdb_implies_true_clause_position`**.
+- **Structural / definitional:** **`ms3b_comparison_operand_bits`**, **`ms3b_clause_opening_binds`**, **`ms3b_value_gt_target_at`**, **`ms3b_msb_first_strict_gt_at`**, and the geometry predicates (`ms_highest_differing_bit`, `ms_true_clause_position`, …).
 
 ## Goal (informal)
 
@@ -23,7 +24,8 @@ Under MS v2 comparison geometry: if the published operands decode to `value_bits
 | `ms_bitlists_wf_for_index` | Same length, `p` in range. |
 | `ms_bits_agree_more_significant` | Bits at indices `0..p-1` (MSB-first convention) agree. |
 | `ms_highest_differing_bit` | WF + disagree at `p` + agreement above `p`. |
-| `ms3b_msb_first_strict_gt_at` | **Explicit MSB-first strict-greater at `p`:** WF + agreement above + `value_bits[p]=true` + `target_bits[p]=false`. Equivalent to **`ms_true_clause_position`** (lemma **`L_ms3b_tcp_iff_msb_first_strict_gt`**). |
+| `ms3b_value_gt_target_at` | **Bit-direction slice at `p`:** `value_bits[p]=true` ∧ `target_bits[p]=false` (no WF / “agree above” in the predicate itself). |
+| `ms3b_msb_first_strict_gt_at` | **Explicit MSB-first strict-greater at `p`:** WF + agreement above + `value_bits[p]=true` + `target_bits[p]=false`. Equivalent to **`ms_true_clause_position`** (lemma **`L_ms3b_tcp_iff_msb_first_strict_gt`**). Lemma **`L_ms3b_hdb_value_gt_target_implies_msb_first_strict_gt`** adds WF + “agree above” from **`ms_highest_differing_bit`**. |
 | `ms_true_clause_position` | Highest-differing geometry + `target_bits[p]=false` + `value_bits[p]=true`. |
 | `ms_clause_public_point_matches_blinder` | `commitment = sch_pubkey blinder` (Pedersen-style on `H`). |
 | `ms_true_clause_points_are_blinder_points` | Implication: true-clause position ⇒ clause point matches blinder for bit `true` and scalar `r`. |
@@ -52,7 +54,7 @@ The former **`true`** hooks are **removed**. `ms3b_comparison_operand_bits` and 
 
 ## Named obligations (`A_ms3b_*` / related)
 
-**Module split:** structural predicates and HDB projection lemmas live in **`TrueClauseTypes`**; **`ms3b_msb_first_strict_gt_at`** plus **`L_ms3b_msb_first_strict_gt_at_implies_hdb`** / **`L_ms3b_tcp_iff_msb_first_strict_gt`** in **`TrueClauseMSB`**; axiom **`A_ms3b_operand_hdb_implies_msb_first_strict_gt`**, **`A_ms3b_comparison_semantics`**, and the **`MS_3b_*`** characterization chain in **`TrueClauseTheorem`**. All are re-exported by theory **`TrueClause`** (`ms/TrueClause.ec`).
+**Module split:** structural predicates and HDB projection lemmas live in **`TrueClauseTypes`**; **`ms3b_value_gt_target_at`**, **`ms3b_msb_first_strict_gt_at`**, **`L_ms3b_hdb_value_gt_target_implies_msb_first_strict_gt`**, **`L_ms3b_msb_first_strict_gt_at_implies_hdb`**, **`L_ms3b_tcp_iff_msb_first_strict_gt`** in **`TrueClauseMSB`**; axiom **`A_ms3b_operand_hdb_implies_value_gt_target`**, lemmas **`A_ms3b_operand_hdb_implies_msb_first_strict_gt`**, **`A_ms3b_comparison_semantics`**, and the **`MS_3b_*`** characterization chain in **`TrueClauseTheorem`**. All are re-exported by theory **`TrueClause`** (`ms/TrueClause.ec`).
 
 | Name | Status | Role |
 |------|--------|------|
@@ -62,9 +64,11 @@ The former **`true`** hooks are **removed**. `ms3b_comparison_operand_bits` and 
 | `A_ms3b_hdb_directionality` | **Proved lemma** | From `ms_highest_differing_bit`, extract disagreement at index `p` (`nth vb p <> nth tb p`). |
 | `L_ms3b_msb_first_strict_gt_at_implies_hdb` | **Proved lemma** | Strict-greater pattern ⇒ **`ms_highest_differing_bit`**. |
 | `L_ms3b_tcp_iff_msb_first_strict_gt` | **Proved lemma** | **`ms_true_clause_position`** ⇔ **`ms3b_msb_first_strict_gt_at`**. |
-| `A_ms3b_operand_hdb_implies_msb_first_strict_gt` | **Axiom** | Operands + **`ms_highest_differing_bit`** ⇒ **`ms3b_msb_first_strict_gt_at`** (semantic bridge; not list-pure). |
-| `A_ms3b_comparison_semantics` | **Proved lemma** | Under operands + HDB, **`nth witness vb p = true`** (corollary of the axiom). |
-| `A_ms3b_hdb_implies_value_one_target_zero` | **Proved lemma** | Uses `A_ms3b_comparison_semantics` + `A_ms3b_hdb_directionality` to conclude `nth vb p = true` and `nth tb p = false`. |
+| `L_ms3b_hdb_value_gt_target_implies_msb_first_strict_gt` | **Proved lemma** | **`ms_highest_differing_bit`** + **`ms3b_value_gt_target_at`** ⇒ **`ms3b_msb_first_strict_gt_at`**. |
+| `A_ms3b_operand_hdb_implies_value_gt_target` | **Axiom** | Operands + **`ms_highest_differing_bit`** ⇒ **`ms3b_value_gt_target_at`** (semantic bit-direction leaf). |
+| `A_ms3b_operand_hdb_implies_msb_first_strict_gt` | **Proved lemma** | Composes axiom **`A_ms3b_operand_hdb_implies_value_gt_target`** + **`L_ms3b_hdb_value_gt_target_implies_msb_first_strict_gt`**. |
+| `A_ms3b_comparison_semantics` | **Proved lemma** | Under operands + HDB, **`nth witness vb p = true`** (projection from **`A_ms3b_operand_hdb_implies_value_gt_target`**). |
+| `A_ms3b_hdb_implies_value_one_target_zero` | **Proved lemma** | **`exact`** the value-gt axiom under operands + HDB (definitionally the two `nth` facts). |
 | `A_ms3b_hdb_implies_true_clause_position` | **Proved lemma** | From `ms_highest_differing_bit` plus those two `nth` facts, prove `ms_true_clause_position` by definition. |
 | `A_ms3b_highest_differing_bit_correct` | **Proved lemma** | Composes **`A_ms3b_hdb_implies_value_one_target_zero`** with **`A_ms3b_hdb_implies_true_clause_position`** (same statement as the former single axiom). |
 | `A_ms3b_pedersen_opening_correct` | **Proved lemma** | Projects `ms3b_clause_opening_binds` to `ms_clause_public_point_matches_blinder clause_pub true r`. |
@@ -79,10 +83,10 @@ There is **no** blanket obligation of the form “MS-3b holds” as `true`.
 
 1. ~~Replace vacuous **`ms3b_comparison_operand_bits`** / **`ms3b_clause_opening_binds`**~~ — done with structural list-length and blinder-point predicates (`ms/true_clause/TrueClauseTypes.ec`, re-exported by `ms/TrueClause.ec`).
 2. ~~Prove **`A_ms3b_bit_decomposition_correct`** / **`A_ms3b_pedersen_opening_correct`** as lemmas from those predicates~~ — done (names unchanged for imports).
-3. ~~Split / tighten the former **`A_ms3b_highest_differing_bit_correct`** axiom~~ — done; **`A_ms3b_hdb_implies_value_one_target_zero`** is a lemma. ~~**`A_ms3b_comparison_semantics`**~~ is now a **proved lemma**; remaining semantic hook is **`A_ms3b_operand_hdb_implies_msb_first_strict_gt`**.
+3. ~~Split / tighten the former **`A_ms3b_highest_differing_bit_correct`** axiom~~ — done; **`A_ms3b_hdb_implies_value_one_target_zero`** is a lemma. ~~**`A_ms3b_comparison_semantics`**~~ is a **proved lemma**; **`A_ms3b_operand_hdb_implies_msb_first_strict_gt`** is now **proved**; remaining semantic hook is **`A_ms3b_operand_hdb_implies_value_gt_target`**.
 4. **Enrich** `ms3b_comparison_operand_bits` with a decode from `ms_public_input` / v2 observables (`ms/TranscriptObservable.ec`, `ms/SourceModel.ec`, `ms/source/`) when projections exist, so the strict-greater axiom can be discharged from execution’s comparison semantics.
 5. Optionally tighten **`ms3b_clause_opening_binds`** with branch tags / digest preimages from execution spec + `ms/SchnorrBranch.ec` so the opening is not only “point = `sch_pubkey r`” but transcript-consistent.
-6. ~~Extend **`MS_3b_true_clause_characterization_from_highest_diff`**~~ — unchanged packaging; proof debt for the true-clause bit pattern is concentrated in **`A_ms3b_operand_hdb_implies_msb_first_strict_gt`**, plus transcript-linked refinements of the two structural predicates.
+6. ~~Extend **`MS_3b_true_clause_characterization_from_highest_diff`**~~ — unchanged packaging; proof debt for the true-clause **bit direction** is concentrated in **`A_ms3b_operand_hdb_implies_value_gt_target`**, plus transcript-linked refinements of the two structural predicates.
 
 ## Next milestone after MS-3b surface is stable
 
