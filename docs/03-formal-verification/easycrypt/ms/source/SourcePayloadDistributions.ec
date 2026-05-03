@@ -1,6 +1,6 @@
 require import AllCore List Distr.
 require import QssmTypes.
-require import SourceTypes SourceConstructors.
+require import SourceTypes SourceModel SourceConstructors.
 
 (* Abstract seed laws and payload-level `dmap` pushforwards (MS-3a). *)
 
@@ -17,7 +17,21 @@ require import SourceTypes SourceConstructors.
   support obligation below. *)
 op d_ms3a_seed_spine_joint (x : ms_public_input) (s : seed) : ms3a_bitness_layer_source distr.
 
-op d_ms3a_real_payload_seed (x : ms_public_input) : ms3a_real_payload_seed distr.
+(* MS-3a real payload seed law. Definitional point mass at the canonical public spine,
+   pushed forward to the real payload-seed type. This matches the concrete execution-seed
+   law `d_ms3a_real_execution_public_seed` defined in `SourceRealExecutionGameLink.ec`,
+   keeping a single canonical real-law surface (Option A; the previous bridge axiom
+   `A_ms3a_real_payload_seed_matches_execution_seed` is now a proved lemma). *)
+op d_ms3a_real_payload_seed (x : ms_public_input) : ms3a_real_payload_seed distr =
+  dmap
+    (dunit (ms3a_make_real_source
+       (ms3a_public_stmt_digest x)
+       (ms3a_public_result_bit x)
+       (ms3a_public_bits x)
+       (ms3a_public_bitness_globals x)
+       (ms3a_public_comparison_global x)
+       (ms3a_public_transcript_digest x)))
+    ms3a_real_payload_seed_of_bitness_layer.
 
 op d_ms3a_sim_payload_seed (x : ms_public_input) (s : seed) : ms3a_sim_payload_seed distr =
   dmap (d_ms3a_seed_spine_joint x s) ms3a_sim_payload_seed_of_bitness_layer.

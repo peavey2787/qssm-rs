@@ -15,7 +15,13 @@ require import SourceModel.
   `ms3a_bitness_layer_source`. The planned replacement path for the axiom
   below is to prove shape, ordered-global, and per-bit programmed lemmas on
   that constructor surface for the concrete game execution source, then add a
-  single equality bridge back to the abstract `SourceModel.ec` projections. *)
+  single equality bridge back to the abstract `SourceModel.ec` projections.
+
+  Current bridge status: this file now stays generic. The concrete theorem
+  `ms3a_public_bitness_execution_of_game_execution` is proved higher in
+  `SourceRealExecutionSeed.ec`, where the existing real-seed bridge axiom is
+  available. This file only defines the predicate and the generic projection
+  from that predicate to `ms_bitness_vector_programmed_layer`. *)
 
 pred ms3a_public_bitness_execution (x : ms_public_input) =
   ms3a_public_bitness_shape_ok x /\
@@ -34,10 +40,6 @@ pred ms3a_public_bitness_execution (x : ms_public_input) =
       ms_bitness_challenge_scalar_digest
         (ms_nth_single_bit_or (ms3a_public_bits x) i).`msbt_global_challenge).
 
-axiom A_ms3a_public_bitness_execution :
-  forall (x : ms_public_input),
-    ms3a_public_bitness_execution x.
-
 lemma ms3a_public_bitness_vector_programmed_of_public_bitness_execution
   (x : ms_public_input) :
   ms3a_public_bitness_execution x =>
@@ -54,15 +56,4 @@ split.
 rewrite /ms_ordered_challenge_vector_matches.
 have [Hlen_bits Hlen_glob] := Hshape.
 by split=> //; split.
-qed.
-
-lemma ms3a_public_bitness_vector_programmed_of_game_execution
-  (x : ms_public_input) :
-  ms_bitness_vector_programmed_layer
-    (ms3a_public_stmt_digest x)
-    (ms3a_public_bits x)
-    (ms3a_public_bitness_globals x).
-proof.
-exact (ms3a_public_bitness_vector_programmed_of_public_bitness_execution x
-  (A_ms3a_public_bitness_execution x)).
 qed.

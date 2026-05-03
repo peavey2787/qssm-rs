@@ -6,11 +6,11 @@ require import SourceRealExecutionSeed.
 
 (* `ms3a_ax_*` predicates and real/sim seed programmed-layer obligations.
 
-   Narrow spine-shaped obligations (one public-bitness execution axiom plus one
+   Narrow spine-shaped obligations (one proved public-bitness theorem plus one
    proved execution-seed theorem) replace the former four field-wise
    programmed-on-support axioms:
-   - `A_ms3a_public_bitness_execution` in `SourcePublicBitnessExecution.ec` packages the
-     remaining ROM/FS public-bitness semantics on the public spine.
+   - `ms3a_public_bitness_execution_of_game_execution` in `SourceRealExecutionSeed.ec`
+     now proves the remaining ROM/FS public-bitness semantics on the public spine.
    - `ms3a_real_execution_seed_link_of_game_execution` in `SourceRealExecutionSeed.ec`
      packages both (i) public-spine `ms_bitness_vector_programmed_layer` and
      (ii) real-seed public-field agreement on support.
