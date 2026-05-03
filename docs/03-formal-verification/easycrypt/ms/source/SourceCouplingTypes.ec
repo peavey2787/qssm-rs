@@ -16,10 +16,11 @@ require import SourceTypes SourcePayloadDistributions SourceConstructors.
    satisfies `ms3a_source_wf`, then every pair in the joint satisfies
    `ms3a_real_sim_payload_seed_coupled`.
 
-   Discharge map: the four `A_ms3a_seed_pair_*_source_shared` lemmas in
-   SourcePublicFieldObligations.ec use axiom `A_ms3a_spine_marginal_pair_common_lift` so
-   arbitrary marginal-support pairs share one spine preimage, plus field lemmas
-   `L_ms3a_payload_pair_*_seed_of_bitness`. Lemma `A_ms3a_bitness_layer_seed_schedule` in
+  Discharge map: the four `A_ms3a_seed_pair_*_source_shared` lemmas in
+  SourcePublicFieldObligations.ec project the narrower axiom
+  `A_ms3a_seed_pair_public_fields_match_on_support`, which states that arbitrary
+  marginal-support pairs agree on the four shared public fields. Lemma
+  `A_ms3a_bitness_layer_seed_schedule` in
    SourceScheduleSeed.ec is proved from the two marginal bridge axioms using
    `dmap_comp` and `eq_dmap_in` (same six-field round-trip as
    `L_ms3a_bitness_layer_of_real_payload_seed_of_bitness` /

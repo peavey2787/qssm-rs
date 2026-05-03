@@ -8,11 +8,11 @@ require import SourceProgrammedObligations.
 (* Phase-1: lemmas `L_ms3a_seed_pair_*_when_seeds_are_phase1` below prove the four public-field
    equalities from equality to Phase-1 payloads alone; they do not use any spine bridge axioms.
 
-   General marginal support: the four `A_ms3a_seed_pair_*_source_shared` lemmas (same names,
-   proved statements) use axiom `A_ms3a_spine_marginal_pair_common_lift` in
-   `SourcePayloadDistributions.ec` so any (sr,ss) with sr in `d_ms3a_real_payload_seed x` and
-   ss in `d_ms3a_sim_payload_seed x s` share one spine preimage, then
-   `L_ms3a_payload_pair_public_fields_seed_of_bitness` on that spine.
+  General marginal support: the four `A_ms3a_seed_pair_*_source_shared` lemmas (same names,
+  proved statements) project the narrower axiom
+  `A_ms3a_seed_pair_public_fields_match_on_support` in `SourcePayloadDistributions.ec`, which
+  states that any (sr,ss) with sr in `d_ms3a_real_payload_seed x` and ss in
+  `d_ms3a_sim_payload_seed x s` agree on the four shared public fields.
 
    Other spine facts in `SourcePayloadDistributions.ec`: axiom
    `A_ms3a_spine_real_marginal_matches_seed` (real marginal vs joint); lemma
@@ -76,8 +76,8 @@ lemma A_ms3a_seed_pair_stmt_source_shared (x : ms_public_input) (s : seed) :
     sr.`ms3rp_stmt = ss.`ms3sp_stmt.
 proof.
 move=> sr ss Hsr Hss.
-have [src [Hsrc [Hsr_eq Hss_eq]]] := A_ms3a_spine_marginal_pair_common_lift x s sr ss Hsr Hss.
-by rewrite -Hsr_eq -Hss_eq; apply (L_ms3a_payload_pair_stmt_seed_of_bitness src).
+have [Hstmt _] := A_ms3a_seed_pair_public_fields_match_on_support x s sr ss Hsr Hss.
+exact Hstmt.
 qed.
 
 lemma A_ms3a_seed_pair_stmt_on_support (x : ms_public_input) (s : seed) :
@@ -99,8 +99,8 @@ lemma A_ms3a_seed_pair_res_source_shared (x : ms_public_input) (s : seed) :
     sr.`ms3rp_res = ss.`ms3sp_res.
 proof.
 move=> sr ss Hsr Hss.
-have [src [Hsrc [Hsr_eq Hss_eq]]] := A_ms3a_spine_marginal_pair_common_lift x s sr ss Hsr Hss.
-by rewrite -Hsr_eq -Hss_eq; apply (L_ms3a_payload_pair_res_seed_of_bitness src).
+have [_ [Hres _]] := A_ms3a_seed_pair_public_fields_match_on_support x s sr ss Hsr Hss.
+exact Hres.
 qed.
 
 lemma A_ms3a_seed_pair_res_on_support (x : ms_public_input) (s : seed) :
@@ -123,8 +123,8 @@ lemma A_ms3a_seed_pair_comparison_global_source_shared
     sr.`ms3rp_comparison_global_challenge = ss.`ms3sp_comparison_global_challenge.
 proof.
 move=> sr ss Hsr Hss.
-have [src [Hsrc [Hsr_eq Hss_eq]]] := A_ms3a_spine_marginal_pair_common_lift x s sr ss Hsr Hss.
-by rewrite -Hsr_eq -Hss_eq; apply (L_ms3a_payload_pair_comparison_global_seed_of_bitness src).
+have [_ [_ [Hcomp _]]] := A_ms3a_seed_pair_public_fields_match_on_support x s sr ss Hsr Hss.
+exact Hcomp.
 qed.
 
 lemma A_ms3a_seed_pair_comparison_global_on_support (x : ms_public_input) (s : seed) :
@@ -147,8 +147,8 @@ lemma A_ms3a_seed_pair_bitness_globals_source_shared
     sr.`ms3rp_bitness_global_challenges = ss.`ms3sp_bitness_global_challenges.
 proof.
 move=> sr ss Hsr Hss.
-have [src [Hsrc [Hsr_eq Hss_eq]]] := A_ms3a_spine_marginal_pair_common_lift x s sr ss Hsr Hss.
-by rewrite -Hsr_eq -Hss_eq; apply (L_ms3a_payload_pair_bitness_globals_seed_of_bitness src).
+have [_ [_ [_ Hbg]]] := A_ms3a_seed_pair_public_fields_match_on_support x s sr ss Hsr Hss.
+exact Hbg.
 qed.
 
 lemma A_ms3a_seed_pair_bitness_globals_on_support (x : ms_public_input) (s : seed) :

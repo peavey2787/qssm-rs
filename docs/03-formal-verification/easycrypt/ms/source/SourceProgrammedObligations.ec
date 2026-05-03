@@ -5,16 +5,19 @@ require import SourceModel.
 
 (* `ms3a_ax_*` predicates and real/sim seed programmed-layer obligations.
 
-   Narrow spine-shaped obligations (three axioms) replace the former four
+   Narrow spine-shaped obligations (two axioms plus one proved sim projection lemma) replace the former four
    field-wise programmed-on-support axioms:
    - `A_ms3a_public_payload_bitness_programmed`: the six-field **public** spine’s bitness
      vector satisfies `ms_bitness_vector_programmed_layer` (ROM / FS / transcript hookup).
-   - `A_ms3a_real_seed_bitness_fields_are_public_on_support` /
-     `A_ms3a_sim_seed_bitness_fields_are_public_on_support`: every abstract seed on
+   - `A_ms3a_real_seed_bitness_fields_are_public_on_support`: every abstract **real** seed on
      support **coincides** with those public projections (game / linking residue).
+   - `A_ms3a_sim_seed_bitness_fields_are_public_on_support`: proved below by inverting sim
+     support through `d_ms3a_seed_spine_joint`, then reusing the real marginal bridge and
+     real projection axiom on the same spine sample.
 
    The four former axioms `A_ms3a_{real,sim}_seed_{bits,bitness_globals}_programmed_on_support`
-   are **proved lemmas** below from these three facts via `MS_3a_all_bits_from_single_bit`. *)
+   are **proved lemmas** below from those two axioms plus the sim projection lemma via
+   `MS_3a_all_bits_from_single_bit`. *)
 
 axiom A_ms3a_public_payload_bitness_programmed (x : ms_public_input) :
   ms_bitness_vector_programmed_layer (ms3a_public_stmt_digest x) (ms3a_public_bits x)
@@ -27,13 +30,36 @@ axiom A_ms3a_real_seed_bitness_fields_are_public_on_support (x : ms_public_input
     sigma.`ms3rp_bits = ms3a_public_bits x /\
     sigma.`ms3rp_bitness_global_challenges = ms3a_public_bitness_globals x.
 
-axiom A_ms3a_sim_seed_bitness_fields_are_public_on_support
+lemma A_ms3a_sim_seed_bitness_fields_are_public_on_support
   (x : ms_public_input) (s : seed) :
   forall (sigma : ms3a_sim_payload_seed),
     sigma \in d_ms3a_sim_payload_seed x s =>
     sigma.`ms3sp_stmt = ms3a_public_stmt_digest x /\
     sigma.`ms3sp_bits = ms3a_public_bits x /\
     sigma.`ms3sp_bitness_global_challenges = ms3a_public_bitness_globals x.
+proof.
+move=> sigma Hsig.
+rewrite /d_ms3a_sim_payload_seed in Hsig.
+case/supp_dmap: Hsig=> src [Hsrc ->].
+have Hreal :
+  ms3a_real_payload_seed_of_bitness_layer src \in d_ms3a_real_payload_seed x.
+- rewrite -(A_ms3a_spine_real_marginal_matches_seed x s).
+  apply/supp_dmap.
+  exists src; split; first exact Hsrc.
+  by [].
+have Hproj :=
+  A_ms3a_real_seed_bitness_fields_are_public_on_support x
+    (ms3a_real_payload_seed_of_bitness_layer src) Hreal.
+case: Hproj=> Hstmt [Hbits Hglob].
+split.
+- move: Hstmt.
+  by rewrite /ms3a_real_payload_seed_of_bitness_layer /ms3a_sim_payload_seed_of_bitness_layer.
+split.
+- move: Hbits.
+  by rewrite /ms3a_real_payload_seed_of_bitness_layer /ms3a_sim_payload_seed_of_bitness_layer.
+- move: Hglob.
+  by rewrite /ms3a_real_payload_seed_of_bitness_layer /ms3a_sim_payload_seed_of_bitness_layer.
+qed.
 
 lemma A_ms3a_real_seed_bits_programmed_on_support (x : ms_public_input) :
   forall (sigma : ms3a_real_payload_seed),

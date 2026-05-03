@@ -61,6 +61,7 @@ FILES=(
   ms/source/SourceDistributionLemmas.ec
   ms/source/SourceObservableDistributions.ec
   ms/source/SourceDistributions.ec
+  ms/source/SourceExecutionLink.ec
   ms/source/SourceProgrammedObligations.ec
   ms/source/SourcePublicFieldObligations.ec
   ms/source/SourceScheduleSeed.ec

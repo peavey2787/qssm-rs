@@ -13,7 +13,8 @@ require import SourceConstructors.
    marginal of `d_ms3a_seed_spine_joint` (lemma `A_ms3a_spine_sim_marginal_matches_seed` is
    definitional). The joint and **real** seed law remain abstract `op`s; axiom
    `A_ms3a_spine_real_marginal_matches_seed` plus `A_ms3a_seed_spine_support_wf` and
-   `A_ms3a_spine_marginal_pair_common_lift` are not proved here without game-level definitions. *)
+  `A_ms3a_seed_pair_public_fields_match_on_support` are not proved here without game-level
+  definitions. *)
 
 lemma L_ms3a_real_sim_seed_of_bitness_coupled_of_wf (src : ms3a_bitness_layer_source) :
   ms3a_source_wf src =>

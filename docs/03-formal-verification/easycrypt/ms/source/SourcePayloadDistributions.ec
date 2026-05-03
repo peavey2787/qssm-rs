@@ -11,9 +11,10 @@ require import SourceTypes SourceConstructors.
    joint). The **real** law stays abstract: its type has no `s`, so it cannot be defined as
    `dmap (d_ms3a_seed_spine_joint x s) …` without either (i) a separate proof that that
    `dmap` is independent of `s`, or (ii) extending the interface with `s`. Narrow axiom
-   `A_ms3a_spine_real_marginal_matches_seed` still ties the abstract real law to the joint’s
-   real marginal for every `s`. Games / linking still supply `d_ms3a_seed_spine_joint` and
-   the real bridge plus `A_ms3a_seed_spine_support_wf` and `A_ms3a_spine_marginal_pair_common_lift`. *)
+  `A_ms3a_spine_real_marginal_matches_seed` still ties the abstract real law to the joint’s
+  real marginal for every `s`. Games / linking still supply `d_ms3a_seed_spine_joint` and
+  the real bridge plus `A_ms3a_seed_spine_support_wf` and the narrower paired-public-fields
+  support obligation below. *)
 op d_ms3a_seed_spine_joint (x : ms_public_input) (s : seed) : ms3a_bitness_layer_source distr.
 
 op d_ms3a_real_payload_seed (x : ms_public_input) : ms3a_real_payload_seed distr.
@@ -32,7 +33,8 @@ op d_ms3a_sim_source_payload (x : ms_public_input) (s : seed) : ms3a_sim_source_
    `d_ms3a_sim_payload_seed` is defined as the joint sim marginal; lemma
    `A_ms3a_spine_sim_marginal_matches_seed` is definitional packaging (keeps schedule proofs
    unchanged). The joint and real seed law remain abstract: no proof of the real bridge, WF,
-   or common-lift at this layer without game-level definitions or further axioms. *)
+  or support-level paired-public alignment at this layer without game-level definitions or
+  further axioms. *)
 
 axiom A_ms3a_spine_real_marginal_matches_seed (x : ms_public_input) (s : seed) :
   dmap (d_ms3a_seed_spine_joint x s) ms3a_real_payload_seed_of_bitness_layer =
@@ -47,14 +49,12 @@ axiom A_ms3a_seed_spine_support_wf (x : ms_public_input) (s : seed) :
   forall (src : ms3a_bitness_layer_source),
     src \in d_ms3a_seed_spine_joint x s => ms3a_source_wf src.
 
-(* Same-spine lift for arbitrary marginal pairs: game-level “one draw, two projections”
-   residue. Together with `L_ms3a_payload_pair_public_fields_seed_of_bitness` it discharges
-   the four `A_ms3a_seed_pair_*_source_shared` lemmas in `SourcePublicFieldObligations.ec`. *)
-axiom A_ms3a_spine_marginal_pair_common_lift (x : ms_public_input) (s : seed)
+(* Narrow paired-public consequence still needed downstream: arbitrary support elements from the
+   abstract real and sim seed laws agree on the four shared public fields. This is strictly
+   weaker than a same-spine witness obligation and is the only consequence currently consumed by
+   `SourcePublicFieldObligations.ec`. *)
+axiom A_ms3a_seed_pair_public_fields_match_on_support (x : ms_public_input) (s : seed)
   (sr : ms3a_real_payload_seed) (ss : ms3a_sim_payload_seed) :
   sr \in d_ms3a_real_payload_seed x =>
   ss \in d_ms3a_sim_payload_seed x s =>
-  exists (src : ms3a_bitness_layer_source),
-    src \in d_ms3a_seed_spine_joint x s /\
-    ms3a_real_payload_seed_of_bitness_layer src = sr /\
-    ms3a_sim_payload_seed_of_bitness_layer src = ss.
+  ms3a_payload_pair_public_fields_match sr ss.
