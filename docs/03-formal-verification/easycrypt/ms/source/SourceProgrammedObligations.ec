@@ -2,33 +2,45 @@ require import AllCore List Distr.
 require import QssmTypes FS SchnorrBranch BitnessOne BitnessVector.
 require import SourceTypes SourceConstructors SourceDistributions.
 require import SourceModel.
+require import SourceRealExecutionSeed.
 
 (* `ms3a_ax_*` predicates and real/sim seed programmed-layer obligations.
 
-   Narrow spine-shaped obligations (two axioms plus one proved sim projection lemma) replace the former four
-   field-wise programmed-on-support axioms:
-   - `A_ms3a_public_payload_bitness_programmed`: the six-field **public** spine’s bitness
-     vector satisfies `ms_bitness_vector_programmed_layer` (ROM / FS / transcript hookup).
-   - `A_ms3a_real_seed_bitness_fields_are_public_on_support`: every abstract **real** seed on
-     support **coincides** with those public projections (game / linking residue).
+   Narrow spine-shaped obligations (one execution-seed package axiom plus one proved sim projection lemma)
+   replace the former four field-wise programmed-on-support axioms:
+   - `A_ms3a_real_execution_seed_link` in `SourceRealExecutionSeed.ec`: the real execution/public
+     seed law packages both (i) public-spine `ms_bitness_vector_programmed_layer` and (ii) real-seed
+     public-field agreement on support.
+   - `A_ms3a_public_payload_bitness_programmed`: proved below from that package via
+     `ms3a_public_payload_bitness_programmed_of_execution_seed_law`.
+   - `A_ms3a_real_seed_bitness_fields_are_public_on_support`: proved below from that package via
+     `ms3a_real_seed_public_fields_on_support_of_execution_seed_law`.
    - `A_ms3a_sim_seed_bitness_fields_are_public_on_support`: proved below by inverting sim
      support through `d_ms3a_seed_spine_joint`, then reusing the real marginal bridge and
-     real projection axiom on the same spine sample.
+     real projection lemma on the same spine sample.
 
    The four former axioms `A_ms3a_{real,sim}_seed_{bits,bitness_globals}_programmed_on_support`
-   are **proved lemmas** below from those two axioms plus the sim projection lemma via
+   are **proved lemmas** below from the two real derived lemmas plus the sim projection lemma via
    `MS_3a_all_bits_from_single_bit`. *)
 
-axiom A_ms3a_public_payload_bitness_programmed (x : ms_public_input) :
+lemma A_ms3a_public_payload_bitness_programmed (x : ms_public_input) :
   ms_bitness_vector_programmed_layer (ms3a_public_stmt_digest x) (ms3a_public_bits x)
     (ms3a_public_bitness_globals x).
+proof.
+exact (ms3a_public_payload_bitness_programmed_of_execution_seed_law x
+  (A_ms3a_real_execution_seed_link x)).
+qed.
 
-axiom A_ms3a_real_seed_bitness_fields_are_public_on_support (x : ms_public_input) :
+lemma A_ms3a_real_seed_bitness_fields_are_public_on_support (x : ms_public_input) :
   forall (sigma : ms3a_real_payload_seed),
     sigma \in d_ms3a_real_payload_seed x =>
     sigma.`ms3rp_stmt = ms3a_public_stmt_digest x /\
     sigma.`ms3rp_bits = ms3a_public_bits x /\
     sigma.`ms3rp_bitness_global_challenges = ms3a_public_bitness_globals x.
+proof.
+exact (ms3a_real_seed_public_fields_on_support_of_execution_seed_law x
+  (A_ms3a_real_execution_seed_link x)).
+qed.
 
 lemma A_ms3a_sim_seed_bitness_fields_are_public_on_support
   (x : ms_public_input) (s : seed) :
