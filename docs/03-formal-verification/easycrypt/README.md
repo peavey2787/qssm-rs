@@ -94,9 +94,9 @@ The script type-checks theories in dependency order. Each file is checked with `
 35. `ms/source/SourceTypes.ec`
 36. `ms/source/SourceConstructors.ec` (constructors + Phase-1 **`ms3a_phase1_{real,sim}_payload_from_public_input`** from **`ms3a_public_*`**; imports **`SourceModel`**)
 37. `ms/source/SourcePayloadDistributions.ec` (payload seed + `dmap` payload laws)
-38. `ms/source/SourceCouplingTypes.ec` (MS-3a joint seed law: product + coupled predicate + projection ops)
-39. `ms/source/SourceCouplingAxioms.ec` (comments + definitional unfold hook; narrow game axioms reserved)
-40. `ms/source/SourceCouplingTheorem.ec` (marginal / `supp_dprod` / layer-map lemmas for the coupling)
+38. `ms/source/SourceCouplingTypes.ec` (MS-3a joint seed law: `dmap` of abstract spine `d_ms3a_seed_spine_joint` + coupled predicate + projection ops)
+39. `ms/source/SourceCouplingAxioms.ec` (marginal-bridge documentation + definitional unfold)
+40. `ms/source/SourceCouplingTheorem.ec` (spine preimage, `dmap_comp` projection folds, pair-relation from WF on spine support, layer-map lemmas)
 41. `ms/source/SourceBitnessDistributions.ec` (bitness-layer `dmap` + `dmap_comp` folds)
 42. `ms/source/SourceDistributionLemmas.ec` (support / constructor-image / payload-pair helpers)
 43. `ms/source/SourceObservableDistributions.ec` (observable pushforwards + layer bridge)

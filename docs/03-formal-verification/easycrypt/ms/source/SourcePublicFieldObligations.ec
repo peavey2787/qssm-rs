@@ -7,7 +7,15 @@ require import SourceProgrammedObligations.
 
 (* Phase-1 spine linkage: if joint support seeds equal the Phase-1 constructors, the four
    field equalities in `A_ms3a_seed_pair_*_source_shared` follow without those axioms. The
-   unconditional axioms remain until `d_ms3a_*_payload_seed` is refined to enforce this. *)
+   unconditional axioms remain until `d_ms3a_*_payload_seed` is refined to enforce this.
+
+   **Structured joint (`SourceCouplingTypes` / `SourcePayloadDistributions`):** pairs drawn
+   from `d_ms3a_real_sim_payload_seed_coupling` agree on all six fields by construction
+   once they come from the same spine draw. The axioms below instead range over **independent**
+   marginal supports `d_ms3a_{real,sim}_payload_seed`; deriving them from the spine joint
+   needs explicit marginal bridges
+   `dmap (d_ms3a_seed_spine_joint x s) ms3a_real_payload_seed_of_bitness_layer = d_ms3a_real_payload_seed x`
+   (and sim), which are intentionally **not** added as blanket axioms in this phase. *)
 
 lemma L_ms3a_seed_pair_stmt_when_seeds_are_phase1
   (x : ms_public_input) (s : seed) (sr : ms3a_real_payload_seed) (ss : ms3a_sim_payload_seed) :

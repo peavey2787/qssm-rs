@@ -10,6 +10,10 @@ require import SourceProgrammedObligations SourcePublicFieldObligations.
    `L_ms3a_bitness_layer_seed_push_{real,sim}_eq_layer_dmap` in
    `SourceBitnessDistributions.ec`. *)
 
+(* Schedule still compares **abstract marginal** seed laws. A spine-first proof would
+   rewrite each side through marginal bridges to `d_ms3a_seed_spine_joint` and use
+   `L_ms3a_bitness_layer_of_{real,sim}_payload_seed_of_bitness` — absent here. *)
+
 axiom A_ms3a_bitness_layer_seed_schedule (x : ms_public_input) (s : seed) :
   dmap (d_ms3a_real_payload_seed x) ms3a_bitness_layer_source_of_real_payload =
   dmap (d_ms3a_sim_payload_seed x s) ms3a_bitness_layer_source_of_sim_payload.

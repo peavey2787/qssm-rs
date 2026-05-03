@@ -1,24 +1,28 @@
 require import AllCore List Distr.
 require import QssmTypes BitnessVector.
-require import SourceTypes SourcePayloadDistributions.
+require import SourceTypes SourcePayloadDistributions SourceConstructors.
 
-(* MS-3a seed coupling scaffold (parallel to `ComparisonCouplingTypes.ec` on the
-   comparison lane). Joint law is the **independent product** of the abstract seed
-   laws `d_ms3a_real_payload_seed` and `d_ms3a_sim_payload_seed` (`SourcePayloadDistributions.ec`).
-   Fst/snd marginals match those laws under `is_lossless` on the opposite factor
-   (`SourceCouplingTheorem.ec`, same `dprod_marginal` pattern as MS-3c).
+(* MS-3a seed coupling: **structured joint** `dmap (d_ms3a_seed_spine_joint x s)
+   ms3a_real_sim_seed_pair_of_bitness_layer` (one shared `ms3a_bitness_layer_source` spine
+   per `(x,s)`; real/sim seeds are definitional copies of the same six fields).
 
-   **Discharge map for the nine `ms/source` seed axioms:** the four
-   `A_ms3a_seed_pair_*_source_shared` axioms (`SourcePublicFieldObligations.ec`) are
-   *pairing* facts on joint seed support; they are **not** implied by the product
-   alone. A future **correlated** joint law refining `d_ms3a_real_sim_payload_seed_coupling`
-   should prove `ms3a_ax_seed_coupling_pair_relation` / stronger support coupling, then
-   recover `source_shared` via `supp_dmap`-style reasoning (cf. MS-3c schedule lemmas).
-   The schedule axiom **`A_ms3a_bitness_layer_seed_schedule`** (`SourceScheduleObligations.ec`)
-   needs **semantic** agreement of real vs sim seeds on **all six** fields (including
-   `bits` and transcript digest); `ms3a_real_sim_payload_seed_coupled` packages exactly
-   that alignment plus programmed bitness-vector premises on **both** sides, matching
-   the programmed-on-support axioms (`SourceProgrammedObligations.ec`). *)
+   **Not** the independent product of `d_ms3a_{real,sim}_payload_seed`: those laws remain
+   abstract and are **not** identified with the fst/snd marginals of this joint unless
+   future linking axioms or game definitions say so.
+
+   **Pair relation (`SourceCouplingTheorem.ec`):** on spine support, if every drawn spine
+   satisfies `ms3a_source_wf` (programmed bitness vector), then every pair in the joint
+   satisfies `ms3a_real_sim_payload_seed_coupled` (field alignment + programmed on both
+   typed seeds — the two programmed conjuncts coincide with `ms3a_source_wf`).
+
+   **Discharge map:** the four `A_ms3a_seed_pair_*_source_shared` axioms quantify over
+   **marginal** seed supports `d_ms3a_{real,sim}_payload_seed`, not over this joint; to
+   derive them from the spine joint requires **marginal bridge** facts
+   `dmap (d_ms3a_seed_spine_joint …) ms3a_real_payload_seed_of_bitness_layer = d_ms3a_real_payload_seed …`
+   (and sim), plus `supp_dmap` — intentionally absent here. Schedule axiom
+   **`A_ms3a_bitness_layer_seed_schedule`** still compares the **abstract** marginal seed
+   pushforwards; relating it to `d_ms3a_seed_spine_joint` needs the same bridges plus
+   `L_ms3a_bitness_layer_of_{real,sim}_payload_seed_of_bitness` (`SourceConstructors.ec`). *)
 
 pred ms3a_real_sim_payload_seed_coupled
   (sr : ms3a_real_payload_seed) (ss : ms3a_sim_payload_seed) =
@@ -32,7 +36,7 @@ pred ms3a_real_sim_payload_seed_coupled
 
 op d_ms3a_real_sim_payload_seed_coupling (x : ms_public_input) (s : seed) :
   (ms3a_real_payload_seed * ms3a_sim_payload_seed) distr =
-  d_ms3a_real_payload_seed x `*` d_ms3a_sim_payload_seed x s.
+  dmap (d_ms3a_seed_spine_joint x s) ms3a_real_sim_seed_pair_of_bitness_layer.
 
 op d_ms3a_coupling_seed_real_projection (x : ms_public_input) (s : seed) :
   ms3a_real_payload_seed distr =

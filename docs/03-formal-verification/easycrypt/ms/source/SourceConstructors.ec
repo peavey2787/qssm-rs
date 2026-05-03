@@ -36,6 +36,58 @@ op ms3a_bitness_layer_source_of_sim_payload (p : ms3a_sim_source_payload) :
     p.`ms3sp_bitness_global_challenges p.`ms3sp_comparison_global_challenge
     p.`ms3sp_transcript_digest.
 
+(* Shared spine → typed MS-3a seeds (same six fields; used by `d_ms3a_real_sim_payload_seed_coupling`
+   in `SourceCouplingTypes.ec` as `dmap (d_ms3a_seed_spine_joint x s) …`). *)
+
+op ms3a_real_payload_seed_of_bitness_layer (src : ms3a_bitness_layer_source) :
+  ms3a_real_payload_seed =
+  {| ms3rp_stmt = src.`ms3s_stmt;
+     ms3rp_res = src.`ms3s_result;
+     ms3rp_bits = src.`ms3s_bits;
+     ms3rp_bitness_global_challenges = src.`ms3s_bitness_global_challenges;
+     ms3rp_comparison_global_challenge = src.`ms3s_comparison_global_challenge;
+     ms3rp_transcript_digest = src.`ms3s_transcript_digest |}.
+
+op ms3a_sim_payload_seed_of_bitness_layer (src : ms3a_bitness_layer_source) :
+  ms3a_sim_payload_seed =
+  {| ms3sp_stmt = src.`ms3s_stmt;
+     ms3sp_res = src.`ms3s_result;
+     ms3sp_bits = src.`ms3s_bits;
+     ms3sp_bitness_global_challenges = src.`ms3s_bitness_global_challenges;
+     ms3sp_comparison_global_challenge = src.`ms3s_comparison_global_challenge;
+     ms3sp_transcript_digest = src.`ms3s_transcript_digest |}.
+
+op ms3a_real_sim_seed_pair_of_bitness_layer (src : ms3a_bitness_layer_source) :
+  ms3a_real_payload_seed * ms3a_sim_payload_seed =
+  (ms3a_real_payload_seed_of_bitness_layer src, ms3a_sim_payload_seed_of_bitness_layer src).
+
+lemma L_ms3a_payload_pair_public_fields_seed_of_bitness (src : ms3a_bitness_layer_source) :
+  ms3a_payload_pair_public_fields_match
+    (ms3a_real_payload_seed_of_bitness_layer src)
+    (ms3a_sim_payload_seed_of_bitness_layer src).
+proof.
+by rewrite /ms3a_payload_pair_public_fields_match
+  /ms3a_real_payload_seed_of_bitness_layer /ms3a_sim_payload_seed_of_bitness_layer /=.
+qed.
+
+lemma L_ms3a_bitness_layer_of_real_payload_seed_of_bitness (src : ms3a_bitness_layer_source) :
+  ms3a_bitness_layer_source_of_real_payload (ms3a_real_payload_seed_of_bitness_layer src) = src.
+proof.
+case: src=> ms3s_stmt ms3s_result ms3s_bits ms3s_bitness_global_challenges
+  ms3s_comparison_global_challenge ms3s_transcript_digest.
+by rewrite /ms3a_bitness_layer_source_of_real_payload /ms3a_real_payload_seed_of_bitness_layer
+  /ms3a_make_real_source.
+qed.
+
+lemma L_ms3a_bitness_layer_of_sim_payload_seed_of_bitness (src : ms3a_bitness_layer_source) :
+  ms3a_bitness_layer_source_of_sim_payload (ms3a_sim_payload_seed_of_bitness_layer src) = src.
+proof.
+case: src=> ms3s_stmt ms3s_result ms3s_bits ms3s_bitness_global_challenges
+  ms3s_comparison_global_challenge ms3s_transcript_digest.
+by rewrite /ms3a_bitness_layer_source_of_sim_payload /ms3a_sim_payload_seed_of_bitness_layer
+  /ms3a_make_sim_source.
+qed.
+
 (* Phase-1 constructors: wire the six `ms3a_public_*` spine fields into nominal real/sim
    payload records. Independent of abstract `d_ms3a_{real,sim}_payload_seed` until a
    later linking phase defines those laws from execution / games. *)
