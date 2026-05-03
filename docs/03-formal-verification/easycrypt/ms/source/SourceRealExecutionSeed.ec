@@ -1,22 +1,22 @@
 require import AllCore List Distr.
 require import QssmTypes BitnessVector.
 require import SourceModel SourceTypes SourcePayloadDistributions SourceExecutionLink.
+require import SourceRealExecutionGameLink.
 
-(* MS-3a concrete real execution-seed boundary.
+(* MS-3a concrete real execution-seed packaging boundary.
 
-   This theory introduces the first concrete execution-facing seed law for the
-   real MS-3a side, without changing the current abstract source interfaces.
+   This theory packages the concrete execution-facing seed law supplied by
+   `SourceRealExecutionGameLink.ec`, without changing the current abstract
+   source interfaces.
 
    Dependency direction is intentional:
-   - may depend on `SourcePayloadDistributions.ec` and `SourceExecutionLink.ec`
+   - may depend on `SourcePayloadDistributions.ec`, `SourceExecutionLink.ec`,
+     and `SourceRealExecutionGameLink.ec`
    - may later be imported by `SourceProgrammedObligations.ec`
    - must not be imported by `SourcePayloadDistributions.ec`, to avoid a cycle
    - the next phase can wire `d_ms3a_real_payload_seed` to this law, or prove
      them equal, and then reuse the bridge lemma below to recover
      `ms3a_execution_public_spine_link` *)
-
-op d_ms3a_real_execution_public_seed
-  (x : ms_public_input) : ms3a_real_payload_seed distr.
 
 axiom A_ms3a_real_payload_seed_matches_execution_seed :
   forall (x : ms_public_input),
@@ -34,9 +34,15 @@ pred ms3a_real_execution_seed_link (x : ms_public_input) =
     sigma.`ms3rp_bits = ms3a_public_bits x /\
     sigma.`ms3rp_bitness_global_challenges = ms3a_public_bitness_globals x.
 
-axiom A_ms3a_real_execution_seed_link :
+lemma ms3a_real_execution_seed_link_of_game_execution :
   forall (x : ms_public_input),
     ms3a_real_execution_seed_link x.
+proof.
+move=> x; split.
+- exact (ms3a_game_public_spine_programmed x).
+- move=> sigma Hsig.
+  exact (ms3a_game_real_execution_seed_public_fields x sigma Hsig).
+qed.
 
 lemma ms3a_public_payload_bitness_programmed_of_real_execution_seed_link
   (x : ms_public_input) :

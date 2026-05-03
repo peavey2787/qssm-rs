@@ -516,17 +516,27 @@
     "SourceProgrammedObligations": {
       "direct": false,
       "kind": "ec",
-      "digest": "18936a516de98556ad60a06e7006c95e"
+      "digest": "c9d7556adae2df4d66c21b728ed049fc"
+    },
+    "SourcePublicBitnessExecution": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "1eafc1701d9202830c169eadfc3e1619"
     },
     "SourcePublicFieldObligations": {
       "direct": false,
       "kind": "ec",
       "digest": "9826ba6f6fe6ad2840db9da0a548adf6"
     },
+    "SourceRealExecutionGameLink": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "0ca2bb5fb3cf39e84048a33191f7029a"
+    },
     "SourceRealExecutionSeed": {
       "direct": false,
       "kind": "ec",
-      "digest": "353c1811e6e3d9a8691dcaca4265add6"
+      "digest": "547819d6900729c38c57e93227b188a5"
     },
     "SourceScheduleObligations": {
       "direct": false,

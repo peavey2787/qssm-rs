@@ -62,6 +62,9 @@ FILES=(
   ms/source/SourceObservableDistributions.ec
   ms/source/SourceDistributions.ec
   ms/source/SourceExecutionLink.ec
+  ms/source/SourcePublicBitnessConstructors.ec
+  ms/source/SourcePublicBitnessExecution.ec
+  ms/source/SourceRealExecutionGameLink.ec
   ms/source/SourceRealExecutionSeed.ec
   ms/source/SourceProgrammedObligations.ec
   ms/source/SourcePublicFieldObligations.ec

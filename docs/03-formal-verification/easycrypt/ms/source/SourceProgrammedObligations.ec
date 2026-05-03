@@ -6,11 +6,14 @@ require import SourceRealExecutionSeed.
 
 (* `ms3a_ax_*` predicates and real/sim seed programmed-layer obligations.
 
-   Narrow spine-shaped obligations (one execution-seed package axiom plus one proved sim projection lemma)
-   replace the former four field-wise programmed-on-support axioms:
-   - `A_ms3a_real_execution_seed_link` in `SourceRealExecutionSeed.ec`: the real execution/public
-     seed law packages both (i) public-spine `ms_bitness_vector_programmed_layer` and (ii) real-seed
-     public-field agreement on support.
+   Narrow spine-shaped obligations (one public-bitness execution axiom plus one
+   proved execution-seed theorem) replace the former four field-wise
+   programmed-on-support axioms:
+   - `A_ms3a_public_bitness_execution` in `SourcePublicBitnessExecution.ec` packages the
+     remaining ROM/FS public-bitness semantics on the public spine.
+   - `ms3a_real_execution_seed_link_of_game_execution` in `SourceRealExecutionSeed.ec`
+     packages both (i) public-spine `ms_bitness_vector_programmed_layer` and
+     (ii) real-seed public-field agreement on support.
    - `A_ms3a_public_payload_bitness_programmed`: proved below from that package via
      `ms3a_public_payload_bitness_programmed_of_execution_seed_law`.
    - `A_ms3a_real_seed_bitness_fields_are_public_on_support`: proved below from that package via
@@ -28,7 +31,7 @@ lemma A_ms3a_public_payload_bitness_programmed (x : ms_public_input) :
     (ms3a_public_bitness_globals x).
 proof.
 exact (ms3a_public_payload_bitness_programmed_of_execution_seed_law x
-  (A_ms3a_real_execution_seed_link x)).
+  (ms3a_real_execution_seed_link_of_game_execution x)).
 qed.
 
 lemma A_ms3a_real_seed_bitness_fields_are_public_on_support (x : ms_public_input) :
@@ -39,7 +42,7 @@ lemma A_ms3a_real_seed_bitness_fields_are_public_on_support (x : ms_public_input
     sigma.`ms3rp_bitness_global_challenges = ms3a_public_bitness_globals x.
 proof.
 exact (ms3a_real_seed_public_fields_on_support_of_execution_seed_law x
-  (A_ms3a_real_execution_seed_link x)).
+  (ms3a_real_execution_seed_link_of_game_execution x)).
 qed.
 
 lemma A_ms3a_sim_seed_bitness_fields_are_public_on_support

@@ -140,10 +140,14 @@ Record **`ms_single_bit_or_transcript`**: statement digest `msbt_stmt`, public p
 | `ms3a_phase1_real_payload_from_public_input`, `ms3a_phase1_sim_payload_from_public_input` | **Defined** (`SourceConstructors.ec`) — nominal real/sim payloads from **`ms3a_public_*`**; same wiring, **not** shared at the type level; independent of abstract **`d_ms3a_*_payload_seed`** until linking |
 | `L_ms3a_phase1_payload_pair_public_fields_match`, `ms3a_{real,sim}_payload_from_seed_eq_phase1_of_eq` | **Proved** (`SourceConstructors.ec`) — Phase-1 pair satisfies **`ms3a_payload_pair_public_fields_match`**; identity **`from_seed`** rewrites to Phase-1 when the seed **equals** the Phase-1 record |
 | `ms3a_real_payload_programmed_layer_as_bitness_vector` | **Proved** (`SourceConstructors.ec`) — `ms3a_real_payload_programmed_layer p` iff `ms_bitness_vector_programmed_layer` on `p.`ms3rp_stmt / bits / bitness globals |
+| `ms3a_public_bits_of_execution`, `ms3a_public_bitness_global_digest_of_execution`, `ms3a_public_bitness_globals_of_execution` | **Defined constructors** (`SourcePublicBitnessConstructors.ec`) — concrete list-level constructor boundary on `ms3a_bitness_layer_source`; ordered globals are definitionally the digest map of each bit transcript's global challenge. Planned next theorem names are `ms3a_public_bits_shape_of_execution`, `ms3a_public_bitness_globals_ordered_of_execution`, `ms3a_public_bits_per_bit_programmed_of_execution`, and `ms3a_public_bitness_execution_of_game_execution`. |
+| `ms3a_public_bitness_execution`, `A_ms3a_public_bitness_execution`, `ms3a_public_bitness_vector_programmed_of_game_execution` | **Defined axiom package + proved theorem** (`SourcePublicBitnessExecution.ec`) — one source-side public-bitness execution predicate packages shape, per-index stmt/programmed-transcript facts, and ordered bitness-global digest equality; the single axiom centralizes the remaining ROM/FS semantic debt and the theorem recovers `ms_bitness_vector_programmed_layer` on the public spine |
+| `ms3a_game_public_bitness_source`, `d_ms3a_real_execution_bitness_source`, `d_ms3a_real_execution_public_seed` | **Defined** (`SourceRealExecutionGameLink.ec`) — deterministic public source record, point-mass source sampler, and concrete real execution public-seed law `dmap (d_ms3a_real_execution_bitness_source x) ms3a_real_payload_seed_of_bitness_layer` |
+| `ms3a_game_public_bitness_source_projects_public_spine`, `ms3a_real_execution_public_seed_support_inv`, `ms3a_real_execution_bitness_source_public_fields_on_support`, `ms3a_game_real_execution_seed_public_fields`, `ms3a_game_public_bits_per_bit_programmed`, `ms3a_game_public_bitness_globals_ordered`, `ms3a_game_public_spine_programmed` | **Proved lemmas** (`SourceRealExecutionGameLink.ec`) — structural `dunit`/`dmap` consequences plus the public-bitness corollaries recovered from `SourcePublicBitnessExecution.ec` |
 | `A_ms3a_real_payload_seed_matches_execution_seed` | **Axiom** (`SourceRealExecutionSeed.ec`) — bridge equating the abstract real seed law with the concrete execution-seed law. |
-| `A_ms3a_real_execution_seed_link` | **Axiom** (`SourceRealExecutionSeed.ec`) — centralized execution/public-spine package: public spine is a programmed bitness vector, and every supported execution seed matches the public stmt / bits / bitness globals. |
-| `A_ms3a_public_payload_bitness_programmed` | **Proved lemma** (`SourceProgrammedObligations.ec`) — recovered from `A_ms3a_real_execution_seed_link` via `ms3a_public_payload_bitness_programmed_of_execution_seed_law`; no standalone programmed-layer axiom remains in this file. |
-| `A_ms3a_real_seed_bitness_fields_are_public_on_support` | **Proved lemma** (`SourceProgrammedObligations.ec`) — recovered from `A_ms3a_real_execution_seed_link` + `A_ms3a_real_payload_seed_matches_execution_seed` via `ms3a_real_seed_public_fields_on_support_of_execution_seed_law`; no standalone projection axiom remains in this file. |
+| `ms3a_real_execution_seed_link_of_game_execution` | **Proved theorem** (`SourceRealExecutionSeed.ec`) — replaces `A_ms3a_real_execution_seed_link`; proved from `ms3a_game_public_spine_programmed` and `ms3a_game_real_execution_seed_public_fields`. |
+| `A_ms3a_public_payload_bitness_programmed` | **Proved lemma** (`SourceProgrammedObligations.ec`) — recovered from `ms3a_real_execution_seed_link_of_game_execution` via `ms3a_public_payload_bitness_programmed_of_execution_seed_law`; no standalone programmed-layer axiom remains in this file. |
+| `A_ms3a_real_seed_bitness_fields_are_public_on_support` | **Proved lemma** (`SourceProgrammedObligations.ec`) — recovered from `ms3a_real_execution_seed_link_of_game_execution` + `A_ms3a_real_payload_seed_matches_execution_seed` via `ms3a_real_seed_public_fields_on_support_of_execution_seed_law`; no standalone projection axiom remains in this file. |
 | `ms3a_execution_public_spine_link`, `ms3a_real_execution_seed_link` | **Defined predicates / package surface** (`SourceExecutionLink.ec`, `SourceRealExecutionSeed.ec`) — source-facing and execution-facing wrappers for the same public-spine/programmed facts, with the latter now the single semantic package consumed downstream. |
 | `ms3a_public_payload_bitness_programmed_of_execution_link`, `ms3a_real_seed_public_fields_on_support_of_execution_link`, `ms3a_public_payload_bitness_programmed_of_execution_seed_law`, `ms3a_real_seed_public_fields_on_support_of_execution_seed_law` | **Proved projection / bridge lemmas** (`SourceExecutionLink.ec`, `SourceRealExecutionSeed.ec`) — recover the exact theorem shapes used by `SourceProgrammedObligations.ec`, which now proves the old names as lemmas. |
 | `A_ms3a_sim_seed_bitness_fields_are_public_on_support` | **Proved lemma** (`SourceProgrammedObligations.ec`) — sim support is definitionally `dmap` support off `d_ms3a_seed_spine_joint`; collapsing a supported sim seed to a spine sample and reusing the existing real marginal + real projection facts yields the public stmt / bits / bitness globals equalities. **Status A:** collapsed this phase; no replacement axiom needed. |
@@ -406,6 +410,66 @@ no longer split across `SourceProgrammedObligations.ec`; it is centralized in `S
 and the remaining blocker is no longer import direction; it is the lack of an unconditional theorem or
 axiom establishing `ms3a_real_execution_seed_link x`.
 
+**Recorded theorem-design skeleton:** `SourceRealExecutionSeed.ec` now records the exact target
+theorem name `ms3a_real_execution_seed_link_of_game_execution : forall x,
+ms3a_real_execution_seed_link x` as a comment-only proof map. The intended local decomposition is:
+
+- `ms3a_game_public_spine_programmed` — prove
+  `ms_bitness_vector_programmed_layer (ms3a_public_stmt_digest x)
+   (ms3a_public_bits x) (ms3a_public_bitness_globals x)` for every `x`.
+- `ms3a_game_real_execution_seed_public_fields` — prove every
+  `sigma \in d_ms3a_real_execution_public_seed x` matches the same public stmt / bits /
+  bitness-global fields.
+
+The current blocker is still concrete execution semantics: no theorem presently ties a sampled
+transcript/public spine to `ms3a_public_*`, no FS/ROM derivation theorem proves the public spine is
+programmed, and no support lemma exists yet for the concrete law
+`d_ms3a_real_execution_public_seed`.
+
+This phase adds the minimal concrete boundary:
+
+- new theory **`ms/source/SourceRealExecutionGameLink.ec`** above `SourceRealExecutionSeed.ec`
+- deterministic source object
+  **`ms3a_game_public_bitness_source (x : ms_public_input) : ms3a_bitness_layer_source`**
+- concrete source sampler
+  **`d_ms3a_real_execution_bitness_source (x : ms_public_input) : ms3a_bitness_layer_source distr`**
+- implemented seed law
+  **`d_ms3a_real_execution_public_seed x = dmap (d_ms3a_real_execution_bitness_source x) ms3a_real_payload_seed_of_bitness_layer`**
+
+This is the smallest object set that covers both recorded subgoals without adding another abstract
+wrapper: the source record already carries stmt / result / bits / bitness globals / comparison
+global / transcript digest together, and the existing constructor lemmas in `SourceConstructors.ec`
+already map that record into the current seed type.
+
+The proved local structural theorem names are:
+
+- **`ms3a_game_public_bitness_source_projects_public_spine`**
+- **`ms3a_real_execution_public_seed_support_inv`**
+- **`ms3a_real_execution_bitness_source_public_fields_on_support`**
+- **`ms3a_game_real_execution_seed_public_fields`**
+
+The remaining local semantic theorem names are:
+
+- **`ms3a_game_public_bits_per_bit_programmed`**
+- **`ms3a_game_public_bitness_globals_ordered`**
+
+Public-bits ROM/FS boundary result:
+
+- expanding **`ms3a_game_public_bits_per_bit_programmed`** reaches `ms_per_bit_programmed`, so for every valid bit index the corresponding element of **`ms3a_public_bits x`** must expose stmt/public-point/branch/challenge fields satisfying **`ms_single_bit_programmed_bitness_transcript`**
+- **`FS.ec`** supplies only the query/scalar surface (**`ms_bitness_query_digest`**, **`ms_query_to_scalar`**, **`ms_bitness_fs_scalar`**, **`ms_bitness_fs_programmed`**, **`A2_bitness_programmed_challenge`**)
+- **`BitnessOne.ec`** and **`BitnessVector.ec`** package and consume those predicates, but do not construct **`ms3a_public_bits x`** or prove that the public vector comes from a concrete execution/ROM trace
+- no MS/game/simulator surface currently carries a concrete MS observable or per-bit list: `ms_real_transcript`, `ms_sim_transcript`, and the `G_MS_after_*` views keep `msgv_ms_obs = witness`, while `ms_simulator` / `extract_ms_public` remain abstract
+- implemented as **`ms/source/SourcePublicBitnessExecution.ec`** with one package predicate **`ms3a_public_bitness_execution`**, one centralized axiom **`A_ms3a_public_bitness_execution`**, and the proved vector theorem **`ms3a_public_bitness_vector_programmed_of_game_execution`**
+- **`ms/source/SourcePublicBitnessConstructors.ec`** now records the concrete list-level objects **`ms3a_public_bits_of_execution`** and **`ms3a_public_bitness_globals_of_execution`** on **`ms3a_bitness_layer_source`**; the globals constructor is definitionally the ordered digest map of each bit transcript's global challenge, but no bridge theorem back to **`ms3a_public_*`** has been added yet
+- `SourceRealExecutionGameLink.ec` now derives **`ms3a_game_public_bits_per_bit_programmed`**, **`ms3a_game_public_bitness_globals_ordered`**, and **`ms3a_game_public_spine_programmed`** from that theorem, and `SourceRealExecutionSeed.ec` uses them to prove **`ms3a_real_execution_seed_link_of_game_execution`**
+- the remaining next step is no longer to add this boundary; it is to replace **`A_ms3a_public_bitness_execution`** with a concrete execution/public-bits theorem, or else replace **`A_ms3a_real_payload_seed_matches_execution_seed`** if the exact real-seed law becomes concrete first
+
+Together they should feed the already recorded goal **`ms3a_game_public_spine_programmed`** and
+**`ms3a_game_real_execution_seed_public_fields`**, and then theorem
+**`ms3a_real_execution_seed_link_of_game_execution`**. This step is now complete: the public-bitness
+boundary proves the missing FS/ROM-facing corollaries, and `SourceRealExecutionSeed.ec` no longer
+needs `A_ms3a_real_execution_seed_link`.
+
 ### Execution/link skeleton boundary
 
 **This phase adds** **`ms/source/SourceExecutionLink.ec`** as the smallest clean theory boundary.
@@ -586,19 +650,21 @@ the sim projection lemma is already proved, and the former programmed-layer axio
 | **`ms3a_public_transcript_shape_ok`** | **`ms_transcript_digest_of_observable`** on the v2 record built via **`ms3a_pack_observable`** from the six projections (digest cell vs public-field digest). |
 | **`ms3a_phase1_real_payload_from_public_input`**, **`ms3a_phase1_sim_payload_from_public_input`** | **`SourceConstructors.ec`** — nominal **`ms3a_{real,sim}_source_payload`** records built from the six **`ms3a_public_*`** fields (same field order; not a single shared return type). |
 
-Abstract **`d_ms3a_real_payload_seed`**, **`d_ms3a_seed_spine_joint`**, **definitional** **`d_ms3a_sim_payload_seed`**, and the two execution-seed axioms in **`SourceRealExecutionSeed.ec`** (`A_ms3a_real_payload_seed_matches_execution_seed`, `A_ms3a_real_execution_seed_link`) are the remaining MS-3a proof-interface debt; the former programmed-layer names `A_ms3a_public_payload_bitness_programmed` and `A_ms3a_real_seed_bitness_fields_are_public_on_support` are now proved lemmas, and proved lemma **`A_ms3a_sim_seed_bitness_fields_are_public_on_support`** continues to discharge the sim-side projection from the definitional sim marginal plus the existing real bridge. **Narrow source axioms** (**real** marginal bridge, **WF on spine support**, **paired-public support**) live in **`SourcePayloadDistributions.ec`**, and **`A_ms3a_bitness_layer_seed_schedule`** / **`A_ms3a_seed_pair_*_source_shared`** are **proved lemmas** at that interface.
+Abstract **`d_ms3a_real_payload_seed`**, **`d_ms3a_seed_spine_joint`**, **definitional** **`d_ms3a_sim_payload_seed`**, and the two remaining source-side axioms **`A_ms3a_real_payload_seed_matches_execution_seed`** and **`A_ms3a_public_bitness_execution`** are the MS-3a proof-interface debt; the former programmed-layer names `A_ms3a_public_payload_bitness_programmed` and `A_ms3a_real_seed_bitness_fields_are_public_on_support` are now proved lemmas, and proved lemma **`A_ms3a_sim_seed_bitness_fields_are_public_on_support`** continues to discharge the sim-side projection from the definitional sim marginal plus the existing real bridge. **Narrow source axioms** (**real** marginal bridge, **WF on spine support**, **paired-public support**) live in **`SourcePayloadDistributions.ec`**, and **`A_ms3a_bitness_layer_seed_schedule`** / **`A_ms3a_seed_pair_*_source_shared`** are **proved lemmas** at that interface.
 
 ### Smallest **safe** implementation patch (recommended order)
 
-1. **Projection / query ops** — **partially done:** abstract **`ms3a_public_*`** spine + narrow shape preds in **`SourceModel.ec`**, plus Phase-1 nominal payload constructors **`ms3a_phase1_{real,sim}_payload_from_public_input`** in **`SourceConstructors.ec`**. Next: link projections (and/or payloads) to games/spec **without** guessed sampling. This unlocks Phase-1-style **length and index** reasoning (as in MS-3c) once equalities are assumed or proved.
-2. **Execution/public-payload linkage** — next target: replace the centralized package axiom `A_ms3a_real_execution_seed_link` with the smallest execution/game theorem package that (i) proves the public spine is a programmed bitness vector and (ii) links support of `d_ms3a_real_execution_public_seed` to that same public spine. This is now the step that removes the remaining execution/public-spine semantic debt directly.
+1. **Projection / query ops** — **partially done:** abstract **`ms3a_public_*`** spine + narrow shape preds in **`SourceModel.ec`**, Phase-1 nominal payload constructors **`ms3a_phase1_{real,sim}_payload_from_public_input`** in **`SourceConstructors.ec`**, and the concrete list-level execution constructors **`ms3a_public_bits_of_execution`** / **`ms3a_public_bitness_globals_of_execution`** in **`SourcePublicBitnessConstructors.ec`**. Next: add a single equality bridge from the abstract `SourceModel.ec` projections to that constructor surface, rather than direct definitional wiring, because `SourceModel.ec` sits above `ms/source/` in the current import order. This unlocks Phase-1-style **length and index** reasoning (as in MS-3c) once equalities are assumed or proved.
+2. **Execution/public-payload linkage** — completed for the current source-side boundary: `SourcePublicBitnessExecution.ec` now centralizes the public-bitness ROM/FS semantics, `SourceRealExecutionGameLink.ec` proves the public-spine corollaries, and `SourceRealExecutionSeed.ec` proves `ms3a_real_execution_seed_link_of_game_execution : forall x, ms3a_real_execution_seed_link x`.
   **Execution-seed package now in use:** `SourceExecutionLink.ec` still names the source-facing
   package as `ms3a_execution_public_spine_link`, while `SourceRealExecutionSeed.ec` now carries the
   concrete boundary law `d_ms3a_real_execution_public_seed x`, the bridge axiom back to
-  `d_ms3a_real_payload_seed`, and the centralized package axiom `A_ms3a_real_execution_seed_link`.
+  `d_ms3a_real_payload_seed`, and the proved package theorem `ms3a_real_execution_seed_link_of_game_execution`.
   `SourceProgrammedObligations.ec` already imports that theory and proves the former programmed-layer
-  axiom names as lemmas. The recommended next patch is to discharge `A_ms3a_real_execution_seed_link`
-  in the execution/game layer.
+  axiom names as lemmas. The recommended next patch is to replace **`A_ms3a_public_bitness_execution`**
+  with a theorem from concrete execution/public-bits semantics, or to replace
+  **`A_ms3a_real_payload_seed_matches_execution_seed`** if the exact real-seed law becomes concrete first.
+  **Constructor bridge status:** `SourcePublicBitnessConstructors.ec` now provides the concrete list-level object the theorem should quantify over, but it does not yet change `SourcePublicBitnessExecution.ec`; **`A_ms3a_public_bitness_execution`** remains in place until the constructor theorem exists.
   **Wiring preference:** use a single equality bridge obligation first, not direct definitional
   wiring, because the current file layering keeps `SourceRealExecutionSeed.ec` above
   `SourcePayloadDistributions.ec`. Direct definition becomes the cleaner end-state only after a
