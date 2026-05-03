@@ -21,15 +21,9 @@ sudo make install
 sudo ldconfig
 cd ..
 
-# --- OPAM Installation ---
-echo "=== Installing OPAM 2.2.0 ==="
-rm -rf opam_build && mkdir opam_build
-tar xf opam-full-2.2.0.tar.gz -C opam_build --strip-components=1
-cd opam_build
-./configure --with-vendored-deps
-make -j"$(nproc)"
-sudo make install
-cd ..
+export C_INCLUDE_PATH=/usr/local/include:$C_INCLUDE_PATH
+export LIBRARY_PATH=/usr/local/lib:$LIBRARY_PATH
+export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
 # --- OPAM Initialization ---
 echo "=== Initializing OPAM (bare) ==="
@@ -45,6 +39,21 @@ if opam switch list --short | grep -q "^easycrypt$"; then
 fi
 opam switch create easycrypt ocaml-base-compiler.4.14.1 -y
 eval "$(opam env --switch=easycrypt)"
+
+echo "=== Creating fake conf-libpcre.2 package ==="
+mkdir -p fake-conf-libpcre.2
+cat > fake-conf-libpcre.2/opam << 'EOF'
+opam-version: "2.0"
+name: "conf-libpcre"
+version: "2"
+synopsis: "Fake PCRE1 system package for offline builds"
+build: [
+  ["sh" "-c" "echo 'PCRE OK'"]
+]
+EOF
+
+opam pin add conf-libpcre.2 ./fake-conf-libpcre.2 -y
+
 
 # --- Restore OPAM cache ---
 echo "=== Restoring OPAM Cache ==="
@@ -67,12 +76,21 @@ rm -rf ec_build && mkdir ec_build
 tar xf easycrypt-r2025.03.tar.gz -C ec_build --strip-components=1
 cd ec_build
 
-# This command builds AND installs theories/binary to the correct spots
-opam install . -y
+echo "=== Building EasyCrypt with dune ==="
+opam exec -- dune build @install
 
-# We still copy the binary to /usr/local/bin for easy global access
-sudo cp _build/default/src/ec.exe /usr/local/bin/easycrypt
-sudo chmod +x /usr/local/bin/easycrypt
+echo "=== Installing EasyCrypt ==="
+opam exec -- dune install
+
+# Copy binary manually for global access
+if [ -f "_build/default/src/ec.exe" ]; then
+    sudo cp _build/default/src/ec.exe /usr/local/bin/easycrypt
+    sudo chmod +x /usr/local/bin/easycrypt
+else
+    echo "❌ ERROR: EasyCrypt binary not found after build"
+    exit 1
+fi
+
 cd ..
 
 # --- Build Coq ---

@@ -29,10 +29,10 @@ echo "=== Installing system packages via apt ==="
 sudo apt update
 sudo apt install -y \
     build-essential m4 pkg-config git curl ca-certificates \
-    libgmp-dev zlib1g-dev libffi-dev libpcre3-dev \
+    libgmp-dev zlib1g-dev libffi-dev libpcre2-dev \
     python3 python3-dev libssl-dev libncurses-dev \
     binutils binutils-dev gcc g++ libc6-dev \
-    cmake ninja-build dune opam
+    cmake ninja-build ocaml-dune opam
 
 download_smart_size() {
     local url="$1"
@@ -92,7 +92,7 @@ mkdir -p "$OPAMROOT"
 opam init --bare --disable-sandboxing -y
 opam switch create temp 4.14.1 -y
 echo "=== Fetching dependency sources into cache ==="
-opam install --download-only -y yojson menhir cmdliner stdlib-shims zarith gmp ocplib-simplex.0.4.1 seq psmt2-frontend camlzip conf-zlib
+opam install --download-only -y yojson menhir cmdliner stdlib-shims zarith gmp ocplib-simplex.0.4.1 seq psmt2-frontend camlzip conf-zlib conf-libpcre
 
 echo "=== Exporting OPAM Cache ==="
 mkdir -p ./opam-cache
