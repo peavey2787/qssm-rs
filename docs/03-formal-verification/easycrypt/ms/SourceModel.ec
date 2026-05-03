@@ -69,6 +69,24 @@ axiom A_ms3a_observable_of_v2_aligns :
   forall (o : ms_v2_transcript_observable),
     ms_abstract_observable_aligns_v2 (ms3a_observable_of_v2 o) o.
 
+(* ROM/FS-side programmability of the MS-3a public spine.
+
+   This is the canonical ROM/FS-layer assumption that the abstract `ms3a_public_*`
+   outputs (above) are produced by an honest programmed bitness execution: per-bit FS
+   programmability + ordered global-challenge alignment. It lives at the source-model
+   layer because that is where `ms3a_public_*` are declared, and it is the single
+   primitive carrying the `ms_bitness_vector_programmed_layer` fact about the public
+   spine; the previous source-distribution-level axiom
+   `A_ms3a_seed_spine_support_wf` (`ms/source/SourcePayloadDistributions.ec`) is now a
+   proved lemma derived from this one. No new axiom is introduced overall: this is the
+   same logical content moved to its proper layer next to the abstract source model
+   (which already imports `FS` and `BitnessVector`). *)
+axiom A_ms3a_public_spine_programmed_layer (x : ms_public_input) :
+  ms_bitness_vector_programmed_layer
+    (ms3a_public_stmt_digest x)
+    (ms3a_public_bits x)
+    (ms3a_public_bitness_globals x).
+
 (* Frame constructor relation for packed observables.                           *)
 pred ms3a_packed_frame
   (stmt : digest) (rbit : bool)

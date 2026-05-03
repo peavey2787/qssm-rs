@@ -61,9 +61,17 @@ lemma A_ms3a_spine_sim_marginal_matches_seed (x : ms_public_input) (s : seed) :
   d_ms3a_sim_payload_seed x s.
 proof. by []. qed.
 
-axiom A_ms3a_seed_spine_support_wf (x : ms_public_input) (s : seed) :
+(* `ms3a_source_wf` on the singleton spine support reduces to the public-spine
+   programmed-bitness fact, which is the canonical ROM/FS-layer axiom
+   `A_ms3a_public_spine_programmed_layer` declared in `ms/SourceModel.ec`. *)
+lemma A_ms3a_seed_spine_support_wf (x : ms_public_input) (s : seed) :
   forall (src : ms3a_bitness_layer_source),
     src \in d_ms3a_seed_spine_joint x s => ms3a_source_wf src.
+proof.
+move=> src; rewrite /d_ms3a_seed_spine_joint supp_dunit => ->.
+rewrite /ms3a_source_wf /ms3a_canonical_public_source /ms3a_make_real_source /=.
+exact (A_ms3a_public_spine_programmed_layer x).
+qed.
 
 (* Narrow paired-public consequence: now provable from the canonical-source spine, because
    both seed laws are point masses at the real/sim images of the same canonical source, and
