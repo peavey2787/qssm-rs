@@ -39,7 +39,7 @@ type ms3a_sim_source_payload = {
    are `ms3a_phase1_{real,sim}_payload_from_public_input` in `SourceConstructors.ec`.
    Joint seed coupling scaffold (product law + projections + coupled-predicate
    packaging): `SourceCouplingTypes.ec` / `SourceCouplingTheorem.ec` (re-exported via
-   `SourceDistributions.ec`). Paired-public alignment: four `A_ms3a_seed_pair_*_source_shared` axioms on
+   `SourceDistributions.ec`). Paired-public alignment: four `A_ms3a_seed_pair_*_source_shared` lemmas on
    joint seed support feed four proved `A_ms3a_seed_pair_*_on_support` lemmas for
    `from_seed` payloads, which feed proved lemma `A_ms3a_seed_pair_public_fields_on_support`
    (`SourcePublicFieldObligations.ec` / `SourceConstructors.ec`; re-exported via
@@ -76,7 +76,7 @@ pred ms3a_sources_have_programmed_bitness_layer
   ms_bitness_vector_programmed_layer
     sim_src.`ms3s_stmt sim_src.`ms3s_bits sim_src.`ms3s_bitness_global_challenges.
 
-(* Public-field conjuncts: four `*_source_shared` axioms on joint seed support; four
+(* Public-field conjuncts: four `*_source_shared` lemmas on joint seed support; four
    `*_on_support` lemmata for `from_seed` payloads (`SourceObligations` /
    `SourceConstructors`). *)
 pred ms3a_payload_pair_public_fields_match

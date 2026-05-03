@@ -121,7 +121,7 @@ Record **`ms_single_bit_or_transcript`**: statement digest `msbt_stmt`, public p
 | `MS_3a_bitness_layer_to_observable_exact_simulation` | **Proved** — delegates per-index OR packaging through `MS_3a_bitness_layer_exact_simulation`; observable/digest hypotheses reserved for game marginal |
 | `d_ms3a_real_payload_seed`, `d_ms3a_sim_payload_seed` | **Abstract seed distrs** (`ms/source/SourcePayloadDistributions.ec`; re-exported **`SourceDistributions`**) — primary sampling obligations to instantiate from execution/games |
 | `d_ms3a_seed_spine_joint` | **Abstract spine law** (`ms/source/SourcePayloadDistributions.ec`) — one `ms3a_bitness_layer_source` draw per `(x,s)`; joint typed seeds are definitional copies (`SourceConstructors.ec`) |
-| `d_ms3a_real_sim_payload_seed_coupling`, `d_ms3a_coupling_seed_{real,sim}_projection`, `ms3a_real_sim_payload_seed_coupled`, `ms3a_ax_seed_coupling_pair_relation`, `ms3a_ax_seed_support_coupling` | **Definitions** (`ms/source/SourceCouplingTypes.ec`) — joint = `dmap (d_ms3a_seed_spine_joint x s) ms3a_real_sim_seed_pair_of_bitness_layer` (shared spine, **not** the product of `d_ms3a_{real,sim}_payload_seed`); pair predicate as before; **`L_ms3a_ax_seed_coupling_pair_relation_of_spine_support_wf`** proves `ms3a_ax_seed_coupling_pair_relation` from `ms3a_source_wf` on spine support (`SourceCouplingTheorem.ec`); projections fold to `dmap` off the spine (`L_ms3a_coupling_seed_{real,sim}_projection_dmap_spine`); **`SourceCouplingAxioms.ec`** documents marginal bridges still missing |
+| `d_ms3a_real_sim_payload_seed_coupling`, `d_ms3a_coupling_seed_{real,sim}_projection`, `ms3a_real_sim_payload_seed_coupled`, `ms3a_ax_seed_coupling_pair_relation`, `ms3a_ax_seed_support_coupling` | **Definitions** (`ms/source/SourceCouplingTypes.ec`) — joint = `dmap (d_ms3a_seed_spine_joint x s) ms3a_real_sim_seed_pair_of_bitness_layer` (shared spine, **not** the product of `d_ms3a_{real,sim}_payload_seed`); pair predicate as before; **`L_ms3a_ax_seed_coupling_pair_relation_of_spine_support_wf`** proves `ms3a_ax_seed_coupling_pair_relation` from `ms3a_source_wf` on spine support (`SourceCouplingTheorem.ec`); projections fold to `dmap` off the spine (`L_ms3a_coupling_seed_{real,sim}_projection_dmap_spine`); narrow marginal bridge axioms **`A_ms3a_spine_{real,sim}_marginal_matches_seed`**, **`A_ms3a_seed_spine_support_wf`**, **`A_ms3a_spine_marginal_pair_common_lift`** in **`SourcePayloadDistributions.ec`** (**`SourceCouplingAxioms.ec`** summarizes packaging) |
 | `d_ms3a_real_source_payload`, `d_ms3a_sim_source_payload` | **Defined** (`ms/source/SourcePayloadDistributions.ec`) as `dmap` pushforwards of seed laws through `ms3a_{real,sim}_payload_from_seed` (`SourceConstructors.ec`) |
 | `d_ms3a_bitness_real_source`, `d_ms3a_bitness_sim_source` | **Defined** (`ms/source/SourceBitnessDistributions.ec`) as `dmap` pushforwards of payload laws through `ms3a_bitness_layer_source_of_{real,sim}_payload` (wrappers over `ms3a_make_*_source`) |
 | `dmap` preimage / membership for `d_ms3a_bitness_*_source` | **Proved** — `case/supp_dmap` on `Distr.supp_dmap` plus local `distr_mem_eq` (`ms/source/SourceDistributionLemmas.ec`; **MS-3a hardening**, not MS-3b) |
@@ -149,13 +149,13 @@ Record **`ms_single_bit_or_transcript`**: statement digest `msbt_stmt`, public p
 | `ms3a_payload_pair_comparison_global_challenge_eq_from_seed_of_seed_eq` | **Proved** (`SourceConstructors.ec`) — `from_seed` comparison-global digest equals seed fields when those agree |
 | `ms3a_payload_pair_bitness_global_challenges_eq_from_seed_of_seed_eq` | **Proved** (`SourceConstructors.ec`) — `from_seed` bitness-global lists equal seed fields when those agree |
 | `L_ms3a_seed_pair_{stmt,res,comparison_global,bitness_globals}_when_seeds_are_phase1` | **Proved** (`SourcePublicFieldObligations.ec`) — same four conclusions as **`A_ms3a_seed_pair_*_source_shared`** when joint-support seeds **are** the Phase-1 spine records (membership hypotheses unused in proof) |
-| `A_ms3a_seed_pair_stmt_source_shared` | **Axiom** (`SourcePublicFieldObligations.ec`) — joint seed support: real/sim seed **record** statement digests agree (shared public statement source at sampling); **not** derived from Phase-1 alone while **`d_ms3a_*_payload_seed`** stay abstract |
+| `A_ms3a_seed_pair_stmt_source_shared` | **Proved lemma** (`SourcePublicFieldObligations.ec`) — from **`A_ms3a_spine_marginal_pair_common_lift`** + **`L_ms3a_payload_pair_stmt_seed_of_bitness`** (`SourceConstructors.ec`) |
 | `A_ms3a_seed_pair_stmt_on_support` | **Proved lemma** (`SourcePublicFieldObligations.ec`) — payload `from_seed` stmt equality, from `A_ms3a_seed_pair_stmt_source_shared` + identity |
-| `A_ms3a_seed_pair_res_source_shared` | **Axiom** (`SourcePublicFieldObligations.ec`) — joint seed support: real/sim seed **record** result bits agree |
+| `A_ms3a_seed_pair_res_source_shared` | **Proved lemma** (`SourcePublicFieldObligations.ec`) — same pattern with **`L_ms3a_payload_pair_res_seed_of_bitness`** |
 | `A_ms3a_seed_pair_res_on_support` | **Proved lemma** (`SourcePublicFieldObligations.ec`) — payload `from_seed` res equality, from `A_ms3a_seed_pair_res_source_shared` + identity |
-| `A_ms3a_seed_pair_comparison_global_source_shared` | **Axiom** (`SourcePublicFieldObligations.ec`) — joint seed support: real/sim seed **record** comparison-global digests agree |
+| `A_ms3a_seed_pair_comparison_global_source_shared` | **Proved lemma** (`SourcePublicFieldObligations.ec`) — **`L_ms3a_payload_pair_comparison_global_seed_of_bitness`** |
 | `A_ms3a_seed_pair_comparison_global_on_support` | **Proved lemma** (`SourcePublicFieldObligations.ec`) — payload `from_seed` comparison-global equality, from source-shared + identity |
-| `A_ms3a_seed_pair_bitness_globals_source_shared` | **Axiom** (`SourcePublicFieldObligations.ec`) — joint seed support: real/sim seed **record** bitness-global challenge lists agree |
+| `A_ms3a_seed_pair_bitness_globals_source_shared` | **Proved lemma** (`SourcePublicFieldObligations.ec`) — **`L_ms3a_payload_pair_bitness_globals_seed_of_bitness`** |
 | `A_ms3a_seed_pair_bitness_globals_on_support` | **Proved lemma** (`SourcePublicFieldObligations.ec`) — payload `from_seed` bitness-global list equality, from source-shared + identity |
 | `A_ms3a_seed_pair_public_fields_on_support` | **Proved lemma** (`SourcePublicFieldObligations.ec`) — combines four `*_on_support` lemmata |
 
@@ -176,7 +176,7 @@ Record **`ms_single_bit_or_transcript`**: statement digest `msbt_stmt`, public p
 ## MS-3a global statement (layered)
 
 - **`MS_3a_exact_bitness_simulation_from_layers`** — hypotheses track single-branch reparam, OR-split, A2 bitness ROM corollary, vector bitness layer, observable bridge, and **`ms3a_frame_consistent obs o`**; proof closes via **`ms3a_source_observable_equiv_from_layer`** plus a named source-equality premise.
-- **`MS_3a_exact_bitness_simulation`** — applies the skeleton with concrete lemma proof terms; `ms3a_default_source_eq` is now **proved** by **`ms3a_source_eq_from_bitness_layer`**, which unfolds folded `d_ms3a_bitness_*_source` to payload `dmap`s and applies lemma **`A_ms3a_payload_dmap_bitness_layer_schedule`** (proved from axiom **`A_ms3a_bitness_layer_seed_schedule`** + **`L_ms3a_bitness_layer_seed_push_{real,sim}_eq_layer_dmap`** + **`ms3a_bitness_{real,sim}_source_as_seed_dmap`**; no `ms3a_ax_*` premises). The five `ms3a_ax_*` predicates are still used by mem-pair lemmas and are **proved lemmas** (`ms3a_ax_*_from_payload_support` / `*_from_real_sim_wf` in `SourceScheduleObligations.ec`, packaged as `ms3a_ax_*_from_axioms` in `SourceTheorem.ec`) **derived from** the three **payload-support lemmas** alone; those payload-support lemmas are in turn **proved** from the **seed-level axioms** (not added as parallel hypotheses). Concretely: **`ms3a_payload_{real,sim}_support_programmed`** use **`A_ms3a_{real,sim}_seed_programmed_on_support`**, each proved from its two programmed-field axioms; **`ms3a_payload_pair_public_fields_on_support`** uses **`A_ms3a_seed_pair_public_fields_on_support`**, proved by conjoining the four **`A_ms3a_seed_pair_*_on_support`** lemmas, each proved from the matching **`A_ms3a_seed_pair_*_source_shared`** axiom and identity `from_seed`. **Proved** constructor lemmas (`ms3a_real_source_constructor_wf`, …) in `ms/source/SourceScheduleObligations.ec` consume those payload-support lemmas and **`MS_3a_bitness_layer_exact_simulation`**. Mem-pair lemmas live in `ms/source/SourceTheorem.ec`. Constructor lemmas `ms3a_pack_observable_with_digest_consistent`, `ms3a_default_transcript_digest_consistent`, and `ms3a_default_frame_consistent` keep frame wiring explicit (no anonymous admits).
+- **`MS_3a_exact_bitness_simulation`** — applies the skeleton with concrete lemma proof terms; `ms3a_default_source_eq` is now **proved** by **`ms3a_source_eq_from_bitness_layer`**, which unfolds folded `d_ms3a_bitness_*_source` to payload `dmap`s and applies lemma **`A_ms3a_payload_dmap_bitness_layer_schedule`** (proved from lemma **`A_ms3a_bitness_layer_seed_schedule`** + **`L_ms3a_bitness_layer_seed_push_{real,sim}_eq_layer_dmap`** + **`ms3a_bitness_{real,sim}_source_as_seed_dmap`**; no `ms3a_ax_*` premises). Lemma **`A_ms3a_bitness_layer_seed_schedule`** is **proved** from narrow spine marginal bridge axioms **`A_ms3a_spine_{real,sim}_marginal_matches_seed`** by rewriting marginals, folding nested `dmap`s with **`Distr.dmap_comp`**, then **`eq_dmap_in`** with definitional inversion of the composed layer maps on the spine carrier. The five `ms3a_ax_*` predicates are still used by mem-pair lemmas and are **proved lemmas** (`ms3a_ax_*_from_payload_support` / `*_from_real_sim_wf` in `SourceScheduleObligations.ec`, packaged as `ms3a_ax_*_from_axioms` in `SourceTheorem.ec`) **derived from** the three **payload-support lemmas** alone; those payload-support lemmas are in turn **proved** from the **seed-level** programmed axioms plus the four **`A_ms3a_seed_pair_*_source_shared`** lemmas (not added as parallel hypotheses). Concretely: **`ms3a_payload_{real,sim}_support_programmed`** use **`A_ms3a_{real,sim}_seed_programmed_on_support`**, each proved from its two programmed-field axioms; **`ms3a_payload_pair_public_fields_on_support`** uses **`A_ms3a_seed_pair_public_fields_on_support`**, proved by conjoining the four **`A_ms3a_seed_pair_*_on_support`** lemmas, each proved from the matching **`A_ms3a_seed_pair_*_source_shared`** lemma and identity `from_seed`. **Proved** constructor lemmas (`ms3a_real_source_constructor_wf`, …) in `ms/source/SourceScheduleObligations.ec` consume those payload-support lemmas and **`MS_3a_bitness_layer_exact_simulation`**. Mem-pair lemmas live in `ms/source/SourceTheorem.ec`. Constructor lemmas `ms3a_pack_observable_with_digest_consistent`, `ms3a_default_transcript_digest_consistent`, and `ms3a_default_frame_consistent` keep frame wiring explicit (no anonymous admits).
 
 `theorem/MainTheorem.ec` **`use_MS_3a`** is a **lemma** returning **`ms3a_bitness_real_sim_equiv x s`** (imports `SourceDistributions` + `SourceTheorem`).
 
@@ -187,11 +187,12 @@ There is **no** `admit` left in `docs/03-formal-verification/easycrypt/*.ec`.
 | Obligation | Where |
 |------------|--------|
 | Uniform-shift reparameterization for `duni_scalar` joint pairs | **Axiom** `duni_scalar_shift_reparam` (`ms/SchnorrBranch.ec`) |
-| Seed-level bitness-layer schedule (single `dmap` per side off abstract seeds) | **Axiom** `A_ms3a_bitness_layer_seed_schedule` (`ms/source/SourceScheduleObligations.ec`) — **unconditional** equality `dmap (d_ms3a_real_payload_seed x) ms3a_bitness_layer_source_of_real_payload = dmap (d_ms3a_sim_payload_seed x s) ms3a_bitness_layer_source_of_sim_payload` (core coupling target; see “Schedule axiom design” below). **Proved packaging:** `L_ms3a_bitness_layer_seed_push_{real,sim}_eq_layer_dmap` (`SourceBitnessDistributions.ec`) and `L_ms3a_bitness_layer_seed_schedule_composed_form` (`SourceScheduleObligations.ec`) recover the legacy **`… \o ms3a_*_payload_from_seed`** statement |
+| Spine marginal bridges + WF + same-spine lift | **Axioms** `A_ms3a_spine_{real,sim}_marginal_matches_seed`, `A_ms3a_seed_spine_support_wf`, `A_ms3a_spine_marginal_pair_common_lift` (`ms/source/SourcePayloadDistributions.ec`) — game-level discharge once `d_ms3a_seed_spine_joint` is instantiated |
+| Seed-level bitness-layer schedule (single `dmap` per side off abstract seeds) | **Lemma** `A_ms3a_bitness_layer_seed_schedule` (`ms/source/SourceScheduleObligations.ec`) — **proved** equality `dmap (d_ms3a_real_payload_seed x) ms3a_bitness_layer_source_of_real_payload = dmap (d_ms3a_sim_payload_seed x s) ms3a_bitness_layer_source_of_sim_payload` from **`A_ms3a_spine_{real,sim}_marginal_matches_seed`** + **`Distr.dmap_comp`** + **`eq_dmap_in`** (see “Schedule (seed boundary)” below). **Proved packaging:** `L_ms3a_bitness_layer_seed_push_{real,sim}_eq_layer_dmap` (`SourceBitnessDistributions.ec`) and `L_ms3a_bitness_layer_seed_schedule_composed_form` (`SourceScheduleObligations.ec`) recover the legacy **`… \o ms3a_*_payload_from_seed`** statement |
 | Payload-level `dmap` schedule (nested payload pushforwards) | **Lemma** `A_ms3a_payload_dmap_bitness_layer_schedule` (`SourceScheduleObligations.ec`) — **proved** from `A_ms3a_bitness_layer_seed_schedule` + **`L_ms3a_bitness_layer_seed_push_{real,sim}_eq_layer_dmap`** + **`ms3a_bitness_{real,sim}_source_as_seed_dmap`**. **`ms3a_payload_schedule_equivalence`** — **deprecated / compatibility wrapper** (proved; redundant `ms3a_ax_*` hypotheses unused in proof). **`ms3a_source_eq_from_bitness_layer`** — **proved** without those hypotheses |
 | `ms3a_ax_real_wf`, `ms3a_ax_sim_wf`, `ms3a_ax_public_fields`, `ms3a_ax_prog_layer`, `ms3a_ax_bitness_exact` | **Proved lemmas** from payload-support lemmas + `dmap`/`supp_dmap` (`SourceScheduleObligations.ec`); **`ms3a_ax_*_from_axioms`** in `SourceTheorem.ec` |
 | Seed support (programmed layer on **seed** support) | **Lemmas** `A_ms3a_real_seed_programmed_on_support`, `A_ms3a_sim_seed_programmed_on_support` from four **axioms** (`*_real_*` / `*_sim_*` bits + bitness-globals on support; `ms/source/SourceProgrammedObligations.ec`) — quantify over `d_ms3a_{real,sim}_payload_seed` only |
-| Seed support (paired **public** fields on joint seed support) | **Axioms** `A_ms3a_seed_pair_stmt_source_shared`, `A_ms3a_seed_pair_res_source_shared`, `A_ms3a_seed_pair_comparison_global_source_shared`, `A_ms3a_seed_pair_bitness_globals_source_shared`; **lemmata** `A_ms3a_seed_pair_stmt_on_support`, `A_ms3a_seed_pair_res_on_support`, `A_ms3a_seed_pair_comparison_global_on_support`, `A_ms3a_seed_pair_bitness_globals_on_support` (`ms/source/SourcePublicFieldObligations.ec`); **lemma** `A_ms3a_seed_pair_public_fields_on_support` combines into `ms3a_payload_pair_public_fields_match` for `from_seed` |
+| Seed support (paired **public** fields on joint seed support) | **Proved lemmas** `A_ms3a_seed_pair_stmt_source_shared`, `A_ms3a_seed_pair_res_source_shared`, `A_ms3a_seed_pair_comparison_global_source_shared`, `A_ms3a_seed_pair_bitness_globals_source_shared` (`ms/source/SourcePublicFieldObligations.ec`) from **`A_ms3a_spine_marginal_pair_common_lift`** + field-copy lemmas; **lemmata** `A_ms3a_seed_pair_stmt_on_support`, …, `A_ms3a_seed_pair_bitness_globals_on_support`; **lemma** `A_ms3a_seed_pair_public_fields_on_support` combines into `ms3a_payload_pair_public_fields_match` for `from_seed` |
 | Payload support (programmed layer on payload support) | **Proved lemmas** `ms3a_payload_real_support_programmed`, `ms3a_payload_sim_support_programmed` (`ms/source/SourcePublicFieldObligations.ec`) — from real/sim programmed lemmas + defining `dmap` + `supp_dmap` |
 | Payload public fields on paired payload support | **Proved lemma** `ms3a_payload_pair_public_fields_on_support` (`ms/source/SourcePublicFieldObligations.ec`); bridge **`ms3a_real_sim_public_fields_of_payload_pair`** is **proved** (`ms/source/SourceDistributionLemmas.ec`) |
 | Constructor-scoped source obligations | **Proved lemmas** `ms3a_real_source_constructor_wf`, `ms3a_sim_source_constructor_wf`, `ms3a_source_constructors_same_public_fields`, `ms3a_source_constructors_programmed_bitness`, `ms3a_source_constructors_bitness_exact` (`ms/source/SourceScheduleObligations.ec`) |
@@ -201,18 +202,20 @@ There is **no** `admit` left in `docs/03-formal-verification/easycrypt/*.ec`.
 | Generic digest-by-construction constructor field/layout obligation | `ms3a_pack_observable_with_digest_field_correct` (`ms/SourceModel.ec`) |
 | Skeleton-to-game equivalence (`ms3a_bitness_real_sim_equiv` to full game statement) | future `QssmGames` / transcript ops (explicitly out of current scope) |
 
-### Schedule axiom design (payload coupling)
+### Schedule (seed boundary)
 
-**Residual axiom (seed boundary):** **`A_ms3a_bitness_layer_seed_schedule`** states
-unconditional equality of the **one-step** pushforwards
+**Lemma (seed boundary):** **`A_ms3a_bitness_layer_seed_schedule`** is the **unconditional** equality of the **one-step** pushforwards
 `dmap (d_ms3a_real_payload_seed x) ms3a_bitness_layer_source_of_real_payload =
  dmap (d_ms3a_sim_payload_seed x s) ms3a_bitness_layer_source_of_sim_payload`.
+It is **proved** in **`SourceScheduleObligations.ec`** by rewriting both marginals with
+**`A_ms3a_spine_{real,sim}_marginal_matches_seed`**, folding nested `dmap`s with **`Distr.dmap_comp`**, then
+**`eq_dmap_in`** with definitional inversion of **`ms3a_bitness_layer_source_of_{real,sim}_payload \o ms3a_{real,sim}_payload_seed_of_bitness_layer`** on spine samples.
 Because **`ms3a_{real,sim}_payload_from_seed`** are **definitional identities** on the
 payload-shaped seed types, the older composed form
 `dmap (d_ms3a_*_payload_seed …) (ms3a_bitness_layer_source_of_* \o ms3a_*_payload_from_seed …)`
 is **proved equivalent** (`eq_dmap_in`) by **`L_ms3a_bitness_layer_seed_push_{real,sim}_eq_layer_dmap`**
 (`SourceBitnessDistributions.ec`); lemma **`L_ms3a_bitness_layer_seed_schedule_composed_form`**
-packages the axiom back into that legacy shape. Payload laws are **defined** as
+packages **`A_ms3a_bitness_layer_seed_schedule`** back into that legacy shape. Payload laws are **defined** as
 `dmap (d_ms3a_*_payload_seed) (ms3a_*_payload_from_seed …)`, so (by **`Distr.dmap_comp`**) folded
 `d_ms3a_bitness_{real,sim}_source` matches the composed seed pushforwards. Lemma
 **`A_ms3a_payload_dmap_bitness_layer_schedule`** recovers the older **payload-nested** phrasing for
@@ -223,11 +226,11 @@ compatibility and for call sites that still speak in terms of `d_ms3a_*_source_p
 1. **Real payload pushforward shape** — proved: `ms3a_bitness_real_source_as_seed_dmap`.
 2. **Sim payload pushforward shape** — proved: `ms3a_bitness_sim_source_as_seed_dmap`.
 3. **Identity collapse on seeds** — proved: `L_ms3a_bitness_layer_seed_push_{real,sim}_eq_layer_dmap`.
-4. **Common bitness-layer image** — the **equality** of the two seed pushforwards (layer maps off abstract seeds) is exactly **`A_ms3a_bitness_layer_seed_schedule`** (still one coupling obligation).
-5. **Public-field alignment** — separate **seed** axioms `A_ms3a_seed_pair_*_source_shared` (they do **not** imply the schedule: they omit **`ms3rp_transcript_digest` / `ms3sp_transcript_digest`**, so transcript-digest coupling is **not** captured by the four paired-public axioms alone).
+4. **Common bitness-layer image** — the **equality** of the two seed pushforwards (layer maps off abstract seeds) is lemma **`A_ms3a_bitness_layer_seed_schedule`**, **proved** from the two spine marginal bridge axioms plus `dmap` algebra (still a **proof obligation** at game level to discharge the bridge axioms).
+5. **Public-field alignment** — **`A_ms3a_seed_pair_*_source_shared`** are **proved lemmas** from **`A_ms3a_spine_marginal_pair_common_lift`** (they still do **not** imply the schedule alone: they omit **`ms3rp_transcript_digest` / `ms3sp_transcript_digest`**, so transcript-digest coupling is **not** captured by the four paired-public facts alone).
 
-**Tradeoff:** the schedule axiom remains **unconditional** (stronger than a premise-driven implication on `ms3a_ax_*` alone). The five `ms3a_ax_*` predicates stay **proved lemmas**
-from payload-support lemmas (from seed axioms), not schedule side-conditions.
+**Tradeoff:** the schedule statement remains **unconditional** on `ms3a_ax_*` (those five predicates stay **proved lemmas**
+from payload-support lemmas (from programmed seed axioms + `source_shared` lemmas), not schedule side-conditions).
 
 **`ms3a_payload_schedule_equivalence`:** treat as **legacy / wrapper** packaging
 only. New proofs should cite **`A_ms3a_bitness_layer_seed_schedule`**, lemma **`A_ms3a_payload_dmap_bitness_layer_schedule`**, or **`ms3a_source_eq_from_bitness_layer`**; do not read the five `ms3a_payload_schedule_equivalence` hypotheses as part of the schedule proof obligation.
@@ -235,8 +238,8 @@ only. New proofs should cite **`A_ms3a_bitness_layer_seed_schedule`**, lemma **`
 ## Seed distribution concretization (design audit)
 
 This section records **what must become concrete** so abstract
-`d_ms3a_{real,sim}_payload_seed` can eventually discharge the MS-3a seed axioms and
-**`A_ms3a_bitness_layer_seed_schedule`**, without editing `.ec` proofs here.
+`d_ms3a_{real,sim}_payload_seed` and the spine joint can eventually discharge the remaining MS-3a
+**axioms** (programmed-on-support fields, spine bridges, common-lift, WF on spine support), without editing `.ec` proofs here.
 
 ### Record fields (current theory)
 
@@ -257,9 +260,9 @@ constructors.
 **Public-field pairing (pred `ms3a_payload_pair_public_fields_match`).** Matches **four**
 fields: statement digest, result bit, comparison-global digest, bitness-global list. It
 **does not** mention **`ms3rp_transcript_digest` / `ms3sp_transcript_digest`**; digest
-coupling is **orthogonal** to the four `A_ms3a_seed_pair_*_source_shared` axioms and is
-exactly why **`A_ms3a_bitness_layer_seed_schedule`** cannot be derived from those four
-axioms alone.
+coupling is **orthogonal** to the four `A_ms3a_seed_pair_*_source_shared` lemmas and is
+exactly why **public-field pairing alone** cannot replace the spine marginal bridge story for
+**`A_ms3a_bitness_layer_seed_schedule`**.
 
 ### Proposed concrete seed architecture (high level)
 
@@ -270,21 +273,19 @@ axioms alone.
   **`d_ms3a_seed_spine_joint`** abstract on `ms3a_bitness_layer_source` (`SourcePayloadDistributions.ec`)
   and field-copy maps in **`SourceConstructors.ec`**. This is **not** the independent product
   of `d_ms3a_{real,sim}_payload_seed`; MS-3c still uses a product of **concrete** payload laws,
-  whereas MS-3a marginal seed laws remain abstract and **unlinked** to the spine marginal
-  until games supply marginal bridge equalities.
+  whereas MS-3a marginal seed laws remain abstract until games discharge the **marginal bridge**
+  axioms **`A_ms3a_spine_{real,sim}_marginal_matches_seed`** (and related spine obligations).
 - **Semantic pair predicate** `ms3a_real_sim_payload_seed_coupled` unchanged. On spine
   support, **`L_ms3a_ax_seed_coupling_pair_relation_of_spine_support_wf`** proves
   **`ms3a_ax_seed_coupling_pair_relation`** from **`forall src \in d_ms3a_seed_spine_joint,
   ms3a_source_wf src`** (programmed bitness vector on the shared spine). Unconditional
   `ms3a_ax_seed_coupling_pair_relation` is **false** in general (spine support can violate WF).
-- **Refinement path:** redefine `d_ms3a_{real,sim}_payload_seed` as marginals of a
-  correlated joint (or prove a game invariant), then discharge **`A_ms3a_seed_pair_*_source_shared`**
-  from **`supp_dprod` / `supp_dmap`** on that joint (same as `L_ms3c_*` marginal/support
-  style lemmas in the comparison coupling chain).
-- **`A_ms3a_bitness_layer_seed_schedule`** then reduces to a **single** `dmap` off the
-  joint through two maps that agree on joint support (`L_ms3a_real_sim_payload_seed_coupled_layer_maps_eq`
-  is the pointwise spine); the distributional step uses **`eq_dmap_in`** / marginalization
-  as in the MS-3c schedule packaging.
+- **Refinement path (alternative to abstract common-lift):** redefine `d_ms3a_{real,sim}_payload_seed` as marginals of a
+  correlated joint (or prove a game invariant), then derive the same marginal facts (and optionally replace
+  **`A_ms3a_spine_marginal_pair_common_lift`**) from **`supp_dprod` / `supp_dmap`** on that joint (MS-3c style).
+- In-repo **`A_ms3a_bitness_layer_seed_schedule`** is already a **proved lemma** once the marginal bridge axioms hold:
+  rewrite marginals, fold with **`dmap_comp`**, then **`eq_dmap_in`** as in **`SourceScheduleObligations.ec`**
+  (pointwise agreement uses the same six-field spine copy as `L_ms3a_real_sim_payload_seed_coupled_layer_maps_eq`).
 
 **Option B — Phase-1 “public spine” + keyed sim noise.**
 
@@ -306,9 +307,10 @@ axioms alone.
   the issue is **underdetermined** inverse). **Low priority** unless the game truly
   samples layer-first.
 
-**Shared public fields (design intent).** The four `source_shared` axioms are the
-**minimal** joint constraints needed for constructor lemmas that ignore transcript
-digest. **Bitness globals** enter through **`ms_ordered_challenge_vector_matches`** on
+**Shared public fields (design intent).** The four `source_shared` lemmas package the same
+**minimal** joint constraints for constructor lemmas that ignore transcript
+digest; proofs currently assume **`A_ms3a_spine_marginal_pair_common_lift`** (same spine preimage for
+arbitrary marginal supports). **Bitness globals** enter through **`ms_ordered_challenge_vector_matches`** on
 seed support (programmed axioms) and through pairing.
 
 **Transcript digest.** Must be tied to **`ms_transcript_digest_public_fields`** /
@@ -319,22 +321,23 @@ the already-committed public fields on support.
 
 **How both push to the “same” bitness-layer source.** For **values** on joint support,
 `ms3a_bitness_layer_source_of_real_payload sr` and `ms3a_bitness_layer_source_of_sim_payload
-ss` are **equal** when all six fields agree; the schedule axiom is the **distributional**
-version of that fact.
+ss` are **equal** when all six fields agree; lemma **`A_ms3a_bitness_layer_seed_schedule`** is the **distributional**
+version of that fact, **proved** from spine marginal bridges at the abstract interface.
 
 ### Axiom → intended discharge (definitions / lemmas)
 
 | Obligation | Discharge strategy (when seeds are concretized) |
 |------------|--------------------------------------------------|
-| **`A_ms3a_bitness_layer_seed_schedule`** | Joint law + `eq_dmap` / `eq_dmap_in` / marginalization; or one explicit game invariant proving equality of pushforwards. |
+| **`A_ms3a_bitness_layer_seed_schedule`** | **Proved** in `SourceScheduleObligations.ec` from **`A_ms3a_spine_{real,sim}_marginal_matches_seed`** + **`dmap_comp`** + **`eq_dmap_in`**. |
+| **`A_ms3a_spine_{real,sim}_marginal_matches_seed`**, **`A_ms3a_seed_spine_support_wf`**, **`A_ms3a_spine_marginal_pair_common_lift`** | Instantiate **`d_ms3a_seed_spine_joint`** from games / ROM and prove these equalities / WF / lift facts at the linking layer. |
 | **`A_ms3a_real_seed_bits_programmed_on_support`** | From construction of `bits` from programmed transcript / ROM (`ms_per_bit_programmed`); may remain **lemma from game** until transcript ops are concrete. |
 | **`A_ms3a_real_seed_bitness_globals_programmed_on_support`** | Same, plus list alignment for **`ms_ordered_challenge_vector_matches`**. |
 | **`A_ms3a_sim_seed_bits_programmed_on_support`** | Same as real, keyed by `s` if sim uses explicit simulator randomness. |
 | **`A_ms3a_sim_seed_bitness_globals_programmed_on_support`** | Same as real on sim side. |
-| **`A_ms3a_seed_pair_stmt_source_shared`** | Joint coupling / identical spine sampling / `supp_dprod`-style proof. |
-| **`A_ms3a_seed_pair_res_source_shared`** | Same. |
-| **`A_ms3a_seed_pair_comparison_global_source_shared`** | Same. |
-| **`A_ms3a_seed_pair_bitness_globals_source_shared`** | Same. |
+| **`A_ms3a_seed_pair_stmt_source_shared`** | **Proved** from **`A_ms3a_spine_marginal_pair_common_lift`** + **`L_ms3a_payload_pair_stmt_seed_of_bitness`**. |
+| **`A_ms3a_seed_pair_res_source_shared`** | **Proved** — same pattern (`res` field lemma). |
+| **`A_ms3a_seed_pair_comparison_global_source_shared`** | **Proved** — comparison-global field lemma. |
+| **`A_ms3a_seed_pair_bitness_globals_source_shared`** | **Proved** — bitness-globals field lemma. |
 
 **Already packaged (no seed concretization needed for proof shape).**
 `A_ms3a_{real,sim}_seed_programmed_on_support`, `A_ms3a_seed_pair_*_on_support`,
@@ -361,19 +364,18 @@ to seed statements and are done once the four field axioms hold.
 | **`ms3a_public_transcript_shape_ok`** | **`ms_transcript_digest_of_observable`** on the v2 record built via **`ms3a_pack_observable`** from the six projections (digest cell vs public-field digest). |
 | **`ms3a_phase1_real_payload_from_public_input`**, **`ms3a_phase1_sim_payload_from_public_input`** | **`SourceConstructors.ec`** — nominal **`ms3a_{real,sim}_source_payload`** records built from the six **`ms3a_public_*`** fields (same field order; not a single shared return type). |
 
-No new axioms; abstract **`d_ms3a_{real,sim}_payload_seed`** and schedule / seed-support axioms unchanged.
+Abstract **`d_ms3a_{real,sim}_payload_seed`**, **`d_ms3a_seed_spine_joint`**, and the four programmed-on-support **axioms** are unchanged; **new** narrow spine obligations (**marginal bridges**, **WF on spine support**, **common-lift**) live in **`SourcePayloadDistributions.ec`**, and **`A_ms3a_bitness_layer_seed_schedule`** / **`A_ms3a_seed_pair_*_source_shared`** are **proved lemmas** at that interface.
 
 ### Smallest **safe** implementation patch (recommended order)
 
 1. **Projection / query ops** — **partially done:** abstract **`ms3a_public_*`** spine + narrow shape preds in **`SourceModel.ec`**, plus Phase-1 nominal payload constructors **`ms3a_phase1_{real,sim}_payload_from_public_input`** in **`SourceConstructors.ec`**. Next: link projections (and/or payloads) to games/spec **without** guessed sampling. This unlocks Phase-1-style **length and index** reasoning (as in MS-3c) once equalities are assumed or proved.
 2. **Joint seed coupling** — **spine phase done:** `d_ms3a_seed_spine_joint` + `dmap` pair
    map give a **real** structured joint; **`L_ms3a_ax_seed_coupling_pair_relation_of_spine_support_wf`**
-   discharges the pair-relation **predicate** from WF on spine support. **Still missing:**
-   (i) definitions or axioms tying **`d_ms3a_seed_spine_joint`** to game samplers / ROM;
-   (ii) **marginal bridges**
-   `dmap (d_ms3a_seed_spine_joint x s) ms3a_real_payload_seed_of_bitness_layer = d_ms3a_real_payload_seed x`
-   (and sim) to turn **`A_ms3a_seed_pair_*_source_shared`** and **`A_ms3a_bitness_layer_seed_schedule`**
-   into lemmas off the spine.
+   discharges the pair-relation **predicate** from WF on spine support. **Abstract bridges in-repo:**
+   marginal equalities / WF / common-lift are **axioms** in **`SourcePayloadDistributions.ec`**, and
+   **`A_ms3a_seed_pair_*_source_shared`** / **`A_ms3a_bitness_layer_seed_schedule`** are **proved lemmas** from them.
+   **Still missing at games:** (i) instantiate **`d_ms3a_seed_spine_joint`** from execution / ROM;
+   (ii) **discharge** those bridge axioms (same marginal equalities as design targets).
 3. **Defer** a standalone “canonical **`d_ms3a_bitness_layer_canonical`**” unless the
    execution spec truly samples the layer source first.
 4. **Pause MS-3a `.ec` churn** and invest in **game / LE** linking **only if** the team
@@ -388,17 +390,17 @@ audit; the README MS bullet stays a short summary.
 ## MS-3a hardening (completed in this phase; not MS-3b)
 
 - Replaced the polymorphic **`dmap_source_constructor_in_image`** axiom with **`supp_dmap`** (`Distr`) and a small proved **`distr_mem_eq`** helper; mem-pair / WF lemmas use `case/supp_dmap` and preserved membership hypotheses where proof terms require terms, not bare formulas.
-- Split the old “one-shot” source equality story: the **schedule** residual is axiom **`A_ms3a_bitness_layer_seed_schedule`** (single `dmap` per side at the abstract seed through the layer maps; legacy **`from_seed`** composition is **proved** redundant via **`L_ms3a_bitness_layer_seed_push_{real,sim}_eq_layer_dmap`**). Lemma **`A_ms3a_payload_dmap_bitness_layer_schedule`** is the former payload-level statement, now **proved** from that axiom + **`L_ms3a_bitness_layer_seed_push_{real,sim}_eq_layer_dmap`** + **`dmap_comp`** (`ms3a_bitness_*_source_as_seed_dmap`). The former `ms3a_ax_*` premises are **proved lemmas** unpacking support from the three **payload-support lemmas**, which in turn follow from **seed-support** (real/sim programmed lemmas each from two field axioms + four paired-public **source_shared** axioms + lemmata `A_ms3a_seed_pair_stmt_on_support`, `A_ms3a_seed_pair_res_on_support`, `A_ms3a_seed_pair_comparison_global_on_support`, `A_ms3a_seed_pair_bitness_globals_on_support`, `A_ms3a_seed_pair_public_fields_on_support`) and the defining payload `dmap`s; **`ms3a_payload_schedule_equivalence`** is **deprecated / compatibility** packaging (ignores those hypotheses). **`ms3a_source_eq_from_bitness_layer`** unfolds folded `d_ms3a_bitness_*_source` and applies **`A_ms3a_payload_dmap_bitness_layer_schedule`**.
+- Split the old “one-shot” source equality story: lemma **`A_ms3a_bitness_layer_seed_schedule`** (single `dmap` per side at the abstract seed through the layer maps) is **proved** from **`A_ms3a_spine_{real,sim}_marginal_matches_seed`** + **`dmap_comp`** + **`eq_dmap_in`**; legacy **`from_seed`** composition is **proved** redundant via **`L_ms3a_bitness_layer_seed_push_{real,sim}_eq_layer_dmap`**. Lemma **`A_ms3a_payload_dmap_bitness_layer_schedule`** is the former payload-level statement, now **proved** from **`A_ms3a_bitness_layer_seed_schedule`** + **`L_ms3a_bitness_layer_seed_push_{real,sim}_eq_layer_dmap`** + **`dmap_comp`** (`ms3a_bitness_*_source_as_seed_dmap`). The former `ms3a_ax_*` premises are **proved lemmas** unpacking support from the three **payload-support lemmas**, which in turn follow from **seed-support** (real/sim programmed lemmas each from two field axioms + four paired-public **`source_shared` lemmas** + lemmata `A_ms3a_seed_pair_*_on_support`, `A_ms3a_seed_pair_public_fields_on_support`) and the defining payload `dmap`s; **`ms3a_payload_schedule_equivalence`** is **deprecated / compatibility** packaging (ignores those hypotheses). **`ms3a_source_eq_from_bitness_layer`** unfolds folded `d_ms3a_bitness_*_source` and applies **`A_ms3a_payload_dmap_bitness_layer_schedule`**.
 - **Constructor obligations** formerly axiomatized at the folded-source layer are now **proved lemmas**: WF and programmed-bitness use payload support lemmas; public-field agreement uses `ms3a_payload_pair_public_fields_on_support` and **`ms3a_real_sim_public_fields_of_payload_pair`**; per-index exact simulation rewrites the programmed-vector hypothesis with the `dmap` preimage equality (`-Heqr`) and calls **`MS_3a_bitness_layer_exact_simulation`**. **forall** intros on paired real/sim binders use the quantifier order `(stmt_r stmt_s …)` (not “all real then all sim”) so constructor arguments type-check.
 
 ## Next target
 
 **MS-3a coupling (immediate):** instantiate **`d_ms3a_seed_spine_joint`** from execution
-   (and prove **`ms3a_source_wf`** on its support when needed), then add **marginal bridge**
-   lemmas or narrow axioms equating **`dmap d_spine real_of` / `dmap d_spine sim_of`** to
-   **`d_ms3a_{real,sim}_payload_seed`** so the four **`A_ms3a_seed_pair_*_source_shared`**
-   axioms and **`A_ms3a_bitness_layer_seed_schedule`** become dischargeable from the spine.
+   (and discharge **`A_ms3a_seed_spine_support_wf`** / **`A_ms3a_spine_marginal_pair_common_lift`** as needed), then **prove** the marginal bridge axioms
+   **`A_ms3a_spine_{real,sim}_marginal_matches_seed`** tying **`dmap d_spine real_of` / `dmap d_spine sim_of`** to
+   **`d_ms3a_{real,sim}_payload_seed`**. The four **`A_ms3a_seed_pair_*_source_shared`** lemmas and
+   **`A_ms3a_bitness_layer_seed_schedule`** are already **proved** in `ms/source/` from those obligations.
 
-**MS-3a residual:** discharge axiom **`A_ms3a_bitness_layer_seed_schedule`** (payload schedule **`A_ms3a_payload_dmap_bitness_layer_schedule`** is then a **proved** corollary) and the remaining **seed obligations**: four programmed-on-support **axioms** (**`A_ms3a_real_seed_bits_programmed_on_support`**, **`A_ms3a_real_seed_bitness_globals_programmed_on_support`**, **`A_ms3a_sim_seed_bits_programmed_on_support`**, **`A_ms3a_sim_seed_bitness_globals_programmed_on_support`**, each packaged by proved lemmas **`A_ms3a_{real,sim}_seed_programmed_on_support`**); four paired-public **source_shared** **axioms** (**`A_ms3a_seed_pair_stmt_source_shared`**, **`A_ms3a_seed_pair_res_source_shared`**, **`A_ms3a_seed_pair_comparison_global_source_shared`**, **`A_ms3a_seed_pair_bitness_globals_source_shared`**, with proved **`A_ms3a_seed_pair_*_on_support`** lemmata for `from_seed` payloads); instantiate abstract **`d_ms3a_{real,sim}_payload_seed`** from the execution spec / games (`ms3a_*_payload_from_seed` is definitional identity on payload-shaped seeds; **`A_ms3a_seed_pair_public_fields_on_support`** is already a **proved lemma**). Optionally **`ms3a_pack_observable_with_digest_field_correct`** and **`duni_scalar_shift_reparam`**.
+**MS-3a residual:** discharge the **spine** axiom bundle in **`SourcePayloadDistributions.ec`** at games, plus the remaining **programmed-on-support** seed **axioms** (four field axioms, packaged by **`A_ms3a_{real,sim}_seed_programmed_on_support`**); instantiate abstract **`d_ms3a_{real,sim}_payload_seed`** / **`d_ms3a_seed_spine_joint`** from the execution spec / games (`ms3a_*_payload_from_seed` is definitional identity on payload-shaped seeds; **`A_ms3a_seed_pair_public_fields_on_support`** is already a **proved lemma**). Optionally **`ms3a_pack_observable_with_digest_field_correct`** and **`duni_scalar_shift_reparam`**.
 
-**MS-3b** (`MS_3b_true_clause_characterization`) is the **recommended next milestone** once the remaining MS-3a axiom surface above is acceptable: folded-source constructor lemmas are no longer axioms, and folded real/sim source equality is proved via **`A_ms3a_payload_dmap_bitness_layer_schedule`** (from the seed schedule axiom + `dmap_comp`; the five `ms3a_ax_*` predicates are separate proved lemmas, not schedule premises).
+**MS-3b** (`MS_3b_true_clause_characterization`) is the **recommended next milestone** once the remaining MS-3a axiom surface above is acceptable: folded-source constructor lemmas are no longer axioms, and folded real/sim source equality is proved via **`A_ms3a_payload_dmap_bitness_layer_schedule`** (from lemma **`A_ms3a_bitness_layer_seed_schedule`** + `dmap_comp`; the five `ms3a_ax_*` predicates are separate proved lemmas, not schedule premises).

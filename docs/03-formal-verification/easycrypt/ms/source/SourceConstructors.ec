@@ -70,6 +70,34 @@ by rewrite /ms3a_payload_pair_public_fields_match
   /ms3a_real_payload_seed_of_bitness_layer /ms3a_sim_payload_seed_of_bitness_layer /=.
 qed.
 
+lemma L_ms3a_payload_pair_stmt_seed_of_bitness (src : ms3a_bitness_layer_source) :
+  (ms3a_real_payload_seed_of_bitness_layer src).`ms3rp_stmt =
+  (ms3a_sim_payload_seed_of_bitness_layer src).`ms3sp_stmt.
+proof.
+by rewrite /ms3a_real_payload_seed_of_bitness_layer /ms3a_sim_payload_seed_of_bitness_layer.
+qed.
+
+lemma L_ms3a_payload_pair_res_seed_of_bitness (src : ms3a_bitness_layer_source) :
+  (ms3a_real_payload_seed_of_bitness_layer src).`ms3rp_res =
+  (ms3a_sim_payload_seed_of_bitness_layer src).`ms3sp_res.
+proof.
+by rewrite /ms3a_real_payload_seed_of_bitness_layer /ms3a_sim_payload_seed_of_bitness_layer.
+qed.
+
+lemma L_ms3a_payload_pair_comparison_global_seed_of_bitness (src : ms3a_bitness_layer_source) :
+  (ms3a_real_payload_seed_of_bitness_layer src).`ms3rp_comparison_global_challenge =
+  (ms3a_sim_payload_seed_of_bitness_layer src).`ms3sp_comparison_global_challenge.
+proof.
+by rewrite /ms3a_real_payload_seed_of_bitness_layer /ms3a_sim_payload_seed_of_bitness_layer.
+qed.
+
+lemma L_ms3a_payload_pair_bitness_globals_seed_of_bitness (src : ms3a_bitness_layer_source) :
+  (ms3a_real_payload_seed_of_bitness_layer src).`ms3rp_bitness_global_challenges =
+  (ms3a_sim_payload_seed_of_bitness_layer src).`ms3sp_bitness_global_challenges.
+proof.
+by rewrite /ms3a_real_payload_seed_of_bitness_layer /ms3a_sim_payload_seed_of_bitness_layer.
+qed.
+
 lemma L_ms3a_bitness_layer_of_real_payload_seed_of_bitness (src : ms3a_bitness_layer_source) :
   ms3a_bitness_layer_source_of_real_payload (ms3a_real_payload_seed_of_bitness_layer src) = src.
 proof.

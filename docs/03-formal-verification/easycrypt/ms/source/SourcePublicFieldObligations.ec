@@ -6,16 +6,17 @@ require import SourceProgrammedObligations.
 (* Paired public-field seed axioms, `from_seed` lemmas, and payload-support programming. *)
 
 (* Phase-1 spine linkage: if joint support seeds equal the Phase-1 constructors, the four
-   field equalities in `A_ms3a_seed_pair_*_source_shared` follow without those axioms. The
-   unconditional axioms remain until `d_ms3a_*_payload_seed` is refined to enforce this.
+   field equalities in `A_ms3a_seed_pair_*_source_shared` follow without spine axioms.
 
-   **Structured joint (`SourceCouplingTypes` / `SourcePayloadDistributions`):** pairs drawn
-   from `d_ms3a_real_sim_payload_seed_coupling` agree on all six fields by construction
-   once they come from the same spine draw. The axioms below instead range over **independent**
-   marginal supports `d_ms3a_{real,sim}_payload_seed`; deriving them from the spine joint
-   needs explicit marginal bridges
-   `dmap (d_ms3a_seed_spine_joint x s) ms3a_real_payload_seed_of_bitness_layer = d_ms3a_real_payload_seed x`
-   (and sim), which are intentionally **not** added as blanket axioms in this phase. *)
+   **Spine bridges (`SourcePayloadDistributions.ec`):** `A_ms3a_spine_{real,sim}_marginal_matches_seed`
+   identify marginals with `dmap` pushforwards of `d_ms3a_seed_spine_joint`;
+   `A_ms3a_seed_spine_support_wf` packages programmed-vector WF on spine support (for
+   coupling / `ms3a_ax_seed_coupling_pair_relation` via
+   `L_ms3a_ax_seed_coupling_pair_relation_of_spine_support_wf` in `SourceCouplingTheorem.ec`);
+   `A_ms3a_spine_marginal_pair_common_lift` is the minimal “same draw” residue so marginal
+   pairs share one spine preimage. The four `A_ms3a_seed_pair_*_source_shared` statements
+   below are **proved lemmas** from `A_ms3a_spine_marginal_pair_common_lift` plus
+   `L_ms3a_payload_pair_public_fields_seed_of_bitness` (`SourceConstructors.ec`). *)
 
 lemma L_ms3a_seed_pair_stmt_when_seeds_are_phase1
   (x : ms_public_input) (s : seed) (sr : ms3a_real_payload_seed) (ss : ms3a_sim_payload_seed) :
@@ -65,11 +66,16 @@ move=> _ _ -> ->.
 by rewrite /ms3a_phase1_real_payload_from_public_input /ms3a_phase1_sim_payload_from_public_input.
 qed.
 
-axiom A_ms3a_seed_pair_stmt_source_shared (x : ms_public_input) (s : seed) :
+lemma A_ms3a_seed_pair_stmt_source_shared (x : ms_public_input) (s : seed) :
   forall (sr : ms3a_real_payload_seed) (ss : ms3a_sim_payload_seed),
     sr \in d_ms3a_real_payload_seed x =>
     ss \in d_ms3a_sim_payload_seed x s =>
     sr.`ms3rp_stmt = ss.`ms3sp_stmt.
+proof.
+move=> sr ss Hsr Hss.
+have [src [Hsrc [Hsr_eq Hss_eq]]] := A_ms3a_spine_marginal_pair_common_lift x s sr ss Hsr Hss.
+by rewrite -Hsr_eq -Hss_eq; apply (L_ms3a_payload_pair_stmt_seed_of_bitness src).
+qed.
 
 lemma A_ms3a_seed_pair_stmt_on_support (x : ms_public_input) (s : seed) :
   forall (sr : ms3a_real_payload_seed) (ss : ms3a_sim_payload_seed),
@@ -83,11 +89,16 @@ exact (ms3a_payload_pair_stmt_eq_from_seed_of_seed_stmt_eq x s sr ss
   (A_ms3a_seed_pair_stmt_source_shared x s sr ss Hsr Hss)).
 qed.
 
-axiom A_ms3a_seed_pair_res_source_shared (x : ms_public_input) (s : seed) :
+lemma A_ms3a_seed_pair_res_source_shared (x : ms_public_input) (s : seed) :
   forall (sr : ms3a_real_payload_seed) (ss : ms3a_sim_payload_seed),
     sr \in d_ms3a_real_payload_seed x =>
     ss \in d_ms3a_sim_payload_seed x s =>
     sr.`ms3rp_res = ss.`ms3sp_res.
+proof.
+move=> sr ss Hsr Hss.
+have [src [Hsrc [Hsr_eq Hss_eq]]] := A_ms3a_spine_marginal_pair_common_lift x s sr ss Hsr Hss.
+by rewrite -Hsr_eq -Hss_eq; apply (L_ms3a_payload_pair_res_seed_of_bitness src).
+qed.
 
 lemma A_ms3a_seed_pair_res_on_support (x : ms_public_input) (s : seed) :
   forall (sr : ms3a_real_payload_seed) (ss : ms3a_sim_payload_seed),
@@ -101,12 +112,17 @@ exact (ms3a_payload_pair_res_eq_from_seed_of_seed_res_eq x s sr ss
   (A_ms3a_seed_pair_res_source_shared x s sr ss Hsr Hss)).
 qed.
 
-axiom A_ms3a_seed_pair_comparison_global_source_shared
+lemma A_ms3a_seed_pair_comparison_global_source_shared
   (x : ms_public_input) (s : seed) :
   forall (sr : ms3a_real_payload_seed) (ss : ms3a_sim_payload_seed),
     sr \in d_ms3a_real_payload_seed x =>
     ss \in d_ms3a_sim_payload_seed x s =>
     sr.`ms3rp_comparison_global_challenge = ss.`ms3sp_comparison_global_challenge.
+proof.
+move=> sr ss Hsr Hss.
+have [src [Hsrc [Hsr_eq Hss_eq]]] := A_ms3a_spine_marginal_pair_common_lift x s sr ss Hsr Hss.
+by rewrite -Hsr_eq -Hss_eq; apply (L_ms3a_payload_pair_comparison_global_seed_of_bitness src).
+qed.
 
 lemma A_ms3a_seed_pair_comparison_global_on_support (x : ms_public_input) (s : seed) :
   forall (sr : ms3a_real_payload_seed) (ss : ms3a_sim_payload_seed),
@@ -120,12 +136,17 @@ exact (ms3a_payload_pair_comparison_global_challenge_eq_from_seed_of_seed_eq x s
   (A_ms3a_seed_pair_comparison_global_source_shared x s sr ss Hsr Hss)).
 qed.
 
-axiom A_ms3a_seed_pair_bitness_globals_source_shared
+lemma A_ms3a_seed_pair_bitness_globals_source_shared
   (x : ms_public_input) (s : seed) :
   forall (sr : ms3a_real_payload_seed) (ss : ms3a_sim_payload_seed),
     sr \in d_ms3a_real_payload_seed x =>
     ss \in d_ms3a_sim_payload_seed x s =>
     sr.`ms3rp_bitness_global_challenges = ss.`ms3sp_bitness_global_challenges.
+proof.
+move=> sr ss Hsr Hss.
+have [src [Hsrc [Hsr_eq Hss_eq]]] := A_ms3a_spine_marginal_pair_common_lift x s sr ss Hsr Hss.
+by rewrite -Hsr_eq -Hss_eq; apply (L_ms3a_payload_pair_bitness_globals_seed_of_bitness src).
+qed.
 
 lemma A_ms3a_seed_pair_bitness_globals_on_support (x : ms_public_input) (s : seed) :
   forall (sr : ms3a_real_payload_seed) (ss : ms3a_sim_payload_seed),

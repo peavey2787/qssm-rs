@@ -7,22 +7,22 @@ require import SourceTypes SourcePayloadDistributions SourceConstructors.
    per `(x,s)`; real/sim seeds are definitional copies of the same six fields).
 
    **Not** the independent product of `d_ms3a_{real,sim}_payload_seed`: those laws remain
-   abstract and are **not** identified with the fst/snd marginals of this joint unless
-   future linking axioms or game definitions say so.
+   abstract until games instantiate them; **narrow marginal bridge axioms**
+   **`A_ms3a_spine_{real,sim}_marginal_matches_seed`** in **`SourcePayloadDistributions.ec`**
+   state the intended fst/snd marginal equalities against this spine joint.
 
    **Pair relation (`SourceCouplingTheorem.ec`):** on spine support, if every drawn spine
    satisfies `ms3a_source_wf` (programmed bitness vector), then every pair in the joint
    satisfies `ms3a_real_sim_payload_seed_coupled` (field alignment + programmed on both
    typed seeds — the two programmed conjuncts coincide with `ms3a_source_wf`).
 
-   **Discharge map:** the four `A_ms3a_seed_pair_*_source_shared` axioms quantify over
-   **marginal** seed supports `d_ms3a_{real,sim}_payload_seed`, not over this joint; to
-   derive them from the spine joint requires **marginal bridge** facts
-   `dmap (d_ms3a_seed_spine_joint …) ms3a_real_payload_seed_of_bitness_layer = d_ms3a_real_payload_seed …`
-   (and sim), plus `supp_dmap` — intentionally absent here. Schedule axiom
-   **`A_ms3a_bitness_layer_seed_schedule`** still compares the **abstract** marginal seed
-   pushforwards; relating it to `d_ms3a_seed_spine_joint` needs the same bridges plus
-   `L_ms3a_bitness_layer_of_{real,sim}_payload_seed_of_bitness` (`SourceConstructors.ec`). *)
+   **Discharge map:** the four `A_ms3a_seed_pair_*_source_shared` **lemmas**
+   (`SourcePublicFieldObligations.ec`) use **`A_ms3a_spine_marginal_pair_common_lift`** so
+   arbitrary marginal-support pairs share one spine preimage, plus field lemmas
+   `L_ms3a_payload_pair_*_seed_of_bitness`. Lemma **`A_ms3a_bitness_layer_seed_schedule`**
+   (`SourceScheduleObligations.ec`) compares the **abstract** marginal seed pushforwards and is
+   **proved** from the two marginal bridge axioms using **`dmap_comp`** / **`eq_dmap_in`**
+   (same inversion lemmas `L_ms3a_bitness_layer_of_{real,sim}_payload_seed_of_bitness`). *)
 
 pred ms3a_real_sim_payload_seed_coupled
   (sr : ms3a_real_payload_seed) (ss : ms3a_sim_payload_seed) =
