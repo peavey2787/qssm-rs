@@ -63,6 +63,9 @@ FILES=(
   ms/source/SourceDistributions.ec
   ms/source/SourceProgrammedObligations.ec
   ms/source/SourcePublicFieldObligations.ec
+  ms/source/SourceScheduleSeed.ec
+  ms/source/SourceSchedulePayload.ec
+  ms/source/SourceScheduleTheorem.ec
   ms/source/SourceScheduleObligations.ec
   ms/source/SourceObligations.ec
   ms/source/SourceTheorem.ec

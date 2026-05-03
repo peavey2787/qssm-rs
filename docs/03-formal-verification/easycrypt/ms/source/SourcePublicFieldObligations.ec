@@ -3,20 +3,21 @@ require import QssmTypes FS SchnorrBranch BitnessOne BitnessVector.
 require import SourceTypes SourceConstructors SourceDistributions.
 require import SourceProgrammedObligations.
 
-(* Paired public-field seed axioms, `from_seed` lemmas, and payload-support programming. *)
+(* Paired public-field lemmas, `from_seed` lemmas, and payload-support programming. *)
 
-(* Phase-1 spine linkage: if joint support seeds equal the Phase-1 constructors, the four
-   field equalities in `A_ms3a_seed_pair_*_source_shared` follow without spine axioms.
+(* Phase-1: lemmas `L_ms3a_seed_pair_*_when_seeds_are_phase1` below prove the four public-field
+   equalities from equality to Phase-1 payloads alone; they do not use any spine bridge axioms.
 
-   **Spine bridges (`SourcePayloadDistributions.ec`):** `A_ms3a_spine_{real,sim}_marginal_matches_seed`
-   identify marginals with `dmap` pushforwards of `d_ms3a_seed_spine_joint`;
-   `A_ms3a_seed_spine_support_wf` packages programmed-vector WF on spine support (for
-   coupling / `ms3a_ax_seed_coupling_pair_relation` via
-   `L_ms3a_ax_seed_coupling_pair_relation_of_spine_support_wf` in `SourceCouplingTheorem.ec`);
-   `A_ms3a_spine_marginal_pair_common_lift` is the minimal “same draw” residue so marginal
-   pairs share one spine preimage. The four `A_ms3a_seed_pair_*_source_shared` statements
-   below are **proved lemmas** from `A_ms3a_spine_marginal_pair_common_lift` plus
-   `L_ms3a_payload_pair_public_fields_seed_of_bitness` (`SourceConstructors.ec`). *)
+   General marginal support: the four `A_ms3a_seed_pair_*_source_shared` lemmas (same names,
+   proved statements) use axiom `A_ms3a_spine_marginal_pair_common_lift` in
+   `SourcePayloadDistributions.ec` so any (sr,ss) with sr in `d_ms3a_real_payload_seed x` and
+   ss in `d_ms3a_sim_payload_seed x s` share one spine preimage, then
+   `L_ms3a_payload_pair_public_fields_seed_of_bitness` on that spine.
+
+   Other spine axioms in `SourcePayloadDistributions.ec`: `A_ms3a_spine_real_marginal_matches_seed`,
+   `A_ms3a_spine_sim_marginal_matches_seed` (marginals vs `d_ms3a_seed_spine_joint`);
+   `A_ms3a_seed_spine_support_wf` (WF on spine support for coupling lemmas such as
+   `L_ms3a_ax_seed_coupling_pair_relation_of_spine_support_wf` in `SourceCouplingTheorem.ec`). *)
 
 lemma L_ms3a_seed_pair_stmt_when_seeds_are_phase1
   (x : ms_public_input) (s : seed) (sr : ms3a_real_payload_seed) (ss : ms3a_sim_payload_seed) :

@@ -22,7 +22,10 @@ op d_ms3a_sim_source_payload (x : ms_public_input) (s : seed) : ms3a_sim_source_
   dmap (d_ms3a_sim_payload_seed x s) (fun sigma => ms3a_sim_payload_from_seed x s sigma).
 
 (* ------------------------------------------------------------------------- *)
-(* Spine ↔ marginal bridges (narrow obligations for game / linking discharge). *)
+(* Spine ↔ marginal bridges (narrow obligations for game / linking discharge).
+   No proof of these statements is possible at this layer: the three sampling laws above are
+   abstract. Discharge = instantiate `d_ms3a_seed_spine_joint` and the two payload-seed laws
+   from execution (or prove invariants) so the equalities / WF / lift become provable. *)
 
 axiom A_ms3a_spine_real_marginal_matches_seed (x : ms_public_input) (s : seed) :
   dmap (d_ms3a_seed_spine_joint x s) ms3a_real_payload_seed_of_bitness_layer =

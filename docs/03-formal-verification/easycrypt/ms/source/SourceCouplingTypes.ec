@@ -2,27 +2,29 @@ require import AllCore List Distr.
 require import QssmTypes BitnessVector.
 require import SourceTypes SourcePayloadDistributions SourceConstructors.
 
-(* MS-3a seed coupling: **structured joint** `dmap (d_ms3a_seed_spine_joint x s)
-   ms3a_real_sim_seed_pair_of_bitness_layer` (one shared `ms3a_bitness_layer_source` spine
-   per `(x,s)`; real/sim seeds are definitional copies of the same six fields).
+(* MS-3a seed coupling: structured joint
+   `dmap (d_ms3a_seed_spine_joint x s) ms3a_real_sim_seed_pair_of_bitness_layer`
+   (one shared `ms3a_bitness_layer_source` spine per (x,s); real/sim typed seeds are
+   definitional copies of the same six fields).
 
-   **Not** the independent product of `d_ms3a_{real,sim}_payload_seed`: those laws remain
-   abstract until games instantiate them; **narrow marginal bridge axioms**
-   **`A_ms3a_spine_{real,sim}_marginal_matches_seed`** in **`SourcePayloadDistributions.ec`**
-   state the intended fst/snd marginal equalities against this spine joint.
+   This is not the independent product of `d_ms3a_real_payload_seed` and
+   `d_ms3a_sim_payload_seed`: those laws remain abstract until games instantiate them.
+   Marginal bridge axioms `A_ms3a_spine_real_marginal_matches_seed` and
+   `A_ms3a_spine_sim_marginal_matches_seed` in `SourcePayloadDistributions.ec` state the
+   intended real/sim marginal equalities against `d_ms3a_seed_spine_joint`.
 
-   **Pair relation (`SourceCouplingTheorem.ec`):** on spine support, if every drawn spine
-   satisfies `ms3a_source_wf` (programmed bitness vector), then every pair in the joint
-   satisfies `ms3a_real_sim_payload_seed_coupled` (field alignment + programmed on both
-   typed seeds — the two programmed conjuncts coincide with `ms3a_source_wf`).
+   Pair relation (SourceCouplingTheorem.ec): on spine support, if every drawn spine
+   satisfies `ms3a_source_wf`, then every pair in the joint satisfies
+   `ms3a_real_sim_payload_seed_coupled`.
 
-   **Discharge map:** the four `A_ms3a_seed_pair_*_source_shared` **lemmas**
-   (`SourcePublicFieldObligations.ec`) use **`A_ms3a_spine_marginal_pair_common_lift`** so
+   Discharge map: the four `A_ms3a_seed_pair_*_source_shared` lemmas in
+   SourcePublicFieldObligations.ec use axiom `A_ms3a_spine_marginal_pair_common_lift` so
    arbitrary marginal-support pairs share one spine preimage, plus field lemmas
-   `L_ms3a_payload_pair_*_seed_of_bitness`. Lemma **`A_ms3a_bitness_layer_seed_schedule`**
-   (`SourceScheduleObligations.ec`) compares the **abstract** marginal seed pushforwards and is
-   **proved** from the two marginal bridge axioms using **`dmap_comp`** / **`eq_dmap_in`**
-   (same inversion lemmas `L_ms3a_bitness_layer_of_{real,sim}_payload_seed_of_bitness`). *)
+   `L_ms3a_payload_pair_*_seed_of_bitness`. Lemma `A_ms3a_bitness_layer_seed_schedule` in
+   SourceScheduleSeed.ec is proved from the two marginal bridge axioms using
+   `dmap_comp` and `eq_dmap_in` (same six-field round-trip as
+   `L_ms3a_bitness_layer_of_real_payload_seed_of_bitness` /
+   `L_ms3a_bitness_layer_of_sim_payload_seed_of_bitness`). *)
 
 pred ms3a_real_sim_payload_seed_coupled
   (sr : ms3a_real_payload_seed) (ss : ms3a_sim_payload_seed) =

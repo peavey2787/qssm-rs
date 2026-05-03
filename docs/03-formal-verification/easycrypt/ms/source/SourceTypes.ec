@@ -44,8 +44,10 @@ type ms3a_sim_source_payload = {
    `from_seed` payloads, which feed proved lemma `A_ms3a_seed_pair_public_fields_on_support`
    (`SourcePublicFieldObligations.ec` / `SourceConstructors.ec`; re-exported via
    `SourceObligations.ec`). Programmed-on-seed-support for each
-   side is lemma `A_ms3a_{real,sim}_seed_programmed_on_support` from two field axioms
-   (`*_bits_programmed_on_support`, `*_bitness_globals_programmed_on_support`) matching
+   side is lemma `A_ms3a_{real,sim}_seed_programmed_on_support` from two proved field
+   lemmas (`*_bits_programmed_on_support`, `*_bitness_globals_programmed_on_support`),
+   each derived from three `SourceProgrammedObligations` axioms (public vector programmed +
+   real/sim seed fields agree with public spine on support), matching
    `ms_bitness_vector_programmed_layer` (`BitnessVector.ec`). *)
 type ms3a_real_payload_seed = ms3a_real_source_payload.
 type ms3a_sim_payload_seed = ms3a_sim_source_payload.
