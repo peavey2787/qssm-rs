@@ -9,11 +9,11 @@ require import SourceConstructors.
    projections folded to a single `dmap` off the spine (`Distr.dmap_comp`), and
    `ms3a_ax_seed_coupling_pair_relation` from `ms3a_source_wf` on spine support.
 
-   The four spine bridge axioms in `SourcePayloadDistributions.ec` are not proved here:
-   `d_ms3a_seed_spine_joint`, `d_ms3a_real_payload_seed`, and `d_ms3a_sim_payload_seed` are
-   abstract `op`s with no defining `dmap`/`dlet` bodies in this development, so marginal
-   equalities, spine WF, and common-lift cannot be derived without game-level definitions or
-   additional axioms. *)
+   In `SourcePayloadDistributions.ec`, `d_ms3a_sim_payload_seed` is **defined** as the sim
+   marginal of `d_ms3a_seed_spine_joint` (lemma `A_ms3a_spine_sim_marginal_matches_seed` is
+   definitional). The joint and **real** seed law remain abstract `op`s; axiom
+   `A_ms3a_spine_real_marginal_matches_seed` plus `A_ms3a_seed_spine_support_wf` and
+   `A_ms3a_spine_marginal_pair_common_lift` are not proved here without game-level definitions. *)
 
 lemma L_ms3a_real_sim_seed_of_bitness_coupled_of_wf (src : ms3a_bitness_layer_source) :
   ms3a_source_wf src =>

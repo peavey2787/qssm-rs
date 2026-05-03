@@ -5,15 +5,21 @@ require import SourceTypes SourceConstructors.
 (* Abstract seed laws and payload-level `dmap` pushforwards (MS-3a). *)
 
 (* Structured joint spine: one draw of `ms3a_bitness_layer_source` per `(x,s)`; real/sim
-   typed seeds are definitional copies (`SourceConstructors.ec`). Narrow marginal-bridge
-   axioms `A_ms3a_spine_real_marginal_matches_seed` and `A_ms3a_spine_sim_marginal_matches_seed`
-   relate those `dmap` marginals to the abstract seed laws; games / linking still supply
-   `d_ms3a_seed_spine_joint` and discharge the bridges (plus `A_ms3a_seed_spine_support_wf`,
-   `A_ms3a_spine_marginal_pair_common_lift`). *)
+   typed seeds are definitional copies (`SourceConstructors.ec`).
+
+   **Sim payload seed law** is the **spine sim marginal** by definition (same `(x,s)` as the
+   joint). The **real** law stays abstract: its type has no `s`, so it cannot be defined as
+   `dmap (d_ms3a_seed_spine_joint x s) …` without either (i) a separate proof that that
+   `dmap` is independent of `s`, or (ii) extending the interface with `s`. Narrow axiom
+   `A_ms3a_spine_real_marginal_matches_seed` still ties the abstract real law to the joint’s
+   real marginal for every `s`. Games / linking still supply `d_ms3a_seed_spine_joint` and
+   the real bridge plus `A_ms3a_seed_spine_support_wf` and `A_ms3a_spine_marginal_pair_common_lift`. *)
 op d_ms3a_seed_spine_joint (x : ms_public_input) (s : seed) : ms3a_bitness_layer_source distr.
 
 op d_ms3a_real_payload_seed (x : ms_public_input) : ms3a_real_payload_seed distr.
-op d_ms3a_sim_payload_seed (x : ms_public_input) (s : seed) : ms3a_sim_payload_seed distr.
+
+op d_ms3a_sim_payload_seed (x : ms_public_input) (s : seed) : ms3a_sim_payload_seed distr =
+  dmap (d_ms3a_seed_spine_joint x s) ms3a_sim_payload_seed_of_bitness_layer.
 
 op d_ms3a_real_source_payload (x : ms_public_input) : ms3a_real_source_payload distr =
   dmap (d_ms3a_real_payload_seed x) (fun sigma => ms3a_real_payload_from_seed x sigma).
@@ -23,17 +29,19 @@ op d_ms3a_sim_source_payload (x : ms_public_input) (s : seed) : ms3a_sim_source_
 
 (* ------------------------------------------------------------------------- *)
 (* Spine ↔ marginal bridges (narrow obligations for game / linking discharge).
-   No proof of these statements is possible at this layer: the three sampling laws above are
-   abstract. Discharge = instantiate `d_ms3a_seed_spine_joint` and the two payload-seed laws
-   from execution (or prove invariants) so the equalities / WF / lift become provable. *)
+   `d_ms3a_sim_payload_seed` is defined as the joint sim marginal; lemma
+   `A_ms3a_spine_sim_marginal_matches_seed` is definitional packaging (keeps schedule proofs
+   unchanged). The joint and real seed law remain abstract: no proof of the real bridge, WF,
+   or common-lift at this layer without game-level definitions or further axioms. *)
 
 axiom A_ms3a_spine_real_marginal_matches_seed (x : ms_public_input) (s : seed) :
   dmap (d_ms3a_seed_spine_joint x s) ms3a_real_payload_seed_of_bitness_layer =
   d_ms3a_real_payload_seed x.
 
-axiom A_ms3a_spine_sim_marginal_matches_seed (x : ms_public_input) (s : seed) :
+lemma A_ms3a_spine_sim_marginal_matches_seed (x : ms_public_input) (s : seed) :
   dmap (d_ms3a_seed_spine_joint x s) ms3a_sim_payload_seed_of_bitness_layer =
   d_ms3a_sim_payload_seed x s.
+proof. by []. qed.
 
 axiom A_ms3a_seed_spine_support_wf (x : ms_public_input) (s : seed) :
   forall (src : ms3a_bitness_layer_source),

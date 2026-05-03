@@ -4,10 +4,11 @@ require import SourceConstructors.
 require import SourcePayloadDistributions.
 require import SourceCouplingTypes.
 
-(* Narrow marginal bridge axioms live in SourcePayloadDistributions.ec
-   (A_ms3a_spine_real_marginal_matches_seed, A_ms3a_spine_sim_marginal_matches_seed,
-   A_ms3a_seed_spine_support_wf, A_ms3a_spine_marginal_pair_common_lift) for game-level
-   discharge once d_ms3a_seed_spine_joint is instantiated. The four
+(* Narrow spine obligations in SourcePayloadDistributions.ec: **axioms**
+   `A_ms3a_spine_real_marginal_matches_seed`, `A_ms3a_seed_spine_support_wf`,
+   `A_ms3a_spine_marginal_pair_common_lift`, plus **proved lemma**
+   `A_ms3a_spine_sim_marginal_matches_seed` (sim seed law is the joint sim marginal by
+   definition). Game-level discharge once `d_ms3a_seed_spine_joint` is instantiated. The four
    A_ms3a_seed_pair_*_source_shared statements are proved lemmas in
    SourcePublicFieldObligations.ec from the common-lift axiom plus
    L_ms3a_payload_pair_public_fields_seed_of_bitness.

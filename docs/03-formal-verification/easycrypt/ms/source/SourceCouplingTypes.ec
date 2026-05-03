@@ -7,11 +7,10 @@ require import SourceTypes SourcePayloadDistributions SourceConstructors.
    (one shared `ms3a_bitness_layer_source` spine per (x,s); real/sim typed seeds are
    definitional copies of the same six fields).
 
-   This is not the independent product of `d_ms3a_real_payload_seed` and
-   `d_ms3a_sim_payload_seed`: those laws remain abstract until games instantiate them.
-   Marginal bridge axioms `A_ms3a_spine_real_marginal_matches_seed` and
-   `A_ms3a_spine_sim_marginal_matches_seed` in `SourcePayloadDistributions.ec` state the
-   intended real/sim marginal equalities against `d_ms3a_seed_spine_joint`.
+   This is not the independent product of abstract `d_ms3a_real_payload_seed` and the
+   spine-defined `d_ms3a_sim_payload_seed`. Axiom `A_ms3a_spine_real_marginal_matches_seed`
+   ties the real marginal of the joint to the abstract real law; sim marginal agreement is
+   **definitional** (`A_ms3a_spine_sim_marginal_matches_seed` is a proved lemma).
 
    Pair relation (SourceCouplingTheorem.ec): on spine support, if every drawn spine
    satisfies `ms3a_source_wf`, then every pair in the joint satisfies

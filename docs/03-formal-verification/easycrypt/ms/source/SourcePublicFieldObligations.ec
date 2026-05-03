@@ -14,8 +14,10 @@ require import SourceProgrammedObligations.
    ss in `d_ms3a_sim_payload_seed x s` share one spine preimage, then
    `L_ms3a_payload_pair_public_fields_seed_of_bitness` on that spine.
 
-   Other spine axioms in `SourcePayloadDistributions.ec`: `A_ms3a_spine_real_marginal_matches_seed`,
-   `A_ms3a_spine_sim_marginal_matches_seed` (marginals vs `d_ms3a_seed_spine_joint`);
+   Other spine facts in `SourcePayloadDistributions.ec`: axiom
+   `A_ms3a_spine_real_marginal_matches_seed` (real marginal vs joint); lemma
+   `A_ms3a_spine_sim_marginal_matches_seed` (definitional: `d_ms3a_sim_payload_seed` is the joint
+   sim marginal);
    `A_ms3a_seed_spine_support_wf` (WF on spine support for coupling lemmas such as
    `L_ms3a_ax_seed_coupling_pair_relation_of_spine_support_wf` in `SourceCouplingTheorem.ec`). *)
 
