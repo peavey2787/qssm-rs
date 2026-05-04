@@ -63,17 +63,22 @@ The repo currently stops one layer too high to discharge the remaining MS1/MS2 a
 
 - **Why MS1 is blocked:** **`game_pr_ms_core`** in **`games/GameAdvantage.ec`** is still an abstract operator, **`distinguisher`** in **`primitives/QssmTypes.ec`** is abstract, and the existing hash-binding surfaces only assert **`0%r <= epsilon_ms_hash_binding`**. There is no theorem in the repo relating the explicit Real/AfterBinding **`GV_ms`** pair to that budget.
 - **Why MS2 is blocked:** **`game_pr_ms_core`** is still abstract, and the existing ROM surfaces only assert **`0%r <= epsilon_ms_rom_programmability`** plus **`A2_programmable_oracle_exists`** for scalar response existence at a ROM query point. There is no theorem in the repo relating the explicit AfterBinding/AfterRom **`GV_ms`** pair to that budget.
+- **Where the lower theorems should live:** **`games/GameAdvantage.ec`**, adjacent to **`game_pr_ms_core`** and the existing MS3a/MS3b/MS3c stage-collapse semantics, because that is the lowest layer naming the projected MS probability surface directly.
+- **Proposed MS1 lower theorem:** **`A_MS1_hash_binding_game_pr_core_bound`**.
 - **Exact missing MS1 theorem:**
 	`forall (x : qssm_public_input) (s : seed) (xms : ms_public_input) (obs : ms_v2_transcript_observable) (lep : le_transcript_observable option) (D : distinguisher), 0%r <= epsilon_ms_hash_binding => game_pr_ms_core x s xms obs MSGameStageReal lep D - game_pr_ms_core x s xms obs MSGameStageAfterBinding lep D <= epsilon_ms_hash_binding.`
+- **Would remove:** **`A_MS1_hash_binding_concrete_pair_advantage_bound`** in **`games/GameMSHopTypes.ec`**.
+- **Proposed MS2 lower theorem:** **`A_MS2_rom_programming_game_pr_core_bound`**.
 - **Exact missing MS2 theorem:**
 	`forall (x : qssm_public_input) (s : seed) (xms : ms_public_input) (obs : ms_v2_transcript_observable) (lep : le_transcript_observable option) (D : distinguisher), 0%r <= epsilon_ms_rom_programmability => game_pr_ms_core x s xms obs MSGameStageAfterBinding lep D - game_pr_ms_core x s xms obs MSGameStageAfterRom lep D <= epsilon_ms_rom_programmability.`
+- **Would remove:** **`A_MS2_rom_programming_concrete_pair_advantage_bound`** in **`games/GameMSHopTypes.ec`**.
 
 ## Recommended proof order
 
 1. **Keep `games/GameAdvantage.ec` fixed** as the stable projection layer unless a concrete semantics for **`game_pr_ms_core`** is explicitly required. The current stage-collapsing design already closes MS-3a / MS-3b / MS-3c.
 2. **Completed:** **`A_MS1_hash_binding_step_advantage_bound`** is now proved in **`games/GameMSHopTypes.ec`** from the concrete stage-pair theorem surface **`A_MS1_hash_binding_concrete_pair_advantage_bound`**.
 3. **Completed:** **`A_MS2_rom_programming_step_advantage_bound`** is now proved in **`games/GameMSHopTypes.ec`** from the concrete stage-pair theorem surface **`A_MS2_rom_programming_concrete_pair_advantage_bound`**.
-4. **Blocked until lower cryptographic bridges exist:** discharge **`A_MS1_hash_binding_concrete_pair_advantage_bound`** and **`A_MS2_rom_programming_concrete_pair_advantage_bound`** only after adding/proving the lower **`game_pr_ms_core`** stage-pair theorems above, then re-check **`A_G0_to_G1_ms_transition_bound`** with no remaining MS1/MS2 game-hop axioms.
+4. **Blocked until lower cryptographic bridges exist:** discharge **`A_MS1_hash_binding_concrete_pair_advantage_bound`** and **`A_MS2_rom_programming_concrete_pair_advantage_bound`** only after adding/proving **`A_MS1_hash_binding_game_pr_core_bound`** and **`A_MS2_rom_programming_game_pr_core_bound`** in **`games/GameAdvantage.ec`**, then re-check **`A_G0_to_G1_ms_transition_bound`** with no remaining MS1/MS2 game-hop axioms.
 5. **Defer non-MS interfaces**: LE bridge assumptions, such as the projected LE probability interface, remain tracked in the LE/game plans and are not the immediate MS-3d blocker set.
 
 ## Exit criteria

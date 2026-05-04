@@ -192,6 +192,8 @@ Then: MS-3c comparison lane in **`ms/Comparison.ec`** / **`ms/comparison/`** (`p
 
 Update May 2026: the MS game-layer debt has been reduced again. In **`games/GameMSHopTypes.ec`**, the former six provisional MS1/MS2 axioms were first collapsed to two canonical stage-pair bounds, then to two step-bound surfaces, and those step-bound surfaces are now themselves proved lemmas derived from the explicit stage-pair axioms **`A_MS1_hash_binding_concrete_pair_advantage_bound`** and **`A_MS2_rom_programming_concrete_pair_advantage_bound`**. The remaining blocker is lower: the repo still lacks the concrete hash-binding and ROM-programming **`game_pr_ms_core`** bridge theorems needed to remove those two explicit stage-pair axioms. MS-3a / MS-3b / MS-3c remain proved game-hop lemmas on the concrete **`game_view`** projection.
 
+The proposed lower bridge theorem names are **`A_MS1_hash_binding_game_pr_core_bound`** and **`A_MS2_rom_programming_game_pr_core_bound`**. They should live in **`games/GameAdvantage.ec`**, next to the abstract **`game_pr_ms_core`** surface they constrain, and would remove **`A_MS1_hash_binding_concrete_pair_advantage_bound`** and **`A_MS2_rom_programming_concrete_pair_advantage_bound`** respectively.
+
 ## Syntax / checker notes
 
 - Theories are loaded by **basename** under this tree with `easycrypt compile -R . <file>`.
