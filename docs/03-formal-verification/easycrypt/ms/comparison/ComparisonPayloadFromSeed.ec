@@ -3,11 +3,23 @@ require import Algebra QssmTypes FS SchnorrBranch TrueClauseTypes BitnessOne.
 require import ComparisonTypes ComparisonPayloadTypes ComparisonPayloadSeedTypes.
 
 (* Phase-1 structural payload and dmap pushforwards; surface-field equalities on
-  support plus payload-only sampled-coin propagation; schedule/surface packaging. *)
+  support plus payload-only sampled-coin propagation and coin-driven auxiliary
+  ROM/transcript views; schedule/surface packaging. *)
 
 op ms3c_phase1_comparison_carrier_from_public_input (x : ms_public_input) :
   ms3b_concrete_comparison_carrier =
   ms3b_phase1_comparison_carrier x.
+
+op ms3c_payload_coin_driven_rom_row
+  (p : ms3c_comparison_clause_payload) : (digest * scalar) =
+  (p.`mscp_query_digest, p.`mscp_rom_coin).
+
+op ms3c_payload_coin_driven_transcript_openings
+  (p : ms3c_comparison_clause_payload) : ms_comparison_openings =
+  {| mscos_true_opening = (p.`mscp_ann_true, p.`mscp_transcript_coin);
+     mscos_false_openings =
+       map (fun (ann : sch_point) => (ann, p.`mscp_transcript_coin))
+           p.`mscp_ann_false |}.
 
 op ms3c_payload_from_seed_components
   (sc : ms3c_seed_challenge) (sa : ms3c_seed_announcement) :
@@ -137,6 +149,45 @@ rewrite /ms3c_real_payload_from_seed /ms3c_payload_from_seed_components /=.
 by split.
 qed.
 
+lemma L_ms3c_real_payload_from_seed_coin_driven_rom_row
+  (x : ms_public_input) (sr : ms3c_real_payload_seed) :
+  sr \in d_ms3c_real_payload_seed x =>
+  ms3c_payload_coin_driven_rom_row (ms3c_real_payload_from_seed x sr) =
+    (ms3c_phase1_seed_query_digest x,
+     (ms3c_real_payload_from_seed x sr).`mscp_rom_coin).
+proof.
+move=> Hsr.
+rewrite /d_ms3c_real_payload_seed supp_dprod in Hsr.
+case: sr Hsr => sc sa /=.
+move=> [Hsc _].
+have Hsurf := L_ms3c_real_seed_challenge_on_support_public_surface x sc Hsc.
+move: Hsurf => [_ [_ [_ [_ [_ [_ [_ Hquery]]]]]]].
+by rewrite /ms3c_payload_coin_driven_rom_row /ms3c_real_payload_from_seed
+  /ms3c_payload_from_seed_components /= Hquery.
+qed.
+
+lemma L_ms3c_real_payload_from_seed_coin_driven_transcript_openings
+  (x : ms_public_input) (sr : ms3c_real_payload_seed) :
+  sr \in d_ms3c_real_payload_seed x =>
+  ms3c_payload_coin_driven_transcript_openings (ms3c_real_payload_from_seed x sr) =
+    {| mscos_true_opening =
+         (ms3c_public_true_announcement x,
+          (ms3c_real_payload_from_seed x sr).`mscp_transcript_coin);
+       mscos_false_openings =
+         map (fun (ann : sch_point) =>
+               (ann, (ms3c_real_payload_from_seed x sr).`mscp_transcript_coin))
+             (ms3c_public_false_announcements x) |}.
+proof.
+move=> Hsr.
+rewrite /d_ms3c_real_payload_seed supp_dprod in Hsr.
+case: sr Hsr => sc sa /=.
+move=> [_ Hsa].
+have [Hann_true Hann_false] :=
+  L_ms3c_real_seed_announcement_on_support_public_surface x sa Hsa.
+by rewrite /ms3c_payload_coin_driven_transcript_openings /ms3c_real_payload_from_seed
+  /ms3c_payload_from_seed_components /= Hann_true Hann_false.
+qed.
+
 lemma L_ms3c_sim_payload_from_seed_support_phase1_fields
   (x : ms_public_input) (s : seed) (ss : ms3c_sim_payload_seed) :
   ss \in d_ms3c_sim_payload_seed x s =>
@@ -185,6 +236,45 @@ case: ss Hss => sc sa /=.
 move=> [_ _].
 rewrite /ms3c_sim_payload_from_seed /ms3c_payload_from_seed_components /=.
 by split.
+qed.
+
+lemma L_ms3c_sim_payload_from_seed_coin_driven_rom_row
+  (x : ms_public_input) (s : seed) (ss : ms3c_sim_payload_seed) :
+  ss \in d_ms3c_sim_payload_seed x s =>
+  ms3c_payload_coin_driven_rom_row (ms3c_sim_payload_from_seed x s ss) =
+    (ms3c_phase1_seed_query_digest x,
+     (ms3c_sim_payload_from_seed x s ss).`mscp_rom_coin).
+proof.
+move=> Hss.
+rewrite /d_ms3c_sim_payload_seed supp_dprod in Hss.
+case: ss Hss => sc sa /=.
+move=> [Hsc _].
+have Hsurf := L_ms3c_sim_seed_challenge_on_support_public_surface x s sc Hsc.
+move: Hsurf => [_ [_ [_ [_ [_ [_ [_ Hquery]]]]]]].
+by rewrite /ms3c_payload_coin_driven_rom_row /ms3c_sim_payload_from_seed
+  /ms3c_payload_from_seed_components /= Hquery.
+qed.
+
+lemma L_ms3c_sim_payload_from_seed_coin_driven_transcript_openings
+  (x : ms_public_input) (s : seed) (ss : ms3c_sim_payload_seed) :
+  ss \in d_ms3c_sim_payload_seed x s =>
+  ms3c_payload_coin_driven_transcript_openings (ms3c_sim_payload_from_seed x s ss) =
+    {| mscos_true_opening =
+         (ms3c_public_true_announcement x,
+          (ms3c_sim_payload_from_seed x s ss).`mscp_transcript_coin);
+       mscos_false_openings =
+         map (fun (ann : sch_point) =>
+               (ann, (ms3c_sim_payload_from_seed x s ss).`mscp_transcript_coin))
+             (ms3c_public_false_announcements x) |}.
+proof.
+move=> Hss.
+rewrite /d_ms3c_sim_payload_seed supp_dprod in Hss.
+case: ss Hss => sc sa /=.
+move=> [_ Hsa].
+have [Hann_true Hann_false] :=
+  L_ms3c_sim_seed_announcement_on_support_public_surface x s sa Hsa.
+by rewrite /ms3c_payload_coin_driven_transcript_openings /ms3c_sim_payload_from_seed
+  /ms3c_payload_from_seed_components /= Hann_true Hann_false.
 qed.
 
 lemma L_ms3c_real_payload_from_seed_on_support_eq_phase1

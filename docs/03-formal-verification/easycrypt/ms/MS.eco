@@ -101,7 +101,7 @@
     "ComparisonPayloadFromSeed": {
       "direct": false,
       "kind": "ec",
-      "digest": "6a71ae1ff0ebf3313cd49954dbaf6c9d"
+      "digest": "b9383c52ac2422f4f6c0f8626b15f8ee"
     },
     "ComparisonPayloadSeedAnchors": {
       "direct": false,
@@ -111,7 +111,7 @@
     "ComparisonPayloadSeedTypes": {
       "direct": false,
       "kind": "ec",
-      "digest": "814c2c310981da214de1b1ec7ce0b266"
+      "digest": "314a46e38f0af6375a56aab7381cc166"
     },
     "ComparisonPayloadSeeds": {
       "direct": false,

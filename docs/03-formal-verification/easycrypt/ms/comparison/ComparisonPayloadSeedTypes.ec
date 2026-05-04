@@ -6,9 +6,9 @@ require import ComparisonTypes ComparisonPayloadTypes.
   seed_announcement) and joint seed distributions.
   Coupling-facing surface fields stay fixed to the native public comparison slice
   and openings, while the ROM/transcript coin fields are sampled from
-  `duni_scalar` and can flow into payload-only fields downstream; see module
-  comment in ComparisonPayloadSeeds.ec (facade) for the current discharge
-  narrative. *)
+  `duni_scalar`, then exposed through payload-only fields plus auxiliary
+  coin-driven ROM/transcript views downstream; see module comment in
+  ComparisonPayloadSeeds.ec (facade) for the current discharge narrative. *)
 
 (* Real challenge-side law: sample a latent ROM coin while keeping the
   payload-facing challenge fields pinned to the native public surface. *)
@@ -34,6 +34,17 @@ op d_ms3c_real_payload_seed (x : ms_public_input) : ms3c_real_payload_seed distr
 
 op d_ms3c_sim_payload_seed (x : ms_public_input) (s : seed) : ms3c_sim_payload_seed distr =
   d_ms3c_sim_seed_challenge x s `*` d_ms3c_sim_seed_announcement x s.
+
+op ms3c_seed_challenge_coin_driven_rom_row
+  (sc : ms3c_seed_challenge) : (digest * scalar) =
+  (sc.`ms3csc_query_digest, sc.`ms3csc_rom_coin).
+
+op ms3c_seed_announcement_coin_driven_transcript_openings
+  (sa : ms3c_seed_announcement) : ms_comparison_openings =
+  {| mscos_true_opening = (sa.`ms3csa_ann_true, sa.`ms3csa_transcript_coin);
+     mscos_false_openings =
+       map (fun (ann : sch_point) => (ann, sa.`ms3csa_transcript_coin))
+           sa.`ms3csa_ann_false |}.
 
 lemma L_ms3c_real_seed_challenge_on_support_public_surface
   (x : ms_public_input) (sc : ms3c_real_seed_challenge) :
@@ -64,6 +75,18 @@ move=> Hsc.
 rewrite /d_ms3c_real_seed_challenge in Hsc.
 case/supp_dmap: Hsc => rom_coin [_ Hsc].
 by exists rom_coin.
+qed.
+
+lemma L_ms3c_real_seed_challenge_on_support_coin_driven_rom_row
+  (x : ms_public_input) (sc : ms3c_real_seed_challenge) :
+  sc \in d_ms3c_real_seed_challenge x =>
+  ms3c_seed_challenge_coin_driven_rom_row sc =
+    (ms3c_phase1_seed_query_digest x, sc.`ms3csc_rom_coin).
+proof.
+move=> Hsc.
+have Hsurf := L_ms3c_real_seed_challenge_on_support_public_surface x sc Hsc.
+move: Hsurf => [_ [_ [_ [_ [_ [_ [_ Hquery]]]]]]].
+by rewrite /ms3c_seed_challenge_coin_driven_rom_row /= Hquery.
 qed.
 
 lemma L_ms3c_sim_seed_challenge_on_support_public_surface
@@ -97,6 +120,18 @@ case/supp_dmap: Hsc => rom_coin [_ Hsc].
 by exists rom_coin.
 qed.
 
+lemma L_ms3c_sim_seed_challenge_on_support_coin_driven_rom_row
+  (x : ms_public_input) (s : seed) (sc : ms3c_sim_seed_challenge) :
+  sc \in d_ms3c_sim_seed_challenge x s =>
+  ms3c_seed_challenge_coin_driven_rom_row sc =
+    (ms3c_phase1_seed_query_digest x, sc.`ms3csc_rom_coin).
+proof.
+move=> Hsc.
+have Hsurf := L_ms3c_sim_seed_challenge_on_support_public_surface x s sc Hsc.
+move: Hsurf => [_ [_ [_ [_ [_ [_ [_ Hquery]]]]]]].
+by rewrite /ms3c_seed_challenge_coin_driven_rom_row /= Hquery.
+qed.
+
 lemma L_ms3c_real_seed_announcement_on_support_public_surface
   (x : ms_public_input) (sa : ms3c_real_seed_announcement) :
   sa \in d_ms3c_real_seed_announcement x =>
@@ -122,6 +157,22 @@ case/supp_dmap: Hsa => transcript_coin [_ Hsa].
 by exists transcript_coin.
 qed.
 
+lemma L_ms3c_real_seed_announcement_on_support_coin_driven_transcript_openings
+  (x : ms_public_input) (sa : ms3c_real_seed_announcement) :
+  sa \in d_ms3c_real_seed_announcement x =>
+  ms3c_seed_announcement_coin_driven_transcript_openings sa =
+    {| mscos_true_opening =
+         (ms3c_public_true_announcement x, sa.`ms3csa_transcript_coin);
+       mscos_false_openings =
+         map (fun (ann : sch_point) => (ann, sa.`ms3csa_transcript_coin))
+             (ms3c_public_false_announcements x) |}.
+proof.
+move=> Hsa.
+have [Hann_true Hann_false] :=
+  L_ms3c_real_seed_announcement_on_support_public_surface x sa Hsa.
+by rewrite /ms3c_seed_announcement_coin_driven_transcript_openings /= Hann_true Hann_false.
+qed.
+
 lemma L_ms3c_sim_seed_announcement_on_support_public_surface
   (x : ms_public_input) (s : seed) (sa : ms3c_sim_seed_announcement) :
   sa \in d_ms3c_sim_seed_announcement x s =>
@@ -145,6 +196,22 @@ move=> Hsa.
 rewrite /d_ms3c_sim_seed_announcement in Hsa.
 case/supp_dmap: Hsa => transcript_coin [_ Hsa].
 by exists transcript_coin.
+qed.
+
+lemma L_ms3c_sim_seed_announcement_on_support_coin_driven_transcript_openings
+  (x : ms_public_input) (s : seed) (sa : ms3c_sim_seed_announcement) :
+  sa \in d_ms3c_sim_seed_announcement x s =>
+  ms3c_seed_announcement_coin_driven_transcript_openings sa =
+    {| mscos_true_opening =
+         (ms3c_public_true_announcement x, sa.`ms3csa_transcript_coin);
+       mscos_false_openings =
+         map (fun (ann : sch_point) => (ann, sa.`ms3csa_transcript_coin))
+             (ms3c_public_false_announcements x) |}.
+proof.
+move=> Hsa.
+have [Hann_true Hann_false] :=
+  L_ms3c_sim_seed_announcement_on_support_public_surface x s sa Hsa.
+by rewrite /ms3c_seed_announcement_coin_driven_transcript_openings /= Hann_true Hann_false.
 qed.
 
 lemma L_ms3c_real_seed_challenge_lossless (x : ms_public_input) :
