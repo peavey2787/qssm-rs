@@ -241,7 +241,7 @@
     "GameAdvantage": {
       "direct": true,
       "kind": "ec",
-      "digest": "8398c49587a6bf86aabba25d1bbc4669"
+      "digest": "59cfa4a64697b96539e8783c696cafa5"
     },
     "GameLEBridge": {
       "direct": true,
@@ -261,7 +261,7 @@
     "GameMSHopTypes": {
       "direct": false,
       "kind": "ec",
-      "digest": "d11649df55f452d4936462e3681391e4"
+      "digest": "9e590ce5e0510c3f681faed58b13efa5"
     },
     "GameMSHops": {
       "direct": true,
