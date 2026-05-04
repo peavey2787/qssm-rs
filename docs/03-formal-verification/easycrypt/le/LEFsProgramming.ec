@@ -3,6 +3,7 @@ require import AllCore Distr.
 require import Real.
 require import SDist.
 require import LESurface.
+require import LEFsProgrammingSurface.
 
 pred le_fs_query_surface_defined (x : qssm_public_input) (s : seed) =
   le_real_sim_transcript_equiv x s.
@@ -65,7 +66,7 @@ by case: Hcost.
 qed.
 
 (* FS surrogate preserves the Set-B observable transcript shape (same surface as rejection). *)
-axiom A_LE_fs_surrogate_preserves_shape :
+lemma A_LE_fs_surrogate_preserves_shape :
   forall (obs : le_transcript_observable),
     le_commitment_coeffs (le_fs_view_surrogate obs) = le_commitment_coeffs obs /\
     le_t_coeffs (le_fs_view_surrogate obs) = le_t_coeffs obs /\
@@ -73,6 +74,9 @@ axiom A_LE_fs_surrogate_preserves_shape :
     le_challenge_seed_obs (le_fs_view_surrogate obs) = le_challenge_seed_obs obs /\
     le_programmed_query_digest_obs (le_fs_view_surrogate obs) =
       le_programmed_query_digest_obs obs.
+proof.
+exact le_fs_programming_preserves_shape_lower.
+qed.
 
 axiom A_LE_fs_surrogate_sdist_bound :
   forall (x : qssm_public_input) (s : seed) (D : distinguisher),

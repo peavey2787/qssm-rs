@@ -53,28 +53,34 @@ proof.
 by move=> x s; rewrite /d_le_post_fs_programmed_view.
 qed.
 
+lemma le_fs_programming_preserves_shape_lower :
+  forall (obs : le_transcript_observable),
+    le_commitment_coeffs (le_fs_surrogate_transform obs) = le_commitment_coeffs obs /\
+    le_t_coeffs (le_fs_surrogate_transform obs) = le_t_coeffs obs /\
+    le_z_coeffs (le_fs_surrogate_transform obs) = le_z_coeffs obs /\
+    le_challenge_seed_obs (le_fs_surrogate_transform obs) = le_challenge_seed_obs obs /\
+    le_programmed_query_digest_obs (le_fs_surrogate_transform obs) =
+      le_programmed_query_digest_obs obs.
+proof.
+move=> obs.
+rewrite /le_fs_surrogate_transform /le_fs_view_surrogate.
+rewrite /le_commitment_coeffs /le_t_coeffs /le_z_coeffs.
+rewrite /le_challenge_seed_obs /le_programmed_query_digest_obs.
+by [].
+qed.
+
 (* Intended bridge/analysis targets for the lower FS-programming surface.
 
-   The first bridge fact above is definitional. The next lower shape theorem is
-   still blocked here because `le_fs_surrogate_transform` only unfolds to the
-   abstract facade operator `le_fs_view_surrogate`; below `LEFsProgramming.ec`
-   there is not yet any concrete constructor or fieldwise equality theorem for
-   that transform on `le_transcript_observable`.
+   The first bridge fact above is definitional. The lower shape theorem is also
+   now definitional because `le_transcript_observable` carries a hidden
+   FS-programming field and `le_fs_view_surrogate` updates only that hidden
+   component while preserving the five theorem-facing observable fields.
 
    lemma le_fs_query_surface_sound :
      forall (obs : le_transcript_observable),
        lefsqr_challenge_seed (le_fs_query_row_of_observable obs) =
          le_challenge_seed_obs obs /\
        lefsqr_programmed_query_digest (le_fs_query_row_of_observable obs) =
-         le_programmed_query_digest_obs obs.
-
-   lemma le_fs_programming_preserves_shape_lower :
-     forall (obs : le_transcript_observable),
-       le_commitment_coeffs (le_fs_surrogate_transform obs) = le_commitment_coeffs obs /\
-       le_t_coeffs (le_fs_surrogate_transform obs) = le_t_coeffs obs /\
-       le_z_coeffs (le_fs_surrogate_transform obs) = le_z_coeffs obs /\
-       le_challenge_seed_obs (le_fs_surrogate_transform obs) = le_challenge_seed_obs obs /\
-       le_programmed_query_digest_obs (le_fs_surrogate_transform obs) =
          le_programmed_query_digest_obs obs.
 
    lemma A_LE_fs_programming_sampler_sdist_bound :

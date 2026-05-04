@@ -157,7 +157,6 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
   - `A_LE_fs_query_surface_defined`
   - `A_LE_fs_programmable_oracle_available`
   - `A_LE_fs_programming_preserves_transcript_shape`
-  - `A_LE_fs_surrogate_preserves_shape`
   - `A_LE_fs_surrogate_sdist_bound`
 - Critical-path audit, May 2026:
   - `LEViewIndist.ec`, `LEStatisticalDistance.ec`, `LEHVZK.ec`, and `games/GameLEBridge.ec` do not add new axioms; they only package lower obligations.
@@ -171,10 +170,10 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     -> `A_G1_to_G2_le_transition_bound`
     -> theorem-level use of `A4_le_hvzk` in `MainTheorem.ec`.
   - The rejection-definition / acceptance / output-shape bundle and the FS query/oracle/shape bundle feed the hiding predicates used by the same chain, via `A_LE_rejection_sampling_hiding_bound` and `A_LE_fs_programming_bound`.
-  - `A_LE_fs_surrogate_preserves_shape` remains declared debt, but the rejection-side surrogate shape obligation is now discharged as a lemma because the rejection transform is concrete.
+  - The rejection-side and FS-side surrogate shape obligations are now discharged as lemmas; the remaining surrogate debt on the active theorem path is quantitative.
   - Rejection concretization, May 2026: `le_post_rejection_surrogate` in `LESurface.ec` is now the identity on `le_transcript_observable`. This makes `A_LE_rejection_surrogate_preserves_shape` immediate by unfolding and discharges `A_LE_rejection_surrogate_sdist_bound` by zero distance, via `dmap_id` and `sdistdd`.
-  - FS audit, May 2026: do not mirror that cleanup blindly for `le_fs_view_surrogate`. At the current abstraction boundary, `le_transcript_observable` is still an abstract carrier with only accessor ops and no constructor surface in or below `LESurface.ec`, and there is no lower FS execution/sampler layer analogous to `LERejectionSampler.ec`. The only local concrete choice for `le_fs_view_surrogate` would therefore be the identity map, which would collapse `A_LE_fs_surrogate_sdist_bound` to zero by fiat and hide the remaining FS-programming cost instead of proving it from a concrete FS law.
-  - Minimal lower FS surface, May 2026: `le/LEFsProgrammingSurface.ec` now adds the concrete lower names `le_fs_query_row`, `le_fs_programmed_response_carrier`, `d_le_pre_fs_programming_view`, `le_fs_surrogate_transform`, and `d_le_post_fs_programmed_view`. It also records the lower targets `le_fs_query_surface_sound`, `le_fs_programming_preserves_shape_lower`, and `A_LE_fs_programming_sampler_sdist_bound`, while the first bridge fact `le_fs_surrogate_matches_programmed_view` is now proved definitionally. The file imports only `LESurface.ec`, sits below `LEFsProgramming.ec` in `check_easycrypt.sh`, and adds no axioms.
+  - FS concretization, May 2026: `primitives/QssmTypes.ec` now makes `le_transcript_observable` a concrete record with one hidden FS-only field `leto_query_material`. `LESurface.ec` defines the theorem-facing selector ops as projections of that carrier and defines `le_fs_view_surrogate` as a hidden-field update through the abstract op `le_fs_program_query_material`. This makes field preservation honest and definitional without collapsing the transform to identity.
+  - Minimal lower FS surface, May 2026: `le/LEFsProgrammingSurface.ec` now adds the concrete lower names `le_fs_query_row`, `le_fs_programmed_response_carrier`, `d_le_pre_fs_programming_view`, `le_fs_surrogate_transform`, and `d_le_post_fs_programmed_view`. It proves both lower bridge facts `le_fs_surrogate_matches_programmed_view` and `le_fs_programming_preserves_shape_lower`, and `LEFsProgramming.ec` now imports that lower surface to prove `A_LE_fs_surrogate_preserves_shape` as a lemma. No axioms were added.
   - Design refinement, May 2026: `A_LE_rejection_sampler_sdist_bound` remains a
     proved lemma in `le/LERejection.ec`, but it is no longer a repackaging of a
     surrogate-side axiom. It now rests on the concrete identity rejection
@@ -197,7 +196,7 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     the honest way to remove it is a lower FS execution/programming surface or a
     concrete LE observable constructor below `LESurface.ec`, not identity-by-definition
     on the current abstract carrier.
-  - Exact next FS proof target, May 2026: `le_fs_programming_preserves_shape_lower` in `LEFsProgrammingSurface.ec`. It is blocked on one missing lower fact: either a concrete definition of `le_fs_view_surrogate` over a concrete `le_transcript_observable` constructor surface, or an equivalent fieldwise theorem stating that `le_fs_view_surrogate` preserves `le_commitment_coeffs`, `le_t_coeffs`, `le_z_coeffs`, `le_challenge_seed_obs`, and `le_programmed_query_digest_obs` on every observable.
+  - Exact next FS proof target, May 2026: `A_LE_fs_programming_sampler_sdist_bound` in `LEFsProgrammingSurface.ec`. The shape lane is now closed; the remaining FS blocker is quantitative and should be attacked on the lower pre-FS/post-FS programmed view distributions before touching `A_LE_fs_surrogate_sdist_bound`.
 - `games/GameLEBridge.ec` no longer carries a game-layer projection axiom:
   `A_game_pr_LE_projection_semantics` is now a lemma on the split views
   `G1_le_real_projection` / `G2_full_sim`.

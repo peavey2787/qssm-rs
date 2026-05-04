@@ -29,6 +29,11 @@ type ms_comparison_slice = {
 type le_public_input.
 type qssm_public_input.
 
+(* Query material *)
+type ms_bitness_query.
+type ms_comparison_query.
+type le_query_material.
+
 (* Transcript observables *)
 type ms_transcript_observable = {
 	msv2_statement_digest : digest;
@@ -38,13 +43,15 @@ type ms_transcript_observable = {
 	msv2_comparison_openings : ms_comparison_openings;
 	msv2_transcript_digest : digest;
 }.
-type le_transcript_observable.
+type le_transcript_observable = {
+	leto_commitment_coeffs : coeff_vector;
+	leto_t_coeffs : coeff_vector;
+	leto_z_coeffs : coeff_vector;
+	leto_challenge_seed_obs : digest;
+	leto_programmed_query_digest_obs : digest;
+	leto_query_material : le_query_material;
+}.
 type qssm_transcript_observable.
-
-(* Query material *)
-type ms_bitness_query.
-type ms_comparison_query.
-type le_query_material.
 
 (* Distinguishers / game views *)
 type distinguisher.

@@ -266,7 +266,12 @@
     "LEFsProgramming": {
       "direct": false,
       "kind": "ec",
-      "digest": "30728e047890d40ed9a7a3d3ec53ca3d"
+      "digest": "6183812d099551b74bd6511380f47b33"
+    },
+    "LEFsProgrammingSurface": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "f2f716b765ebd10f0bf4e60439934eb7"
     },
     "LEHVZK": {
       "direct": false,
@@ -301,7 +306,7 @@
     "LESurface": {
       "direct": true,
       "kind": "ec",
-      "digest": "4ae6f4f6e8afb58055cd2e0e8cdbdea2"
+      "digest": "e6ceff4f56906b11300756d23de4a0f2"
     },
     "LEViewIndist": {
       "direct": false,
@@ -361,7 +366,7 @@
     "QssmTypes": {
       "direct": true,
       "kind": "ec",
-      "digest": "d1530966979543a963ade1c183490b97"
+      "digest": "08b8a071f12aa22dde9423b516b3605d"
     },
     "Real": {
       "direct": false,
