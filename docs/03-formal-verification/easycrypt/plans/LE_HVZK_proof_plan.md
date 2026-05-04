@@ -172,6 +172,7 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
   - The rejection-definition / acceptance / output-shape bundle and the FS query/oracle/shape bundle feed the hiding predicates used by the same chain, via `A_LE_rejection_sampling_hiding_bound` and `A_LE_fs_programming_bound`.
   - `A_LE_fs_surrogate_preserves_shape` remains declared debt, but the rejection-side surrogate shape obligation is now discharged as a lemma because the rejection transform is concrete.
   - Rejection concretization, May 2026: `le_post_rejection_surrogate` in `LESurface.ec` is now the identity on `le_transcript_observable`. This makes `A_LE_rejection_surrogate_preserves_shape` immediate by unfolding and discharges `A_LE_rejection_surrogate_sdist_bound` by zero distance, via `dmap_id` and `sdistdd`.
+  - FS audit, May 2026: do not mirror that cleanup blindly for `le_fs_view_surrogate`. At the current abstraction boundary, `le_transcript_observable` is still an abstract carrier with only accessor ops and no constructor surface in or below `LESurface.ec`, and there is no lower FS execution/sampler layer analogous to `LERejectionSampler.ec`. The only local concrete choice for `le_fs_view_surrogate` would therefore be the identity map, which would collapse `A_LE_fs_surrogate_sdist_bound` to zero by fiat and hide the remaining FS-programming cost instead of proving it from a concrete FS law.
   - Design refinement, May 2026: `A_LE_rejection_sampler_sdist_bound` remains a
     proved lemma in `le/LERejection.ec`, but it is no longer a repackaging of a
     surrogate-side axiom. It now rests on the concrete identity rejection
@@ -190,7 +191,10 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     abstract below that file, and the only existing LE-output interface lives in
     `sim/Simulator.ec` above `LESurface.ec`, the next honest real-side step is a
     lower LE real-execution surface below the facade. On the quantitative path,
-    the remaining LE surrogate axiom is now `A_LE_fs_surrogate_sdist_bound`.
+    the remaining LE surrogate axiom is now `A_LE_fs_surrogate_sdist_bound`, and
+    the honest way to remove it is a lower FS execution/programming surface or a
+    concrete LE observable constructor below `LESurface.ec`, not identity-by-definition
+    on the current abstract carrier.
 - `games/GameLEBridge.ec` no longer carries a game-layer projection axiom:
   `A_game_pr_LE_projection_semantics` is now a lemma on the split views
   `G1_le_real_projection` / `G2_full_sim`.
