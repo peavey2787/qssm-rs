@@ -209,9 +209,8 @@ op game_pr_ms_core
 
 (* Concrete lower probability interface for MS views. The stored `obs` / `lep`
   fields remain part of `game_view`, but the MS probability projection is now
-  computed from the stage-indexed lower distribution surface. MS1 is proved on
-  that surface below; MS2 still remains axiomatized here until its lower
-  transition theorem is available. *)
+  computed from the stage-indexed lower distribution surface. MS1 and MS2 are
+  both proved on that surface below. *)
 
 (* Lower MS1/MS2 bridge surface: all public fields remain fixed and only the
    abstract MS stage changes inside `game_pr_ms_core`. *)

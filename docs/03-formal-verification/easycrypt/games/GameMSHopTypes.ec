@@ -236,9 +236,10 @@ apply (A_MS1_hash_binding_step_advantage_bound
 exact Hnonneg.
 qed.
 
-(* MS2 ROM-programming theorem surface: the remaining lower assumption still
-  lives in `GameAdvantage.ec` on `game_pr_ms_core`; this concrete GV_ms pair
-  is a lemma obtained by unfolding `Adv` and `game_pr` down to that boundary. *)
+(* MS2 ROM-programming theorem surface: the lower bridge in
+  `GameAdvantage.ec` is now a proved lemma on `game_pr_ms_core`; this concrete
+  GV_ms pair theorem is obtained by unfolding `Adv` and `game_pr` down to that
+  boundary. *)
 lemma A_MS2_rom_programming_concrete_pair_advantage_bound :
   forall (x : qssm_public_input) (s : seed) (xms : ms_public_input)
          (obs : ms_v2_transcript_observable)
