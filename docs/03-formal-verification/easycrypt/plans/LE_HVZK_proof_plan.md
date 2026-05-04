@@ -198,16 +198,16 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     real-view distribution shell without creating an import cycle.
   - Remaining blocker after real-view concretization, May 2026: the sampler
     shell is no longer the obstruction. The active lower real-side debt is now
-    the single abstract constructor
-    `le_real_execution_primitive_material_of : qssm_public_input -> seed ->
-    le_real_execution_primitive_material` in `LERealExecution.ec`. The lower
+    the smaller abstract constructor
+    `le_real_execution_residual_material_of : qssm_public_input -> seed ->
+    le_real_execution_residual_material` in `LERealExecution.ec`. The lower
     primitive-boundary carrier `le_real_execution_primitive_material`, the
     lower public-spine carrier `le_real_execution_public_spine`, the lower
     execution carrier `le_real_execution_spine`, and the theorem-facing lower
     record `le_real_execution_record` are all concrete record shapes, while
-    `le_real_execution_spine_of` and `le_real_execution_record_of` are now
-    definitional constructors above that primitive boundary. The six
-    theorem-facing hooks
+    `le_real_execution_primitive_material_of`, `le_real_execution_spine_of`,
+    and `le_real_execution_record_of` are now definitional above that residual
+    boundary. The six theorem-facing hooks
     (`le_real_execution_commitment_coeffs`,
     `le_real_execution_t_coeffs`, `le_real_execution_z_coeffs`,
     `le_real_execution_challenge_seed_obs`,
@@ -215,36 +215,44 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     `le_real_execution_query_material`) are now only projections from
     `le_real_execution_record_of`, and `LERealExecution.ec` proves the six
     corresponding field-exposure lemmas for `le_real_execution_observable`.
-    The remaining concrete groups are unchanged: coefficient construction
-    (`commitment`, `t`, `z`), challenge-seed construction,
-    programmed-query-digest construction, and hidden query material. Because
+    The remaining concrete groups are now split honestly: the digest-related
+    groups are concrete inside `le_real_execution_primitive_material_of`, while
+    coefficient construction (`commitment`, `t`, `z`) and hidden query material
+    still sit in `le_real_execution_residual_material_of`. Because
     there is still no lower `le_public_input` extractor outside
     `sim/Simulator.ec`, the next concrete boundary remains that unified lower
-    primitive-material record rather than a fresh extractor layer below the
+    residual-material record rather than a fresh extractor layer below the
     facade. On
     the quantitative path, the remaining theorem-facing surrogate axiom is
     gone, and the current lower FS carrier is fully closed. Any future
     nontrivial FS-programming semantics now requires enriching
     `le_query_material` or the lower real-execution surface rather than adding
     more FS-surrogate theorems above this layer.
-  - Primitive-boundary audit, May 2026: none of the fields under
-    `le_real_execution_primitive_material_of` is fully concrete yet. The coefficient trio is
-    still blocked because no lower op currently maps `qssm_public_input` to any
-    `coeff_vector` surface. The hidden field is still blocked because
+  - Primitive-boundary audit, May 2026: before the latest incremental step,
+    none of the fields under `le_real_execution_primitive_material_of` was
+    fully concrete. After the digest-focused refinement, the coefficient trio
+    is still blocked because no lower op currently maps `qssm_public_input` to
+    any `coeff_vector` surface, and the hidden field is still blocked because
     `le_query_material` remains abstract. The challenge-seed and
-    programmed-query-digest fields have partial primitive support only:
-    `primitives/FS.ec` already exports `le_challenge_seed` and
-    `le_programmed_query_digest`, and `primitives/Domains.ec` already exports
-    the LE labels; `LERealExecution.ec` now uses those combinators directly, but
-    the lower primitive boundary still lacks concrete digest/flag/preimage
-    inputs needed to instantiate those combinators. The smallest next patch is
-    therefore to refine that centralized primitive-boundary record, not to
-    split it back into per-field hooks.
+    programmed-query-digest fields now have concrete material constructors in
+    `LERealExecution.ec`, built from `hash_domain` plus the installed LE labels,
+    while the final visible digest outputs still use `le_challenge_seed` and
+    `le_programmed_query_digest`. The smallest next patch is therefore to
+    refine the remaining centralized residual-material record, not to split the
+    primitive boundary back into per-field hooks.
+  - Partial primitive-boundary concretization, May 2026: the digest-related
+    fields under `le_real_execution_primitive_material_of` are now concrete.
+    `LERealExecution.ec` defines the challenge-seed material and
+    programmed-query-digest material directly, using `hash_domain` on the
+    installed LE labels plus the existing `le_challenge_seed` combinator where
+    helpful. The remaining abstract fields are now exactly the coefficient trio
+    and hidden `le_query_material`, centralized in
+    `le_real_execution_residual_material_of`.
   - Exact next LE proof target, May 2026: refine
-    `le_real_execution_primitive_material_of` in `le/LERealExecution.ec` into a
-    concrete lower primitive-boundary construction, then prove any remaining
-    direct unfolding lemmas from that material into `le_real_execution_spine_of`
-    if useful for later real-side proofs. If the separate `le_public_input`
+    `le_real_execution_residual_material_of` in `le/LERealExecution.ec` into a
+    concrete lower residual-material construction for the coefficient trio and
+    hidden query material, then prove any remaining direct unfolding lemmas if
+    useful for later real-side proofs. If the separate `le_public_input`
     boundary is still desired, factor that extractor below `LESurface.ec` in
     the same phase rather than depending on the current abstract
     `extract_le_public` name in `sim/Simulator.ec`.

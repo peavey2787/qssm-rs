@@ -1,9 +1,9 @@
 require import QssmTypes Domains FS.
-require import AllCore Distr.
+require import AllCore List Distr.
 
 (* Lower LE real-execution observable surface. The output carrier is concrete,
-   while a single lower execution spine constructor remains abstract until the
-   LE execution semantics are refined further. *)
+  while a smaller residual material constructor remains abstract until the LE
+  execution semantics are refined further. *)
 type le_real_execution_challenge_seed_material = {
   lerecsm_branch : bool;
   lerecsm_digest_1 : digest;
@@ -30,6 +30,13 @@ type le_real_execution_primitive_material = {
   lerem_query_material : le_query_material;
 }.
 
+type le_real_execution_residual_material = {
+  lererm_commitment_coeffs : coeff_vector;
+  lererm_t_coeffs : coeff_vector;
+  lererm_z_coeffs : coeff_vector;
+  lererm_query_material : le_query_material;
+}.
+
 type le_real_execution_public_spine = {
   lereps_commitment_coeffs : coeff_vector;
   lereps_t_coeffs : coeff_vector;
@@ -52,20 +59,67 @@ type le_real_execution_record = {
   lerec_query_material : le_query_material;
 }.
 
-op le_real_execution_primitive_material_of
-  (x : qssm_public_input) (s : seed) : le_real_execution_primitive_material.
+op le_real_execution_residual_material_of
+  (x : qssm_public_input) (s : seed) : le_real_execution_residual_material.
 
-op le_real_execution_challenge_seed_obs_of_material
-  (s : seed) (mat : le_real_execution_primitive_material) : digest =
+op le_real_execution_label_digest (label : domain_label) : digest =
+  hash_domain label [].
+
+op le_real_execution_challenge_seed_material_of
+  (x : qssm_public_input) (s : seed) : le_real_execution_challenge_seed_material =
+  {|
+    lerecsm_branch = false;
+    lerecsm_digest_1 = le_real_execution_label_digest DOMAIN_LE_FS;
+    lerecsm_digest_2 = le_real_execution_label_digest DOMAIN_LE_CHALLENGE_POLY;
+    lerecsm_digest_3 = le_real_execution_label_digest LABEL_LE_GLOBAL_SIM_CHALLENGE_SEED;
+    lerecsm_digest_4 = le_real_execution_label_digest LABEL_CROSS_PROTOCOL_DIGEST_V1;
+  |}.
+
+op le_real_execution_challenge_seed_obs_of_challenge_material
+  (s : seed) (mat : le_real_execution_challenge_seed_material) : digest =
   le_challenge_seed
     DOMAIN_LE_FS
     DOMAIN_LE_CHALLENGE_POLY
-    mat.`lerem_challenge_seed_material.`lerecsm_branch
+    mat.`lerecsm_branch
     s
-    mat.`lerem_challenge_seed_material.`lerecsm_digest_1
-    mat.`lerem_challenge_seed_material.`lerecsm_digest_2
-    mat.`lerem_challenge_seed_material.`lerecsm_digest_3
-    mat.`lerem_challenge_seed_material.`lerecsm_digest_4.
+    mat.`lerecsm_digest_1
+    mat.`lerecsm_digest_2
+    mat.`lerecsm_digest_3
+    mat.`lerecsm_digest_4.
+
+op le_real_execution_programmed_query_digest_material_of
+  (x : qssm_public_input) (s : seed) : le_real_execution_programmed_query_digest_material =
+  {|
+    lerepqm_digest_1 =
+      le_real_execution_challenge_seed_obs_of_challenge_material s
+        (le_real_execution_challenge_seed_material_of x s);
+    lerepqm_digest_2 = le_real_execution_label_digest LABEL_LE_PROGRAMMED_QUERY_DIGEST;
+    lerepqm_digest_3 = le_real_execution_label_digest LABEL_FS_V2;
+    lerepqm_digest_4 = le_real_execution_label_digest LABEL_DST_LE_COMMIT;
+    lerepqm_digest_5 = le_real_execution_label_digest DOMAIN_ZK_SIM;
+  |}.
+
+op le_real_execution_primitive_material_of
+  (x : qssm_public_input) (s : seed) : le_real_execution_primitive_material =
+  {|
+    lerem_commitment_coeffs =
+      (le_real_execution_residual_material_of x s).`lererm_commitment_coeffs;
+    lerem_t_coeffs =
+      (le_real_execution_residual_material_of x s).`lererm_t_coeffs;
+    lerem_z_coeffs =
+      (le_real_execution_residual_material_of x s).`lererm_z_coeffs;
+    lerem_challenge_seed_material =
+      le_real_execution_challenge_seed_material_of x s;
+    lerem_programmed_query_digest_material =
+      le_real_execution_programmed_query_digest_material_of x s;
+    lerem_query_material =
+      (le_real_execution_residual_material_of x s).`lererm_query_material;
+  |}.
+
+op le_real_execution_challenge_seed_obs_of_material
+  (s : seed) (mat : le_real_execution_primitive_material) : digest =
+  le_real_execution_challenge_seed_obs_of_challenge_material s
+    mat.`lerem_challenge_seed_material.
 
 op le_real_execution_programmed_query_digest_obs_of_material
   (mat : le_real_execution_primitive_material) : digest =
@@ -167,6 +221,22 @@ op le_real_execution_observable
 op d_le_real_execution_view
   (x : qssm_public_input) (s : seed) : le_transcript_observable distr =
   dunit (le_real_execution_observable x s).
+
+lemma le_real_execution_primitive_material_exposes_challenge_seed_material :
+  forall (x : qssm_public_input) (s : seed),
+    (le_real_execution_primitive_material_of x s).`lerem_challenge_seed_material =
+      le_real_execution_challenge_seed_material_of x s.
+proof.
+by move=> x s; rewrite /le_real_execution_primitive_material_of.
+qed.
+
+lemma le_real_execution_primitive_material_exposes_programmed_query_digest_material :
+  forall (x : qssm_public_input) (s : seed),
+    (le_real_execution_primitive_material_of x s).`lerem_programmed_query_digest_material =
+      le_real_execution_programmed_query_digest_material_of x s.
+proof.
+by move=> x s; rewrite /le_real_execution_primitive_material_of.
+qed.
 
 lemma le_real_execution_observable_exposes_commitment_coeffs :
   forall (x : qssm_public_input) (s : seed),
