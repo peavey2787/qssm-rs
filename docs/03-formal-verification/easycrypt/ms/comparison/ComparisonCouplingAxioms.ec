@@ -3,13 +3,72 @@ require import Algebra QssmTypes FS SchnorrBranch TrueClause BitnessOne.
 require import ComparisonTypes ComparisonDigests ComparisonPayload ComparisonCouplingTypes.
 
 (* Field-level hook bridges: real vs sim payload laws are independent `dmap`
-   pushforwards of seeds (`ComparisonPayloadSeeds.ec` facade). Under Phase-1, all
-   public-field fragments (including query digest / `mscp_query_digest`) follow
-   from shared `from_seed` + `L_ms3c_cross_support_real_sim_payload_equal`
-   (`pr = ps` on cross-support). Reintroduce fragment axioms if real/sim
-   `from_seed` diverge. Digest *surface* wiring vs ROM is
+   pushforwards of seeds (`ComparisonPayloadSeeds.ec` facade). The hook proofs
+   below no longer rely on cross-support payload equality: they unpack each side's
+   support witness and use the existing field-by-field `from_seed` equalities for
+   the compared public/share surface only. This keeps sampled coins free to become
+   payload-visible without forcing full real/sim payload collapse. Digest *surface*
+   wiring vs ROM is
    `A_ms3c_clause_surface_query_digest_constructed` (proved lemma) in
    `ComparisonDigests.ec`. *)
+
+lemma L_ms3c_real_payload_on_support_phase1_fields
+  (x : ms_public_input) (pr : ms3c_real_comparison_payload) :
+  ms3c_real_payload_on_support x pr =>
+  pr.`mscp_true_clause_ix =
+    (ms3c_phase1_payload_from_public_input x).`mscp_true_clause_ix /\
+  pr.`mscp_false_clause_ixs =
+    (ms3c_phase1_payload_from_public_input x).`mscp_false_clause_ixs /\
+  pr.`mscp_ann_true =
+    (ms3c_phase1_payload_from_public_input x).`mscp_ann_true /\
+  pr.`mscp_ann_false =
+    (ms3c_phase1_payload_from_public_input x).`mscp_ann_false /\
+  pr.`mscp_share_true =
+    (ms3c_phase1_payload_from_public_input x).`mscp_share_true /\
+  pr.`mscp_share_false =
+    (ms3c_phase1_payload_from_public_input x).`mscp_share_false /\
+  pr.`mscp_global_challenge =
+    (ms3c_phase1_payload_from_public_input x).`mscp_global_challenge /\
+  pr.`mscp_query_digest =
+    (ms3c_phase1_payload_from_public_input x).`mscp_query_digest /\
+  pr.`mscp_programmed_challenge =
+    (ms3c_phase1_payload_from_public_input x).`mscp_programmed_challenge.
+proof.
+move=> Hpr.
+rewrite /ms3c_real_payload_on_support /d_ms3c_real_comparison_payload in Hpr.
+case/supp_dmap: Hpr => sr [Hsr Hpr].
+rewrite Hpr.
+exact (L_ms3c_real_payload_from_seed_support_phase1_fields x sr Hsr).
+qed.
+
+lemma L_ms3c_sim_payload_on_support_phase1_fields
+  (x : ms_public_input) (s : seed) (ps : ms3c_sim_comparison_payload) :
+  ms3c_sim_payload_on_support x s ps =>
+  ps.`mscp_true_clause_ix =
+    (ms3c_phase1_payload_from_public_input x).`mscp_true_clause_ix /\
+  ps.`mscp_false_clause_ixs =
+    (ms3c_phase1_payload_from_public_input x).`mscp_false_clause_ixs /\
+  ps.`mscp_ann_true =
+    (ms3c_phase1_payload_from_public_input x).`mscp_ann_true /\
+  ps.`mscp_ann_false =
+    (ms3c_phase1_payload_from_public_input x).`mscp_ann_false /\
+  ps.`mscp_share_true =
+    (ms3c_phase1_payload_from_public_input x).`mscp_share_true /\
+  ps.`mscp_share_false =
+    (ms3c_phase1_payload_from_public_input x).`mscp_share_false /\
+  ps.`mscp_global_challenge =
+    (ms3c_phase1_payload_from_public_input x).`mscp_global_challenge /\
+  ps.`mscp_query_digest =
+    (ms3c_phase1_payload_from_public_input x).`mscp_query_digest /\
+  ps.`mscp_programmed_challenge =
+    (ms3c_phase1_payload_from_public_input x).`mscp_programmed_challenge.
+proof.
+move=> Hps.
+rewrite /ms3c_sim_payload_on_support /d_ms3c_sim_comparison_payload in Hps.
+case/supp_dmap: Hps => ss [Hss Hps].
+rewrite Hps.
+exact (L_ms3c_sim_payload_from_seed_support_phase1_fields x s ss Hss).
+qed.
 
 lemma A_ms3c_payload_index_fields_match :
   forall (x : ms_public_input) (s : seed),
@@ -22,8 +81,12 @@ lemma A_ms3c_payload_index_fields_match :
 proof.
 move=> x s _ _ _ _ _.
 rewrite /ms3c_ax_payload_index_fields_match => pr ps Hpr Hps.
-have Heq := L_ms3c_cross_support_real_sim_payload_equal x s pr ps Hpr Hps.
-by rewrite /ms3c_payload_pair_index_fields_match Heq.
+have [Hr_true [Hr_false _]] := L_ms3c_real_payload_on_support_phase1_fields x pr Hpr.
+have [Hs_true [Hs_false _]] := L_ms3c_sim_payload_on_support_phase1_fields x s ps Hps.
+rewrite /ms3c_payload_pair_index_fields_match.
+split.
+  by rewrite Hr_true Hs_true.
+by rewrite Hr_false Hs_false.
 qed.
 
 lemma A_ms3c_payload_ann_fields_match :
@@ -37,8 +100,14 @@ lemma A_ms3c_payload_ann_fields_match :
 proof.
 move=> x s _ _ _ _ _.
 rewrite /ms3c_ax_payload_ann_fields_match => pr ps Hpr Hps.
-have Heq := L_ms3c_cross_support_real_sim_payload_equal x s pr ps Hpr Hps.
-by rewrite /ms3c_payload_pair_ann_fields_match Heq.
+have [_ [_ [Hr_ann_true [Hr_ann_false _]]]] :=
+  L_ms3c_real_payload_on_support_phase1_fields x pr Hpr.
+have [_ [_ [Hs_ann_true [Hs_ann_false _]]]] :=
+  L_ms3c_sim_payload_on_support_phase1_fields x s ps Hps.
+rewrite /ms3c_payload_pair_ann_fields_match.
+split.
+  by rewrite Hr_ann_true Hs_ann_true.
+by rewrite Hr_ann_false Hs_ann_false.
 qed.
 
 lemma A_ms3c_payload_stmt_fields_match :
@@ -52,8 +121,11 @@ lemma A_ms3c_payload_stmt_fields_match :
 proof.
 move=> x s _ _ _ _ _.
 rewrite /ms3c_ax_payload_stmt_fields_match => pr ps Hpr Hps.
-have Heq := L_ms3c_cross_support_real_sim_payload_equal x s pr ps Hpr Hps.
-by rewrite /ms3c_payload_pair_stmt_fields_match Heq.
+have [_ [_ [_ [_ [_ [_ [_ [Hr_query _]]]]]]]] :=
+  L_ms3c_real_payload_on_support_phase1_fields x pr Hpr.
+have [_ [_ [_ [_ [_ [_ [_ [Hs_query _]]]]]]]] :=
+  L_ms3c_sim_payload_on_support_phase1_fields x s ps Hps.
+by rewrite /ms3c_payload_pair_stmt_fields_match Hr_query Hs_query.
 qed.
 
 lemma A_ms3c_payload_result_fields_match :
@@ -67,8 +139,14 @@ lemma A_ms3c_payload_result_fields_match :
 proof.
 move=> x s _ _ _ _ _.
 rewrite /ms3c_ax_payload_result_fields_match => pr ps Hpr Hps.
-have Heq := L_ms3c_cross_support_real_sim_payload_equal x s pr ps Hpr Hps.
-by rewrite /ms3c_payload_pair_result_fields_match Heq.
+have [_ [_ [_ [_ [_ [_ [Hr_global [_ Hr_prog]]]]]]]] :=
+  L_ms3c_real_payload_on_support_phase1_fields x pr Hpr.
+have [_ [_ [_ [_ [_ [_ [Hs_global [_ Hs_prog]]]]]]]] :=
+  L_ms3c_sim_payload_on_support_phase1_fields x s ps Hps.
+rewrite /ms3c_payload_pair_result_fields_match.
+split.
+  by rewrite Hr_global Hs_global.
+by rewrite Hr_prog Hs_prog.
 qed.
 
 lemma A_ms3c_payload_public_fields_match :
@@ -99,8 +177,11 @@ lemma A_ms3c_payload_true_challenge_share_match :
 proof.
 move=> x s _ _ _ _ _.
 rewrite /ms3c_ax_payload_true_challenge_share_match => pr ps Hpr Hps.
-have Heq := L_ms3c_cross_support_real_sim_payload_equal x s pr ps Hpr Hps.
-by rewrite /ms3c_payload_pair_true_challenge_share_match Heq.
+have [_ [_ [_ [_ [Hr_share_true _]]]]] :=
+  L_ms3c_real_payload_on_support_phase1_fields x pr Hpr.
+have [_ [_ [_ [_ [Hs_share_true _]]]]] :=
+  L_ms3c_sim_payload_on_support_phase1_fields x s ps Hps.
+by rewrite /ms3c_payload_pair_true_challenge_share_match Hr_share_true Hs_share_true.
 qed.
 
 lemma A_ms3c_payload_false_challenge_shares_match :
@@ -114,8 +195,11 @@ lemma A_ms3c_payload_false_challenge_shares_match :
 proof.
 move=> x s _ _ _ _ _.
 rewrite /ms3c_ax_payload_false_challenge_shares_match => pr ps Hpr Hps.
-have Heq := L_ms3c_cross_support_real_sim_payload_equal x s pr ps Hpr Hps.
-by rewrite /ms3c_payload_pair_false_challenge_shares_match Heq.
+have [_ [_ [_ [_ [_ [Hr_share_false _]]]]]] :=
+  L_ms3c_real_payload_on_support_phase1_fields x pr Hpr.
+have [_ [_ [_ [_ [_ [Hs_share_false _]]]]]] :=
+  L_ms3c_sim_payload_on_support_phase1_fields x s ps Hps.
+by rewrite /ms3c_payload_pair_false_challenge_shares_match Hr_share_false Hs_share_false.
 qed.
 
 lemma A_ms3c_payload_challenge_share_lengths_match :
@@ -129,8 +213,11 @@ lemma A_ms3c_payload_challenge_share_lengths_match :
 proof.
 move=> x s _ _ _ _ _.
 rewrite /ms3c_ax_payload_challenge_share_lengths_match => pr ps Hpr Hps.
-have Heq := L_ms3c_cross_support_real_sim_payload_equal x s pr ps Hpr Hps.
-by rewrite /ms3c_payload_pair_challenge_share_lengths_match Heq.
+have [_ [_ [_ [_ [_ [Hr_share_false _]]]]]] :=
+  L_ms3c_real_payload_on_support_phase1_fields x pr Hpr.
+have [_ [_ [_ [_ [_ [Hs_share_false _]]]]]] :=
+  L_ms3c_sim_payload_on_support_phase1_fields x s ps Hps.
+by rewrite /ms3c_payload_pair_challenge_share_lengths_match Hr_share_false Hs_share_false.
 qed.
 
 lemma A_ms3c_payload_challenge_shares_match :

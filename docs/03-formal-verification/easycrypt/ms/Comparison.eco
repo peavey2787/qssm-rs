@@ -56,7 +56,7 @@
     "ComparisonCouplingAxioms": {
       "direct": false,
       "kind": "ec",
-      "digest": "348a7ff3a707d049b0feb2191b1d66ec"
+      "digest": "dbe7e00e21f7da6ba680908333af3435"
     },
     "ComparisonCouplingMarginals": {
       "direct": false,
