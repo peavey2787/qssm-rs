@@ -1,4 +1,4 @@
-require import AllCore.
+require import AllCore List.
 
 (* Core abstract data *)
 type digest.
@@ -11,7 +11,13 @@ type le_public_input.
 type qssm_public_input.
 
 (* Transcript observables *)
-type ms_transcript_observable.
+type ms_transcript_observable = {
+	msv2_statement_digest : digest;
+	msv2_result_bit : bool;
+	msv2_bitness_global_challenges : digest list;
+	msv2_comparison_global_challenge : digest;
+	msv2_transcript_digest : digest;
+}.
 type le_transcript_observable.
 type qssm_transcript_observable.
 

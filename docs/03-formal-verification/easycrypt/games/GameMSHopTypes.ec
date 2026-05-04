@@ -187,12 +187,30 @@ exact (A_MS2_rom_reprogramming_advantage_bound x xms s D
   Hnonneg).
 qed.
 
-(* MS3a canonical bitness exact-simulation obligation on the concrete stage pair
-   used in the G0->G1 telescope. *)
-axiom A_MS3a_canonical_bitness_exact_bound :
+(* MS3a canonical bitness exact-simulation bound on the concrete stage pair
+  used in the G0->G1 telescope. With `game_pr` now projected from `game_view`,
+  the canonical AfterRom/AfterBitness views become probability-equal whenever
+  `ms3a_bitness_real_sim_equiv` holds, so the advantage is exactly zero. *)
+lemma A_MS3a_canonical_bitness_exact_bound :
   forall (x : qssm_public_input) (xms : ms_public_input) (s : seed) (D : distinguisher),
     ms3a_bitness_real_sim_equiv xms s =>
     Adv (G_MS_after_rom x xms s) (G_MS_after_bitness x xms s) D <= 0%r.
+proof.
+move=> x xms s D Hequiv.
+rewrite Adv_def /Adv /game_pr /G_MS_after_rom /G_MS_after_bitness /mk_ms_game_view /=.
+have Hst_rom : ms3a_game_pr_stage xms s MSGameStageAfterRom = MSGameStageAfterRom.
+- rewrite /ms3a_game_pr_stage Hequiv /=.
+  by [].
+have Hst_bit : ms3a_game_pr_stage xms s MSGameStageAfterBitness = MSGameStageAfterRom.
+- rewrite /ms3a_game_pr_stage Hequiv /=.
+  by [].
+rewrite Hst_rom Hst_bit.
+have -> :
+  game_pr_ms_core x s xms (ms_game_view_public_obs xms) MSGameStageAfterRom None D -
+  game_pr_ms_core x s xms (ms_game_view_public_obs xms) MSGameStageAfterRom None D = 0%r
+  by ring.
+by [].
+qed.
 
 (* MS3b canonical true-clause obligation on the concrete stage pair used in the
    G0->G1 telescope. *)

@@ -67,8 +67,10 @@ pred ms2_rom_programming_step (src dst : game_view) (xms : ms_public_input) =
     r2.`msgv_stage = MSGameStageAfterRom.
 
 (* MS3a bitness exact-simulation hop: AfterRom -> AfterBitness with frozen `GV_ms` fields;
-   first conjunct is `ms3a_bitness_real_sim_equiv` (source/observable layer, `SourceTheorem`).
-   Game-layer zero advantage: `A_MS3a_canonical_bitness_exact_bound` in `games/Games.ec`. *)
+  first conjunct is `ms3a_bitness_real_sim_equiv` (source/observable layer, `SourceTheorem`).
+  The remaining game-layer gap is `A_MS3a_canonical_bitness_exact_bound` in
+  `games/Games.ec`: `game_pr` / `Adv` still need an explicit bridge from this
+  canonical exact-step situation. *)
 pred ms3a_bitness_exact_step (src dst : game_view) (xms : ms_public_input) (s : seed) =
   ms3a_bitness_real_sim_equiv xms s /\
   exists (r1 r2 : ms_game_view_record),

@@ -1,7 +1,7 @@
 {
   "version": 3,
   "echash": "n/a",
-  "root": { "kind": "ec", "digest": "f9f12f3848552d05c4ea3bc28ae27024" },
+  "root": { "kind": "ec", "digest": "d96eabf5ac6f699b0ab0606e07331d91" },
   "depends": {
     "AlgTactic": {
       "direct": false,
@@ -74,7 +74,7 @@
       "digest": "97f21c11171f5d46d4b4289b18fa9c04"
     },
     "Domains": {
-      "direct": false,
+      "direct": true,
       "kind": "ec",
       "digest": "28f2ff0e8b0fc8bf5d0e17fd23cabae5"
     },
@@ -136,7 +136,7 @@
     "QssmTypes": {
       "direct": true,
       "kind": "ec",
-      "digest": "eab707740558cbb9a122450d870e334d"
+      "digest": "c60daec51cbe6ac00af523d8fb35d884"
     },
     "Real": {
       "direct": false,

@@ -136,7 +136,7 @@
     "QssmTypes": {
       "direct": false,
       "kind": "ec",
-      "digest": "eab707740558cbb9a122450d870e334d"
+      "digest": "c60daec51cbe6ac00af523d8fb35d884"
     },
     "Real": {
       "direct": false,
@@ -211,7 +211,7 @@
     "TranscriptObservable": {
       "direct": false,
       "kind": "ec",
-      "digest": "f9f12f3848552d05c4ea3bc28ae27024"
+      "digest": "d96eabf5ac6f699b0ab0606e07331d91"
     },
     "TrueClauseMSB": {
       "direct": true,

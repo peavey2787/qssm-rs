@@ -1,22 +1,24 @@
 require import AllCore List.
-require import QssmTypes FS BitnessOne BitnessVector.
+require import Domains QssmTypes FS BitnessOne BitnessVector.
 
-(* MS v2 transcript observable (canonical record) aligned to execution-spec fields;
-   bridges bitness vector layer to digest / transcript_digest story.
-   Abstract `ms_transcript_observable` accessors live in `ms/SourceModel.ec`
-   (observable frame); structured MS-3a source material is under `ms/source/`;
-   this file supplies the concrete v2 record and relations used on the path to
-   `ms3a_bitness_real_sim_equiv` / MS-3a. *)
+(* MS v2 transcript observable (canonical record) aligned to execution-spec fields.
+  The base observable carrier `ms_transcript_observable` now uses this exact
+  field layout, so the v2 surface is just a stable alias used throughout the
+  MS-3a source/game chain. *)
 
-type ms_v2_transcript_observable = {
-  msv2_statement_digest : digest;
-  msv2_result_bit : bool;
-  msv2_bitness_global_challenges : digest list;
-  msv2_comparison_global_challenge : digest;
-  msv2_transcript_digest : digest;
-}.
+type ms_v2_transcript_observable = ms_transcript_observable.
 
-op ms_transcript_digest_public_fields (o : ms_v2_transcript_observable) : digest.
+(* Result-bit marker used when hashing the public transcript surface. *)
+op ms_result_bit_digest (b : bool) : digest =
+  if b then hash_domain DOMAIN_SEAM_MS_V2_BINDING []
+  else hash_domain DOMAIN_SEAM_MS_V2_OPEN [].
+
+op ms_transcript_digest_public_fields (o : ms_v2_transcript_observable) : digest =
+  hash_domain LABEL_MS_V2_PROOF
+    (o.`msv2_statement_digest ::
+     ms_result_bit_digest o.`msv2_result_bit ::
+     o.`msv2_comparison_global_challenge ::
+     o.`msv2_bitness_global_challenges).
 
 pred ms_bitness_vector_matches_observable
   (stmt : digest) (rbit : bool) (globdig : digest list)

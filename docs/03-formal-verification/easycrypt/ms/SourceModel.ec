@@ -1,15 +1,24 @@
 require import AllCore List Distr.
-require import QssmTypes SourceTypes FS.
+require import Domains QssmTypes SourceTypes FS.
 require import SchnorrBranch.
 require import BitnessOne BitnessVector TranscriptObservable.
 require import TrueClause Comparison ComparisonTypes ComparisonDigests ComparisonPayload ComparisonCoupling ComparisonTheorem.
 
-(* MS v2 transcript observable surface (abstract, aligned to execution spec). *)
-op ms_statement_digest : ms_transcript_observable -> digest.
-op ms_result_bit : ms_transcript_observable -> bool.
-op ms_bitness_global_challenges : ms_transcript_observable -> digest list.
-op ms_comparison_global_challenge : ms_transcript_observable -> digest.
-op ms_transcript_digest : ms_transcript_observable -> digest.
+(* MS v2 transcript observable surface, now concrete via the base observable record. *)
+op ms_statement_digest (obs : ms_transcript_observable) : digest =
+  obs.`msv2_statement_digest.
+
+op ms_result_bit (obs : ms_transcript_observable) : bool =
+  obs.`msv2_result_bit.
+
+op ms_bitness_global_challenges (obs : ms_transcript_observable) : digest list =
+  obs.`msv2_bitness_global_challenges.
+
+op ms_comparison_global_challenge (obs : ms_transcript_observable) : digest =
+  obs.`msv2_comparison_global_challenge.
+
+op ms_transcript_digest (obs : ms_transcript_observable) : digest =
+  obs.`msv2_transcript_digest.
 
 (* ------------------------------------------------------------------------- *)
 (* MS-3a public spine: concrete projections from the base-layer public record. *)
@@ -131,12 +140,21 @@ op ms3a_public_v2_observable (x : ms_public_input) : ms_v2_transcript_observable
     (ms3a_public_bitness_globals x) (ms3a_public_comparison_global x)
     (ms3a_public_transcript_digest x).
 
-(* Projection from canonical v2 observable to abstract observable carrier.      *)
-op ms3a_observable_of_v2 : ms_v2_transcript_observable -> ms_transcript_observable.
+(* Projection from canonical v2 observable to the observable carrier. Since the
+   carrier now uses the same concrete record, this is the identity map.        *)
+op ms3a_observable_of_v2 (o : ms_v2_transcript_observable) : ms_transcript_observable =
+  o.
 
-axiom A_ms3a_observable_of_v2_aligns :
+lemma A_ms3a_observable_of_v2_aligns :
   forall (o : ms_v2_transcript_observable),
     ms_abstract_observable_aligns_v2 (ms3a_observable_of_v2 o) o.
+proof.
+move=> o.
+rewrite /ms_abstract_observable_aligns_v2 /ms3a_observable_of_v2.
+rewrite /ms_statement_digest /ms_result_bit /ms_bitness_global_challenges.
+rewrite /ms_comparison_global_challenge /ms_transcript_digest.
+by split=> //; split=> //; split=> //; split.
+qed.
 
 (* ROM/FS-side programmability of the MS-3a public spine.
 
@@ -372,12 +390,21 @@ by rewrite -Htd.
 qed.
 
 (* Digest-by-construction constructor (generic, non-default-specific).        *)
+op ms3a_pack_observable_with_digest_digest
+  (stmt : digest) (rbit : bool)
+  (bitness_glob : digest list)
+  (comp_glob : digest) : digest =
+  hash_domain LABEL_MS_V2_PROOF
+    (stmt :: ms_result_bit_digest rbit :: comp_glob :: bitness_glob).
+
 op ms3a_pack_observable_with_digest
   (stmt : digest) (rbit : bool)
   (bitness_glob : digest list)
-  (comp_glob : digest) : ms_v2_transcript_observable.
+  (comp_glob : digest) : ms_v2_transcript_observable =
+  ms3a_pack_observable stmt rbit bitness_glob comp_glob
+    (ms3a_pack_observable_with_digest_digest stmt rbit bitness_glob comp_glob).
 
-axiom ms3a_pack_observable_with_digest_field_correct
+lemma ms3a_pack_observable_with_digest_field_correct
   (stmt : digest) (rbit : bool)
   (bitness_glob : digest list)
   (comp_glob : digest) :
@@ -385,6 +412,12 @@ axiom ms3a_pack_observable_with_digest_field_correct
   ms3a_pack_observable stmt rbit bitness_glob comp_glob
     (ms_transcript_digest_public_fields
       (ms3a_pack_observable_with_digest stmt rbit bitness_glob comp_glob)).
+proof.
+rewrite /ms3a_pack_observable_with_digest.
+rewrite /ms_transcript_digest_public_fields /ms3a_pack_observable /=.
+rewrite /ms3a_pack_observable_with_digest_digest /ms_result_bit_digest.
+by [].
+qed.
 
 lemma ms3a_pack_observable_with_digest_consistent
   (stmt : digest) (rbit : bool)

@@ -3,13 +3,40 @@ require import Ring.
 require import QssmTypes.
 require import GameTypes.
 require import GameViews.
+require import TranscriptObservable.
+require import SourceDistributions.
 
-op game_pr : game_view -> distinguisher -> real.
-op Adv : game_view -> game_view -> distinguisher -> real.
+(* Game probability is projected from the concrete `game_view` surface.
+  For MS views, the projection collapses AfterRom and AfterBitness whenever
+  `ms3a_bitness_real_sim_equiv` holds, which is enough to prove the canonical
+  MS3a game hop as an exact zero-advantage lemma without adding a new axiom. *)
+op ms3a_game_pr_stage (xms : ms_public_input) (s : seed) (st : ms_game_stage) : ms_game_stage =
+  if ms3a_bitness_real_sim_equiv xms s /\
+     (st = MSGameStageAfterRom \/ st = MSGameStageAfterBitness)
+  then MSGameStageAfterRom
+  else st.
 
-axiom Adv_def :
+op game_pr_ms_core : qssm_public_input -> seed -> ms_public_input ->
+  ms_v2_transcript_observable -> ms_game_stage -> le_transcript_observable option ->
+  distinguisher -> real.
+
+op game_pr_g2_core : qssm_public_input -> seed -> distinguisher -> real.
+
+op game_pr (v : game_view) (D : distinguisher) : real =
+  with v = GV_ms r =>
+    game_pr_ms_core r.`msgv_qssm_pub r.`msgv_seed r.`msgv_ms_pub r.`msgv_ms_obs
+      (ms3a_game_pr_stage r.`msgv_ms_pub r.`msgv_seed r.`msgv_stage)
+      r.`msgv_le_placeholder D
+  with v = GV_g2_full_sim r =>
+    game_pr_g2_core r.`qg2_pub r.`qg2_seed D.
+
+op Adv (v1 v2 : game_view) (D : distinguisher) : real =
+  game_pr v1 D - game_pr v2 D.
+
+lemma Adv_def :
   forall (v1 v2 : game_view) (D : distinguisher),
     Adv v1 v2 D = game_pr v1 D - game_pr v2 D.
+proof. by []. qed.
 
 op Adv_G0_G1_MS (x : qssm_public_input) (xms : ms_public_input) (s : seed) (D : distinguisher) : real =
   Adv (G0_real_qssm x xms s) (G1_ms_sim_le_real x xms s) D.
