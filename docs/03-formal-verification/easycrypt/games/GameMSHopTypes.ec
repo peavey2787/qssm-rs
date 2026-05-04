@@ -5,6 +5,7 @@ require import QssmTypes Algebra Simulator FS TrueClause Comparison ComparisonTy
 require import SourceModel.
 require import SourceDistributions SourceTheorem MS LESurface LEModel.
 require import GameTypes GameViews GameAdvantage.
+require import TranscriptObservable.
 
 (* Canonical stage / alignment facts for the MS constructor chain (same x, xms, s). *)
 lemma L_ms_MS1_stage_premises (x : qssm_public_input) (xms : ms_public_input) (s : seed) :
@@ -181,15 +182,34 @@ split; first exact Hann_false.
 exact Hsim.
 qed.
 
-(* MS1 hash-binding theorem surface: any concrete Real->AfterBinding game pair
-   satisfying `ms1_hash_binding_step` inherits the canonical budget bound. The
-   fixed `G_MS_real -> G_MS_after_binding` statement is then recovered as a
-   lemma by exhibiting the canonical stage pair locally. *)
-axiom A_MS1_hash_binding_step_advantage_bound :
+(* MS1 hash-binding theorem surface: the remaining assumption is now tied to
+   the explicit GV_ms pair where all fields are fixed and only the stage moves
+   Real -> AfterBinding. The generic `ms1_hash_binding_step` bound is derived
+   as a lemma by unpacking that concrete step witness. *)
+axiom A_MS1_hash_binding_concrete_pair_advantage_bound :
+  forall (x : qssm_public_input) (s : seed) (xms : ms_public_input)
+         (obs : ms_v2_transcript_observable)
+         (lep : le_transcript_observable option) (D : distinguisher),
+    0%r <= epsilon_ms_hash_binding =>
+    Adv
+      (GV_ms {| msgv_qssm_pub = x; msgv_seed = s; msgv_ms_pub = xms;
+                msgv_ms_obs = obs; msgv_stage = MSGameStageReal;
+                msgv_le_placeholder = lep |})
+      (GV_ms {| msgv_qssm_pub = x; msgv_seed = s; msgv_ms_pub = xms;
+                msgv_ms_obs = obs; msgv_stage = MSGameStageAfterBinding;
+                msgv_le_placeholder = lep |})
+      D <= epsilon_ms_hash_binding.
+
+lemma A_MS1_hash_binding_step_advantage_bound :
   forall (src dst : game_view) (xms : ms_public_input) (D : distinguisher),
     ms1_hash_binding_step src dst xms =>
     0%r <= epsilon_ms_hash_binding =>
     Adv src dst D <= epsilon_ms_hash_binding.
+proof.
+move=> src dst xms D.
+rewrite /ms1_hash_binding_step.
+by smt(A_MS1_hash_binding_concrete_pair_advantage_bound).
+qed.
 
 lemma A_MS1_canonical_hash_binding_bound :
   forall (x : qssm_public_input) (xms : ms_public_input) (s : seed) (D : distinguisher),
@@ -211,15 +231,34 @@ apply (A_MS1_hash_binding_step_advantage_bound
 exact Hnonneg.
 qed.
 
-(* MS2 ROM-programming theorem surface: any concrete AfterBinding->AfterRom
-   game pair satisfying `ms2_rom_programming_step` inherits the canonical ROM
-   budget bound. The fixed `G_MS_after_binding -> G_MS_after_rom` statement is
-   then recovered as a lemma by exhibiting the canonical stage pair locally. *)
-axiom A_MS2_rom_programming_step_advantage_bound :
+(* MS2 ROM-programming theorem surface: the remaining assumption is tied to
+   the explicit GV_ms pair where only the stage moves AfterBinding -> AfterRom.
+   The generic `ms2_rom_programming_step` bound is derived as a lemma by
+   unpacking that concrete step witness. *)
+axiom A_MS2_rom_programming_concrete_pair_advantage_bound :
+  forall (x : qssm_public_input) (s : seed) (xms : ms_public_input)
+         (obs : ms_v2_transcript_observable)
+         (lep : le_transcript_observable option) (D : distinguisher),
+    0%r <= epsilon_ms_rom_programmability =>
+    Adv
+      (GV_ms {| msgv_qssm_pub = x; msgv_seed = s; msgv_ms_pub = xms;
+                msgv_ms_obs = obs; msgv_stage = MSGameStageAfterBinding;
+                msgv_le_placeholder = lep |})
+      (GV_ms {| msgv_qssm_pub = x; msgv_seed = s; msgv_ms_pub = xms;
+                msgv_ms_obs = obs; msgv_stage = MSGameStageAfterRom;
+                msgv_le_placeholder = lep |})
+      D <= epsilon_ms_rom_programmability.
+
+lemma A_MS2_rom_programming_step_advantage_bound :
   forall (src dst : game_view) (xms : ms_public_input) (D : distinguisher),
     ms2_rom_programming_step src dst xms =>
     0%r <= epsilon_ms_rom_programmability =>
     Adv src dst D <= epsilon_ms_rom_programmability.
+proof.
+move=> src dst xms D.
+rewrite /ms2_rom_programming_step.
+by smt(A_MS2_rom_programming_concrete_pair_advantage_bound).
+qed.
 
 lemma A_MS2_canonical_rom_programming_bound :
   forall (x : qssm_public_input) (xms : ms_public_input) (s : seed) (D : distinguisher),
