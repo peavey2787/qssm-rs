@@ -5,21 +5,22 @@
 Replace vacuous game skeletons with explicit advantage-bound obligations so the
 final QSSM theorem is composed from concrete hops:
 
-- `G0_real_qssm` -> `G1_ms_sim_le_real` (MS transition)
-- `G1_ms_sim_le_real` -> `G2_full_sim` (LE transition)
+- `G0_real_qssm` -> `G_MS_sim` (closed MS transition)
+- `G_MS_sim` -> `G1_le_real_projection` (explicit cross-layer intermediate hop)
+- `G1_le_real_projection` -> `G2_full_sim` (LE transition)
 - `G0_real_qssm` -> `G2_full_sim` (composed QSSM bound)
 
 ## MS game views (instantiated)
 
-`primitives/QssmTypes.ec` fixes **`game_view`** as a sum type: MS hops use **`GV_ms`** carrying **`ms_game_view_record`** (`msgv_qssm_pub`, `msgv_seed`, `msgv_ms_pub`, `msgv_ms_obs`, **`msgv_stage`** : `ms_game_stage`, `msgv_le_placeholder`). The G2 endpoint uses **`GV_g2_full_sim`** with **`qssm_g2_shell_record`** until LE wiring refines that branch.
+`primitives/QssmTypes.ec` fixes **`game_view`** as a sum type: MS hops use **`GV_ms`** carrying **`ms_game_view_record`** (`msgv_qssm_pub`, `msgv_seed`, `msgv_ms_pub`, `msgv_ms_obs`, **`msgv_stage`** : `ms_game_stage`, `msgv_le_placeholder`); the explicit LE-facing G1 hop now uses **`GV_g1_le_real`** with **`qssm_g1_le_real_record`**; the G2 endpoint uses **`GV_g2_full_sim`** with **`qssm_g2_shell_record`**.
 
-In the split game layer (`games/GameTypes.ec`, `games/GameViews.ec`, `games/GameMSHopTypes.ec`, `games/GameMSHopTransitions.ec`, `games/GameMSHopComposition.ec`, re-exported by `games/GameMSHops.ec`), **`G_MS_real`** … **`G_MS_sim`** are **`mk_ms_game_view`** at the matching stage; **`G_MS_real` = `G0_real_qssm`** and **`G_MS_sim` = `G1_ms_sim_le_real`**. Predicate aliases **`ms_game_real_stage`**, **`ms_game_after_binding_stage`**, … **`ms_game_sim_stage`**, plus **`ms_game_view_ms_pub`** and **`ms_game_view_qssm_seed`**, appear as explicit premises on **`A_MS1_*`** … **`A_MS3c_*`**. Canonical pairs **`(G_MS_* x xms s)`** satisfy those premises via proved lemmas **`L_ms_MS1_stage_premises`** … **`L_ms_MS3c_stage_premises`**, which the composed MS hop proof uses when applying the segment axioms.
+In the split game layer (`games/GameTypes.ec`, `games/GameViews.ec`, `games/GameMSHopTypes.ec`, `games/GameMSHopTransitions.ec`, `games/GameMSHopComposition.ec`, re-exported by `games/GameMSHops.ec`), **`G_MS_real`** … **`G_MS_sim`** are **`mk_ms_game_view`** at the matching stage; **`G_MS_real` = `G0_real_qssm`** and **`G_MS_sim`** remains the pure MS simulated endpoint. **`G1_le_real_projection`** is now a distinct LE-facing top-level view and no longer aliases **`G_MS_sim`**. Predicate aliases **`ms_game_real_stage`**, **`ms_game_after_binding_stage`**, … **`ms_game_sim_stage`**, plus **`ms_game_view_ms_pub`** and **`ms_game_view_qssm_seed`**, appear as explicit premises on **`A_MS1_*`** … **`A_MS3c_*`**. Canonical pairs **`(G_MS_* x xms s)`** satisfy those premises via proved lemmas **`L_ms_MS1_stage_premises`** … **`L_ms_MS3c_stage_premises`**, which the composed MS hop proof uses when applying the segment axioms.
 
 ## Current non-vacuous obligations
 
 From the split game layer (`games/GameAdvantage.ec`, `games/GameMSHops.ec`, `games/GameLEBridge.ec`, re-exported by `games/Games.ec`):
 
-- `A_adv_gamehop_triangle` (**lemma**, derived from `Adv_def` + real arithmetic)
+- `A_adv_gamehop_triangle` (**lemma**, derived from `Adv_def` + real arithmetic on the explicit three-hop chain)
 - `A_G0_to_G1_ms_transition_bound` (**lemma**, telescope `A_adv_ms_hop_telescope` + segment axioms `A_MS1_*` … `A_MS3c_*`)
 - `A_G1_to_G2_le_transition_bound` (**lemma**, from `A_LE_HVZK_transition_bound` + game/LE adv bridge)
 
@@ -27,7 +28,8 @@ From `theorem/MainTheorem.ec`:
 
 - `qssm_main_theorem_skeleton` (**lemma**) derives
   `Adv_G0_G2_QSSM <= epsilon_ms_hash_binding + epsilon_ms_rom_programmability + epsilon_le`
-  from the two hop bounds plus triangle composition.
+  from the closed MS bound, the LE bound, and an explicit theorem-level middle-hop obligation
+  `Adv_G1_MS_to_LE x xms s D <= 0%r`.
 
 ## Dependency wiring targets
 
@@ -35,7 +37,7 @@ From `theorem/MainTheorem.ec`:
 
 `A_G0_to_G1_ms_transition_bound` is a **proved lemma** composing:
 
-- Intermediate views: `G_MS_real` (= `G0_real_qssm x xms s`), `G_MS_after_binding`, `G_MS_after_rom`, `G_MS_after_bitness`, `G_MS_after_comparison`, `G_MS_sim` (= `G1_ms_sim_le_real x xms s`), all **`GV_ms`** with the same `(x, xms, s)` and aligned `msgv_stage`.
+- Intermediate views: `G_MS_real` (= `G0_real_qssm x xms s`), `G_MS_after_binding`, `G_MS_after_rom`, `G_MS_after_bitness`, `G_MS_after_comparison`, `G_MS_sim`, all **`GV_ms`** with the same `(x, xms, s)` and aligned `msgv_stage`.
 - Telescope: `A_adv_ms_hop_telescope` (sum of five segment advantages).
 - Segment game-layer obligations:
   - **MS1 (hash binding):** canonical bound `A_MS1_canonical_hash_binding_bound` is now a **proved lemma** derived from `A_MS1_hash_binding_step_advantage_bound`, which is itself a **proved lemma** from `A_MS1_hash_binding_concrete_pair_advantage_bound`; that concrete pair theorem is now also a **proved lemma**, obtained by unfolding `Adv` / `game_pr` and applying the lower bridge lemma `A_MS1_hash_binding_game_pr_core_bound` in `GameAdvantage.ec`. **`A_MS1_hash_binding_transition`** remains a **proved lemma** applying the canonical bound directly. Canonical step witness remains available via `L_ms1_hash_binding_step_canonical`. The lower `game_pr_ms_core` bridge is now closed on the concrete MS probability surface.
@@ -59,9 +61,9 @@ From `theorem/MainTheorem.ec`:
    bridge lemma `A_LE_projected_adv_matches_game_adv` (itself derived from
    projected-adv layout lemmas `A_LE_projected_real_adv_layout`,
    `A_LE_projected_sim_adv_layout`, game-side unfold lemmas
-   `A_Adv_G1_G2_LE_unfolds_to_projected_views` (from narrower probability
-   interface axiom `A_game_pr_LE_projection_semantics` (exact non-crypto boundary:
-   generic `game_pr` agrees with LE projected probability for `G1`/`G2`), where
+  `A_Adv_G1_G2_LE_unfolds_to_projected_views` (from proved projection lemma
+  `A_game_pr_LE_projection_semantics`, which is now definitional on the split
+  view constructors `G1_le_real_projection` / `G2_full_sim`), where
    `game_pr_le_projected true x s D` is the real LE projection and
    `game_pr_le_projected false x s D` is the sim LE projection; packaged by lemmas
    `A_game_pr_on_G1_uses_LE_real_projection`,
@@ -82,17 +84,17 @@ From `theorem/MainTheorem.ec`:
 
 Next: discharge the remaining LE-HVZK axioms (rejection-sampling chain,
 FS/ROM chain, view indistinguishability / advantage bound) from a concrete LE
-HVZK game skeleton, then revisit replacing
-`A_game_pr_LE_projection_semantics` once `game_pr` is given concrete semantics.
-Until then, keep it as the single non-crypto LE bridge/interface axiom.
+HVZK game skeleton, and separately prove the explicit cross-layer intermediate-hop
+target `Adv_G1_MS_to_LE x xms s D <= 0%r` that now sits between the closed MS
+endpoint `G_MS_sim` and the LE-facing `G1_le_real_projection`.
 
 ## Proof order
 
 1. ~~Define/lock concrete `game_view` encodings~~ — MS branch done in `QssmTypes` + `Games`; G2 shell remains minimal; refine `GV_g2_full_sim` when LE transcript is threaded.
 2. Keep `A_adv_gamehop_triangle` as a proved game-hop arithmetic lemma.
 3. ~~Replace `A_G0_to_G1_ms_transition_bound`~~ done; discharge each `A_MS1_*` … `A_MS3c_*` from concrete games + MS proofs.
-4. ~~Replace `A_G1_to_G2_le_transition_bound`~~ done; replace `A_LE_HVZK_transition_bound` with a proved LE HVZK statement and the game/LE adv bridge.
-5. Keep `qssm_main_theorem_skeleton` as a proved composition lemma (no theorem-level axiom).
+4. ~~Replace `A_G1_to_G2_le_transition_bound`~~ done; the LE projection on `G1_le_real_projection` / `G2_full_sim` is now definitional and `A_game_pr_LE_projection_semantics` is a lemma, not an axiom.
+5. Keep `qssm_main_theorem_skeleton` as a proved composition lemma; the remaining explicit dependency is the theorem-level middle-hop premise `Adv_G1_MS_to_LE <= 0%r`, not a game-layer axiom.
 
 ## Exit criteria
 
@@ -100,3 +102,4 @@ Until then, keep it as the single non-crypto LE bridge/interface axiom.
 - `A_adv_gamehop_triangle` proved as a game-hop arithmetic lemma.
 - Transition bounds stated and proved as real inequalities on named advantages.
 - Main theorem remains an additive game-hop inequality with explicit dependencies.
+- No remaining game-layer axiom for LE projection semantics.

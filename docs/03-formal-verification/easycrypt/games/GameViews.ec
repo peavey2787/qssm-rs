@@ -6,7 +6,9 @@ require import GameTypes.
 op ms_game_view_public_obs (xms : ms_public_input) : ms_v2_transcript_observable =
   ms3a_public_v2_observable xms.
 
-(* QSSM top-level games: G0/G1 are MS-structured at chosen `xms`; G2 is a shell. *)
+(* QSSM top-level games: G0 and the internal MS chain stay MS-structured at
+   chosen `xms`; `G1_le_real_projection` is the explicit LE-facing hop; G2 is
+   a shell. *)
 op G0_real_qssm (x : qssm_public_input) (xms : ms_public_input) (s : seed) : game_view =
   mk_ms_game_view x s xms (ms_game_view_public_obs xms) MSGameStageReal None.
 

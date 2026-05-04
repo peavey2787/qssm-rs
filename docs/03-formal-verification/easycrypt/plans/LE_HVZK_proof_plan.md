@@ -159,8 +159,12 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
   - `A_LE_fs_surrogate_preserves_shape`
   - `A_LE_rejection_surrogate_sdist_bound`
   - `A_LE_fs_surrogate_sdist_bound`
-- `A_game_pr_LE_projection_semantics` in `games/GameLEBridge.ec` remains the
-  single non-crypto interface boundary (out of scope for this plan).
+- `games/GameLEBridge.ec` no longer carries a game-layer projection axiom:
+  `A_game_pr_LE_projection_semantics` is now a lemma on the split views
+  `G1_le_real_projection` / `G2_full_sim`.
+- The remaining exposed cross-layer debt is the explicit intermediate hop
+  `Adv_G1_MS_to_LE` between `G_MS_sim` and `G1_le_real_projection`, tracked in
+  `plans/G0_G1_G2_game_plan.md` rather than in this LE-HVZK plan.
 
 ## Exit Criteria
 

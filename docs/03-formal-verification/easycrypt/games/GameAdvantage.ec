@@ -271,10 +271,13 @@ lemma Adv_def :
 proof. by []. qed.
 
 op Adv_G0_G1_MS (x : qssm_public_input) (xms : ms_public_input) (s : seed) (D : distinguisher) : real =
-  Adv (G0_real_qssm x xms s) (G1_ms_sim_le_real x xms s) D.
+  Adv (G_MS_real x xms s) (G_MS_sim x xms s) D.
+
+op Adv_G1_MS_to_LE (x : qssm_public_input) (xms : ms_public_input) (s : seed) (D : distinguisher) : real =
+  Adv (G_MS_sim x xms s) (G1_le_real_projection x xms s) D.
 
 op Adv_G1_G2_LE (x : qssm_public_input) (xms : ms_public_input) (s : seed) (D : distinguisher) : real =
-  Adv (G1_ms_sim_le_real x xms s) (G2_full_sim x s) D.
+  Adv (G1_le_real_projection x xms s) (G2_full_sim x s) D.
 
 op Adv_G0_G2_QSSM (x : qssm_public_input) (xms : ms_public_input) (s : seed) (D : distinguisher) : real =
   Adv (G0_real_qssm x xms s) (G2_full_sim x s) D.
@@ -295,15 +298,17 @@ qed.
 (* Standard game-hop arithmetic over advantage differences. *)
 lemma A_adv_gamehop_triangle :
   forall (x : qssm_public_input) (xms : ms_public_input) (s : seed) (D : distinguisher),
-    Adv_G0_G2_QSSM x xms s D <= Adv_G0_G1_MS x xms s D + Adv_G1_G2_LE x xms s D.
+    Adv_G0_G2_QSSM x xms s D <=
+      Adv_G0_G1_MS x xms s D + Adv_G1_MS_to_LE x xms s D + Adv_G1_G2_LE x xms s D.
 proof.
 move=> x xms s D.
-rewrite /Adv_G0_G2_QSSM /Adv_G0_G1_MS /Adv_G1_G2_LE.
+rewrite /Adv_G0_G2_QSSM /Adv_G0_G1_MS /Adv_G1_MS_to_LE /Adv_G1_G2_LE.
 rewrite !(Adv_def _ _ D).
 have ->:
     game_pr (G0_real_qssm x xms s) D - game_pr (G2_full_sim x s) D =
-    (game_pr (G0_real_qssm x xms s) D - game_pr (G1_ms_sim_le_real x xms s) D) +
-    (game_pr (G1_ms_sim_le_real x xms s) D - game_pr (G2_full_sim x s) D).
+    (game_pr (G_MS_real x xms s) D - game_pr (G_MS_sim x xms s) D) +
+    (game_pr (G_MS_sim x xms s) D - game_pr (G1_le_real_projection x xms s) D) +
+    (game_pr (G1_le_real_projection x xms s) D - game_pr (G2_full_sim x s) D).
   ring.
 by [].
 qed.

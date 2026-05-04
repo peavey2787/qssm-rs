@@ -241,12 +241,12 @@
     "GameAdvantage": {
       "direct": true,
       "kind": "ec",
-      "digest": "d0ed746748ebba9b4556fc473092f3a3"
+      "digest": "d7a5d75a23913fb6e40371566575617b"
     },
     "GameLEBridge": {
       "direct": true,
       "kind": "ec",
-      "digest": "4cb68d2e4720833fc2bb6a0583246a3f"
+      "digest": "c1a2c7f887d55609b4f1c074c9415f95"
     },
     "GameMSHopComposition": {
       "direct": false,
@@ -276,7 +276,7 @@
     "GameViews": {
       "direct": true,
       "kind": "ec",
-      "digest": "548797e22bef332c1382f1bc76c498e5"
+      "digest": "3977851f32945a093996050809a3a35b"
     },
     "Hybrid": {
       "direct": false,

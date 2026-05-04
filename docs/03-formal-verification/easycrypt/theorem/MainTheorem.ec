@@ -51,15 +51,17 @@ lemma qssm_main_theorem_skeleton
   ms3c_clause_challenge_shares_sum xms s =>
   set_b_parameter_well_formed =>
   le_real_sim_transcript_equiv x s =>
-  Adv_G0_G2_QSSM x xms s D <= Adv_G0_G1_MS x xms s D + Adv_G1_G2_LE x xms s D =>
+  Adv_G0_G2_QSSM x xms s D <=
+    Adv_G0_G1_MS x xms s D + Adv_G1_MS_to_LE x xms s D + Adv_G1_G2_LE x xms s D =>
   Adv_G0_G1_MS x xms s D <= epsilon_ms_hash_binding + epsilon_ms_rom_programmability =>
+  Adv_G1_MS_to_LE x xms s D <= 0%r =>
   Adv_G1_G2_LE x xms s D <= epsilon_le =>
   Adv_G0_G2_QSSM x xms s D <=
     epsilon_ms_hash_binding +
     epsilon_ms_rom_programmability +
   epsilon_le.
 proof.
-move=> Hann Ha2 Hfalse Htrue Hsum Hsetb Hleeqv Hhop H01 H12.
+move=> Hann Ha2 Hfalse Htrue Hsum Hsetb Hleeqv Hhop H01 Hmid H12.
 have H01p : Adv_G0_G1_MS x xms s D <= epsilon_ms_hash_binding + epsilon_ms_rom_programmability.
   exact (A_G0_to_G1_ms_transition_bound x xms s D
     (A1_ms_hash_binding D)
@@ -69,10 +71,22 @@ have H01p : Adv_G0_G1_MS x xms s D <= epsilon_ms_hash_binding + epsilon_ms_rom_p
     (use_MS_3c xms s)).
 have H12p : Adv_G1_G2_LE x xms s D <= epsilon_le.
   exact (A_G1_to_G2_le_transition_bound x xms s D Hsetb (A4_le_hvzk D) Hleeqv).
-have Htri : Adv_G0_G2_QSSM x xms s D <= Adv_G0_G1_MS x xms s D + Adv_G1_G2_LE x xms s D.
+have Htri : Adv_G0_G2_QSSM x xms s D <=
+  Adv_G0_G1_MS x xms s D + Adv_G1_MS_to_LE x xms s D + Adv_G1_G2_LE x xms s D.
   exact (A_adv_gamehop_triangle x xms s D).
-have Hadd : Adv_G0_G1_MS x xms s D + Adv_G1_G2_LE x xms s D <=
+have H01mid : Adv_G0_G1_MS x xms s D + Adv_G1_MS_to_LE x xms s D <=
+  (epsilon_ms_hash_binding + epsilon_ms_rom_programmability) + 0%r.
+  by apply (ler_add _ _ _ _ H01p Hmid).
+have Hadd : Adv_G0_G1_MS x xms s D + Adv_G1_MS_to_LE x xms s D + Adv_G1_G2_LE x xms s D <=
   epsilon_ms_hash_binding + epsilon_ms_rom_programmability + epsilon_le.
-  by apply (ler_add _ _ _ _ H01p H12p).
+  have ->: Adv_G0_G1_MS x xms s D + Adv_G1_MS_to_LE x xms s D + Adv_G1_G2_LE x xms s D =
+    (Adv_G0_G1_MS x xms s D + Adv_G1_MS_to_LE x xms s D) + Adv_G1_G2_LE x xms s D by ring.
+  have Hsum012 :
+      (Adv_G0_G1_MS x xms s D + Adv_G1_MS_to_LE x xms s D) + Adv_G1_G2_LE x xms s D <=
+      ((epsilon_ms_hash_binding + epsilon_ms_rom_programmability) + 0%r) + epsilon_le
+    by apply (ler_add _ _ _ _ H01mid H12p).
+  have ->: ((epsilon_ms_hash_binding + epsilon_ms_rom_programmability) + 0%r) + epsilon_le =
+    epsilon_ms_hash_binding + epsilon_ms_rom_programmability + epsilon_le by ring.
+  exact Hsum012.
 by apply (ler_trans _ _ _ Htri Hadd).
 qed.

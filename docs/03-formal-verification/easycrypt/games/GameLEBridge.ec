@@ -11,21 +11,21 @@ op le_view_of_game : game_view -> le_transcript_observable.
 
 op le_real_view_from_G1
   (x : qssm_public_input) (xms : ms_public_input) (s : seed) : le_transcript_observable =
-  le_view_of_game (G1_ms_sim_le_real x xms s).
+  le_view_of_game (G1_le_real_projection x xms s).
 
 op le_sim_view_from_G2
   (x : qssm_public_input) (s : seed) : le_transcript_observable =
   le_view_of_game (G2_full_sim x s).
 
 pred le_real_view_projects_from_G1 (x : qssm_public_input) (xms : ms_public_input) (s : seed) =
-  le_view_of_game (G1_ms_sim_le_real x xms s) = le_real_view_from_G1 x xms s.
+  le_view_of_game (G1_le_real_projection x xms s) = le_real_view_from_G1 x xms s.
 
 pred le_sim_view_projects_from_G2 (x : qssm_public_input) (s : seed) =
   le_view_of_game (G2_full_sim x s) = le_sim_view_from_G2 x s.
 
 lemma A_G1_LE_view_constructor_correct :
   forall (x : qssm_public_input) (xms : ms_public_input) (s : seed),
-    le_view_of_game (G1_ms_sim_le_real x xms s) = le_real_view_from_G1 x xms s.
+    le_view_of_game (G1_le_real_projection x xms s) = le_real_view_from_G1 x xms s.
 proof.
 by rewrite /le_real_view_from_G1.
 qed.
@@ -83,16 +83,22 @@ op game_pr_le_projected
   then le_view_distinguish_pr (d_le_real_view x s) D
   else le_view_distinguish_pr (d_le_sim_view x s) D.
 
-(* Exact non-crypto interface boundary:
-   generic game probability agrees with LE projected probability for G1/G2. *)
-axiom A_game_pr_LE_projection_semantics :
+(* Exact G1/G2 LE projection semantics are now definitional on the split view
+   constructors. *)
+lemma A_game_pr_LE_projection_semantics :
   forall (x : qssm_public_input) (xms : ms_public_input) (s : seed) (D : distinguisher),
-    game_pr (G1_ms_sim_le_real x xms s) D = game_pr_le_projected true x s D /\
+    game_pr (G1_le_real_projection x xms s) D = game_pr_le_projected true x s D /\
     game_pr (G2_full_sim x s) D = game_pr_le_projected false x s D.
+proof.
+move=> x xms s D.
+rewrite /game_pr /G1_le_real_projection /G2_full_sim.
+rewrite /game_pr_g1_le_core /game_pr_g2_core /game_pr_le_projected /=.
+by split.
+qed.
 
 lemma A_game_pr_on_G1_uses_LE_real_projection :
   forall (x : qssm_public_input) (xms : ms_public_input) (s : seed) (D : distinguisher),
-    game_pr (G1_ms_sim_le_real x xms s) D =
+    game_pr (G1_le_real_projection x xms s) D =
       le_view_distinguish_pr (d_le_real_view x s) D.
 proof.
 move=> x xms s D.
@@ -113,7 +119,7 @@ qed.
 
 lemma A_game_pr_G1_LE_real_view_correct :
   forall (x : qssm_public_input) (xms : ms_public_input) (s : seed) (D : distinguisher),
-    game_pr (G1_ms_sim_le_real x xms s) D =
+    game_pr (G1_le_real_projection x xms s) D =
       le_view_distinguish_pr (d_le_real_view x s) D.
 proof.
 move=> x xms s D.
@@ -131,7 +137,7 @@ qed.
 
 lemma A_game_pr_G1_equals_projected_real :
   forall (x : qssm_public_input) (xms : ms_public_input) (s : seed) (D : distinguisher),
-    game_pr (G1_ms_sim_le_real x xms s) D = le_projected_real_adv x xms s D.
+    game_pr (G1_le_real_projection x xms s) D = le_projected_real_adv x xms s D.
 proof.
 move=> x xms s D.
 rewrite /le_projected_real_adv /le_projected_real_adv_base.
@@ -154,7 +160,7 @@ lemma A_Adv_G1_G2_LE_unfolds_to_projected_views :
 proof.
 move=> x xms s D.
 rewrite /Adv_G1_G2_LE.
-rewrite (Adv_def (G1_ms_sim_le_real x xms s) (G2_full_sim x s) D).
+rewrite (Adv_def (G1_le_real_projection x xms s) (G2_full_sim x s) D).
 rewrite (A_game_pr_G1_equals_projected_real x xms s D).
 rewrite (A_game_pr_G2_equals_projected_sim x s D).
 done.
