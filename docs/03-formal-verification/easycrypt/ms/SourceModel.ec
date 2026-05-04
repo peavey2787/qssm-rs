@@ -104,6 +104,12 @@ op ms3a_public_comparison_openings (x : ms_public_input) : ms_comparison_opening
   {| mscos_true_opening = ms_public_comparison_true_opening x;
      mscos_false_openings = ms_public_comparison_false_openings x |}.
 
+(* Source-model boundary note: this interface stops at the native public
+  comparison openings carried by `ms_public_input` / `ms_transcript_observable`.
+  Richer non-public comparison execution bundles, such as the MS-3c execution
+  seed's ROM row and transcript-opening package, stay below this layer unless a
+  future source/game obligation requires them explicitly. *)
+
 op ms3a_public_transcript_digest (x : ms_public_input) : digest =
   x.`mspi_transcript_digest.
 

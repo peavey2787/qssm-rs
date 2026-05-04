@@ -189,32 +189,10 @@ pred ms1_hash_binding_surface_defined (x : qssm_public_input) (xms : ms_public_i
 pred ms1_hash_binding_bad_event_bounded (x : qssm_public_input) (xms : ms_public_input) (s : seed) =
   0%r <= epsilon_ms_hash_binding.
 
-axiom A_MS1_hash_binding_surface_defined :
-  forall (x : qssm_public_input) (xms : ms_public_input) (s : seed),
-    ms1_hash_binding_surface_defined x xms s.
-
-axiom A_MS1_hash_binding_bad_event_bounded :
-  forall (x : qssm_public_input) (xms : ms_public_input) (s : seed),
-    ms1_hash_binding_bad_event_bounded x xms s.
-
-axiom A_MS1_hash_binding_replacement_advantage_bound :
-  forall (x : qssm_public_input) (xms : ms_public_input) (s : seed) (D : distinguisher),
-    ms1_hash_binding_surface_defined x xms s =>
-    ms1_hash_binding_bad_event_bounded x xms s =>
-    0%r <= epsilon_ms_hash_binding =>
-    Adv (G_MS_real x xms s) (G_MS_after_binding x xms s) D <= epsilon_ms_hash_binding.
-
-lemma A_MS1_canonical_hash_binding_bound :
+axiom A_MS1_canonical_hash_binding_bound :
   forall (x : qssm_public_input) (xms : ms_public_input) (s : seed) (D : distinguisher),
     0%r <= epsilon_ms_hash_binding =>
     Adv (G_MS_real x xms s) (G_MS_after_binding x xms s) D <= epsilon_ms_hash_binding.
-proof.
-move=> x xms s D Hnonneg.
-exact (A_MS1_hash_binding_replacement_advantage_bound x xms s D
-  (A_MS1_hash_binding_surface_defined x xms s)
-  (A_MS1_hash_binding_bad_event_bounded x xms s)
-  Hnonneg).
-qed.
 
 (* MS2 ROM surface split: query-surface well-formedness and bounded programmed
    points on the canonical stage pair. *)
@@ -224,34 +202,11 @@ pred ms2_rom_query_surface_defined (x : qssm_public_input) (xms : ms_public_inpu
 pred ms2_rom_programmed_points_bounded (x : qssm_public_input) (xms : ms_public_input) (s : seed) =
   0%r <= epsilon_ms_rom_programmability.
 
-axiom A_MS2_rom_query_surface_defined :
-  forall (x : qssm_public_input) (xms : ms_public_input) (s : seed),
-    ms2_rom_query_surface_defined x xms s.
 
-axiom A_MS2_rom_programmed_points_bounded :
-  forall (x : qssm_public_input) (xms : ms_public_input) (s : seed),
-    ms2_rom_programmed_points_bounded x xms s.
-
-axiom A_MS2_rom_reprogramming_advantage_bound :
-  forall (x : qssm_public_input) (xms : ms_public_input) (s : seed) (D : distinguisher),
-    ms2_rom_query_surface_defined x xms s =>
-    ms2_rom_programmed_points_bounded x xms s =>
-    0%r <= epsilon_ms_rom_programmability =>
-    Adv (G_MS_after_binding x xms s) (G_MS_after_rom x xms s) D <= epsilon_ms_rom_programmability.
-
-(* MS2 canonical ROM/FS hop bound is now a lemma layered over the narrower ROM
-   obligations above. *)
-lemma A_MS2_canonical_rom_programming_bound :
+axiom A_MS2_canonical_rom_programming_bound :
   forall (x : qssm_public_input) (xms : ms_public_input) (s : seed) (D : distinguisher),
     0%r <= epsilon_ms_rom_programmability =>
     Adv (G_MS_after_binding x xms s) (G_MS_after_rom x xms s) D <= epsilon_ms_rom_programmability.
-proof.
-move=> x xms s D Hnonneg.
-exact (A_MS2_rom_reprogramming_advantage_bound x xms s D
-  (A_MS2_rom_query_surface_defined x xms s)
-  (A_MS2_rom_programmed_points_bounded x xms s)
-  Hnonneg).
-qed.
 
 (* MS3a canonical bitness exact-simulation bound on the concrete stage pair
   used in the G0->G1 telescope. With `game_pr` now projected from `game_view`,

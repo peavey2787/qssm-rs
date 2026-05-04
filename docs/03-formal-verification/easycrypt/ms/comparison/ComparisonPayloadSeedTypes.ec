@@ -9,15 +9,14 @@ require import ComparisonTypes ComparisonPayloadTypes.
   `duni_scalar`, then exposed through payload-only fields plus auxiliary
   coin-driven ROM/transcript views downstream.
 
-  Decision for the current MS-3c lane: those auxiliary views remain proof-local.
-  They witness how sampled coins could feed non-public ROM/transcript state, but
-  no public observable, payload schedule, or coupling hook consumes them yet.
-  The first concrete consumer, once integration is justified, should be the
-  comparison-side execution-seed packaging boundary mirroring the role played by
-  `ms/source/SourceRealExecutionSeed.ec` for MS-3a: it can package an
-  execution-facing comparison seed law without changing the compared surface.
-  Promoting them into the execution model before that boundary exists would
-  require wider non-public state plumbing outside this phase's safe surface. *)
+  Decision for the current MS-3c lane: those auxiliary views now feed the
+  comparison-side execution-seed package below, but that package remains
+  comparison-local. `SourceModel.ec` stops at the public comparison openings,
+  and no source/game theory currently consumes a non-public comparison
+  execution carrier, so threading this package upward would add interface
+  surface without changing any compared-surface proof. The package therefore
+  stays below the source/game boundary until a concrete upstream execution
+  obligation appears. *)
 
 (* Real challenge-side law: sample a latent ROM coin while keeping the
   payload-facing challenge fields pinned to the native public surface. *)
@@ -48,12 +47,11 @@ op ms3c_seed_challenge_coin_driven_rom_row
   (sc : ms3c_seed_challenge) : (digest * scalar) =
   (sc.`ms3csc_query_digest, sc.`ms3csc_rom_coin).
 
-(* Proof-local auxiliary transcript/ROM view: the current execution model does
-   not consume this opening bundle, but it records how the sampled transcript
-  coin could parameterize a non-public comparison view without changing the
-  compared announcements. The intended future consumer is the comparison-side
-  execution-seed boundary, where these openings would become internal execution
-  state rather than public schedule fields. *)
+(* Auxiliary transcript view for the comparison-local execution seed: the
+  sampled transcript coin parameterizes a non-public comparison view without
+  changing the compared announcements. This bundle is intentionally kept below
+  `SourceModel.ec`, which currently preserves only the public comparison
+  openings at the source/game boundary. *)
 op ms3c_seed_announcement_coin_driven_transcript_openings
   (sa : ms3c_seed_announcement) : ms_comparison_openings =
   {| mscos_true_opening = (sa.`ms3csa_ann_true, sa.`ms3csa_transcript_coin);

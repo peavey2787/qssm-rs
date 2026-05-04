@@ -7,14 +7,12 @@ require import ComparisonTypes ComparisonPayloadTypes ComparisonPayloadSeedTypes
   ROM/transcript views; schedule/surface packaging.
 
   Decision for the current MS-3c lane: the auxiliary ROM/transcript views below
-  stay proof-local. They are derived witnesses showing how payload-visible coins
-  could feed a richer non-public execution state, but the compared public/share
-  surface, schedule operators, and coupling shell still ignore them.
-
-  The first concrete consumer, once integration is needed, should be a
-  comparison-side execution-seed package mirroring `SourceRealExecutionSeed.ec`:
-  it would consume the auxiliary ROM row and comparison-opening bundle as
-  internal execution state while keeping `ms3c_make_clause_surface` unchanged. *)
+  now feed the comparison-side execution-seed package, and that package remains
+  comparison-local. The compared public/share surface, schedule operators, and
+  coupling shell still ignore those internal execution fields, and the current
+  source/game boundary in `SourceModel.ec` stops at public comparison openings.
+  Broader threading is therefore deferred until a source/game execution theorem
+  actually consumes the non-public ROM row or comparison-opening bundle. *)
 
 op ms3c_phase1_comparison_carrier_from_public_input (x : ms_public_input) :
   ms3b_concrete_comparison_carrier =
@@ -24,10 +22,11 @@ op ms3c_payload_coin_driven_rom_row
   (p : ms3c_comparison_clause_payload) : (digest * scalar) =
   (p.`mscp_query_digest, p.`mscp_rom_coin).
 
-(* Proof-local auxiliary transcript view derived from the payload: it keeps the
-   compared announcement projection fixed while threading the transcript coin
-  through non-public openings. The intended downstream consumer is a future
-  execution-facing comparison seed law, not the current schedule/coupling path. *)
+(* Auxiliary transcript view derived from the payload: it keeps the compared
+  announcement projection fixed while threading the transcript coin through
+  non-public openings. Its current downstream consumer is the comparison-local
+  execution-seed law, not the schedule/coupling path or the broader
+  source/game boundary. *)
 op ms3c_payload_coin_driven_transcript_openings
   (p : ms3c_comparison_clause_payload) : ms_comparison_openings =
   {| mscos_true_opening = (p.`mscp_ann_true, p.`mscp_transcript_coin);
@@ -444,10 +443,9 @@ by rewrite /d_ms3c_sim_execution_comparison_payload; apply dmap_ll;
 qed.
 
 (* Real and sim payload laws are independent `dmap`s of seeds. Sampled coins now
-  survive in payload-only fields and proof-local auxiliary views, but the folded
-  comparison surface is still the same Phase-1 image on support. The execution
-  consumer that would justify promoting those auxiliary views is a future
-  comparison-side execution-seed package, not the current schedule law. *)
+  survive in payload-only fields and in the comparison-local execution package,
+  but the folded comparison surface is still the same Phase-1 image on support.
+  No broader source/game law currently consumes that internal package. *)
 lemma L_ms3c_cross_support_real_sim_payload_surface_equal
   (x : ms_public_input) (s : seed)
   (pr : ms3c_real_comparison_payload) (ps : ms3c_sim_comparison_payload) :
