@@ -261,7 +261,7 @@
     "GameMSHopTypes": {
       "direct": false,
       "kind": "ec",
-      "digest": "914dad3f4796e8f892568622769f5723"
+      "digest": "e1c556bdcc881c4f30a040406ba4aad1"
     },
     "GameMSHops": {
       "direct": true,

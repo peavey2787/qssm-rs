@@ -181,32 +181,65 @@ split; first exact Hann_false.
 exact Hsim.
 qed.
 
-(* MS1 canonical hash-binding hop obligation on the concrete stage pair used in
-   the G0->G1 telescope. *)
-pred ms1_hash_binding_surface_defined (x : qssm_public_input) (xms : ms_public_input) (s : seed) =
-  ms1_hash_binding_step (G_MS_real x xms s) (G_MS_after_binding x xms s) xms.
+(* MS1 hash-binding theorem surface: any concrete Real->AfterBinding game pair
+   satisfying `ms1_hash_binding_step` inherits the canonical budget bound. The
+   fixed `G_MS_real -> G_MS_after_binding` statement is then recovered as a
+   lemma by exhibiting the canonical stage pair locally. *)
+axiom A_MS1_hash_binding_step_advantage_bound :
+  forall (src dst : game_view) (xms : ms_public_input) (D : distinguisher),
+    ms1_hash_binding_step src dst xms =>
+    0%r <= epsilon_ms_hash_binding =>
+    Adv src dst D <= epsilon_ms_hash_binding.
 
-pred ms1_hash_binding_bad_event_bounded (x : qssm_public_input) (xms : ms_public_input) (s : seed) =
-  0%r <= epsilon_ms_hash_binding.
-
-axiom A_MS1_canonical_hash_binding_bound :
+lemma A_MS1_canonical_hash_binding_bound :
   forall (x : qssm_public_input) (xms : ms_public_input) (s : seed) (D : distinguisher),
     0%r <= epsilon_ms_hash_binding =>
     Adv (G_MS_real x xms s) (G_MS_after_binding x xms s) D <= epsilon_ms_hash_binding.
+proof.
+move=> x xms s D Hnonneg.
+apply (A_MS1_hash_binding_step_advantage_bound
+  (G_MS_real x xms s) (G_MS_after_binding x xms s) xms D).
+- rewrite /ms1_hash_binding_step /G_MS_real /G_MS_after_binding /G0_real_qssm /mk_ms_game_view /=.
+  exists
+    {| msgv_qssm_pub = x; msgv_seed = s; msgv_ms_pub = xms;
+       msgv_ms_obs = ms_game_view_public_obs xms; msgv_stage = MSGameStageReal;
+       msgv_le_placeholder = None |}
+    {| msgv_qssm_pub = x; msgv_seed = s; msgv_ms_pub = xms;
+       msgv_ms_obs = ms_game_view_public_obs xms; msgv_stage = MSGameStageAfterBinding;
+       msgv_le_placeholder = None |}.
+  by [].
+exact Hnonneg.
+qed.
 
-(* MS2 ROM surface split: query-surface well-formedness and bounded programmed
-   points on the canonical stage pair. *)
-pred ms2_rom_query_surface_defined (x : qssm_public_input) (xms : ms_public_input) (s : seed) =
-  ms2_rom_programming_step (G_MS_after_binding x xms s) (G_MS_after_rom x xms s) xms.
+(* MS2 ROM-programming theorem surface: any concrete AfterBinding->AfterRom
+   game pair satisfying `ms2_rom_programming_step` inherits the canonical ROM
+   budget bound. The fixed `G_MS_after_binding -> G_MS_after_rom` statement is
+   then recovered as a lemma by exhibiting the canonical stage pair locally. *)
+axiom A_MS2_rom_programming_step_advantage_bound :
+  forall (src dst : game_view) (xms : ms_public_input) (D : distinguisher),
+    ms2_rom_programming_step src dst xms =>
+    0%r <= epsilon_ms_rom_programmability =>
+    Adv src dst D <= epsilon_ms_rom_programmability.
 
-pred ms2_rom_programmed_points_bounded (x : qssm_public_input) (xms : ms_public_input) (s : seed) =
-  0%r <= epsilon_ms_rom_programmability.
-
-
-axiom A_MS2_canonical_rom_programming_bound :
+lemma A_MS2_canonical_rom_programming_bound :
   forall (x : qssm_public_input) (xms : ms_public_input) (s : seed) (D : distinguisher),
     0%r <= epsilon_ms_rom_programmability =>
     Adv (G_MS_after_binding x xms s) (G_MS_after_rom x xms s) D <= epsilon_ms_rom_programmability.
+proof.
+move=> x xms s D Hnonneg.
+apply (A_MS2_rom_programming_step_advantage_bound
+  (G_MS_after_binding x xms s) (G_MS_after_rom x xms s) xms D).
+- rewrite /ms2_rom_programming_step /G_MS_after_binding /G_MS_after_rom /mk_ms_game_view /=.
+  exists
+    {| msgv_qssm_pub = x; msgv_seed = s; msgv_ms_pub = xms;
+       msgv_ms_obs = ms_game_view_public_obs xms; msgv_stage = MSGameStageAfterBinding;
+       msgv_le_placeholder = None |}
+    {| msgv_qssm_pub = x; msgv_seed = s; msgv_ms_pub = xms;
+       msgv_ms_obs = ms_game_view_public_obs xms; msgv_stage = MSGameStageAfterRom;
+       msgv_le_placeholder = None |}.
+  by [].
+exact Hnonneg.
+qed.
 
 (* MS3a canonical bitness exact-simulation bound on the concrete stage pair
   used in the G0->G1 telescope. With `game_pr` now projected from `game_view`,
