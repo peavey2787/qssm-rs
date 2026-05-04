@@ -28,8 +28,13 @@ From `theorem/MainTheorem.ec`:
 
 - `qssm_main_theorem_skeleton` (**lemma**) derives
   `Adv_G0_G2_QSSM <= epsilon_ms_hash_binding + epsilon_ms_rom_programmability + epsilon_le`
-  from the closed MS bound, the LE bound, and an explicit theorem-level middle-hop obligation
-  `Adv_G1_MS_to_LE x xms s D <= 0%r`.
+  from the closed MS bound, the closed simulator extraction bridge, and the LE bound,
+  with `theorem/MainTheorem.ec` now specialized to `extract_ms_public x` rather than a
+  free unrelated `xms`.
+- The former middle-hop blocker is now closed in two steps: `sim/Simulator.ec`
+  states `A_extract_ms_public_real_view_probability_eq`, and
+  `games/GameAdvantage.ec` proves `A_G1_MS_to_LE_transition_bound` by collapsing
+  `G_MS_sim` to the concrete MS real surface and then applying that bridge.
 
 ## Dependency wiring targets
 
@@ -84,9 +89,10 @@ From `theorem/MainTheorem.ec`:
 
 Next: discharge the remaining LE-HVZK axioms (rejection-sampling chain,
 FS/ROM chain, view indistinguishability / advantage bound) from a concrete LE
-HVZK game skeleton, and separately prove the explicit cross-layer intermediate-hop
-target `Adv_G1_MS_to_LE x xms s D <= 0%r` that now sits between the closed MS
-endpoint `G_MS_sim` and the LE-facing `G1_le_real_projection`.
+HVZK game skeleton. The explicit cross-layer intermediate hop is no longer an
+open game/theorem blocker: it is now discharged by the simulator extraction bridge
+through `A_extract_ms_public_real_view_probability_eq` and
+`A_G1_MS_to_LE_transition_bound`.
 
 ## Proof order
 
@@ -94,7 +100,7 @@ endpoint `G_MS_sim` and the LE-facing `G1_le_real_projection`.
 2. Keep `A_adv_gamehop_triangle` as a proved game-hop arithmetic lemma.
 3. ~~Replace `A_G0_to_G1_ms_transition_bound`~~ done; discharge each `A_MS1_*` … `A_MS3c_*` from concrete games + MS proofs.
 4. ~~Replace `A_G1_to_G2_le_transition_bound`~~ done; the LE projection on `G1_le_real_projection` / `G2_full_sim` is now definitional and `A_game_pr_LE_projection_semantics` is a lemma, not an axiom.
-5. Keep `qssm_main_theorem_skeleton` as a proved composition lemma; the remaining explicit dependency is the theorem-level middle-hop premise `Adv_G1_MS_to_LE <= 0%r`, not a game-layer axiom.
+5. Keep `qssm_main_theorem_skeleton` as a proved composition lemma; it now uses `extract_ms_public x` directly and no longer assumes the middle hop separately. The next proof target is the remaining LE-HVZK axiom surface, not another game-view rewrite.
 
 ## Exit criteria
 

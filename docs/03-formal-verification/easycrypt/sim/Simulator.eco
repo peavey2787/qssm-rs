@@ -1,7 +1,7 @@
 {
   "version": 3,
   "echash": "n/a",
-  "root": { "kind": "ec", "digest": "966367e87c3528fe07efa9a704bc0f1e" },
+  "root": { "kind": "ec", "digest": "ed60cc8d13a85e55867042b01271cced" },
   "depends": {
     "AlgTactic": {
       "direct": false,
@@ -318,6 +318,11 @@
       "kind": "ec",
       "digest": "7fbec753ea5aa1b1f04254c9035fd392"
     },
+    "MSProbabilitySurface": {
+      "direct": true,
+      "kind": "ec",
+      "digest": "d5f53cf78ec2ea7de301c8a1091ca9bd"
+    },
     "Means": {
       "direct": false,
       "kind": "ec",
@@ -434,7 +439,7 @@
       "digest": "f1d29bbe7ec2638e2b074f006403bcfe"
     },
     "SourceDistributions": {
-      "direct": false,
+      "direct": true,
       "kind": "ec",
       "digest": "3cd819465ec0a714dafc1f926bcdde81"
     },

@@ -2,11 +2,13 @@ require import AllCore List.
 require import Ring.
 require import Algebra.
 require import QssmTypes.
+require import Simulator.
 require import GameTypes.
 require import GameViews.
 require import TranscriptObservable.
 require import SourceModel.
 require import SourceDistributions.
+require import SourceTheorem.
 require import MSProbabilitySurface.
 require import TrueClause ComparisonTypes ComparisonDigests ComparisonPayloadTypes ComparisonPayloadFromSeed.
 require import MS FS LESurface.
@@ -281,6 +283,54 @@ op Adv_G1_G2_LE (x : qssm_public_input) (xms : ms_public_input) (s : seed) (D : 
 
 op Adv_G0_G2_QSSM (x : qssm_public_input) (xms : ms_public_input) (s : seed) (D : distinguisher) : real =
   Adv (G0_real_qssm x xms s) (G2_full_sim x s) D.
+
+lemma A_game_pr_on_G_MS_sim_equals_ms_real_projection :
+  forall (x : qssm_public_input) (xms : ms_public_input) (s : seed) (D : distinguisher),
+    game_pr (G_MS_sim x xms s) D =
+    ms_view_distinguish_pr (d_ms3a_bitness_real_observable_v2 xms) D.
+proof.
+move=> x xms s D.
+have H3c : ms3c_comparison_game_pr_equiv xms s.
+- move=> Hann Ha2 Hfalse Htrue Hsum.
+  exact (MS_3c_exact_comparison_simulation xms s Hann Ha2 Hfalse Htrue Hsum).
+have H3b : ms3b_true_clause_game_pr_equiv xms.
+- move=> vb tb p clause_pub r Hop Hhd Htcp Hob.
+  exact (MS_3b_true_clause_characterization xms vb tb p clause_pub r Hop Hhd Htcp Hob).
+have H3a : ms3a_bitness_real_sim_equiv xms s.
+- exact (MS_3a_exact_bitness_simulation xms s).
+rewrite /game_pr /G_MS_sim /G1_ms_sim_le_real /mk_ms_game_view /=.
+have Hst3c :
+    ms3c_game_pr_stage xms s MSGameStageSim = MSGameStageAfterComparison.
+- rewrite /ms3c_game_pr_stage H3c /=.
+  by [].
+have Hst3b :
+    ms3b_game_pr_stage xms MSGameStageAfterComparison = MSGameStageAfterBitness.
+- rewrite /ms3b_game_pr_stage H3b /=.
+  by [].
+have Hst3a :
+    ms3a_game_pr_stage xms s MSGameStageAfterBitness = MSGameStageAfterRom.
+- rewrite /ms3a_game_pr_stage H3a /=.
+  by [].
+rewrite Hst3c Hst3b Hst3a /game_pr_ms_core /d_ms_game_stage_observable_v2 /=.
+rewrite -(L_ms2_rom_programming_transition_zero x s xms D).
+rewrite -(L_ms1_hash_binding_stage_zero x s xms D).
+by rewrite /d_ms_game_stage_observable_v2 /=.
+qed.
+
+lemma A_G1_MS_to_LE_transition_bound :
+  forall (x : qssm_public_input) (s : seed) (D : distinguisher),
+    Adv_G1_MS_to_LE x (extract_ms_public x) s D <= 0%r.
+proof.
+move=> x s D.
+rewrite /Adv_G1_MS_to_LE Adv_def.
+rewrite (A_game_pr_on_G_MS_sim_equals_ms_real_projection x (extract_ms_public x) s D).
+rewrite /game_pr /G1_le_real_projection /= /game_pr_g1_le_core.
+rewrite (A_extract_ms_public_real_view_probability_eq x s D).
+have -> :
+  le_view_distinguish_pr (d_le_real_view x s) D -
+  le_view_distinguish_pr (d_le_real_view x s) D = 0%r by ring.
+by [].
+qed.
 
 (* Telescoping identity: end-to-end MS advantage equals sum of segment advs. *)
 lemma A_adv_ms_hop_telescope (xq : qssm_public_input) (xms : ms_public_input) (sq : seed) (Dq : distinguisher) :

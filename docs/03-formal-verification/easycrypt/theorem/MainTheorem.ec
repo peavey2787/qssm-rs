@@ -2,6 +2,7 @@ require import AllCore List.
 require import StdOrder.
 (*---*) import RealOrder.
 require import QssmTypes SourceTypes Algebra FS SchnorrBranch TrueClause Comparison ComparisonTypes ComparisonDigests ComparisonPayload ComparisonCoupling ComparisonTheorem MS.
+require import Simulator.
 require import SourceDistributions SourceTheorem.
 require import LESurface LEModel Games GameAdvantage GameMSHops GameMSHopComposition GameLEBridge.
 
@@ -43,25 +44,16 @@ exact (MS_3c_exact_comparison_simulation x s Hann Ha2 Hfalse Htrue Hsum).
 qed.
 
 lemma qssm_main_theorem_skeleton
-  (x : qssm_public_input) (xms : ms_public_input) (s : seed) (D : distinguisher) :
-  ms3c_comparison_query_digest_ann_only xms s =>
-  ms3c_comparison_global_programmable_under_A2 xms s =>
-  ms3c_false_clauses_simulator_generated xms s =>
-  ms3c_true_clause_schnorr_from_blinder xms s =>
-  ms3c_clause_challenge_shares_sum xms s =>
+  (x : qssm_public_input) (s : seed) (D : distinguisher) :
   set_b_parameter_well_formed =>
   le_real_sim_transcript_equiv x s =>
-  Adv_G0_G2_QSSM x xms s D <=
-    Adv_G0_G1_MS x xms s D + Adv_G1_MS_to_LE x xms s D + Adv_G1_G2_LE x xms s D =>
-  Adv_G0_G1_MS x xms s D <= epsilon_ms_hash_binding + epsilon_ms_rom_programmability =>
-  Adv_G1_MS_to_LE x xms s D <= 0%r =>
-  Adv_G1_G2_LE x xms s D <= epsilon_le =>
-  Adv_G0_G2_QSSM x xms s D <=
+  Adv_G0_G2_QSSM x (extract_ms_public x) s D <=
     epsilon_ms_hash_binding +
     epsilon_ms_rom_programmability +
   epsilon_le.
 proof.
-move=> Hann Ha2 Hfalse Htrue Hsum Hsetb Hleeqv Hhop H01 Hmid H12.
+move=> Hsetb Hleeqv.
+pose xms := extract_ms_public x.
 have H01p : Adv_G0_G1_MS x xms s D <= epsilon_ms_hash_binding + epsilon_ms_rom_programmability.
   exact (A_G0_to_G1_ms_transition_bound x xms s D
     (A1_ms_hash_binding D)
@@ -69,6 +61,8 @@ have H01p : Adv_G0_G1_MS x xms s D <= epsilon_ms_hash_binding + epsilon_ms_rom_p
     (use_MS_3a xms s)
     (use_MS_3b xms)
     (use_MS_3c xms s)).
+have Hmid : Adv_G1_MS_to_LE x xms s D <= 0%r.
+  exact (A_G1_MS_to_LE_transition_bound x s D).
 have H12p : Adv_G1_G2_LE x xms s D <= epsilon_le.
   exact (A_G1_to_G2_le_transition_bound x xms s D Hsetb (A4_le_hvzk D) Hleeqv).
 have Htri : Adv_G0_G2_QSSM x xms s D <=

@@ -1,7 +1,7 @@
 {
   "version": 3,
   "echash": "n/a",
-  "root": { "kind": "ec", "digest": "7945d5fe241895bef7b24a7faef1c94c" },
+  "root": { "kind": "ec", "digest": "8e9b19ff0b7c0b34cbf59cf01ff93104" },
   "depends": {
     "AlgTactic": {
       "direct": false,
@@ -241,7 +241,7 @@
     "GameAdvantage": {
       "direct": true,
       "kind": "ec",
-      "digest": "d7a5d75a23913fb6e40371566575617b"
+      "digest": "65e99d05b3f6b2f2a574cd727c9774f3"
     },
     "GameLEBridge": {
       "direct": true,
@@ -454,9 +454,9 @@
       "digest": "5dfb7885699283512df79581cefe985b"
     },
     "Simulator": {
-      "direct": false,
+      "direct": true,
       "kind": "ec",
-      "digest": "966367e87c3528fe07efa9a704bc0f1e"
+      "digest": "ed60cc8d13a85e55867042b01271cced"
     },
     "SmtMap": {
       "direct": false,

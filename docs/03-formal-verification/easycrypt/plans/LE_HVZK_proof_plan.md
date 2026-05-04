@@ -162,9 +162,12 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
 - `games/GameLEBridge.ec` no longer carries a game-layer projection axiom:
   `A_game_pr_LE_projection_semantics` is now a lemma on the split views
   `G1_le_real_projection` / `G2_full_sim`.
-- The remaining exposed cross-layer debt is the explicit intermediate hop
-  `Adv_G1_MS_to_LE` between `G_MS_sim` and `G1_le_real_projection`, tracked in
-  `plans/G0_G1_G2_game_plan.md` rather than in this LE-HVZK plan.
+- The former cross-layer debt between `G_MS_sim` and `G1_le_real_projection`
+  is now closed outside the LE-HVZK lane: `sim/Simulator.ec` provides
+  `A_extract_ms_public_real_view_probability_eq`, `games/GameAdvantage.ec`
+  proves `A_G1_MS_to_LE_transition_bound`, and `theorem/MainTheorem.ec`
+  no longer assumes the middle hop separately. The remaining work in this plan
+  is therefore only the LE-side rejection / FS / view axioms.
 
 ## Exit Criteria
 
