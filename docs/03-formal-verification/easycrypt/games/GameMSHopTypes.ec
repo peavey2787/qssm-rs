@@ -1,7 +1,7 @@
 require import AllCore List Ring.
 require import StdOrder.
 (*---*) import RealOrder.
-require import QssmTypes Algebra Simulator FS TrueClause Comparison ComparisonTypes ComparisonDigests ComparisonPayload ComparisonCoupling ComparisonCouplingTypes ComparisonCouplingAxioms ComparisonCouplingTheorem ComparisonTheorem.
+require import QssmTypes Algebra Simulator FS TrueClause Comparison ComparisonTypes ComparisonDigests ComparisonPayloadTypes ComparisonPayload ComparisonCoupling ComparisonCouplingTypes ComparisonCouplingAxioms ComparisonCouplingTheorem ComparisonTheorem.
 require import SourceModel.
 require import SourceDistributions SourceTheorem MS LESurface LEModel.
 require import GameTypes GameViews GameAdvantage.
@@ -135,6 +135,50 @@ proof.
 have Halign := L_ms3c_public_obs_payload_alignment xms.
 move: Halign.
 by case: (ms_game_view_public_obs xms).
+qed.
+
+lemma L_ms_MS3c_public_obs_matches_phase1_seed
+  (x : qssm_public_input) (xms : ms_public_input) (s : seed) :
+  let obs = ms_game_view_public_obs xms in
+  (ms3c_phase1_real_payload_seed_from_public_input xms).`1.`ms3csc_stmt_digest =
+    ms_statement_digest obs /\
+  (ms3c_phase1_real_payload_seed_from_public_input xms).`1.`ms3csc_true_clause_ix =
+    ms3c_public_true_clause_index xms /\
+  (ms3c_phase1_real_payload_seed_from_public_input xms).`1.`ms3csc_false_clause_ixs =
+    ms3c_public_false_clause_indices xms /\
+  (ms3c_phase1_real_payload_seed_from_public_input xms).`1.`ms3csc_share_true =
+    ms3c_obs_share_true obs /\
+  (ms3c_phase1_real_payload_seed_from_public_input xms).`1.`ms3csc_share_false =
+    ms3c_obs_shares_false obs /\
+  (ms3c_phase1_real_payload_seed_from_public_input xms).`1.`ms3csc_global_challenge =
+    ms_comparison_global_challenge obs /\
+  (ms3c_phase1_real_payload_seed_from_public_input xms).`1.`ms3csc_programmed_challenge =
+    ms3c_obs_programmed_challenge obs /\
+  (ms3c_phase1_real_payload_seed_from_public_input xms).`1.`ms3csc_query_digest =
+    ms3c_phase1_seed_query_digest xms /\
+  (ms3c_phase1_real_payload_seed_from_public_input xms).`2.`ms3csa_ann_true =
+    ms3c_obs_ann_true obs /\
+  (ms3c_phase1_real_payload_seed_from_public_input xms).`2.`ms3csa_ann_false =
+    ms3c_obs_anns_false obs /\
+  ms3c_phase1_sim_payload_seed_from_public_input xms s =
+    ms3c_phase1_real_payload_seed_from_public_input xms.
+proof.
+rewrite /ms3c_phase1_real_payload_seed_from_public_input /=.
+have [Hstmt [Htrue_ix [Hfalse_ixs [Hshare_true [Hshare_false [Hglob [Hprog [Hquery [Hann_true Hann_false]]]]]]]]]
+  := L_ms3c_public_obs_seed_alignment xms.
+have Hsim := L_ms3c_phase1_real_sim_payload_seed_from_public_input xms s.
+rewrite /ms3c_phase1_real_payload_seed_from_public_input in Hsim.
+split; first exact Hstmt.
+split; first exact Htrue_ix.
+split; first exact Hfalse_ixs.
+split; first exact Hshare_true.
+split; first exact Hshare_false.
+split; first exact Hglob.
+split; first exact Hprog.
+split; first exact Hquery.
+split; first exact Hann_true.
+split; first exact Hann_false.
+exact Hsim.
 qed.
 
 (* MS1 canonical hash-binding hop obligation on the concrete stage pair used in

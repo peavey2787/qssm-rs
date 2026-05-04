@@ -10,6 +10,8 @@ This note tracks **exact comparison-clause simulation** under programmed Fiat–
 - **Axiom count:** 37 total **`axiom`** declarations under **`docs/03-formal-verification/easycrypt`**.
 - **Comparison carrier:** false-branch/index placeholder removed; **`mspi_comparison_slice`** now carries the real true opening plus the full false-entry slice.
 - **Comparison observable:** announcements and shares are carried natively through **`msv2_comparison_openings`** and aligned to the phase-1 payload by **`L_ms3c_public_obs_payload_alignment`** in **`games/GameAdvantage.ec`** and its wrapper in **`games/GameMSHopTypes.ec`**.
+- **Structured seed samplers:** the Phase-1 challenge/announcement records in **`ComparisonPayloadTypes.ec`** are now aligned to the same public game observable by **`L_ms3c_public_obs_seed_alignment`** and **`L_ms_MS3c_public_obs_matches_phase1_seed`**, while real/sim Phase-1 payload seeds remain definitionally equal.
+- **Game-layer dependency:** no MS-3c bridge axiom remains; **`L_ms3c_game_view_public_obs_aligns_v2`** instantiates **`ms_abstract_observable_aligns_v2`** at the game boundary, and **`A_MS3c_comparison_bundle_implies_game_pr_equality`** collapses the canonical AfterComparison/Sim pair definitionally through **`ms3c_game_pr_stage`**.
 
 ### Current MS-3c assumption table
 
@@ -20,6 +22,8 @@ This note tracks **exact comparison-clause simulation** under programmed Fiat–
 | **`ms3c_false_clauses_simulator_generated`** | **`ms3c_public_false_branch_nonempty x /\ ms3c_public_false_openings_simulated x`**. | now expressed directly over the native false-entry slice and native false openings. |
 | **`ms3c_true_clause_schnorr_from_blinder`** | MS-3b true-clause carrier plus Schnorr reparameterization / blinder-point packaging. | unchanged high-level hook; now fed by the native true opening. |
 | **`ms3c_clause_challenge_shares_sum`** | Programmed challenge equals global challenge on comparison surfaces. | unchanged packaging hook. |
+
+The public game surface is now closed for the current Phase-1 design: **`ms_game_view_public_obs xms = ms3a_public_v2_observable xms`**, **`ms_abstract_observable_aligns_v2`** preserves the native comparison-opening field, and the game layer has explicit alignment lemmas for both the phase-1 payload and the new structured Phase-1 seed records.
 
 Definitions and the main skeleton lemma live in the split MS-3c modules under **`ms/comparison/*.ec`** (re-exported by **`ms/Comparison.ec`**). **Payloads** split across **`ComparisonPayloadTypes.ec`**, **`ComparisonPayloadSeedTypes.ec`**, **`ComparisonPayloadFromSeed.ec`**, **`ComparisonPayloadSeedAnchors.ec`**, facade **`ComparisonPayloadSeeds.ec`**, **`ComparisonPayloadSupport{Types,Public,Shares}.ec`** (facade **`ComparisonPayloadSupport.ec`**), **`ComparisonPayloadFalseClause.ec`**, with **`ComparisonPayload.ec`** as a thin **`require export`** facade (imports still use theory **`ComparisonPayload`**). **Coupling** splits across **`ComparisonCouplingTypes.ec`**, **`ComparisonCouplingAxioms.ec`**, **`ComparisonCouplingMarginals.ec`**, **`ComparisonCouplingSchedule.ec`**, with **`ComparisonCouplingTheorem.ec`** and **`ComparisonCoupling.ec`** as facades. **`ms/MS.ec`** exports the wrapper lemma **`MS_3c_exact_comparison_simulation`** (same proof as `MS_3c_exact_comparison_simulation_from_clauses` in `ms/comparison/ComparisonTheorem.ec`).
 
@@ -129,7 +133,7 @@ Proof path:
 | **`L_ms3c_{real,sim}_payload_ann_digest_list_shape_ok`** / **`L_ms3c_{real,sim}_payload_on_support_ann_shape`** | **lemma** | Announcement digest list shape on payloads (**`L_ms3c_ann_digest_list_shape`**); no extra axioms. |
 | **`L_ms3c_cross_support_real_sim_payload_equal`** | **lemma** (`ComparisonPayloadFromSeed.ec`) | On support, real and sim payloads are **`dmap`** preimages of the same Phase-1 **`ms3c_{real,sim}_payload_from_seed`** body ⇒ **`pr = ps`**. |
 | **`A_ms3c_payload_index_fields_match`** | **lemma** (`ComparisonCouplingAxioms.ec`) | Five hooks ⇒ **`ms3c_ax_payload_index_fields_match`**; proved from **`L_ms3c_cross_support_real_sim_payload_equal`** (index fields are **reflexive** once **`pr = ps`**). |
-| **`A_ms3c_payload_ann_fields_match`** | **lemma** (`ComparisonCouplingAxioms.ec`) | Same cross-support equality ⇒ announcement fields agree (Phase-1 still uses **`witness`** lists, but they are **identical** on both sides). |
+| **`A_ms3c_payload_ann_fields_match`** | **lemma** (`ComparisonCouplingAxioms.ec`) | Same cross-support equality ⇒ announcement fields agree (Phase-1 announcement lists are the same concrete public-opening lists on both sides). |
 | **`A_ms3c_payload_stmt_fields_match`** | **lemma** (`ComparisonCouplingAxioms.ec`) | Same as other public fragments: **`L_ms3c_cross_support_real_sim_payload_equal`** ⇒ **`mscp_query_digest`** agrees on cross-support pairs (Phase-1 shared payload). |
 | **`A_ms3c_payload_result_fields_match`** | **lemma** (`ComparisonCouplingAxioms.ec`) | From **`L_ms3c_cross_support_real_sim_payload_equal`** (result fields reflexive once **`pr = ps`**). |
 | **`L_ms3c_ax_payload_public_fields_match_from_fragments`** | **lemma** (`ComparisonPayloadSupportPublic.ec`) | The four **`ms3c_ax_payload_{index,ann,stmt,result}_fields_match`** predicates ⇒ **`ms3c_ax_payload_public_fields_match`**. |
@@ -248,14 +252,14 @@ The abstract coupling law is the **independent product** of real and sim **margi
 | Risk | Mitigation |
 |------|------------|
 | **MS-3b carrier is concrete but Phase-1 seed laws are still deterministic** | Keep the native comparison slice / opening carrier stable, and upgrade the current structured Phase-1 point-mass samplers to richer transcript or ROM laws. |
-| **`ms_transcript_observable`** abstract | Use **`ms/SourceModel.ec`** accessors (**`ms_statement_digest`**, **`ms_comparison_global_challenge`**, …) and **`ms_v2_transcript_observable`** refinements; add **`ms3c_observable_comparison_slice`** bridge ops or refine **`ms_public_input`** to carry statement + arity. |
+| **`ms_transcript_observable`** abstract | Public-boundary alignment is now closed through **`ms/SourceModel.ec`** accessors, **`L_ms3c_game_view_public_obs_aligns_v2`**, and the phase-1 seed/payload alignment lemmas. Additional bridge ops are only needed if future work introduces non-public sampled comparison state into the observable. |
 | **`ms_public_input`** abstract | Need digest arity / clause count for **`duniform`** domains; may require **`ms_public_input`** refinement or side conditions on games. |
-| **Game view now carries native comparison openings, but not richer sampled comparison state** | The game layer aligns phase-1 payload fields with **`ms_game_view_public_obs xms`** through native openings; future work is only about richer samplers or execution state, not about adding basic announcement/share fields. |
+| **Game view now carries native comparison openings, but not richer sampled comparison state** | The game layer aligns both phase-1 payload fields and structured phase-1 seed records with **`ms_game_view_public_obs xms`** through native openings; future work is only about richer samplers or execution state, not about adding basic announcement/share fields. |
 | **ROM / FS** | **`A_ms3c_clause_surface_query_digest_constructed`** (payload digest wiring) and proved **`A_ms3c_surface_query_digest_field_correct`**; **`ms3c_clause_challenge_shares_sum`** ties to **`hash_domain`** / ROM programming lemmas (`primitives/FS.ec`, **`ms_query_to_scalar`** path). |
 
 ### 7. Recommended implementation sequence
 
-1. **Smallest safe patch (comments + one witness reduction only if needed):** extend the seed-bundle comment (**`ComparisonPayloadSeeds.ec`** facade) with **arity source** for false lists (pointer to future **`ms_public_input`** refinement); **no** theorem statement changes.
+1. **Smallest safe patch (comments only, if needed):** extend the seed-bundle comment (**`ComparisonPayloadSeeds.ec`** facade) with **arity source** for false lists (pointer to future **`ms_public_input`** refinement); **no** theorem statement changes.
 
 2. **Types (`ComparisonPayloadTypes.ec`):** replace abstract seed types with concrete tuples (or records) documented in this plan; keep **`ms3c_*_payload_seed`** as product type.
 
@@ -267,10 +271,10 @@ The abstract coupling law is the **independent product** of real and sim **margi
 
 6. **Coupling (`ComparisonCouplingAxioms.ec`):** Phase-1 **done**—all named **`A_ms3c_payload_*_match`** hooks are **lemmata** from **`L_ms3c_cross_support_real_sim_payload_equal`**. If real/sim margins stop sharing one payload image, restore fragment axioms or prove from transcript alignment.
 
-7. **Games:** replace **`witness`** **`obs`** with constructed observable; lemmas **`L_ms_game_view_*_mk`** pattern extend to real **`obs`**.
+7. **Games:** **done for the current public phase-1 surface.** **`ms_game_view_public_obs`** is the constructed **`ms3a_public_v2_observable xms`**, **`L_ms3c_game_view_public_obs_aligns_v2`** closes the v2/observable bridge, and **`L_ms_MS3c_public_obs_matches_phase1_seed`** plus **`L_ms_MS3c_public_obs_matches_phase1_payload`** cover the structured seed/payload boundary. Future game work is only needed if non-public sampled observables are introduced.
 
 **Expected to remain axiomatic after early patches:** properties true in the execution spec but not forced by definitions (for example ROM collision resistance or transcript-level announcement algebra once the carrier is enriched beyond Phase-1) may still stay as named axioms until constructor/transcript wiring discharges them in bulk. There are now **no** remaining MS-3b- or MS-3c-specific bridge axioms in this lane: the MS-3b operand-direction leaf and the MS-3c `game_pr` bridge are both proved lemmas.
 
 ## Next target
 
-See **§ Concrete MS-3c payload constructor design** above: prefer **richer seed types + `from_seed` + component laws**, keeping **`stmt := ms3c_public_stmt_digest x`** for **`mscp_query_digest`** (digest constructor is **proved** for Phase-1; no `forall stmt`). The current phase has replaced raw placeholders and digest-backed comparison openings with a native comparison slice on **`ms_public_input`** and native comparison openings on **`ms_transcript_observable`**. The next concrete target is to keep that carrier/observable boundary fixed while enriching the seed samplers and execution model. **Game hop:** no additional MS-3c bridge axiom remains; **`A_MS3c_comparison_bundle_implies_game_pr_equality`** and **`A_MS3c_canonical_comparison_exact_bound`** are both proved lemmas.
+See **§ Concrete MS-3c payload constructor design** above: prefer **richer seed types + `from_seed` + component laws**, keeping **`stmt := ms3c_public_stmt_digest x`** for **`mscp_query_digest`** (digest constructor is **proved** for Phase-1; no `forall stmt`). The current phase has replaced raw placeholders and digest-backed comparison openings with a native comparison slice on **`ms_public_input`**, native comparison openings on **`ms_transcript_observable`**, and explicit game-layer alignment lemmas for the structured Phase-1 seed/payload surface. The next concrete target is to keep that carrier/observable boundary fixed while enriching the seed samplers and execution model; the public game hop and observable bridge are already closed. **Game hop:** no additional MS-3c bridge axiom remains; **`A_MS3c_comparison_bundle_implies_game_pr_equality`** and **`A_MS3c_canonical_comparison_exact_bound`** are both proved lemmas.

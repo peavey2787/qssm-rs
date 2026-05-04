@@ -7,7 +7,7 @@ require import GameViews.
 require import TranscriptObservable.
 require import SourceModel.
 require import SourceDistributions.
-require import TrueClause ComparisonTypes ComparisonDigests ComparisonPayloadFromSeed.
+require import TrueClause ComparisonTypes ComparisonDigests ComparisonPayloadTypes ComparisonPayloadFromSeed.
 
 (* Game probability is projected from the concrete `game_view` surface.
   For MS views, the projection first collapses AfterComparison and Sim
@@ -91,6 +91,58 @@ by rewrite /ms_game_view_public_obs /ms3a_public_v2_observable
   /ms3c_obs_anns_false /ms3c_obs_false_openings /ms3c_obs_openings
   /ms3a_public_comparison_openings /ms3c_public_false_announcements
   /ms3c_public_false_openings.
+qed.
+
+lemma L_ms3c_game_view_public_obs_aligns_v2 (xms : ms_public_input) :
+  ms_abstract_observable_aligns_v2 (ms_game_view_public_obs xms)
+    (ms3a_public_v2_observable xms).
+proof.
+have Halign := A_ms3a_observable_of_v2_aligns (ms3a_public_v2_observable xms).
+rewrite /ms_game_view_public_obs /ms3a_observable_of_v2 in Halign.
+exact Halign.
+qed.
+
+lemma L_ms3c_public_obs_seed_alignment (xms : ms_public_input) :
+  let obs = ms_game_view_public_obs xms in
+  (ms3c_phase1_seed_challenge_from_public_input xms).`ms3csc_stmt_digest =
+    ms_statement_digest obs /\
+  (ms3c_phase1_seed_challenge_from_public_input xms).`ms3csc_true_clause_ix =
+    ms3c_public_true_clause_index xms /\
+  (ms3c_phase1_seed_challenge_from_public_input xms).`ms3csc_false_clause_ixs =
+    ms3c_public_false_clause_indices xms /\
+  (ms3c_phase1_seed_challenge_from_public_input xms).`ms3csc_share_true =
+    ms3c_obs_share_true obs /\
+  (ms3c_phase1_seed_challenge_from_public_input xms).`ms3csc_share_false =
+    ms3c_obs_shares_false obs /\
+  (ms3c_phase1_seed_challenge_from_public_input xms).`ms3csc_global_challenge =
+    ms_comparison_global_challenge obs /\
+  (ms3c_phase1_seed_challenge_from_public_input xms).`ms3csc_programmed_challenge =
+    ms3c_obs_programmed_challenge obs /\
+  (ms3c_phase1_seed_challenge_from_public_input xms).`ms3csc_query_digest =
+    ms3c_phase1_seed_query_digest xms /\
+  (ms3c_phase1_seed_announcement_from_public_input xms).`ms3csa_ann_true =
+    ms3c_obs_ann_true obs /\
+  (ms3c_phase1_seed_announcement_from_public_input xms).`ms3csa_ann_false =
+    ms3c_obs_anns_false obs.
+proof.
+rewrite /=.
+have [Hstmt [Htrue_ix [Hfalse_ixs [Hshare_true [Hshare_false [Hglob [Hprog Hquery]]]]]]]
+  := L_ms3c_phase1_seed_challenge_uses_public_surface xms.
+have [Hann_true Hann_false] :=
+  L_ms3c_phase1_seed_announcement_uses_public_surface xms.
+split.
+- rewrite /ms_game_view_public_obs /ms_statement_digest /ms3a_public_v2_observable
+          /ms3c_public_stmt_digest /=.
+  exact Hstmt.
+split; first exact Htrue_ix.
+split; first exact Hfalse_ixs.
+split; first by rewrite (L_ms3c_obs_true_share_public_obs xms); exact Hshare_true.
+split; first by rewrite (L_ms3c_obs_shares_false_public_obs xms); exact Hshare_false.
+split; first by rewrite (L_ms3c_obs_global_public_obs xms); exact Hglob.
+split; first by rewrite (L_ms3c_obs_programmed_public_obs xms); exact Hprog.
+split; first exact Hquery.
+split; first by rewrite (L_ms3c_obs_true_ann_public_obs xms); exact Hann_true.
+by rewrite (L_ms3c_obs_anns_false_public_obs xms); exact Hann_false.
 qed.
 
 lemma L_ms3c_public_obs_payload_alignment (xms : ms_public_input) :

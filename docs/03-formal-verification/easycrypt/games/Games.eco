@@ -141,7 +141,7 @@
     "ComparisonPayloadTypes": {
       "direct": false,
       "kind": "ec",
-      "digest": "c43202d1bb1fd5bf06f1e5d71d6f57e9"
+      "digest": "8d3e9d3010f43ef4b0930f54f51ebe88"
     },
     "ComparisonTheorem": {
       "direct": false,
@@ -241,7 +241,7 @@
     "GameAdvantage": {
       "direct": true,
       "kind": "ec",
-      "digest": "832f17cd197218edbef578fa01e54f2e"
+      "digest": "13a322c3d1f2a0136de94fe8dd877ce2"
     },
     "GameLEBridge": {
       "direct": true,
@@ -261,7 +261,7 @@
     "GameMSHopTypes": {
       "direct": false,
       "kind": "ec",
-      "digest": "ad8f73f0bd29680ef9a53728dc0d12a7"
+      "digest": "670ce697d6b96729d59e715664b302ad"
     },
     "GameMSHops": {
       "direct": true,

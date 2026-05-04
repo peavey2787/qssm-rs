@@ -61,3 +61,42 @@ op ms3c_phase1_real_payload_seed_from_public_input (x : ms_public_input) : ms3c_
 op ms3c_phase1_sim_payload_seed_from_public_input (x : ms_public_input) (_s : seed) : ms3c_sim_payload_seed =
    (ms3c_phase1_seed_challenge_from_public_input x,
     ms3c_phase1_seed_announcement_from_public_input x).
+
+lemma L_ms3c_phase1_seed_challenge_uses_public_surface (x : ms_public_input) :
+   (ms3c_phase1_seed_challenge_from_public_input x).`ms3csc_stmt_digest =
+      ms3c_public_stmt_digest x /\
+   (ms3c_phase1_seed_challenge_from_public_input x).`ms3csc_true_clause_ix =
+      ms3c_public_true_clause_index x /\
+   (ms3c_phase1_seed_challenge_from_public_input x).`ms3csc_false_clause_ixs =
+      ms3c_public_false_clause_indices x /\
+   (ms3c_phase1_seed_challenge_from_public_input x).`ms3csc_share_true =
+      ms3c_public_true_share x /\
+   (ms3c_phase1_seed_challenge_from_public_input x).`ms3csc_share_false =
+      ms3c_public_false_shares x /\
+   (ms3c_phase1_seed_challenge_from_public_input x).`ms3csc_global_challenge =
+      x.`mspi_comparison_global /\
+   (ms3c_phase1_seed_challenge_from_public_input x).`ms3csc_programmed_challenge =
+      x.`mspi_comparison_global /\
+   (ms3c_phase1_seed_challenge_from_public_input x).`ms3csc_query_digest =
+      ms3c_phase1_seed_query_digest x.
+proof.
+by rewrite /ms3c_phase1_seed_challenge_from_public_input /=.
+qed.
+
+lemma L_ms3c_phase1_seed_announcement_uses_public_surface (x : ms_public_input) :
+   (ms3c_phase1_seed_announcement_from_public_input x).`ms3csa_ann_true =
+      ms3c_public_true_announcement x /\
+   (ms3c_phase1_seed_announcement_from_public_input x).`ms3csa_ann_false =
+      ms3c_public_false_announcements x.
+proof.
+by rewrite /ms3c_phase1_seed_announcement_from_public_input /=.
+qed.
+
+lemma L_ms3c_phase1_real_sim_payload_seed_from_public_input
+      (x : ms_public_input) (s : seed) :
+   ms3c_phase1_sim_payload_seed_from_public_input x s =
+      ms3c_phase1_real_payload_seed_from_public_input x.
+proof.
+by rewrite /ms3c_phase1_sim_payload_seed_from_public_input
+                /ms3c_phase1_real_payload_seed_from_public_input.
+qed.
