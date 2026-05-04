@@ -107,8 +107,7 @@ lemma A_game_pr_on_G2_uses_LE_sim_projection :
       le_view_distinguish_pr (d_le_sim_view x s) D.
 proof.
 move=> x s D.
-have [_ Hg2] := A_game_pr_LE_projection_semantics x witness s D.
-rewrite Hg2 /game_pr_le_projected /=.
+rewrite /game_pr /G2_full_sim /game_pr_g2_core /game_pr_le_projected /=.
 by [].
 qed.
 

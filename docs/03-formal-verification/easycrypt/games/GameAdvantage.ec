@@ -9,7 +9,7 @@ require import SourceModel.
 require import SourceDistributions.
 require import MSProbabilitySurface.
 require import TrueClause ComparisonTypes ComparisonDigests ComparisonPayloadTypes ComparisonPayloadFromSeed.
-require import MS FS.
+require import MS FS LESurface.
 
 (* Game probability is projected from the concrete `game_view` surface.
   For MS views, the projection first collapses AfterComparison and Sim
@@ -242,7 +242,9 @@ rewrite /game_pr_ms_core.
 exact (A_MS2_rom_programming_transition_bound x s xms D).
 qed.
 
-op game_pr_g2_core : qssm_public_input -> seed -> distinguisher -> real.
+op game_pr_g2_core
+  (x : qssm_public_input) (s : seed) (D : distinguisher) : real =
+  le_view_distinguish_pr (d_le_sim_view x s) D.
 
 op game_pr (v : game_view) (D : distinguisher) : real =
   with v = GV_ms r =>

@@ -241,12 +241,12 @@
     "GameAdvantage": {
       "direct": true,
       "kind": "ec",
-      "digest": "41b7f1f5dd48c55d12f6e1c7f1d16fbc"
+      "digest": "6ac783a8822743472cde18fc6ca21ff4"
     },
     "GameLEBridge": {
       "direct": true,
       "kind": "ec",
-      "digest": "df22c2c076dc02d7df613ec466c10c82"
+      "digest": "4cb68d2e4720833fc2bb6a0583246a3f"
     },
     "GameMSHopComposition": {
       "direct": false,
