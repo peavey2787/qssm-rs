@@ -53,6 +53,10 @@ op ms3c_seed_challenge_with_rom_coin (x : ms_public_input) (rom_coin : scalar) :
        ms3csc_query_digest = ms3c_phase1_seed_query_digest x;
        ms3csc_rom_coin = rom_coin |}.
 
+op ms3c_seed_challenge_programmed_global
+   (sc : ms3c_seed_challenge) : digest =
+   sc.`ms3csc_programmed_challenge.
+
 op ms3c_seed_announcement_with_transcript_coin
    (x : ms_public_input) (transcript_coin : scalar) : ms3c_seed_announcement =
    {| ms3csa_ann_true = ms3c_public_true_announcement x;

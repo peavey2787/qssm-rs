@@ -203,6 +203,13 @@ op game_pr_ms_core : qssm_public_input -> seed -> ms_public_input ->
   ms_v2_transcript_observable -> ms_game_stage -> le_transcript_observable option ->
   distinguisher -> real.
 
+(* Prepared lower probability interface: `ms/MSProbabilitySurface.ec` now
+  exposes `ms_distinguisher_event`, `ms_view_distinguish_pr`, and
+  `d_ms_game_stage_observable_v2`. Keep `game_pr_ms_core` abstract until those
+  intermediate stage laws are strong enough to replace
+  `A_MS1_hash_binding_game_pr_core_bound` and
+  `A_MS2_rom_programming_game_pr_core_bound` with no net axiom increase. *)
+
 (* Lower MS1/MS2 bridge surface: all public fields remain fixed and only the
    abstract MS stage changes inside `game_pr_ms_core`. *)
 axiom A_MS1_hash_binding_game_pr_core_bound :

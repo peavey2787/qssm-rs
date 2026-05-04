@@ -44,6 +44,40 @@ rewrite /ms3a_game_public_bitness_source /ms3a_make_real_source /=.
 by split=> //; split=> //.
 qed.
 
+lemma ms3a_game_public_bitness_source_transcript_shape_iff
+  (x : ms_public_input) :
+  ms3a_public_transcript_shape_ok x <=>
+  (ms3a_game_public_bitness_source x).`ms3s_transcript_digest =
+    ms3a_pack_observable_with_digest_digest
+      (ms3a_public_stmt_digest x)
+      (ms3a_public_result_bit x)
+      (ms3a_public_bitness_globals x)
+      (ms3a_public_comparison_global x).
+proof.
+rewrite (ms3a_public_transcript_shape_ok_iff_digest_by_construction x).
+by rewrite /ms3a_game_public_bitness_source /ms3a_make_real_source.
+qed.
+
+lemma ms3a_game_public_bitness_source_transcript_digest_canonical
+  (x : ms_public_input) :
+  (ms3a_game_public_bitness_source x).`ms3s_transcript_digest =
+    ms3a_pack_observable_with_digest_digest
+      (ms3a_public_stmt_digest x)
+      (ms3a_public_result_bit x)
+      (ms3a_public_bitness_globals x)
+      (ms3a_public_comparison_global x).
+proof.
+rewrite /ms3a_game_public_bitness_source /ms3a_make_real_source.
+exact (ms3a_public_transcript_digest_by_construction x).
+qed.
+
+lemma ms3a_game_public_bitness_source_transcript_shape
+  (x : ms_public_input) :
+  ms3a_public_transcript_shape_ok x.
+proof.
+exact (ms3a_public_transcript_shape_ok_holds x).
+qed.
+
 lemma ms3a_real_execution_public_seed_support_inv
   (x : ms_public_input) (sigma : ms3a_real_payload_seed) :
   sigma \in d_ms3a_real_execution_public_seed x =>

@@ -61,38 +61,7 @@ op ms3a_public_bitness_global_at (x : ms_public_input) (i : int) : digest =
   ms_public_bit_global_digest x i.
 
 op ms3a_public_bitness_globals (x : ms_public_input) : digest list =
-  [ ms3a_public_bitness_global_at x 0;  ms3a_public_bitness_global_at x 1;
-    ms3a_public_bitness_global_at x 2;  ms3a_public_bitness_global_at x 3;
-    ms3a_public_bitness_global_at x 4;  ms3a_public_bitness_global_at x 5;
-    ms3a_public_bitness_global_at x 6;  ms3a_public_bitness_global_at x 7;
-    ms3a_public_bitness_global_at x 8;  ms3a_public_bitness_global_at x 9;
-    ms3a_public_bitness_global_at x 10; ms3a_public_bitness_global_at x 11;
-    ms3a_public_bitness_global_at x 12; ms3a_public_bitness_global_at x 13;
-    ms3a_public_bitness_global_at x 14; ms3a_public_bitness_global_at x 15;
-    ms3a_public_bitness_global_at x 16; ms3a_public_bitness_global_at x 17;
-    ms3a_public_bitness_global_at x 18; ms3a_public_bitness_global_at x 19;
-    ms3a_public_bitness_global_at x 20; ms3a_public_bitness_global_at x 21;
-    ms3a_public_bitness_global_at x 22; ms3a_public_bitness_global_at x 23;
-    ms3a_public_bitness_global_at x 24; ms3a_public_bitness_global_at x 25;
-    ms3a_public_bitness_global_at x 26; ms3a_public_bitness_global_at x 27;
-    ms3a_public_bitness_global_at x 28; ms3a_public_bitness_global_at x 29;
-    ms3a_public_bitness_global_at x 30; ms3a_public_bitness_global_at x 31;
-    ms3a_public_bitness_global_at x 32; ms3a_public_bitness_global_at x 33;
-    ms3a_public_bitness_global_at x 34; ms3a_public_bitness_global_at x 35;
-    ms3a_public_bitness_global_at x 36; ms3a_public_bitness_global_at x 37;
-    ms3a_public_bitness_global_at x 38; ms3a_public_bitness_global_at x 39;
-    ms3a_public_bitness_global_at x 40; ms3a_public_bitness_global_at x 41;
-    ms3a_public_bitness_global_at x 42; ms3a_public_bitness_global_at x 43;
-    ms3a_public_bitness_global_at x 44; ms3a_public_bitness_global_at x 45;
-    ms3a_public_bitness_global_at x 46; ms3a_public_bitness_global_at x 47;
-    ms3a_public_bitness_global_at x 48; ms3a_public_bitness_global_at x 49;
-    ms3a_public_bitness_global_at x 50; ms3a_public_bitness_global_at x 51;
-    ms3a_public_bitness_global_at x 52; ms3a_public_bitness_global_at x 53;
-    ms3a_public_bitness_global_at x 54; ms3a_public_bitness_global_at x 55;
-    ms3a_public_bitness_global_at x 56; ms3a_public_bitness_global_at x 57;
-    ms3a_public_bitness_global_at x 58; ms3a_public_bitness_global_at x 59;
-    ms3a_public_bitness_global_at x 60; ms3a_public_bitness_global_at x 61;
-    ms3a_public_bitness_global_at x 62; ms3a_public_bitness_global_at x 63 ].
+  ms_public_bitness_global_digests x.
 
 op ms3a_public_comparison_global (x : ms_public_input) : digest =
   x.`mspi_comparison_global.
@@ -111,7 +80,7 @@ op ms3a_public_comparison_openings (x : ms_public_input) : ms_comparison_opening
   future source/game obligation requires them explicitly. *)
 
 op ms3a_public_transcript_digest (x : ms_public_input) : digest =
-  x.`mspi_transcript_digest.
+  ms_public_transcript_digest_canonical x.
 
 (* Abstract observable agrees with the canonical v2 record (linking layer).   *)
 pred ms_abstract_observable_aligns_v2
@@ -289,7 +258,8 @@ have Hcases :
   i = 48 \/ i = 49 \/ i = 50 \/ i = 51 \/ i = 52 \/ i = 53 \/ i = 54 \/ i = 55 \/
   i = 56 \/ i = 57 \/ i = 58 \/ i = 59 \/ i = 60 \/ i = 61 \/ i = 62 \/ i = 63 by smt.
 move: Hcases.
-rewrite /ms3a_public_bitness_globals /=.
+rewrite /ms3a_public_bitness_globals /ms_public_bitness_global_digests /=.
+rewrite /ms3a_public_bitness_global_at.
 move=> [-> | Hcases]; first by [].
 move: Hcases=> [-> | Hcases]; first by [].
 move: Hcases=> [-> | Hcases]; first by [].
@@ -370,7 +340,8 @@ rewrite /ms_bitness_vector_programmed_layer; split.
 rewrite /ms_ordered_challenge_vector_matches /ms_bitness_vector_length_ok /=; split.
 - by [].
 split.
-- by rewrite /ms_bitness_global_challenge_vector_length_ok /ms3a_public_bitness_globals /=.
+- by rewrite /ms_bitness_global_challenge_vector_length_ok
+  /ms3a_public_bitness_globals /ms_public_bitness_global_digests /=.
 move=> i Hi.
 have Hglob := ms3a_public_bitness_globals_nth_valid x i Hi.
 have Hbit := ms3a_public_bits_nth_valid x i Hi.
@@ -427,6 +398,62 @@ op ms3a_pack_observable_with_digest
   (comp_glob : digest) : ms_v2_transcript_observable =
   ms3a_pack_observable stmt rbit bitness_glob comp_glob
     (ms3a_pack_observable_with_digest_digest stmt rbit bitness_glob comp_glob).
+
+lemma ms3a_public_transcript_shape_ok_implies_digest_by_construction
+  (x : ms_public_input) :
+  ms3a_public_transcript_shape_ok x =>
+  ms3a_public_transcript_digest x =
+    ms3a_pack_observable_with_digest_digest
+      (ms3a_public_stmt_digest x)
+      (ms3a_public_result_bit x)
+      (ms3a_public_bitness_globals x)
+      (ms3a_public_comparison_global x).
+proof.
+rewrite /ms3a_public_transcript_shape_ok /ms_transcript_digest_of_observable.
+rewrite /ms_transcript_digest_public_fields /= /ms3a_pack_observable_with_digest_digest.
+rewrite /ms_result_bit_digest.
+by [].
+qed.
+
+lemma ms3a_public_transcript_digest_by_construction
+  (x : ms_public_input) :
+  ms3a_public_transcript_digest x =
+    ms3a_pack_observable_with_digest_digest
+      (ms3a_public_stmt_digest x)
+      (ms3a_public_result_bit x)
+      (ms3a_public_bitness_globals x)
+      (ms3a_public_comparison_global x).
+proof.
+rewrite /ms3a_public_transcript_digest /ms_public_transcript_digest_canonical.
+rewrite /ms3a_public_stmt_digest /ms3a_public_result_bit.
+rewrite /ms3a_public_bitness_globals /ms3a_public_comparison_global.
+rewrite /ms3a_pack_observable_with_digest_digest /ms_result_bit_digest.
+by [].
+qed.
+
+lemma ms3a_public_transcript_shape_ok_iff_digest_by_construction
+  (x : ms_public_input) :
+  ms3a_public_transcript_shape_ok x <=>
+  ms3a_public_transcript_digest x =
+    ms3a_pack_observable_with_digest_digest
+      (ms3a_public_stmt_digest x)
+      (ms3a_public_result_bit x)
+      (ms3a_public_bitness_globals x)
+      (ms3a_public_comparison_global x).
+proof.
+rewrite /ms3a_public_transcript_shape_ok /ms_transcript_digest_of_observable.
+rewrite /ms3a_public_v2_observable /ms_transcript_digest_public_fields /=.
+rewrite /ms3a_pack_observable_with_digest_digest /ms_result_bit_digest.
+by [].
+qed.
+
+lemma ms3a_public_transcript_shape_ok_holds
+  (x : ms_public_input) :
+  ms3a_public_transcript_shape_ok x.
+proof.
+rewrite (ms3a_public_transcript_shape_ok_iff_digest_by_construction x).
+exact (ms3a_public_transcript_digest_by_construction x).
+qed.
 
 lemma ms3a_pack_observable_with_digest_field_correct
   (stmt : digest) (rbit : bool)

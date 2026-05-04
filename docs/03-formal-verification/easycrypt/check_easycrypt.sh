@@ -74,6 +74,7 @@ FILES=(
   ms/source/SourceScheduleObligations.ec
   ms/source/SourceObligations.ec
   ms/source/SourceTheorem.ec
+  ms/MSProbabilitySurface.ec
   ms/MS.ec
   le/LESurface.ec
   le/LESetB.ec

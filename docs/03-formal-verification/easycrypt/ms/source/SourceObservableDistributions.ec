@@ -3,7 +3,20 @@ require import QssmTypes.
 require import TranscriptObservable.
 require import SourceModel.
 require import SourceTypes SourceConstructors BitnessOne.
-require import SourceBitnessDistributions.
+require import SourcePayloadDistributions SourceBitnessDistributions.
+require import ComparisonPayloadTypes.
+
+op ms3a_after_binding_observable_of_source
+  (src : ms3a_bitness_layer_source) : ms_v2_transcript_observable =
+  ms3a_pack_observable_with_digest src.`ms3s_stmt src.`ms3s_result
+    src.`ms3s_bitness_global_challenges src.`ms3s_comparison_global_challenge.
+
+op ms3a_after_rom_observable_of_source_challenge
+  (src : ms3a_bitness_layer_source) (sc : ms3c_seed_challenge) :
+  ms_v2_transcript_observable =
+  ms3a_pack_observable_with_digest src.`ms3s_stmt src.`ms3s_result
+    src.`ms3s_bitness_global_challenges
+    (ms3c_seed_challenge_programmed_global sc).
 
 (* Canonical v2 observable distribution from structured source.                 *)
 op d_ms3a_bitness_real_observable_v2
@@ -19,6 +32,40 @@ op d_ms3a_bitness_sim_observable_v2
     ms3a_pack_observable src.`ms3s_stmt src.`ms3s_result
       src.`ms3s_bitness_global_challenges
       src.`ms3s_comparison_global_challenge src.`ms3s_transcript_digest).
+
+lemma d_ms3a_bitness_real_observable_v2_canonical
+  (x : ms_public_input) :
+  d_ms3a_bitness_real_observable_v2 x =
+  dunit (ms3a_pack_observable
+    (ms3a_public_stmt_digest x)
+    (ms3a_public_result_bit x)
+    (ms3a_public_bitness_globals x)
+    (ms3a_public_comparison_global x)
+    (ms3a_public_transcript_digest x)).
+proof.
+rewrite /d_ms3a_bitness_real_observable_v2.
+rewrite ms3a_bitness_real_source_as_seed_dmap.
+rewrite (dmap_comp
+  (ms3a_bitness_layer_source_of_real_payload \o ms3a_real_payload_from_seed x)
+  (fun (src : ms3a_bitness_layer_source) =>
+    ms3a_pack_observable src.`ms3s_stmt src.`ms3s_result
+      src.`ms3s_bitness_global_challenges
+      src.`ms3s_comparison_global_challenge src.`ms3s_transcript_digest)
+  (d_ms3a_real_payload_seed x)).
+rewrite /d_ms3a_real_payload_seed.
+rewrite (dmap_comp ms3a_real_payload_seed_of_bitness_layer
+  ((fun (src : ms3a_bitness_layer_source) =>
+      ms3a_pack_observable src.`ms3s_stmt src.`ms3s_result
+        src.`ms3s_bitness_global_challenges
+        src.`ms3s_comparison_global_challenge src.`ms3s_transcript_digest) \o
+   (ms3a_bitness_layer_source_of_real_payload \o ms3a_real_payload_from_seed x))
+  (dunit (ms3a_canonical_public_source x))).
+rewrite dmap_dunit.
+by rewrite /ms3a_real_payload_from_seed /ms3a_bitness_layer_source_of_real_payload
+  /(\o)
+  /ms3a_real_payload_seed_of_bitness_layer /ms3a_canonical_public_source
+  /ms3a_make_real_source /ms3a_pack_observable /=.
+qed.
 
 (* Abstract observable laws used by the MS-3a theorem skeleton.                *)
 op d_ms3a_bitness_real_observable

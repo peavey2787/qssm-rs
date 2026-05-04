@@ -1,5 +1,5 @@
 require import AllCore List.
-require import QssmTypes Algebra FS SchnorrBranch BitnessOne BitnessVector TranscriptObservable.
+require import Domains QssmTypes Algebra FS SchnorrBranch BitnessOne BitnessVector TranscriptObservable.
 
 (* Concrete MS public carrier used by the MS-3a public spine and the game view.
    Each public bit slot stores just enough material to build a programmed
@@ -76,6 +76,78 @@ op ms_public_bit_transcript (x : ms_public_input) (i : int) : ms_single_bit_or_t
 
 op ms_public_bit_global_digest (x : ms_public_input) (i : int) : digest =
   ms_bitness_challenge_scalar_digest (ms_public_bit_global_challenge x i).
+
+op ms_public_bitness_global_digests (x : ms_public_input) : digest list =
+  [ ms_public_bit_global_digest x 0;  ms_public_bit_global_digest x 1;
+    ms_public_bit_global_digest x 2;  ms_public_bit_global_digest x 3;
+    ms_public_bit_global_digest x 4;  ms_public_bit_global_digest x 5;
+    ms_public_bit_global_digest x 6;  ms_public_bit_global_digest x 7;
+    ms_public_bit_global_digest x 8;  ms_public_bit_global_digest x 9;
+    ms_public_bit_global_digest x 10; ms_public_bit_global_digest x 11;
+    ms_public_bit_global_digest x 12; ms_public_bit_global_digest x 13;
+    ms_public_bit_global_digest x 14; ms_public_bit_global_digest x 15;
+    ms_public_bit_global_digest x 16; ms_public_bit_global_digest x 17;
+    ms_public_bit_global_digest x 18; ms_public_bit_global_digest x 19;
+    ms_public_bit_global_digest x 20; ms_public_bit_global_digest x 21;
+    ms_public_bit_global_digest x 22; ms_public_bit_global_digest x 23;
+    ms_public_bit_global_digest x 24; ms_public_bit_global_digest x 25;
+    ms_public_bit_global_digest x 26; ms_public_bit_global_digest x 27;
+    ms_public_bit_global_digest x 28; ms_public_bit_global_digest x 29;
+    ms_public_bit_global_digest x 30; ms_public_bit_global_digest x 31;
+    ms_public_bit_global_digest x 32; ms_public_bit_global_digest x 33;
+    ms_public_bit_global_digest x 34; ms_public_bit_global_digest x 35;
+    ms_public_bit_global_digest x 36; ms_public_bit_global_digest x 37;
+    ms_public_bit_global_digest x 38; ms_public_bit_global_digest x 39;
+    ms_public_bit_global_digest x 40; ms_public_bit_global_digest x 41;
+    ms_public_bit_global_digest x 42; ms_public_bit_global_digest x 43;
+    ms_public_bit_global_digest x 44; ms_public_bit_global_digest x 45;
+    ms_public_bit_global_digest x 46; ms_public_bit_global_digest x 47;
+    ms_public_bit_global_digest x 48; ms_public_bit_global_digest x 49;
+    ms_public_bit_global_digest x 50; ms_public_bit_global_digest x 51;
+    ms_public_bit_global_digest x 52; ms_public_bit_global_digest x 53;
+    ms_public_bit_global_digest x 54; ms_public_bit_global_digest x 55;
+    ms_public_bit_global_digest x 56; ms_public_bit_global_digest x 57;
+    ms_public_bit_global_digest x 58; ms_public_bit_global_digest x 59;
+    ms_public_bit_global_digest x 60; ms_public_bit_global_digest x 61;
+    ms_public_bit_global_digest x 62; ms_public_bit_global_digest x 63 ].
+
+op ms_public_transcript_digest_canonical (x : ms_public_input) : digest =
+  hash_domain LABEL_MS_V2_PROOF
+    (x.`mspi_stmt_digest ::
+     ms_result_bit_digest x.`mspi_result_bit ::
+     x.`mspi_comparison_global ::
+     ms_public_bitness_global_digests x).
+
+op ms_make_public_input
+  (stmt : digest) (rbit : bool)
+  (bits : int -> ms_public_bit_input)
+  (comparison_slice : ms_comparison_slice)
+  (comparison_global : digest) : ms_public_input =
+  let x0 = {| mspi_stmt_digest = stmt;
+              mspi_result_bit = rbit;
+              mspi_bits = bits;
+              mspi_comparison_slice = comparison_slice;
+              mspi_comparison_global = comparison_global;
+              mspi_transcript_digest = witness |} in
+  {| mspi_stmt_digest = stmt;
+     mspi_result_bit = rbit;
+     mspi_bits = bits;
+     mspi_comparison_slice = comparison_slice;
+     mspi_comparison_global = comparison_global;
+     mspi_transcript_digest = ms_public_transcript_digest_canonical x0 |}.
+
+lemma ms_make_public_input_transcript_digest_canonical
+  (stmt : digest) (rbit : bool)
+  (bits : int -> ms_public_bit_input)
+  (comparison_slice : ms_comparison_slice)
+  (comparison_global : digest) :
+  (ms_make_public_input stmt rbit bits comparison_slice comparison_global).`mspi_transcript_digest =
+  ms_public_transcript_digest_canonical
+    (ms_make_public_input stmt rbit bits comparison_slice comparison_global).
+proof.
+rewrite /ms_make_public_input /ms_public_transcript_digest_canonical /=.
+by [].
+qed.
 
 lemma ms_public_bit_transcript_programmed (x : ms_public_input) (i : int) :
   (ms_public_bit_transcript x i).`msbt_stmt = x.`mspi_stmt_digest /\
