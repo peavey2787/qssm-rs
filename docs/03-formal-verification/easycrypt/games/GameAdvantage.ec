@@ -246,6 +246,10 @@ op game_pr_g2_core
   (x : qssm_public_input) (s : seed) (D : distinguisher) : real =
   le_view_distinguish_pr (d_le_sim_view x s) D.
 
+op game_pr_g1_le_core
+  (x : qssm_public_input) (s : seed) (D : distinguisher) : real =
+  le_view_distinguish_pr (d_le_real_view x s) D.
+
 op game_pr (v : game_view) (D : distinguisher) : real =
   with v = GV_ms r =>
     game_pr_ms_core r.`msgv_qssm_pub r.`msgv_seed r.`msgv_ms_pub r.`msgv_ms_obs
@@ -253,6 +257,8 @@ op game_pr (v : game_view) (D : distinguisher) : real =
         (ms3b_game_pr_stage r.`msgv_ms_pub
           (ms3c_game_pr_stage r.`msgv_ms_pub r.`msgv_seed r.`msgv_stage)))
       r.`msgv_le_placeholder D
+  with v = GV_g1_le_real r =>
+    game_pr_g1_le_core r.`qg1_pub r.`qg1_seed D
   with v = GV_g2_full_sim r =>
     game_pr_g2_core r.`qg2_pub r.`qg2_seed D.
 

@@ -13,6 +13,9 @@ op G0_real_qssm (x : qssm_public_input) (xms : ms_public_input) (s : seed) : gam
 op G1_ms_sim_le_real (x : qssm_public_input) (xms : ms_public_input) (s : seed) : game_view =
   mk_ms_game_view x s xms (ms_game_view_public_obs xms) MSGameStageSim None.
 
+op G1_le_real_projection (x : qssm_public_input) (xms : ms_public_input) (s : seed) : game_view =
+  GV_g1_le_real {| qg1_pub = x; qg1_ms_pub = xms; qg1_seed = s |}.
+
 op G2_full_sim (x : qssm_public_input) (s : seed) : game_view =
   GV_g2_full_sim {| qg2_pub = x; qg2_seed = s |}.
 
@@ -33,7 +36,7 @@ op G_MS_after_comparison (x : qssm_public_input) (xms : ms_public_input) (s : se
   mk_ms_game_view x s xms (ms_game_view_public_obs xms) MSGameStageAfterComparison None.
 
 op G_MS_sim (x : qssm_public_input) (xms : ms_public_input) (s : seed) : game_view =
-  G1_ms_sim_le_real x xms s.
+  mk_ms_game_view x s xms (ms_game_view_public_obs xms) MSGameStageSim None.
 
 lemma L_ms_game_view_stage_mk (x : qssm_public_input) (s : seed) (xms : ms_public_input)
   (obs : ms_v2_transcript_observable) (st : ms_game_stage)

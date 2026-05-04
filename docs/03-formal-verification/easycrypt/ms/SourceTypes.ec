@@ -270,6 +270,12 @@ type ms_game_view_record = {
 }.
 
 (* QSSM game views: MS-structured hops, or G2 full-sim shell (LE-heavy) for now. *)
+type qssm_g1_le_real_record = {
+  qg1_pub : qssm_public_input;
+  qg1_ms_pub : ms_public_input;
+  qg1_seed : seed;
+}.
+
 type qssm_g2_shell_record = {
   qg2_pub : qssm_public_input;
   qg2_seed : seed;
@@ -277,5 +283,6 @@ type qssm_g2_shell_record = {
 
 type game_view = [
   | GV_ms of ms_game_view_record
+  | GV_g1_le_real of qssm_g1_le_real_record
   | GV_g2_full_sim of qssm_g2_shell_record
 ].
