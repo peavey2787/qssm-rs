@@ -213,8 +213,11 @@ by [].
 qed.
 
 (* MS3b canonical true-clause obligation on the concrete stage pair used in the
-   G0->G1 telescope. *)
-axiom A_MS3b_canonical_true_clause_bound :
+   G0->G1 telescope. The source theorem `MS_3b_true_clause_characterization`
+   proves the required forall-bundle, and the projected `game_pr` surface makes
+   AfterBitness and AfterComparison coincide under that bundle, so the
+   resulting advantage is exactly zero. *)
+lemma A_MS3b_canonical_true_clause_bound :
   forall (x : qssm_public_input) (xms : ms_public_input) (s : seed) (D : distinguisher),
     (forall (vb : bool list) (tb : bool list) (p : int) (clause_pub : sch_point) (r : scalar),
       ms3b_comparison_operand_bits xms vb tb =>
@@ -223,6 +226,27 @@ axiom A_MS3b_canonical_true_clause_bound :
       ms3b_clause_opening_binds xms vb tb p clause_pub r =>
       ms_true_clause_points_are_blinder_points vb tb p clause_pub r) =>
     Adv (G_MS_after_bitness x xms s) (G_MS_after_comparison x xms s) D <= 0%r.
+proof.
+move=> x xms s D _.
+have Htrue : ms3b_true_clause_game_pr_equiv xms.
+- move=> vb tb p clause_pub r Hop Hhd Htcp Hob.
+  exact (MS_3b_true_clause_characterization xms vb tb p clause_pub r Hop Hhd Htcp Hob).
+rewrite Adv_def /Adv /game_pr /G_MS_after_bitness /G_MS_after_comparison /mk_ms_game_view /=.
+have Hst_bit : ms3b_game_pr_stage xms MSGameStageAfterBitness = MSGameStageAfterBitness.
+- rewrite /ms3b_game_pr_stage Htrue /=.
+  by [].
+have Hst_cmp : ms3b_game_pr_stage xms MSGameStageAfterComparison = MSGameStageAfterBitness.
+- rewrite /ms3b_game_pr_stage Htrue /=.
+  by [].
+rewrite Hst_bit Hst_cmp.
+have -> :
+  game_pr_ms_core x s xms (ms_game_view_public_obs xms)
+    (ms3a_game_pr_stage xms s MSGameStageAfterBitness) None D -
+  game_pr_ms_core x s xms (ms_game_view_public_obs xms)
+    (ms3a_game_pr_stage xms s MSGameStageAfterBitness) None D = 0%r
+  by ring.
+by [].
+qed.
 
 (* MS3c game layer: the comparison MS-3c implication bundle (same shape as
    `ms3c_comparison_exact_step` / `MS_3c_exact_comparison_simulation`) is assumed

@@ -1,15 +1,33 @@
 require import AllCore List.
 require import Ring.
+require import Algebra.
 require import QssmTypes.
 require import GameTypes.
 require import GameViews.
 require import TranscriptObservable.
 require import SourceDistributions.
+require import TrueClause.
 
 (* Game probability is projected from the concrete `game_view` surface.
-  For MS views, the projection collapses AfterRom and AfterBitness whenever
-  `ms3a_bitness_real_sim_equiv` holds, which is enough to prove the canonical
-  MS3a game hop as an exact zero-advantage lemma without adding a new axiom. *)
+  For MS views, the projection first collapses AfterBitness and
+  AfterComparison whenever the MS3b true-clause characterization holds, then
+  collapses AfterRom and AfterBitness whenever `ms3a_bitness_real_sim_equiv`
+  holds. This is enough to prove the canonical MS3a and MS3b game hops as
+  exact zero-advantage lemmas without adding new axioms. *)
+pred ms3b_true_clause_game_pr_equiv (xms : ms_public_input) =
+  forall (vb : bool list) (tb : bool list) (p : int) (clause_pub : sch_point) (r : scalar),
+    ms3b_comparison_operand_bits xms vb tb =>
+    ms_highest_differing_bit vb tb p =>
+    ms_true_clause_position vb tb p =>
+    ms3b_clause_opening_binds xms vb tb p clause_pub r =>
+    ms_true_clause_points_are_blinder_points vb tb p clause_pub r.
+
+op ms3b_game_pr_stage (xms : ms_public_input) (st : ms_game_stage) : ms_game_stage =
+  if ms3b_true_clause_game_pr_equiv xms /\
+     (st = MSGameStageAfterBitness \/ st = MSGameStageAfterComparison)
+  then MSGameStageAfterBitness
+  else st.
+
 op ms3a_game_pr_stage (xms : ms_public_input) (s : seed) (st : ms_game_stage) : ms_game_stage =
   if ms3a_bitness_real_sim_equiv xms s /\
      (st = MSGameStageAfterRom \/ st = MSGameStageAfterBitness)
@@ -25,7 +43,8 @@ op game_pr_g2_core : qssm_public_input -> seed -> distinguisher -> real.
 op game_pr (v : game_view) (D : distinguisher) : real =
   with v = GV_ms r =>
     game_pr_ms_core r.`msgv_qssm_pub r.`msgv_seed r.`msgv_ms_pub r.`msgv_ms_obs
-      (ms3a_game_pr_stage r.`msgv_ms_pub r.`msgv_seed r.`msgv_stage)
+      (ms3a_game_pr_stage r.`msgv_ms_pub r.`msgv_seed
+        (ms3b_game_pr_stage r.`msgv_ms_pub r.`msgv_stage))
       r.`msgv_le_placeholder D
   with v = GV_g2_full_sim r =>
     game_pr_g2_core r.`qg2_pub r.`qg2_seed D.

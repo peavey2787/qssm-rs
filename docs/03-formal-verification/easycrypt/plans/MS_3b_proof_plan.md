@@ -5,6 +5,7 @@ This note tracks the **true-clause / highest-differing-bit** characterization (M
 ## Proof-debt checkpoint (current)
 
 - **Only remaining MS-3b semantic axiom:** **`A_ms3b_operand_hdb_implies_value_gt_target`** — well-formed operands plus **`ms_highest_differing_bit`** imply **`ms3b_value_gt_target_at`** (`nth` value `true`, target `false` at `p`). This is the **narrow bit-direction leaf**; it is **not** provable from **`ms_highest_differing_bit`** + **`ms3b_comparison_operand_bits`** alone (counterexample: `vb = [false]`, `tb = [true]`, `p = 0`).
+- **No remaining MS-3b game-layer axiom:** **`A_MS3b_canonical_true_clause_bound`** is now a **proved lemma** in **`games/GameMSHopTypes.ec`**. It instantiates **`MS_3b_true_clause_characterization`** and uses the projected `game_pr` surface in **`games/GameAdvantage.ec`** to collapse the canonical AfterBitness/AfterComparison stage pair.
 - **Proved packaging (not debt):** **`L_ms3b_hdb_value_gt_target_implies_msb_first_strict_gt`** — **`ms_highest_differing_bit`** + **`ms3b_value_gt_target_at`** ⇒ **`ms3b_msb_first_strict_gt_at`** (pure list / definition unpack).
 - **Proved lemma (not debt):** **`A_ms3b_operand_hdb_implies_msb_first_strict_gt`** — follows from the axiom + **`L_ms3b_hdb_value_gt_target_implies_msb_first_strict_gt`** (replaces the former single axiom on **`ms3b_msb_first_strict_gt_at`**).
 - **Proved lemma (not debt):** **`A_ms3b_comparison_semantics`** — **`nth witness vb p = true`**, by projection from **`A_ms3b_operand_hdb_implies_value_gt_target`**.
@@ -72,6 +73,7 @@ The former **`true`** hooks are **removed**. `ms3b_comparison_operand_bits` and 
 | `A_ms3b_hdb_implies_true_clause_position` | **Proved lemma** | From `ms_highest_differing_bit` plus those two `nth` facts, prove `ms_true_clause_position` by definition. |
 | `A_ms3b_highest_differing_bit_correct` | **Proved lemma** | Composes **`A_ms3b_hdb_implies_value_one_target_zero`** with **`A_ms3b_hdb_implies_true_clause_position`** (same statement as the former single axiom). |
 | `A_ms3b_pedersen_opening_correct` | **Proved lemma** | Projects `ms3b_clause_opening_binds` to `ms_clause_public_point_matches_blinder clause_pub true r`. |
+| `A_MS3b_canonical_true_clause_bound` | **Proved lemma** | Canonical game-layer zero-advantage bound on `Adv (G_MS_after_bitness ...) (G_MS_after_comparison ...)`; proved from **`MS_3b_true_clause_characterization`** plus the concrete `game_view` projection in **`games/GameAdvantage.ec`**. |
 
 There is **no** blanket obligation of the form “MS-3b holds” as `true`.
 
@@ -87,6 +89,7 @@ There is **no** blanket obligation of the form “MS-3b holds” as `true`.
 4. **Enrich** `ms3b_comparison_operand_bits` with a decode from `ms_public_input` / v2 observables (`ms/TranscriptObservable.ec`, `ms/SourceModel.ec`, `ms/source/`) when projections exist, so the strict-greater axiom can be discharged from execution’s comparison semantics.
 5. Optionally tighten **`ms3b_clause_opening_binds`** with branch tags / digest preimages from execution spec + `ms/SchnorrBranch.ec` so the opening is not only “point = `sch_pubkey r`” but transcript-consistent.
 6. ~~Extend **`MS_3b_true_clause_characterization_from_highest_diff`**~~ — unchanged packaging; proof debt for the true-clause **bit direction** is concentrated in **`A_ms3b_operand_hdb_implies_value_gt_target`**, plus transcript-linked refinements of the two structural predicates.
+7. ~~Close the canonical MS-3b game hop~~ — done; **`A_MS3b_canonical_true_clause_bound`** is now a proved lemma, so there is no remaining MS-3b-specific game-layer axiom.
 
 ## Next milestone after MS-3b surface is stable
 
