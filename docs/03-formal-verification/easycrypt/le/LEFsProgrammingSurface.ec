@@ -147,6 +147,16 @@ by move=> st; rewrite /le_fs_visible_shell_of_hidden_programming_state
   /le_fs_hidden_programming_state_update.
 qed.
 
+lemma le_fs_hidden_state_update_id :
+  forall (st : le_fs_hidden_programming_state),
+    le_fs_hidden_programming_state_update st = st.
+proof.
+case=> shell qmat /=.
+by rewrite /le_fs_hidden_programming_state_update
+  /le_fs_visible_shell_of_hidden_programming_state
+  /le_fs_query_material_of_hidden_programming_state /le_fs_program_query_material.
+qed.
+
 lemma le_fs_hidden_state_update_matches_surrogate :
   forall (obs : le_transcript_observable),
     le_fs_observable_of_hidden_programming_state
@@ -230,7 +240,7 @@ by rewrite /le_fs_observable_of_hidden_programming_state
   /le_challenge_seed_obs /le_programmed_query_digest_obs /le_fs_query_material_obs.
 qed.
 
-axiom A_LE_fs_hidden_state_update_sdist_bound :
+lemma A_LE_fs_hidden_state_update_sdist_bound :
   forall (x : qssm_public_input) (s : seed) (D : distinguisher),
     le_real_view_distribution_defined x s =>
     le_sim_view_distribution_defined x s =>
@@ -240,6 +250,19 @@ axiom A_LE_fs_hidden_state_update_sdist_bound :
       (dmap (d_le_pre_fs_hidden_programming_state x s)
         le_fs_hidden_programming_state_update)
       <= (1%r / 2%r) * epsilon_le.
+proof.
+move=> x s D _ _ _ Heps.
+have Hmap :
+  dmap (d_le_pre_fs_hidden_programming_state x s)
+    le_fs_hidden_programming_state_update =
+  dmap (d_le_pre_fs_hidden_programming_state x s)
+    (fun (st : le_fs_hidden_programming_state) => st).
+  apply eq_dmap_in=> st _ /=.
+  exact (le_fs_hidden_state_update_id st).
+rewrite Hmap dmap_id sdistdd.
+have Hhalf : 0%r <= (1%r / 2%r) * epsilon_le by smt().
+exact Hhalf.
+qed.
 
 lemma A_LE_fs_hidden_material_programming_sdist_bound :
   forall (x : qssm_public_input) (s : seed) (D : distinguisher),

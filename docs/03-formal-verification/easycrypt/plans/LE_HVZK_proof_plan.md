@@ -157,7 +157,6 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
   - `A_LE_fs_query_surface_defined`
   - `A_LE_fs_programmable_oracle_available`
   - `A_LE_fs_programming_preserves_transcript_shape`
-  - `A_LE_fs_hidden_state_update_sdist_bound`
 - Critical-path audit, May 2026:
   - `LEViewIndist.ec`, `LEStatisticalDistance.ec`, `LEHVZK.ec`, and `games/GameLEBridge.ec` do not add new axioms; they only package lower obligations.
   - The active theorem path is:
@@ -175,11 +174,11 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
   - The rejection-definition / acceptance / output-shape bundle and the FS query/oracle/shape bundle feed the hiding predicates used by the same chain, via `A_LE_rejection_sampling_hiding_bound` and `A_LE_fs_programming_bound`.
   - The rejection-side and FS-side surrogate shape obligations are now discharged as lemmas; the remaining surrogate debt on the active theorem path is quantitative.
   - Rejection concretization, May 2026: `le_post_rejection_surrogate` in `LESurface.ec` is now the identity on `le_transcript_observable`. This makes `A_LE_rejection_surrogate_preserves_shape` immediate by unfolding and discharges `A_LE_rejection_surrogate_sdist_bound` by zero distance, via `dmap_id` and `sdistdd`.
-  - FS concretization, May 2026: `primitives/QssmTypes.ec` now makes `le_transcript_observable` a concrete record with one hidden FS-only field `leto_query_material`. `LESurface.ec` defines the theorem-facing selector ops as projections of that carrier and defines `le_fs_view_surrogate` as a hidden-field update through the abstract op `le_fs_program_query_material`. This makes field preservation honest and definitional without collapsing the transform to identity.
+  - FS concretization, May 2026: `primitives/QssmTypes.ec` now makes `le_transcript_observable` a concrete record with one hidden FS-only field `leto_query_material`. `LESurface.ec` defines the theorem-facing selector ops as projections of that carrier and now defines `le_fs_program_query_material` as identity on the current hidden carrier, so `le_fs_view_surrogate` is concrete end to end on the present lower surface.
   - Minimal lower FS surface, May 2026: `le/LEFsProgrammingSurface.ec` now adds the concrete lower names `le_fs_query_row`, `le_fs_programmed_response_carrier`, `d_le_pre_fs_programming_view`, `le_fs_surrogate_transform`, and `d_le_post_fs_programmed_view`. It proves both lower bridge facts `le_fs_surrogate_matches_programmed_view` and `le_fs_programming_preserves_shape_lower`, and `LEFsProgramming.ec` now imports that lower surface to prove `A_LE_fs_surrogate_preserves_shape` as a lemma. No axioms were added.
   - Joint-state surface, May 2026: `LEFsProgrammingSurface.ec` now defines `le_fs_visible_shell`, `le_fs_hidden_programming_state`, `le_fs_observable_of_hidden_programming_state`, `le_fs_hidden_programming_state_update`, and the distributions `d_le_pre_fs_hidden_programming_state` / `d_le_post_fs_hidden_programming_state`. The bridge lemmas `d_le_pre_fs_programming_view_matches_hidden_state_projection` and `d_le_post_fs_programmed_view_matches_hidden_state_projection` show that the theorem-facing observable distributions are precisely the observable projections of the lower joint-state distributions.
-  - Narrow lower quantitative law, May 2026: `LEFsProgrammingSurface.ec` now adds the single lower axiom `A_LE_fs_hidden_state_update_sdist_bound`, stated directly on `d_le_pre_fs_hidden_programming_state`, `dmap ... le_fs_hidden_programming_state_update`, and the standard LE FS premises. This is the minimal lower quantitative object for the hidden update itself, not a renamed theorem-facing surrogate axiom.
-  - Lower FS closure, May 2026: that narrow lower law now proves `A_LE_fs_hidden_material_programming_sdist_bound` definitionally on the joint-state surface, and then proves `A_LE_fs_programming_sampler_sdist_bound` on the theorem-facing observable surface via the hidden-state projection bridge lemmas plus `sdist_dmap`.
+  - Lower hidden-update closure, May 2026: `A_LE_fs_hidden_state_update_sdist_bound` is now a proved zero-distance lemma in `LEFsProgrammingSurface.ec`, because `le_fs_hidden_programming_state_update` is concrete identity on the current carrier.
+  - Lower FS closure, May 2026: that lower hidden-update lemma proves `A_LE_fs_hidden_material_programming_sdist_bound` definitionally on the joint-state surface, and then proves `A_LE_fs_programming_sampler_sdist_bound` on the theorem-facing observable surface via the hidden-state projection bridge lemmas plus `sdist_dmap`.
   - Theorem-facing FS closure, May 2026: `LEFsProgramming.ec` now proves `A_LE_fs_surrogate_sdist_bound` from `A_LE_fs_programming_sampler_sdist_bound`, so the surrogate-side theorem is no longer axiomatized.
   - Design refinement, May 2026: `A_LE_rejection_sampler_sdist_bound` remains a
     proved lemma in `le/LERejection.ec`, but it is no longer a repackaging of a
@@ -199,8 +198,8 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     abstract below that file, and the only existing LE-output interface lives in
     `sim/Simulator.ec` above `LESurface.ec`, the next honest real-side step is a
     lower LE real-execution surface below the facade. On the quantitative path,
-    the remaining theorem-facing surrogate axiom is gone; the FS quantitative debt now sits exactly at the lower hidden-state update step.
-  - Exact next FS proof target, May 2026: refine or replace `A_LE_fs_hidden_state_update_sdist_bound` with a concrete sampler/coupling theorem for `le_fs_hidden_programming_state_update` itself. The observable bridge and theorem-facing FS layers are now already in place above it.
+    the remaining theorem-facing surrogate axiom is gone, and the current lower FS carrier is fully closed. Any future nontrivial FS-programming semantics now requires enriching `le_query_material` or the lower real-execution surface rather than adding more FS-surrogate theorems above this layer.
+  - Exact next FS proof target, May 2026: if a non-identity FS programming story is still desired, enrich `le_query_material` with a concrete programmable-query component and reintroduce a corresponding lower sampler/coupling theorem on that richer carrier. Otherwise the natural next LE target is the lower real-execution surface under `d_le_real_view`.
 - `games/GameLEBridge.ec` no longer carries a game-layer projection axiom:
   `A_game_pr_LE_projection_semantics` is now a lemma on the split views
   `G1_le_real_projection` / `G2_full_sim`.

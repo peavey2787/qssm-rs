@@ -53,7 +53,8 @@ op d_le_real_view : qssm_public_input -> seed -> le_transcript_observable distr.
 op le_post_rejection_surrogate
   (obs : le_transcript_observable) : le_transcript_observable = obs.
 
-op le_fs_program_query_material : le_query_material -> le_query_material.
+op le_fs_program_query_material (qmat : le_query_material) : le_query_material =
+  qmat.
 
 op le_fs_view_surrogate
   (obs : le_transcript_observable) : le_transcript_observable =
