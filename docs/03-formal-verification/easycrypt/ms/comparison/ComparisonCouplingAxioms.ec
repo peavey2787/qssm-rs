@@ -166,7 +166,7 @@ qed.
    `ms3c_ax_payload_*` predicates imply **`ms3c_real_sim_payload_coupled`** pointwise. *)
 
 (* `A_ms3c_payload_schedule_eq_from_coupling` is a proved lemma in
-   `ComparisonCouplingSchedule.ec`: bundled marginal correctness + pair relation on
-   `d_ms3c_real_sim_payload_coupling` support force coupled payloads to be equal
-   (`L_ms3c_payload_eq_of_coupled`), hence `dmap coupling fst = dmap coupling snd`
-   (`eq_dmap_in`). *)
+  `ComparisonCouplingSchedule.ec`: bundled marginal correctness + pair relation on
+  `d_ms3c_real_sim_payload_coupling` support force the two folded clause-surface
+  maps to agree pointwise, so schedule equality follows directly at the surface
+  layer rather than by collapsing payloads to a singleton support image. *)

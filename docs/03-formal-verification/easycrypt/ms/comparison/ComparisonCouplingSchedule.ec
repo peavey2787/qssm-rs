@@ -16,6 +16,22 @@ by rewrite /ms3c_clause_ann_digests_from_surface /ms3c_make_real_clause_surface
   /ms3c_digest_true_announcement /ms3c_digest_false_announcements /= Hann_t Hann_f.
 qed.
 
+lemma L_ms3c_payload_surface_match_of_field_fragments
+  (pr : ms3c_real_comparison_payload) (ps : ms3c_sim_comparison_payload) :
+  ms3c_payload_pair_public_fields_match pr ps =>
+  ms3c_payload_pair_challenge_shares_match pr ps =>
+  ms3c_payload_pair_surface_match pr ps.
+proof.
+case: pr=> tr fr atr afr str sfr gcr qdr pcr.
+case: ps=> ts fs ats afs sts sfs gcs qds pcs /=.
+move=> Hpub Hshr.
+move: Hpub=> [Htr [Hfr [Hatr [Hafr [Hqd [Hgc Hpc]]]]]].
+move: Hshr=> [Hstr Hsfr].
+rewrite /ms3c_payload_pair_surface_match /ms3c_make_real_clause_surface
+  /ms3c_make_sim_clause_surface /ms3c_make_clause_surface /=.
+by subst.
+qed.
+
 lemma A_ms3c_coupling_pair_relation :
   forall (x : ms_public_input) (s : seed),
     ms3c_ax_payload_public_fields_match x s =>
@@ -33,9 +49,8 @@ have Hps' : ms3c_sim_payload_on_support x s ps by rewrite /ms3c_sim_payload_on_s
 rewrite /ms3c_real_sim_payload_coupled.
 split; first by apply (Hpub pr ps Hpr' Hps').
 split; first by apply (Hshr pr ps Hpr' Hps').
-split.
-  have Hdig := L_ms3c_payload_announcement_digests_preserved_from_public_fields x s Hpub.
-  by apply (Hdig pr ps Hpr' Hps').
+split; first by apply (L_ms3c_payload_surface_match_of_field_fragments pr ps
+  (Hpub pr ps Hpr' Hps') (Hshr pr ps Hpr' Hps')).
 have [Hfa Hfb] := Hfalse.
 split; first by apply (Hfa pr Hpr').
 by apply (Hfb ps Hps').
@@ -67,40 +82,50 @@ split.
 exact (A_ms3c_coupling_pair_relation x s Hpub Hshr Hcons Hfalse Htrue).
 qed.
 
-lemma L_ms3c_payload_eq_of_coupled
+lemma L_ms3c_clause_surface_eq_of_coupled
   (pr : ms3c_real_comparison_payload) (ps : ms3c_sim_comparison_payload) :
   ms3c_real_sim_payload_coupled pr ps =>
-  pr = ps.
+  ms3c_make_real_clause_surface pr = ms3c_make_sim_clause_surface ps.
 proof.
-case: pr=> tr fr atr afr str sfr gcr qdr pcr.
-case: ps=> ts fs ats afs sts sfs gcs qds pcs /=.
-move=> [Hpub [Hshr _]].
-move: Hpub=> [Htr [Hfr [Hatr [Hafr [Hqd [Hgc Hpc]]]]]].
-move: Hshr=> [Hstr Hsfr].
-by subst.
+move=> [_ [_ [Hsurf _]]].
+exact Hsurf.
 qed.
 
-lemma L_ms3c_coupling_fst_snd_eq_from_pair_relation
+lemma L_ms3c_coupling_schedule_eq_from_pair_relation
   (x : ms_public_input) (s : seed) :
   ms3c_ax_payload_coupling_pair_relation x s =>
-  d_ms3c_coupling_real_projection x s = d_ms3c_coupling_sim_projection x s.
+  dmap (d_ms3c_real_sim_payload_coupling x s)
+       (fun rp => ms3c_make_real_clause_surface (fst rp)) =
+  dmap (d_ms3c_real_sim_payload_coupling x s)
+       (fun rp => ms3c_make_sim_clause_surface (snd rp)).
 proof.
 move=> Hpair.
-rewrite /d_ms3c_coupling_real_projection /d_ms3c_coupling_sim_projection.
 apply eq_dmap_in.
 move=> [] pr ps Hmem.
 have Hcpl := Hpair pr ps Hmem.
-exact (L_ms3c_payload_eq_of_coupled pr ps Hcpl).
+exact (L_ms3c_clause_surface_eq_of_coupled pr ps Hcpl).
 qed.
 
 lemma A_ms3c_payload_schedule_eq_from_coupling
   (x : ms_public_input) (s : seed) :
   ms3c_ax_payload_support_coupling x s =>
-  d_ms3c_real_comparison_payload x = d_ms3c_sim_comparison_payload x s.
+  d_ms3c_real_comparison_schedule x = d_ms3c_sim_comparison_schedule x s.
 proof.
 move=> [Hre [Hsi Hpr]].
-have HeqJ := L_ms3c_coupling_fst_snd_eq_from_pair_relation x s Hpr.
-by rewrite -Hre HeqJ Hsi.
+have Hreal_sched :
+    d_ms3c_real_comparison_schedule x =
+    dmap (d_ms3c_real_sim_payload_coupling x s)
+      (fun rp => ms3c_make_real_clause_surface (fst rp)).
+  rewrite /d_ms3c_real_comparison_schedule -Hre /d_ms3c_coupling_real_projection.
+  by rewrite (dmap_comp fst ms3c_make_real_clause_surface (d_ms3c_real_sim_payload_coupling x s)).
+have Hsim_sched :
+    d_ms3c_sim_comparison_schedule x s =
+    dmap (d_ms3c_real_sim_payload_coupling x s)
+      (fun rp => ms3c_make_sim_clause_surface (snd rp)).
+  rewrite /d_ms3c_sim_comparison_schedule -Hsi /d_ms3c_coupling_sim_projection.
+  by rewrite (dmap_comp snd ms3c_make_sim_clause_surface (d_ms3c_real_sim_payload_coupling x s)).
+have HeqJ := L_ms3c_coupling_schedule_eq_from_pair_relation x s Hpr.
+by rewrite Hreal_sched Hsim_sched HeqJ.
 qed.
 
 lemma L_ms3c_payload_announcements_match_shape_from_ann_hook
@@ -158,7 +183,7 @@ lemma A_ms3c_payload_schedule_equiv :
     ms3c_false_clauses_simulator_generated x s =>
     ms3c_true_clause_schnorr_from_blinder x s =>
     ms3c_clause_challenge_shares_sum x s =>
-    d_ms3c_real_comparison_payload x = d_ms3c_sim_comparison_payload x s.
+    d_ms3c_real_comparison_schedule x = d_ms3c_sim_comparison_schedule x s.
 proof.
 move=> x s Hann Ha2 Hfalse Htrue Hsum.
 have Hreal : forall (pr : ms3c_real_comparison_payload),
@@ -192,9 +217,5 @@ lemma A_ms3c_comparison_schedule_equiv :
     d_ms3c_real_comparison_schedule x = d_ms3c_sim_comparison_schedule x s.
 proof.
 move=> x s Hann Ha2 Hfalse Htrue Hsum.
-have Hp := A_ms3c_payload_schedule_equiv x s Hann Ha2 Hfalse Htrue Hsum.
-rewrite /d_ms3c_real_comparison_schedule /d_ms3c_sim_comparison_schedule
-  /ms3c_make_real_clause_surface /ms3c_make_sim_clause_surface.
-exact (qssm_dmap_congr (d_ms3c_real_comparison_payload x) (d_ms3c_sim_comparison_payload x s)
-  ms3c_make_clause_surface Hp).
+exact (A_ms3c_payload_schedule_equiv x s Hann Ha2 Hfalse Htrue Hsum).
 qed.

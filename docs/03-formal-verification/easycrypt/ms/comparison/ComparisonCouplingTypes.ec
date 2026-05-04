@@ -3,20 +3,23 @@ require import Algebra QssmTypes FS SchnorrBranch TrueClause BitnessOne.
 require import ComparisonTypes ComparisonDigests ComparisonPayload.
 
 (* Scheduling coupling layer: source/payload transport only (not cryptographic).
-   Joint law is the **independent product** of the abstract payload laws. Fst/snd
-   marginals then match the standalone laws under **`is_lossless`** on the opposite
-   law (see `ComparisonCouplingTheorem.ec`). Correlated behaviour for schedule
-   equality still comes from lemma A_ms3c_coupling_pair_relation in
-   ComparisonCouplingSchedule.ec (not implied by the product alone;
-   announcement-shape and ann-digest list agreement need not be listed as separate
-   coupling premises; hook bridges remain axioms in ComparisonCouplingAxioms.ec). *)
+  Joint law is the **independent product** of the abstract payload laws. Fst/snd
+  marginals then match the standalone laws under **`is_lossless`** on the opposite
+  law (see `ComparisonCouplingTheorem.ec`). Correlated behaviour for schedule
+  equality still comes from lemma A_ms3c_coupling_pair_relation in
+  ComparisonCouplingSchedule.ec (not implied by the product alone), but the
+  pairwise layer now records explicit folded-surface agreement rather than relying
+  on payload equality on support. *)
+
+pred ms3c_payload_pair_surface_match
+  (pr : ms3c_real_comparison_payload) (ps : ms3c_sim_comparison_payload) =
+  ms3c_make_real_clause_surface pr = ms3c_make_sim_clause_surface ps.
 
 pred ms3c_real_sim_payload_coupled
   (pr : ms3c_real_comparison_payload) (ps : ms3c_sim_comparison_payload) =
   ms3c_payload_pair_public_fields_match pr ps /\
   ms3c_payload_pair_challenge_shares_match pr ps /\
-  ms3c_clause_ann_digests_from_surface (ms3c_make_real_clause_surface pr) =
-  ms3c_clause_ann_digests_from_surface (ms3c_make_sim_clause_surface ps) /\
+  ms3c_payload_pair_surface_match pr ps /\
   ms_false_clause_simulated (ms3c_make_real_clause_surface pr) /\
   ms_false_clause_simulated (ms3c_make_sim_clause_surface ps).
 
