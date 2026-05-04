@@ -22,12 +22,15 @@ proof.
 move=> x vb tb p.
 rewrite /ms3b_comparison_operand_bits /ms3b_phase1_comparison_carrier /=.
 move=> [-> [-> [_ _]]] Hhd.
-have Hwf := A_ms3b_hdb_implies_bitlists_wf [true] [false] p Hhd.
+have Hwf := A_ms3b_hdb_implies_bitlists_wf [x.`mspi_result_bit] [false] p Hhd.
 case: Hwf => _ [Hp0 Hplt].
 have Hp : p = 0.
 - apply (L_ms3b_int_lt1_eq0 p Hp0).
   by rewrite /= in Hplt.
-rewrite Hp /=.
+have Hneq := A_ms3b_hdb_directionality [x.`mspi_result_bit] [false] p Hhd.
+rewrite Hp /= in Hneq.
+have Hbit : x.`mspi_result_bit = true by smt.
+rewrite Hp Hbit /=.
 by split.
 qed.
 

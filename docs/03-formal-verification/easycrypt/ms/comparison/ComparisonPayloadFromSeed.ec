@@ -11,18 +11,17 @@ op ms3c_phase1_comparison_carrier_from_public_input (x : ms_public_input) :
 
 (* Phase-1 structural payload: public indices, false-branch arity from
    `size (ms3c_public_false_clause_indices x)` (equals `ms3c_public_false_branch_count x`
-   under `ms3c_public_shape_ok x`); placeholder digests; false-branch announcements
-   are `sch_pubkey` of the parallel placeholder scalar shares so
-   `ms_false_clause_simulated` holds definitionally on support. *)
+   under `ms3c_public_shape_ok x`); the true branch is derived from the
+   comparison-global digest and the false branch from the transcript digest, so
+   the payload is concrete even though it is still only a phase-1 derived
+   comparison slice. *)
 op ms3c_phase1_payload_from_public_input (x : ms_public_input) : ms3c_comparison_clause_payload =
   {| mscp_true_clause_ix = (ms3c_phase1_comparison_carrier_from_public_input x).`ms3bc_true_clause_ix;
      mscp_false_clause_ixs = ms3c_public_false_clause_indices x;
      mscp_ann_true = (ms3c_phase1_comparison_carrier_from_public_input x).`ms3bc_true_clause_pub;
-     mscp_ann_false =
-       map sch_pubkey (map (fun (_i : int) => witness) (ms3c_public_false_clause_indices x));
+     mscp_ann_false = ms3c_public_false_announcements x;
      mscp_share_true = (ms3c_phase1_comparison_carrier_from_public_input x).`ms3bc_true_clause_blinder;
-     mscp_share_false =
-       map (fun (_i : int) => witness) (ms3c_public_false_clause_indices x);
+     mscp_share_false = ms3c_public_false_shares x;
      mscp_global_challenge = x.`mspi_comparison_global;
      mscp_query_digest =
        ms_comparison_query_digest (ms3c_public_stmt_digest x)
@@ -31,12 +30,9 @@ op ms3c_phase1_payload_from_public_input (x : ms_public_input) : ms3c_comparison
              {| mscp_true_clause_ix = (ms3c_phase1_comparison_carrier_from_public_input x).`ms3bc_true_clause_ix;
                 mscp_false_clause_ixs = ms3c_public_false_clause_indices x;
                 mscp_ann_true = (ms3c_phase1_comparison_carrier_from_public_input x).`ms3bc_true_clause_pub;
-                mscp_ann_false =
-                  map sch_pubkey (map (fun (_i : int) => witness)
-                    (ms3c_public_false_clause_indices x));
+                mscp_ann_false = ms3c_public_false_announcements x;
                 mscp_share_true = (ms3c_phase1_comparison_carrier_from_public_input x).`ms3bc_true_clause_blinder;
-                mscp_share_false =
-                  map (fun (_i : int) => witness) (ms3c_public_false_clause_indices x);
+                mscp_share_false = ms3c_public_false_shares x;
                 mscp_global_challenge = x.`mspi_comparison_global;
                 mscp_query_digest = witness;
                 mscp_programmed_challenge = x.`mspi_comparison_global |}));
@@ -53,6 +49,15 @@ proof.
 by rewrite /ms3c_phase1_payload_from_public_input /ms3c_phase1_comparison_carrier_from_public_input.
 qed.
 
+lemma L_ms3c_phase1_payload_uses_concrete_public_surface (x : ms_public_input) :
+  (ms3c_phase1_payload_from_public_input x).`mscp_ann_false = ms3c_public_false_announcements x /\
+  (ms3c_phase1_payload_from_public_input x).`mscp_share_false = ms3c_public_false_shares x /\
+  (ms3c_phase1_payload_from_public_input x).`mscp_programmed_challenge = x.`mspi_comparison_global /\
+  (ms3c_phase1_payload_from_public_input x).`mscp_global_challenge = x.`mspi_comparison_global.
+proof.
+by rewrite /ms3c_phase1_payload_from_public_input.
+qed.
+
 lemma L_ms3c_int_lt1_eq0 (i : int) : 0 <= i => i < 1 => i = 0.
 proof.
 move=> ge0 lt1.
@@ -65,16 +70,13 @@ lemma L_ms_false_clause_simulated_phase1_from_public_input (x : ms_public_input)
 proof.
 rewrite /ms_false_clause_simulated /ms3c_make_clause_surface /ms3c_phase1_payload_from_public_input /=.
 have Hix : ms3c_public_false_clause_indices x = [0] by trivial.
-rewrite Hix /=.
 move=> i Hi_lo Hi_hi.
-have sz1 :
-  size (map sch_pubkey (map (fun (_i : int) => witness) [0])) = 1
-  by rewrite !size_map /=.
+have sz1 : size (ms3c_public_false_announcements x) = 1 by trivial.
 have hi1 : i < 1.
   rewrite -sz1.
-  by apply Hi_hi.
+  exact Hi_hi.
 have i0 : i = 0 by apply (L_ms3c_int_lt1_eq0 i Hi_lo hi1).
-rewrite i0 /=.
+rewrite /ms3c_public_false_announcements /ms3c_public_false_shares Hix /= i0.
 by [].
 qed.
 

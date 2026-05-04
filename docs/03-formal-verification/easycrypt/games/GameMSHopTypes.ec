@@ -115,6 +115,25 @@ by rewrite /G_MS_sim /G1_ms_sim_le_real;
   exact (L_ms_game_view_qssm_seed_mk x s xms (ms_game_view_public_obs xms) MSGameStageSim None).
 qed.
 
+lemma L_ms_MS3c_public_obs_matches_phase1_payload
+  (x : qssm_public_input) (xms : ms_public_input) (s : seed) :
+  let obs = ms_game_view_public_obs xms in
+  (ms3c_phase1_payload_from_public_input xms).`mscp_programmed_challenge =
+    ms3c_obs_programmed_challenge obs /\
+  (ms3c_phase1_payload_from_public_input xms).`mscp_share_true =
+    ms3c_obs_share_true obs /\
+  (ms3c_phase1_payload_from_public_input xms).`mscp_ann_true =
+    ms3c_obs_ann_true obs /\
+  (ms3c_phase1_payload_from_public_input xms).`mscp_share_false =
+    ms3c_obs_shares_false obs /\
+  (ms3c_phase1_payload_from_public_input xms).`mscp_ann_false =
+    ms3c_obs_anns_false obs.
+proof.
+have Halign := L_ms3c_public_obs_payload_alignment xms.
+move: Halign.
+by case: (ms_game_view_public_obs xms).
+qed.
+
 (* MS1 canonical hash-binding hop obligation on the concrete stage pair used in
    the G0->G1 telescope. *)
 pred ms1_hash_binding_surface_defined (x : qssm_public_input) (xms : ms_public_input) (s : seed) =

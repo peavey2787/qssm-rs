@@ -1,4 +1,4 @@
-require import AllCore List.
+require import AllCore List FS.
 require import Algebra QssmTypes SchnorrBranch.
 require export SourceTypes.
 
@@ -12,16 +12,19 @@ type ms3b_concrete_comparison_carrier = {
   ms3bc_true_clause_blinder : scalar;
 }.
 
-(* Phase-1 concrete comparison carrier: canonical one-bit operands with a
-   concrete Schnorr opening for the true clause. The MS-3b predicates consume
-   this carrier so operand and opening data are no longer abstractly floating
-   outside the comparison surface. *)
-op ms3b_phase1_comparison_carrier (_x : ms_public_input) : ms3b_concrete_comparison_carrier =
-  {| ms3bc_value_bits = [true];
+(* Phase-1 concrete comparison carrier: one-bit operands derived from the
+  public result bit and a true-clause opening derived from the comparison
+  digest. This keeps the MS-3b surface concrete without reintroducing a free
+  witness-based carrier. *)
+op ms3b_phase1_comparison_true_share (x : ms_public_input) : scalar =
+  ms_query_to_scalar x.`mspi_comparison_global.
+
+op ms3b_phase1_comparison_carrier (x : ms_public_input) : ms3b_concrete_comparison_carrier =
+  {| ms3bc_value_bits = [x.`mspi_result_bit];
      ms3bc_target_bits = [false];
      ms3bc_true_clause_ix = 0;
-     ms3bc_true_clause_pub = sch_pubkey witness;
-     ms3bc_true_clause_blinder = witness |}.
+    ms3bc_true_clause_pub = sch_pubkey (ms3b_phase1_comparison_true_share x);
+    ms3bc_true_clause_blinder = ms3b_phase1_comparison_true_share x |}.
 
 pred ms3b_comparison_operand_bits
   (x : ms_public_input) (value_bits target_bits : bool list) =

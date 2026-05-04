@@ -5,6 +5,7 @@ require import QssmTypes.
 require import GameTypes.
 require import GameViews.
 require import TranscriptObservable.
+require import SourceModel.
 require import SourceDistributions.
 require import TrueClause ComparisonTypes ComparisonDigests ComparisonPayloadFromSeed.
 
@@ -31,6 +32,37 @@ pred ms3c_comparison_game_pr_equiv (xms : ms_public_input) (s : seed) =
   ms3c_true_clause_schnorr_from_blinder xms s =>
   ms3c_clause_challenge_shares_sum xms s =>
   ms_comparison_exact_simulation_equiv xms s.
+
+lemma L_ms3c_public_obs_payload_alignment (xms : ms_public_input) :
+  let obs = ms_game_view_public_obs xms in
+  (ms3c_phase1_payload_from_public_input xms).`mscp_programmed_challenge =
+    ms3c_obs_programmed_challenge obs /\
+  (ms3c_phase1_payload_from_public_input xms).`mscp_global_challenge =
+    ms_comparison_global_challenge obs /\
+  (ms3c_phase1_payload_from_public_input xms).`mscp_share_true =
+    ms3c_obs_share_true obs /\
+  (ms3c_phase1_payload_from_public_input xms).`mscp_ann_true =
+    ms3c_obs_ann_true obs /\
+  (ms3c_phase1_payload_from_public_input xms).`mscp_share_false =
+    ms3c_obs_shares_false obs /\
+  (ms3c_phase1_payload_from_public_input xms).`mscp_ann_false =
+    ms3c_obs_anns_false obs.
+proof.
+rewrite /ms_game_view_public_obs /ms3a_public_v2_observable /ms3a_pack_observable.
+rewrite /ms3c_phase1_payload_from_public_input /ms3c_phase1_comparison_carrier_from_public_input.
+rewrite /ms3b_phase1_comparison_carrier /ms3b_phase1_comparison_true_share.
+rewrite /ms3c_public_false_announcements /ms3c_public_false_shares.
+rewrite /ms3c_obs_programmed_challenge /ms3c_obs_share_true /ms3c_obs_ann_true.
+rewrite /ms3c_obs_shares_false /ms3c_obs_anns_false /ms_comparison_global_challenge /=.
+have Hix : ms3c_public_false_clause_indices xms = [0] by trivial.
+rewrite Hix /=.
+  split; first by [].
+  split; first by [].
+  split; first by [].
+  split; first by [].
+  split; first by [].
+  by [].
+qed.
 
 op ms3c_game_pr_stage (xms : ms_public_input) (s : seed) (st : ms_game_stage) : ms_game_stage =
   if ms3c_comparison_game_pr_equiv xms s /\

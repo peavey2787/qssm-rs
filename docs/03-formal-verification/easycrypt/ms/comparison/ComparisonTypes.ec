@@ -99,15 +99,33 @@ op ms3c_public_true_clause_index (_x : ms_public_input) : int = 0.
 
 op ms3c_public_false_clause_indices (_x : ms_public_input) : int list = [0].
 
-op ms3c_obs_programmed_challenge (_obs : ms_transcript_observable) : digest = witness.
+op ms3c_public_true_share (x : ms_public_input) : scalar =
+  ms_query_to_scalar x.`mspi_comparison_global.
 
-op ms3c_obs_share_true (_obs : ms_transcript_observable) : scalar = witness.
+op ms3c_public_true_announcement (x : ms_public_input) : sch_point =
+  sch_pubkey (ms3c_public_true_share x).
 
-op ms3c_obs_shares_false (_obs : ms_transcript_observable) : scalar list = [witness].
+op ms3c_public_false_shares (x : ms_public_input) : scalar list =
+  map (fun (_i : int) => ms_query_to_scalar x.`mspi_transcript_digest)
+    (ms3c_public_false_clause_indices x).
 
-op ms3c_obs_ann_true (_obs : ms_transcript_observable) : sch_point = witness.
+op ms3c_public_false_announcements (x : ms_public_input) : sch_point list =
+  map sch_pubkey (ms3c_public_false_shares x).
 
-op ms3c_obs_anns_false (_obs : ms_transcript_observable) : sch_point list = [witness].
+op ms3c_obs_programmed_challenge (obs : ms_transcript_observable) : digest =
+  obs.`msv2_comparison_global_challenge.
+
+op ms3c_obs_share_true (obs : ms_transcript_observable) : scalar =
+  ms_query_to_scalar (ms3c_obs_programmed_challenge obs).
+
+op ms3c_obs_shares_false (obs : ms_transcript_observable) : scalar list =
+  [ms_query_to_scalar obs.`msv2_transcript_digest].
+
+op ms3c_obs_ann_true (obs : ms_transcript_observable) : sch_point =
+  sch_pubkey (ms3c_obs_share_true obs).
+
+op ms3c_obs_anns_false (obs : ms_transcript_observable) : sch_point list =
+  map sch_pubkey (ms3c_obs_shares_false obs).
 
 (* Strict positivity of public false-branch arity (comparison has ≥1 false clause). *)
 pred ms3c_public_false_branch_nonempty (x : ms_public_input) =

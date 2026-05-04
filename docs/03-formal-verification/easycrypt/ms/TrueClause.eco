@@ -221,12 +221,12 @@
     "TrueClauseTheorem": {
       "direct": true,
       "kind": "ec",
-      "digest": "a3a654153c25bd4e34f2096e1bc567f1"
+      "digest": "2fbfa223a84277ee3d4afb9c435c21ef"
     },
     "TrueClauseTypes": {
       "direct": true,
       "kind": "ec",
-      "digest": "ddac412094b05a22e8e7c8f59860799b"
+      "digest": "317c9a150e59d6178410d327abf5e1f4"
     },
     "Xint": {
       "direct": false,
