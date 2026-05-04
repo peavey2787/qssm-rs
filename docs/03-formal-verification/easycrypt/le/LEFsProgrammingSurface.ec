@@ -1,7 +1,11 @@
 require import QssmTypes.
 require import AllCore Distr.
+require import Real.
 require import SDist.
+require import StdOrder.
 require import LESurface.
+
+(*---*) import RealOrder.
 
 (* Lower execution-facing FS-programming boundary below `LEFsProgramming.ec`.
    This file introduces the concrete lower names needed to eventually discharge
@@ -226,6 +230,59 @@ by rewrite /le_fs_observable_of_hidden_programming_state
   /le_challenge_seed_obs /le_programmed_query_digest_obs /le_fs_query_material_obs.
 qed.
 
+axiom A_LE_fs_hidden_state_update_sdist_bound :
+  forall (x : qssm_public_input) (s : seed) (D : distinguisher),
+    le_real_view_distribution_defined x s =>
+    le_sim_view_distribution_defined x s =>
+    le_fs_programming_hiding_bound x s D =>
+    0%r <= epsilon_le =>
+    sdist (d_le_pre_fs_hidden_programming_state x s)
+      (dmap (d_le_pre_fs_hidden_programming_state x s)
+        le_fs_hidden_programming_state_update)
+      <= (1%r / 2%r) * epsilon_le.
+
+lemma A_LE_fs_hidden_material_programming_sdist_bound :
+  forall (x : qssm_public_input) (s : seed) (D : distinguisher),
+    le_real_view_distribution_defined x s =>
+    le_sim_view_distribution_defined x s =>
+    le_fs_programming_hiding_bound x s D =>
+    0%r <= epsilon_le =>
+    sdist (d_le_pre_fs_hidden_programming_state x s)
+      (d_le_post_fs_hidden_programming_state x s)
+      <= (1%r / 2%r) * epsilon_le.
+proof.
+move=> x s D Hr Hs Hfs Heps.
+rewrite /d_le_post_fs_hidden_programming_state.
+exact (A_LE_fs_hidden_state_update_sdist_bound x s D Hr Hs Hfs Heps).
+qed.
+
+lemma A_LE_fs_programming_sampler_sdist_bound :
+  forall (x : qssm_public_input) (s : seed) (D : distinguisher),
+    le_real_view_distribution_defined x s =>
+    le_sim_view_distribution_defined x s =>
+    le_fs_programming_hiding_bound x s D =>
+    0%r <= epsilon_le =>
+    sdist (d_le_pre_fs_programming_view x s)
+      (d_le_post_fs_programmed_view x s)
+      <= (1%r / 2%r) * epsilon_le.
+proof.
+move=> x s D Hr Hs Hfs Heps.
+rewrite d_le_pre_fs_programming_view_matches_hidden_state_projection.
+rewrite d_le_post_fs_programmed_view_matches_hidden_state_projection.
+have Hmap :
+  sdist (dmap (d_le_pre_fs_hidden_programming_state x s)
+          le_fs_observable_of_hidden_programming_state)
+        (dmap (d_le_post_fs_hidden_programming_state x s)
+          le_fs_observable_of_hidden_programming_state)
+    <= sdist (d_le_pre_fs_hidden_programming_state x s)
+         (d_le_post_fs_hidden_programming_state x s).
+  exact (sdist_dmap (d_le_pre_fs_hidden_programming_state x s)
+    (d_le_post_fs_hidden_programming_state x s)
+    le_fs_observable_of_hidden_programming_state).
+exact (ler_trans _ _ _ Hmap
+  (A_LE_fs_hidden_material_programming_sdist_bound x s D Hr Hs Hfs Heps)).
+qed.
+
 lemma le_fs_surrogate_matches_programmed_view :
   forall (x : qssm_public_input) (s : seed),
     d_le_post_fs_programmed_view x s =
@@ -269,15 +326,28 @@ qed.
        lefsqr_programmed_query_digest (le_fs_query_row_of_observable obs) =
          le_programmed_query_digest_obs obs.
 
+   The quantitative lower law is now isolated as
+   `A_LE_fs_hidden_state_update_sdist_bound` on the hidden-state update itself.
+   The two theorem-facing lower corollaries derived from it are:
+
    lemma A_LE_fs_hidden_material_programming_sdist_bound :
-     forall (x : qssm_public_input) (s : seed),
+     forall (x : qssm_public_input) (s : seed) (D : distinguisher),
        le_real_view_distribution_defined x s =>
-       le_fs_query_surface_defined x s =>
-       le_fs_programmable_oracle_available x s =>
-       le_fs_programming_preserves_transcript_shape x s =>
+       le_sim_view_distribution_defined x s =>
+       le_fs_programming_hiding_bound x s D =>
        0%r <= epsilon_le =>
        sdist (d_le_pre_fs_hidden_programming_state x s)
          (d_le_post_fs_hidden_programming_state x s)
+         <= (1%r / 2%r) * epsilon_le.
+
+   lemma A_LE_fs_programming_sampler_sdist_bound :
+     forall (x : qssm_public_input) (s : seed) (D : distinguisher),
+       le_real_view_distribution_defined x s =>
+       le_sim_view_distribution_defined x s =>
+       le_fs_programming_hiding_bound x s D =>
+       0%r <= epsilon_le =>
+       sdist (d_le_pre_fs_programming_view x s)
+         (d_le_post_fs_programmed_view x s)
          <= (1%r / 2%r) * epsilon_le.
 
    The point of this file is to expose the FS-programming lane below

@@ -78,7 +78,7 @@ proof.
 exact le_fs_programming_preserves_shape_lower.
 qed.
 
-axiom A_LE_fs_surrogate_sdist_bound :
+lemma A_LE_fs_surrogate_sdist_bound :
   forall (x : qssm_public_input) (s : seed) (D : distinguisher),
     le_real_view_distribution_defined x s =>
     le_sim_view_distribution_defined x s =>
@@ -87,6 +87,12 @@ axiom A_LE_fs_surrogate_sdist_bound :
     sdist (d_le_post_rejection_view x s)
         (dmap (d_le_post_rejection_view x s) le_fs_view_surrogate)
       <= (1%r / 2%r) * epsilon_le.
+proof.
+move=> x s D Hr Hs Hfs Heps.
+have Hlower := A_LE_fs_programming_sampler_sdist_bound x s D Hr Hs Hfs Heps.
+rewrite /d_le_pre_fs_programming_view /d_le_post_fs_programmed_view in Hlower.
+exact Hlower.
+qed.
 
 lemma A_LE_fs_half_sdist_bound :
   forall (x : qssm_public_input) (s : seed) (D : distinguisher),
