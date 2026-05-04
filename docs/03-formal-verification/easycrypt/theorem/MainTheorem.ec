@@ -12,8 +12,11 @@ axiom A1_ms_hash_binding :
 axiom A2_ms_rom_programmability :
   forall (D : distinguisher), 0%r <= epsilon_ms_rom_programmability.
 
-axiom A4_le_hvzk :
+lemma A4_le_hvzk :
   forall (D : distinguisher), 0%r <= epsilon_le.
+proof.
+by move=> D; exact A4_le_hvzk_bound_nonneg.
+qed.
 
 (* Bridge to MS-3a/b/c placeholders (MS-3a via `ms/source/SourceTheorem.ec`). *)
 lemma use_MS_3a (x : ms_public_input) (s : seed) : ms3a_bitness_real_sim_equiv x s.

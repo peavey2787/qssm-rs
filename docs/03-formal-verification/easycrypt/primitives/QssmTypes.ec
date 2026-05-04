@@ -5,7 +5,7 @@ type digest.
 type scalar.
 type sch_point.
 type seed.
-type coeff_vector.
+type coeff_vector = int list.
 
 type ms_comparison_opening = sch_point * scalar.
 
@@ -32,7 +32,7 @@ type qssm_public_input.
 (* Query material *)
 type ms_bitness_query.
 type ms_comparison_query.
-type le_query_material.
+type le_query_material = unit.
 
 (* Transcript observables *)
 type ms_transcript_observable = {

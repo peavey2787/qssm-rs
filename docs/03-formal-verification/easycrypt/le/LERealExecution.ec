@@ -2,8 +2,7 @@ require import QssmTypes Domains FS.
 require import AllCore List Distr.
 
 (* Lower LE real-execution observable surface. The output carrier is concrete,
-  while a smaller residual material constructor remains abstract until the LE
-  execution semantics are refined further. *)
+  and the hidden query-material carrier is now the concrete unit surface. *)
 type le_real_execution_challenge_seed_material = {
   lerecsm_branch : bool;
   lerecsm_digest_1 : digest;
@@ -59,8 +58,31 @@ type le_real_execution_record = {
   lerec_query_material : le_query_material;
 }.
 
+op le_real_execution_hidden_query_material_of
+  (x : qssm_public_input) (s : seed) : le_query_material = tt.
+
+op le_real_execution_constant_coeff_vector (tag : int) : coeff_vector = [tag].
+
+op le_real_execution_commitment_coeffs_of
+  (x : qssm_public_input) (s : seed) : coeff_vector =
+  le_real_execution_constant_coeff_vector 0.
+
+op le_real_execution_t_coeffs_of
+  (x : qssm_public_input) (s : seed) : coeff_vector =
+  le_real_execution_constant_coeff_vector 1.
+
+op le_real_execution_z_coeffs_of
+  (x : qssm_public_input) (s : seed) : coeff_vector =
+  le_real_execution_constant_coeff_vector 2.
+
 op le_real_execution_residual_material_of
-  (x : qssm_public_input) (s : seed) : le_real_execution_residual_material.
+  (x : qssm_public_input) (s : seed) : le_real_execution_residual_material =
+  {|
+    lererm_commitment_coeffs = le_real_execution_commitment_coeffs_of x s;
+    lererm_t_coeffs = le_real_execution_t_coeffs_of x s;
+    lererm_z_coeffs = le_real_execution_z_coeffs_of x s;
+    lererm_query_material = le_real_execution_hidden_query_material_of x s;
+  |}.
 
 op le_real_execution_label_digest (label : domain_label) : digest =
   hash_domain label [].

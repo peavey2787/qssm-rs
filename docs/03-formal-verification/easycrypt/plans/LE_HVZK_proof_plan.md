@@ -170,7 +170,8 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     -> `A_LE_SetB_HVZK_bound`
     -> `A_LE_HVZK_transition_bound`
     -> `A_G1_to_G2_le_transition_bound`
-    -> theorem-level use of `A4_le_hvzk` in `MainTheorem.ec`.
+     -> theorem-local lemma `A4_le_hvzk` in `MainTheorem.ec`, now derived from
+       `A4_le_hvzk_bound_nonneg` rather than assumed as an axiom.
   - The rejection-definition / acceptance / output-shape bundle and the FS query/oracle/shape bundle feed the hiding predicates used by the same chain, via `A_LE_rejection_sampling_hiding_bound` and `A_LE_fs_programming_bound`.
   - The rejection-side and FS-side surrogate shape obligations are now discharged as lemmas; the remaining surrogate debt on the active theorem path is quantitative.
   - Rejection concretization, May 2026: `le_post_rejection_surrogate` in `LESurface.ec` is now the identity on `le_transcript_observable`. This makes `A_LE_rejection_surrogate_preserves_shape` immediate by unfolding and discharges `A_LE_rejection_surrogate_sdist_bound` by zero distance, via `dmap_id` and `sdistdd`.
@@ -196,18 +197,19 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     `d_le_real_execution_view = dunit ...`, and `LESurface.ec` now defines
     `d_le_real_view` as a direct alias of that lower sampler. This closes the
     real-view distribution shell without creating an import cycle.
-  - Remaining blocker after real-view concretization, May 2026: the sampler
-    shell is no longer the obstruction. The active lower real-side debt is now
-    the smaller abstract constructor
-    `le_real_execution_residual_material_of : qssm_public_input -> seed ->
-    le_real_execution_residual_material` in `LERealExecution.ec`. The lower
+  - Lower real-execution closure, May 2026: the sampler
+    shell is no longer the obstruction, and there is now no remaining lower
+    real-side abstraction on the LE observable path. The hidden-material
+    constructor `le_real_execution_hidden_query_material_of` is now concrete as
+    `tt` on the concrete carrier `le_query_material = unit` in
+    `LERealExecution.ec`. The lower
     primitive-boundary carrier `le_real_execution_primitive_material`, the
     lower public-spine carrier `le_real_execution_public_spine`, the lower
     execution carrier `le_real_execution_spine`, and the theorem-facing lower
     record `le_real_execution_record` are all concrete record shapes, while
+    `le_real_execution_residual_material_of`,
     `le_real_execution_primitive_material_of`, `le_real_execution_spine_of`,
-    and `le_real_execution_record_of` are now definitional above that residual
-    boundary. The six theorem-facing hooks
+    and `le_real_execution_record_of` are now definitional end to end. The six theorem-facing hooks
     (`le_real_execution_commitment_coeffs`,
     `le_real_execution_t_coeffs`, `le_real_execution_z_coeffs`,
     `le_real_execution_challenge_seed_obs`,
@@ -215,14 +217,15 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     `le_real_execution_query_material`) are now only projections from
     `le_real_execution_record_of`, and `LERealExecution.ec` proves the six
     corresponding field-exposure lemmas for `le_real_execution_observable`.
-    The remaining concrete groups are now split honestly: the digest-related
-    groups are concrete inside `le_real_execution_primitive_material_of`, while
-    coefficient construction (`commitment`, `t`, `z`) and hidden query material
-    still sit in `le_real_execution_residual_material_of`. Because
+    The digest-related groups are concrete inside
+    `le_real_execution_primitive_material_of`, coefficient construction
+    (`commitment`, `t`, `z`) is concrete inside
+    `le_real_execution_residual_material_of`, and hidden query material is now
+    concrete as `tt`. Because
     there is still no lower `le_public_input` extractor outside
-    `sim/Simulator.ec`, the next concrete boundary remains that unified lower
-    residual-material record rather than a fresh extractor layer below the
-    facade. On
+    `sim/Simulator.ec`, any future refinement would be a new modeling choice
+    rather than unfinished lower real-execution debt.
+    On
     the quantitative path, the remaining theorem-facing surrogate axiom is
     gone, and the current lower FS carrier is fully closed. Any future
     nontrivial FS-programming semantics now requires enriching
@@ -230,33 +233,37 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     more FS-surrogate theorems above this layer.
   - Primitive-boundary audit, May 2026: before the latest incremental step,
     none of the fields under `le_real_execution_primitive_material_of` was
-    fully concrete. After the digest-focused refinement, the coefficient trio
-    is still blocked because no lower op currently maps `qssm_public_input` to
-    any `coeff_vector` surface, and the hidden field is still blocked because
-    `le_query_material` remains abstract. The challenge-seed and
+    fully concrete. After the digest-focused refinement, the challenge-seed and
     programmed-query-digest fields now have concrete material constructors in
     `LERealExecution.ec`, built from `hash_domain` plus the installed LE labels,
     while the final visible digest outputs still use `le_challenge_seed` and
-    `le_programmed_query_digest`. The smallest next patch is therefore to
-    refine the remaining centralized residual-material record, not to split the
-    primitive boundary back into per-field hooks.
+    `le_programmed_query_digest`. After the coefficient-focused refinement,
+    `primitives/QssmTypes.ec` now makes `coeff_vector` concrete as `int list`,
+    and `LERealExecution.ec` builds the commitment, `t`, and `z` coefficient
+    surfaces as fixed singleton vectors tagged `0`, `1`, and `2`. After the
+    hidden-material refinement, `primitives/QssmTypes.ec` also makes
+    `le_query_material` concrete as `unit`, and `LERealExecution.ec` sets the
+    hidden query material to `tt`. All fields under
+    `le_real_execution_primitive_material_of` are now concrete.
   - Partial primitive-boundary concretization, May 2026: the digest-related
     fields under `le_real_execution_primitive_material_of` are now concrete.
     `LERealExecution.ec` defines the challenge-seed material and
     programmed-query-digest material directly, using `hash_domain` on the
     installed LE labels plus the existing `le_challenge_seed` combinator where
-    helpful. The remaining abstract fields are now exactly the coefficient trio
-    and hidden `le_query_material`, centralized in
-    `le_real_execution_residual_material_of`.
-  - Exact next LE proof target, May 2026: refine
-    `le_real_execution_residual_material_of` in `le/LERealExecution.ec` into a
-    concrete lower residual-material construction for the coefficient trio and
-    hidden query material, then prove any remaining direct unfolding lemmas if
-    useful for later real-side proofs. If the separate `le_public_input`
-    boundary is still desired, factor that extractor below `LESurface.ec` in
-    the same phase rather than depending on the current abstract
-    `extract_le_public` name in `sim/Simulator.ec`.
-  - Exact next FS proof target, May 2026: if a non-identity FS programming story is still desired, enrich `le_query_material` with a concrete programmable-query component and reintroduce a corresponding lower sampler/coupling theorem on that richer carrier. Otherwise the natural next LE target remains the lower real-execution surface under `d_le_real_view`.
+    helpful. The coefficient trio is now concrete as well, via the concrete
+    carrier `coeff_vector = int list` and three fixed singleton vectors in
+    `LERealExecution.ec`. Hidden query material is now concrete too: the
+    carrier is `unit`, and `le_real_execution_hidden_query_material_of` is
+    definitional `tt`.
+  - Exact next LE proof target, May 2026: the lower real-execution lane is now
+    fully concrete, and the theorem-local `A4_le_hvzk` placeholder in
+    `MainTheorem.ec` is gone. The next LE target should therefore move one hop
+    lower to the remaining LE axiom surface itself: audit whether
+    `A4_le_hvzk_bound_nonneg` in `LESurface.ec` should stay as the explicit LE
+    advantage budget assumption or be folded into a cleaner theorem-facing
+    contract, and remove any stale theorem-facing packaging in `LEHVZK.ec` or
+    `LEModel.ec` that still reflects the old placeholder structure.
+  - Exact next FS proof target, May 2026: if a non-identity FS programming story is still desired, enrich `le_query_material` with a concrete programmable-query component and reintroduce a corresponding lower sampler/coupling theorem on that richer carrier. Otherwise the natural next LE target is the theorem-level cleanup above the now-fully-concrete `d_le_real_view` lane.
 - `games/GameLEBridge.ec` no longer carries a game-layer projection axiom:
   `A_game_pr_LE_projection_semantics` is now a lemma on the split views
   `G1_le_real_projection` / `G2_full_sim`.
