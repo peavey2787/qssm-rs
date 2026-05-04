@@ -1,17 +1,18 @@
 # MS-3c Proof Plan (EasyCrypt)
 
-This note tracks **exact comparison-clause simulation** under programmed Fiat–Shamir. The **`ms/comparison/*.ec`** tree is **axiom-free** (all former **`A_ms3c_*`** obligations there are **proved lemmata**), and the former MS-3c game-hop bridge **`A_MS3c_comparison_bundle_implies_game_pr_equality`** in **`games/GameMSHopTypes.ec`** is now also a **proved lemma**. The game layer now collapses **`MSGameStageAfterComparison`** and **`MSGameStageSim`** through **`ms3c_game_pr_stage`** in **`games/GameAdvantage.ec`** whenever the MS-3c implication bundle holds, so **`A_MS3c_canonical_comparison_exact_bound`** remains a **proved lemma** from **`Adv_def`** by definitional `game_pr` equality.
+This note tracks **exact comparison-clause simulation** under programmed Fiat–Shamir. The former MS-3c game-hop bridge **`A_MS3c_comparison_bundle_implies_game_pr_equality`** in **`games/GameMSHopTypes.ec`** is now a **proved lemma**. The game layer collapses **`MSGameStageAfterComparison`** and **`MSGameStageSim`** through **`ms3c_game_pr_stage`** in **`games/GameAdvantage.ec`** whenever the MS-3c implication bundle holds, so **`A_MS3c_canonical_comparison_exact_bound`** remains a **proved lemma** from **`Adv_def`** by definitional `game_pr` equality. The comparison seed layer now uses sampled latent ROM/transcript coins, so the remaining proof surface is no longer literally point-mass even though the public Phase-1 payload image remains unchanged on support.
 
 **MS-3b handoff status:** the phase-1 comparison carrier is now fed by a native comparison slice instead of digest-backed derivations. **`ms_public_input`** in **`ms/SourceTypes.ec`** carries **`mspi_comparison_slice : ms_comparison_slice`**, containing the true-clause index/opening and the full false-entry list `(index * opening)`. **`ms3b_phase1_comparison_carrier`** in **`ms/true_clause/TrueClauseTypes.ec`** still uses the one-bit **`mspi_result_bit`** lane, but now reads the true-clause index/opening from that native slice. **`ms3c_phase1_payload_from_public_input`** in **`ms/comparison/ComparisonPayloadFromSeed.ec`** reads both true and false announcements/shares from the same native comparison data, and **`ms_transcript_observable`** in **`primitives/QssmTypes.ec`** now carries **`msv2_comparison_openings : ms_comparison_openings`** so the public game observable can expose those openings directly. The old singleton false-branch/index placeholder and digest-derived comparison openings are gone.
 
 ## Current status snapshot
 
 - **Checker:** **`./check_easycrypt`** passes across all 77 EasyCrypt theories.
-- **Axiom count:** 37 total **`axiom`** declarations under **`docs/03-formal-verification/easycrypt`**.
+- **Axiom count:** 38 total **`axiom`** declarations under **`docs/03-formal-verification/easycrypt`** (the increase is the lower-layer **`duni_scalar_lossless`** sampler assumption in **`ms/SchnorrBranch.ec`**).
 - **Comparison carrier:** false-branch/index placeholder removed; **`mspi_comparison_slice`** now carries the real true opening plus the full false-entry slice.
 - **Comparison observable:** announcements and shares are carried natively through **`msv2_comparison_openings`** and aligned to the phase-1 payload by **`L_ms3c_public_obs_payload_alignment`** in **`games/GameAdvantage.ec`** and its wrapper in **`games/GameMSHopTypes.ec`**.
 - **Structured seed samplers:** the Phase-1 challenge/announcement records in **`ComparisonPayloadTypes.ec`** are now aligned to the same public game observable by **`L_ms3c_public_obs_seed_alignment`** and **`L_ms_MS3c_public_obs_matches_phase1_seed`**, while real/sim Phase-1 payload seeds remain definitionally equal.
 - **Game-layer dependency:** no MS-3c bridge axiom remains; **`L_ms3c_game_view_public_obs_aligns_v2`** instantiates **`ms_abstract_observable_aligns_v2`** at the game boundary, and **`A_MS3c_comparison_bundle_implies_game_pr_equality`** collapses the canonical AfterComparison/Sim pair definitionally through **`ms3c_game_pr_stage`**.
+- **Seed-support threading:** **`ComparisonPayloadFromSeed.ec`** now reads the payload-facing fields from the structured seed records, and support-local lemmas show that sampled seeds still collapse to the same native Phase-1 payload on support.
 
 ### Current MS-3c assumption table
 
@@ -22,6 +23,7 @@ This note tracks **exact comparison-clause simulation** under programmed Fiat–
 | **`ms3c_false_clauses_simulator_generated`** | **`ms3c_public_false_branch_nonempty x /\ ms3c_public_false_openings_simulated x`**. | now expressed directly over the native false-entry slice and native false openings. |
 | **`ms3c_true_clause_schnorr_from_blinder`** | MS-3b true-clause carrier plus Schnorr reparameterization / blinder-point packaging. | unchanged high-level hook; now fed by the native true opening. |
 | **`ms3c_clause_challenge_shares_sum`** | Programmed challenge equals global challenge on comparison surfaces. | unchanged packaging hook. |
+| **`duni_scalar_lossless`** | Generic scalar-sampler losslessness in **`ms/SchnorrBranch.ec`**. | new lower-layer sampler assumption used by the sampled MS-3c seed laws. |
 
 The public game surface is now closed for the current Phase-1 design: **`ms_game_view_public_obs xms = ms3a_public_v2_observable xms`**, **`ms_abstract_observable_aligns_v2`** preserves the native comparison-opening field, and the game layer has explicit alignment lemmas for both the phase-1 payload and the new structured Phase-1 seed records.
 
@@ -146,11 +148,11 @@ Proof path:
 | **`ms3c_real_sim_payload_coupled`** / **`ms3c_ax_payload_coupling_pair_relation`** / **`ms3c_ax_payload_support_coupling`** | predicate | Pairwise payload coupling, pair-relation on support, and bundled support-coupling predicate. |
 | **`d_ms3c_real_sim_payload_coupling`** | **definition** | **Independent product** **`d_ms3c_real_comparison_payload x `*` d_ms3c_sim_comparison_payload x s`** (`ComparisonCouplingTypes.ec`). |
 | **`d_ms3c_coupling_{real,sim}_projection`** | operator | Marginals: **`dmap`** of the joint law through **`fst`** / **`snd`**. |
-| **`d_ms3c_{real,sim}_seed_{challenge,announcement}`**, **`d_ms3c_{real,sim}_payload_seed`**, **`ms3c_{real,sim}_payload_from_seed`** | operator | Real/sim payload seed is a **pair** (challenge material `*` announcement material); joint seed law = **independent product** of the two component laws (**`ComparisonPayloadSeedTypes.ec`**); **`d_ms3c_{real,sim}_comparison_payload`** = **`dmap`** pushforward (**`ComparisonPayloadFromSeed.ec`**). The component carriers are now **structured records**: challenge seeds carry stmt/query/global/programmed digest material plus indices and shares, and announcement seeds carry the concrete announcement points. Phase-1 laws are still deterministic **`dunit`** samplers at the native public comparison data. |
-| **`L_ms3c_real_seed_challenge_lossless`** | **lemma** (`ComparisonPayloadSeedTypes.ec`) | **`d_ms3c_real_seed_challenge`** is a lossless **`dunit`** sampler of the Phase-1 real challenge record built from native public comparison indices, shares, and ROM-facing digests. |
-| **`L_ms3c_sim_seed_challenge_lossless`** | **lemma** (`ComparisonPayloadSeedTypes.ec`) | **`d_ms3c_sim_seed_challenge`** is a lossless **`dunit`** sampler of the Phase-1 sim challenge record (same record shape; sim seed argument retained for future simulator coins). |
-| **`L_ms3c_real_seed_announcement_lossless`** | **lemma** (`ComparisonPayloadSeedTypes.ec`) | **`d_ms3c_real_seed_announcement`** is a lossless **`dunit`** sampler of the Phase-1 real announcement record built from native public announcements. |
-| **`L_ms3c_sim_seed_announcement_lossless`** | **lemma** (`ComparisonPayloadSeedTypes.ec`) | **`d_ms3c_sim_seed_announcement`** is a lossless **`dunit`** sampler of the Phase-1 sim announcement record (same record shape; sim seed argument retained for future simulator coins). |
+| **`d_ms3c_{real,sim}_seed_{challenge,announcement}`**, **`d_ms3c_{real,sim}_payload_seed`**, **`ms3c_{real,sim}_payload_from_seed`** | operator | Real/sim payload seed is a **pair** (challenge material `*` announcement material); joint seed law = **independent product** of the two component laws (**`ComparisonPayloadSeedTypes.ec`**); **`d_ms3c_{real,sim}_comparison_payload`** = **`dmap`** pushforward (**`ComparisonPayloadFromSeed.ec`**). The component carriers are structured records: challenge seeds carry stmt/query/global/programmed digest material plus indices and shares, announcement seeds carry the concrete announcement points, and both now also carry latent sampled ROM/transcript scalar coins. `from_seed` reads the payload-facing fields from those records directly. |
+| **`L_ms3c_real_seed_challenge_lossless`** | **lemma** (`ComparisonPayloadSeedTypes.ec`) | **`d_ms3c_real_seed_challenge`** is a lossless **`dmap duni_scalar`** sampler: the latent ROM coin is sampled, while the payload-facing challenge fields stay fixed to the native public comparison data on support. |
+| **`L_ms3c_sim_seed_challenge_lossless`** | **lemma** (`ComparisonPayloadSeedTypes.ec`) | **`d_ms3c_sim_seed_challenge`** is the same sampled latent-ROM law on the sim side (sim seed argument retained for later simulator coins). |
+| **`L_ms3c_real_seed_announcement_lossless`** | **lemma** (`ComparisonPayloadSeedTypes.ec`) | **`d_ms3c_real_seed_announcement`** is a lossless **`dmap duni_scalar`** sampler: a latent transcript coin is sampled while the announcement projections remain the native public announcements on support. |
+| **`L_ms3c_sim_seed_announcement_lossless`** | **lemma** (`ComparisonPayloadSeedTypes.ec`) | **`d_ms3c_sim_seed_announcement`** is the same sampled latent-transcript law on the sim side. |
 | **`L_ms3c_real_payload_seed_lossless`** / **`L_ms3c_sim_payload_seed_lossless`** | **lemma** (`ComparisonPayloadSeedTypes.ec`) | **`dprod_ll_auto`** combines the two component losslessness facts per side. |
 | **`L_ms3c_real_comparison_payload_law_lossless`** / **`L_ms3c_sim_comparison_payload_law_lossless`** | **lemma** (`ComparisonPayloadFromSeed.ec`) | **`dmap_ll`** + **`L_ms3c_*_payload_seed_lossless`** ⇒ payload laws lossless (enables **`dprod_marginalL`** / **`dprod_marginalR`**). |
 | **`L_dmap_dprod_fst_lossless`** / **`L_dmap_dprod_snd_lossless`** | **lemma** (`ComparisonCouplingMarginals.ec`) | Generic: lossless opposite side ⇒ **`dmap (da `*` db) fst = da`** (resp. **`snd = db`**). |
@@ -168,7 +170,7 @@ Proof path:
 | **`MS_3c_comparison_clause_obligations`** | lemma | Bundles digest / false / true / share obligations. |
 | **`L_ms3c_rom_scalar_response_for_any_digest`** | lemma | **`Ha2`** ⇒ pointwise ROM responses. |
 
-**Still open:** Phase-1 comparison data and Phase-1 seed carriers are now both native, but the sampler laws are still deterministic point masses at those public values. The next MS-3c work is to move from these structured **`dunit`** samplers to genuinely richer transcript/ROM-driven laws and then decide whether **`ms3c_{real,sim}_payload_from_seed`** should begin consuming more sampled state directly. The four **`A_ms3c_{real,sim}_from_seed_uses_*`** facts remain **proved lemmas** in **`ComparisonPayloadSeedAnchors.ec`**, all four component samplers remain lossless, and **`ComparisonCouplingAxioms.ec`** still has **no** remaining fragment axioms. The remaining proof debt is therefore in non-degenerate seed / execution modeling, not in placeholder or unit comparison carriers.
+**Still open:** Phase-1 comparison data and seed carriers are native, and the component laws now sample latent ROM/transcript scalar coins, but the payload-facing seed projections are still fixed to the native public comparison surface on support. The next MS-3c work is to move from these support-collapsing samplers to payload-visible transcript/ROM variation and then widen the coupling/field-match layer beyond the current singleton payload image. The **`A_ms3c_{real,sim}_from_seed_uses_*`** facts are now **support-local proved lemmas** in **`ComparisonPayloadSeedAnchors.ec`**, all four component samplers remain lossless, and the remaining proof debt is therefore in non-degenerate payload / execution modeling, not in placeholder or unit comparison carriers.
 
 ## MS public-input / transcript projection interface (current state)
 
@@ -182,7 +184,7 @@ Proof path:
 - **False-clause hook:** **`ms3c_false_clauses_simulator_generated`** is now the native-slice condition **`ms3c_public_false_branch_nonempty x /\ ms3c_public_false_openings_simulated x`**.
 - **Game-layer alignment:** **`L_ms3c_public_obs_payload_alignment`** and **`L_ms_MS3c_public_obs_matches_phase1_payload`** now prove that the phase-1 payload and the public game observable agree on programmed challenge, global challenge, true opening, and false-opening projections.
 
-**Remaining design boundary:** the carrier plumbing is now native, and the seed samplers are now structured transcript/ROM records, but those laws are still deterministic Phase-1 scaffolding. Future work is to keep the same carrier boundary while moving from public-value point masses to richer sampled transcript / ROM laws.
+**Remaining design boundary:** the carrier plumbing is now native, the seed samplers now genuinely sample latent ROM/transcript coins, and the public game boundary is still closed because sampled seeds collapse to the same native Phase-1 payload on support. Future work is to keep that boundary fixed while allowing those sampled coins to affect payload-visible transcript state.
 
 ### Next **code** steps (after projection surface)
 
@@ -195,7 +197,7 @@ This section is a **design-only** blueprint for enriching **`from_seed`**, trans
 
 ### 1. Seed carriers (replace abstract types)
 
-**Goal:** the Phase-1 seed carriers are now record-shaped and hold the comparison indices, shares, announcements, and ROM-facing digest material. The remaining target is to move beyond deterministic Phase-1 **`dunit`** laws and define genuinely sampled **`d_ms3c_*`** laws (ROM / FS / Schnorr) over those richer carriers.
+**Goal:** the Phase-1 seed carriers are now record-shaped and hold the comparison indices, shares, announcements, ROM-facing digest material, and latent sampled coins. The current sampled laws already move beyond raw **`dunit`** carriers; the remaining target is to let those sampled coins influence payload-visible transcript/ROM state without breaking the closed public game boundary.
 
 **Suggested split (conceptual):**
 
@@ -225,7 +227,7 @@ Define both as **total** functions **`ms_public_input` → seed → `ms3c_compar
 
 Define each as a **composition** of finitely many **`duniform`**, **`dunit`**, **`dmap`** of ROM query (lossless when the ROM read is lossless on its domain), and **independent products** where the spec samples independently. Then:
 
-- **`A_ms3c_*_seed_*_lossless`:** all four component laws are still proved from **`dunit_ll`**, but they now sample structured Phase-1 challenge/announcement records rather than **`unit`** placeholders; richer non-degenerate carriers can later reuse **`duniform_ll`**, **`dmap_ll`**, and **`dprod_ll_auto`** as appropriate.
+- **`A_ms3c_*_seed_*_lossless`:** all four component laws are now proved from **`dmap_ll`** over **`duni_scalar`** plus the lower-layer scalar-sampler losslessness axiom; richer carriers can later replace the single latent coin with fuller transcript/ROM samplers.
 
 **Dependency:** finite **`Finite`**/`enum` carriers or proved full-support for each draw; arity of false-branch lists must be fixed from **`x`** (or carried inside **`ms_public_input`**) so **`duniform`** domains are well-typed.
 
@@ -239,7 +241,7 @@ The abstract coupling law is the **independent product** of real and sim **margi
 
 | Axiom group | Discharged by (intended) |
 |-------------|---------------------------|
-| **Seed losslessness** | All four component laws are deterministic **`dunit`** samplers of structured Phase-1 seed records, with proved losslessness lemmata; no seed-component losslessness axioms remain in **`ComparisonPayloadSeedTypes.ec`**. |
+| **Seed losslessness** | All four component laws are sampled **`dmap duni_scalar`** samplers of structured seed records, with proved losslessness lemmata under the lower-layer **`duni_scalar_lossless`** assumption. |
 | **Seed shape** | **Lemma-only** on support: index-shape (**`L_ms3c_{real,sim}_seed_index_shape_valid`**) and ann/share length (**`L_ms3c_{real,sim}_seed_length_shape_valid`**) from four proved **`A_ms3c_{real,sim}_from_seed_uses_*`** lemmas + **`ms3c_public_shape_ok`**. |
 | **Public-field fragments ×4** | Phase-1: all four proved in **`ComparisonCouplingAxioms.ec`**; ROM query digest on Phase-1 payloads is **`A_ms3c_clause_surface_query_digest_constructed`** (**proved**). |
 | **Challenge-share fragments ×3** | Phase-1: all three proved from **`pr = ps`**; revisit if **`from_seed`** diverges per side. |
@@ -251,7 +253,7 @@ The abstract coupling law is the **independent product** of real and sim **margi
 
 | Risk | Mitigation |
 |------|------------|
-| **MS-3b carrier is concrete but Phase-1 seed laws are still deterministic** | Keep the native comparison slice / opening carrier stable, and upgrade the current structured Phase-1 point-mass samplers to richer transcript or ROM laws. |
+| **MS-3b carrier is concrete but payload-visible seed projections are still support-collapsed** | Keep the native comparison slice / opening carrier stable, and let the newly sampled latent ROM/transcript coins influence payload-visible state in a way the coupling layer can still prove. |
 | **`ms_transcript_observable`** abstract | Public-boundary alignment is now closed through **`ms/SourceModel.ec`** accessors, **`L_ms3c_game_view_public_obs_aligns_v2`**, and the phase-1 seed/payload alignment lemmas. Additional bridge ops are only needed if future work introduces non-public sampled comparison state into the observable. |
 | **`ms_public_input`** abstract | Need digest arity / clause count for **`duniform`** domains; may require **`ms_public_input`** refinement or side conditions on games. |
 | **Game view now carries native comparison openings, but not richer sampled comparison state** | The game layer aligns both phase-1 payload fields and structured phase-1 seed records with **`ms_game_view_public_obs xms`** through native openings; future work is only about richer samplers or execution state, not about adding basic announcement/share fields. |
@@ -261,9 +263,9 @@ The abstract coupling law is the **independent product** of real and sim **margi
 
 1. **Smallest safe patch (comments only, if needed):** extend the seed-bundle comment (**`ComparisonPayloadSeeds.ec`** facade) with **arity source** for false lists (pointer to future **`ms_public_input`** refinement); **no** theorem statement changes.
 
-2. **Types (`ComparisonPayloadTypes.ec`):** replace abstract seed types with concrete tuples (or records) documented in this plan; keep **`ms3c_*_payload_seed`** as product type.
+2. **Types (`ComparisonPayloadTypes.ec`):** done for the current phase — seed records now include payload-facing comparison fields plus latent sampled ROM/transcript scalar coins; **`ms3c_*_payload_seed`** remains a product type.
 
-3. **Constructors (`ComparisonPayloadFromSeed.ec` / `ComparisonPayloadSeedTypes.ec`):** define **`ms3c_real_payload_from_seed`**, **`ms3c_sim_payload_from_seed`**; define **`d_ms3c_*_seed_*`**; prove **`L_ms3c_*_payload_seed_lossless`** lemmas replace axioms; prove **shape** lemmas (**`ComparisonPayloadSeedAnchors.ec`**) replace shape axioms.
+3. **Constructors (`ComparisonPayloadFromSeed.ec` / `ComparisonPayloadSeedTypes.ec`):** partially done — **`ms3c_real_payload_from_seed`** and **`ms3c_sim_payload_from_seed`** now read the structured seed records, the component laws now sample latent coins via **`dmap duni_scalar`**, and the shape lemmas in **`ComparisonPayloadSeedAnchors.ec`** are now support-local. Remaining work is to expose sampled variation in payload-visible fields rather than collapsing back to the same public Phase-1 image on support.
 
 4. **Digest (`ComparisonDigests.ec`):** Phase-1 **`A_ms3c_clause_surface_query_digest_constructed`** is **proved**; when **`from_seed`** is enriched, keep **`mscp_query_digest`** defined as in step (5) so the lemma stays definitional (then **`A_ms3c_surface_query_digest_field_correct`** from **`ms3c_clause_surface_to_payload`**).
 

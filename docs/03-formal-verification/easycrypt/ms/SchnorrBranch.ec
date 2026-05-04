@@ -5,6 +5,9 @@ require import Algebra QssmTypes.
 
 op duni_scalar : scalar distr.
 
+axiom duni_scalar_lossless :
+  is_lossless duni_scalar.
+
 axiom duni_scalar_invariant_add (t : scalar) :
   dlet duni_scalar (fun alpha => dunit (sch_s_add alpha t)) = duni_scalar.
 

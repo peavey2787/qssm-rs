@@ -41,35 +41,38 @@ qed.
 lemma A_ms3c_real_seed_false_index_nonempty :
   forall (x : ms_public_input) (s : seed) (sr : ms3c_real_payload_seed),
     ms3c_false_clauses_simulator_generated x s =>
+    sr \in d_ms3c_real_payload_seed x =>
     0 < size (ms3c_real_payload_from_seed x sr).`mscp_false_clause_ixs.
 proof.
-move=> x s sr [Hnb _].
+move=> x s sr [Hnb _] Hsr.
 exact (L_ms3c_real_constructor_false_index_nonempty x sr
   Hnb
-  (A_ms3c_real_from_seed_uses_public_indices x sr)).
+  (A_ms3c_real_from_seed_uses_public_indices x sr Hsr)).
 qed.
 
 lemma A_ms3c_sim_seed_false_index_nonempty :
   forall (x : ms_public_input) (s : seed) (ss : ms3c_sim_payload_seed),
     ms3c_false_clauses_simulator_generated x s =>
+    ss \in d_ms3c_sim_payload_seed x s =>
     0 < size (ms3c_sim_payload_from_seed x s ss).`mscp_false_clause_ixs.
 proof.
-move=> x s ss [Hnb _].
+move=> x s ss [Hnb _] Hss.
 exact (L_ms3c_sim_constructor_false_index_nonempty x s ss
   Hnb
-  (A_ms3c_sim_from_seed_uses_public_indices x s ss)).
+  (A_ms3c_sim_from_seed_uses_public_indices x s ss Hss)).
 qed.
 
 lemma A_ms3c_real_seed_false_clause_nonempty :
   forall (x : ms_public_input) (s : seed) (sr : ms3c_real_payload_seed),
     ms3c_false_clauses_simulator_generated x s =>
+    sr \in d_ms3c_real_payload_seed x =>
     0 < size (ms3c_real_payload_from_seed x sr).`mscp_ann_false.
 proof.
-move=> x s sr Hfalse.
-have Hix_pos := A_ms3c_real_seed_false_index_nonempty x s sr Hfalse.
+move=> x s sr Hfalse Hsr.
+have Hix_pos := A_ms3c_real_seed_false_index_nonempty x s sr Hfalse Hsr.
 have Hanchor : ms3c_real_from_seed_public_index_anchor x sr
-  by exact (A_ms3c_real_from_seed_uses_public_indices x sr).
-have [_ Hshape] := L_ms3c_real_seed_index_shape_valid x sr Hanchor.
+  by exact (A_ms3c_real_from_seed_uses_public_indices x sr Hsr).
+have [_ Hshape] := L_ms3c_real_seed_index_shape_valid x sr Hsr.
 rewrite Hshape.
 exact Hix_pos.
 qed.
@@ -77,13 +80,14 @@ qed.
 lemma A_ms3c_sim_seed_false_clause_nonempty :
   forall (x : ms_public_input) (s : seed) (ss : ms3c_sim_payload_seed),
     ms3c_false_clauses_simulator_generated x s =>
+    ss \in d_ms3c_sim_payload_seed x s =>
     0 < size (ms3c_sim_payload_from_seed x s ss).`mscp_ann_false.
 proof.
-move=> x s ss Hfalse.
-have Hix_pos := A_ms3c_sim_seed_false_index_nonempty x s ss Hfalse.
+move=> x s ss Hfalse Hss.
+have Hix_pos := A_ms3c_sim_seed_false_index_nonempty x s ss Hfalse Hss.
 have Hanchor : ms3c_sim_from_seed_public_index_anchor x s ss
-  by exact (A_ms3c_sim_from_seed_uses_public_indices x s ss).
-have [_ Hshape] := L_ms3c_sim_seed_index_shape_valid x s ss Hanchor.
+  by exact (A_ms3c_sim_from_seed_uses_public_indices x s ss Hss).
+have [_ Hshape] := L_ms3c_sim_seed_index_shape_valid x s ss Hss.
 rewrite Hshape.
 exact Hix_pos.
 qed.
@@ -108,7 +112,7 @@ split.
   rewrite /ms3c_real_payload_on_support /d_ms3c_real_comparison_payload.
   apply supp_dmap.
   by exists sr.
-exact (A_ms3c_real_seed_false_clause_nonempty x s sr Hfalse).
+exact (A_ms3c_real_seed_false_clause_nonempty x s sr Hfalse Hsr).
 qed.
 
 (* Phase-1 payloads on support are exactly `ms3c_phase1_payload_from_public_input x`,

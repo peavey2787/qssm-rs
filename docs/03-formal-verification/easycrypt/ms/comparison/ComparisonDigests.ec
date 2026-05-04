@@ -57,7 +57,12 @@ lemma A_ms3c_clause_surface_query_digest_constructed
       (ms3c_clause_ann_digests_from_surface (ms3c_make_clause_surface p)).
 proof.
 move=> Hp _Hsimp.
-rewrite Hp /= /ms3c_phase1_payload_from_public_input /=.
+rewrite Hp /= /ms3c_phase1_payload_from_public_input /ms3c_payload_from_seed_components.
+rewrite /ms3c_phase1_seed_challenge_from_public_input /ms3c_phase1_seed_announcement_from_public_input.
+rewrite /ms3c_seed_challenge_with_rom_coin /ms3c_seed_announcement_with_transcript_coin /=.
+rewrite /ms3c_phase1_seed_query_digest /ms3c_phase1_seed_ann_digests.
+rewrite /ms3c_clause_ann_digests_from_surface /ms3c_make_clause_surface.
+rewrite /ms3c_digest_true_announcement /ms3c_digest_false_announcements /=.
 by [].
 qed.
 

@@ -15,8 +15,9 @@ lemma L_ms3c_real_payload_on_support_eq_phase1 (x : ms_public_input) (pr : ms3c_
 proof.
 move=> Hsup.
 rewrite /ms3c_real_payload_on_support /d_ms3c_real_comparison_payload in Hsup.
-case/supp_dmap: Hsup => sr [_ Heq].
-by rewrite Heq /ms3c_real_payload_from_seed.
+case/supp_dmap: Hsup => sr [Hsr Heq].
+rewrite Heq.
+by apply (L_ms3c_real_payload_from_seed_on_support_eq_phase1 x sr Hsr).
 qed.
 
 lemma L_ms3c_sim_payload_on_support_eq_phase1
@@ -25,8 +26,9 @@ lemma L_ms3c_sim_payload_on_support_eq_phase1
 proof.
 move=> Hsup.
 rewrite /ms3c_sim_payload_on_support /d_ms3c_sim_comparison_payload in Hsup.
-case/supp_dmap: Hsup => ss [_ Heq].
-by rewrite Heq /ms3c_sim_payload_from_seed.
+case/supp_dmap: Hsup => ss [Hss Heq].
+rewrite Heq.
+by apply (L_ms3c_sim_payload_from_seed_on_support_eq_phase1 x s ss Hss).
 qed.
 
 pred ms3c_payload_pair_public_fields_match
@@ -135,11 +137,11 @@ have Hseed : exists (sr : ms3c_real_payload_seed),
 case: Hseed => sr [Hsr Hpr].
 rewrite Hpr /ms3c_payload_length_index_shapes_ok.
 have Hshare : ms3c_real_from_seed_share_length_anchor x sr
-  by exact (A_ms3c_real_from_seed_uses_share_length x sr).
+  by exact (A_ms3c_real_from_seed_uses_share_length x sr Hsr).
 have Hlen := L_ms3c_real_seed_length_shape_valid x sr Hshare.
 have Hanchor : ms3c_real_from_seed_public_index_anchor x sr
-  by exact (A_ms3c_real_from_seed_uses_public_indices x sr).
-have [Hix Hidx] := L_ms3c_real_seed_index_shape_valid x sr Hanchor.
+  by exact (A_ms3c_real_from_seed_uses_public_indices x sr Hsr).
+have [Hix Hidx] := L_ms3c_real_seed_index_shape_valid x sr Hsr.
 by split; [exact Hix | split; [exact Hlen | exact Hidx] ].
 qed.
 
@@ -158,11 +160,11 @@ have Hseed : exists (ss : ms3c_sim_payload_seed),
 case: Hseed => ss [Hss Hps].
 rewrite Hps /ms3c_payload_length_index_shapes_ok.
 have Hshare : ms3c_sim_from_seed_share_length_anchor x s ss
-  by exact (A_ms3c_sim_from_seed_uses_share_length x s ss).
+  by exact (A_ms3c_sim_from_seed_uses_share_length x s ss Hss).
 have Hlen := L_ms3c_sim_seed_length_shape_valid x s ss Hshare.
 have Hanchor : ms3c_sim_from_seed_public_index_anchor x s ss
-  by exact (A_ms3c_sim_from_seed_uses_public_indices x s ss).
-have [Hix Hidx] := L_ms3c_sim_seed_index_shape_valid x s ss Hanchor.
+  by exact (A_ms3c_sim_from_seed_uses_public_indices x s ss Hss).
+have [Hix Hidx] := L_ms3c_sim_seed_index_shape_valid x s ss Hss.
 by split; [exact Hix | split; [exact Hlen | exact Hidx] ].
 qed.
 

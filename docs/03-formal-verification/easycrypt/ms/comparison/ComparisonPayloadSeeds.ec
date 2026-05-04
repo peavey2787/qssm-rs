@@ -12,20 +12,21 @@
      and index/length shape lemmata (A_ms3c_{real,sim}_from_seed_uses_*,
      L_ms3c_{real,sim}_seed_{index,length}_shape_valid).
 
-   Discharge path: all four component laws d_ms3c_real_seed_challenge,
-   d_ms3c_sim_seed_challenge, d_ms3c_real_seed_announcement, and
-   d_ms3c_sim_seed_announcement are dunit tt on unit with proved losslessness
-   lemmata (Phase-1 scaffolding; not final ROM, FS, or Schnorr announcement
-   samplers). Real/sim index-shape are lemmata L_ms3c_{real,sim}_seed_index_shape_valid
-   from ms3c_public_shape_ok (placeholder public ops) plus proved
-   A_ms3c_{real,sim}_from_seed_uses_public_indices. Real/sim ann/share lengths are
-   lemmata L_ms3c_{real,sim}_seed_length_shape_valid from proved
-   A_ms3c_{real,sim}_from_seed_uses_share_length.
+  Discharge path: all four component laws d_ms3c_real_seed_challenge,
+  d_ms3c_sim_seed_challenge, d_ms3c_real_seed_announcement, and
+  d_ms3c_sim_seed_announcement now sample latent ROM/transcript scalar coins
+  via dmap duni_scalar while keeping the payload-facing projections fixed to
+  the native public comparison surface on support. Real/sim index-shape are
+  lemmata L_ms3c_{real,sim}_seed_index_shape_valid from ms3c_public_shape_ok
+  plus support-local proved lemmas A_ms3c_{real,sim}_from_seed_uses_public_indices.
+  Real/sim ann/share lengths are lemmata L_ms3c_{real,sim}_seed_length_shape_valid
+  from support-local proved lemmas A_ms3c_{real,sim}_from_seed_uses_share_length.
 
-   Phase-1 constructors (`ms3c_phase1_payload_from_public_input`) are deterministic
-   in the seed (`unit` carriers): indices and false-branch list lengths follow
-   `ms3c_public_false_clause_indices x`; per-branch announcements/shares/digests
-   are `witness` scaffolding only — not final Schnorr/ROM/transcript semantics.
+  Phase-1 constructors (`ms3c_phase1_payload_from_public_input`) now flow through
+  the structured seed surface: `ms3c_{real,sim}_payload_from_seed` reads the
+  payload-facing fields from the seed records, and support-local lemmas show
+  that every sampled seed still maps back to the same native public Phase-1
+  payload image.
    `mscp_query_digest` is `ms_comparison_query_digest (ms3c_public_stmt_digest x)`
    on the announcement digest list from `ms3c_make_clause_surface` of the same
    Phase-1 carriers (see `A_ms3c_clause_surface_query_digest_constructed`). *)
