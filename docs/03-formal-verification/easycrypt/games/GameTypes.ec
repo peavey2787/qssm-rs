@@ -1,11 +1,13 @@
 require import AllCore List.
 require import QssmTypes.
+require export SourceTypes.
+require import TranscriptObservable.
 
 (* ------------------------------------------------------------------------- *)
 (* MS game view constructors and shape predicates.                           *)
 (* ------------------------------------------------------------------------- *)
 op mk_ms_game_view (x : qssm_public_input) (s : seed) (xms : ms_public_input)
-  (obs : ms_transcript_observable) (st : ms_game_stage)
+  (obs : ms_v2_transcript_observable) (st : ms_game_stage)
   (lep : le_transcript_observable option) : game_view =
   GV_ms {|
     msgv_qssm_pub = x;

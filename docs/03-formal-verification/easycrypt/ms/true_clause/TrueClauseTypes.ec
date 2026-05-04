@@ -1,5 +1,6 @@
 require import AllCore List.
 require import Algebra QssmTypes SchnorrBranch.
+require export SourceTypes.
 
 (* MS-3b structural predicates and highest-differing-bit geometry (index 0 = MSB). *)
 

@@ -15,16 +15,16 @@ lemma L_ms_MS1_stage_premises (x : qssm_public_input) (xms : ms_public_input) (s
   ms_game_view_qssm_seed (G_MS_after_binding x xms s) x s.
 proof.
 split; first by rewrite /ms_game_real_stage /G_MS_real /G0_real_qssm /=;
-  exact (L_ms_game_view_stage_mk x s xms witness MSGameStageReal None).
+  exact (L_ms_game_view_stage_mk x s xms (ms_game_view_public_obs xms) MSGameStageReal None).
 split; first by exact (L_ms_game_after_binding_stage_G x xms s).
 split; first by rewrite /G_MS_real /G0_real_qssm;
-  exact (L_ms_game_view_ms_pub_mk x s xms witness MSGameStageReal None).
+  exact (L_ms_game_view_ms_pub_mk x s xms (ms_game_view_public_obs xms) MSGameStageReal None).
 split; first by rewrite /G_MS_after_binding;
-  exact (L_ms_game_view_ms_pub_mk x s xms witness MSGameStageAfterBinding None).
+  exact (L_ms_game_view_ms_pub_mk x s xms (ms_game_view_public_obs xms) MSGameStageAfterBinding None).
 split; first by rewrite /G_MS_real /G0_real_qssm;
-  exact (L_ms_game_view_qssm_seed_mk x s xms witness MSGameStageReal None).
+  exact (L_ms_game_view_qssm_seed_mk x s xms (ms_game_view_public_obs xms) MSGameStageReal None).
 by rewrite /G_MS_after_binding;
-  exact (L_ms_game_view_qssm_seed_mk x s xms witness MSGameStageAfterBinding None).
+  exact (L_ms_game_view_qssm_seed_mk x s xms (ms_game_view_public_obs xms) MSGameStageAfterBinding None).
 qed.
 
 lemma L_ms_MS2_stage_premises (x : qssm_public_input) (xms : ms_public_input) (s : seed) :
@@ -36,17 +36,17 @@ lemma L_ms_MS2_stage_premises (x : qssm_public_input) (xms : ms_public_input) (s
   ms_game_view_qssm_seed (G_MS_after_rom x xms s) x s.
 proof.
 split; first by rewrite /ms_game_after_binding_stage /G_MS_after_binding /=;
-  exact (L_ms_game_view_stage_mk x s xms witness MSGameStageAfterBinding None).
+  exact (L_ms_game_view_stage_mk x s xms (ms_game_view_public_obs xms) MSGameStageAfterBinding None).
 split; first by rewrite /ms_game_after_rom_stage /G_MS_after_rom /=;
-  exact (L_ms_game_view_stage_mk x s xms witness MSGameStageAfterRom None).
+  exact (L_ms_game_view_stage_mk x s xms (ms_game_view_public_obs xms) MSGameStageAfterRom None).
 split; first by rewrite /G_MS_after_binding;
-  exact (L_ms_game_view_ms_pub_mk x s xms witness MSGameStageAfterBinding None).
+  exact (L_ms_game_view_ms_pub_mk x s xms (ms_game_view_public_obs xms) MSGameStageAfterBinding None).
 split; first by rewrite /G_MS_after_rom;
-  exact (L_ms_game_view_ms_pub_mk x s xms witness MSGameStageAfterRom None).
+  exact (L_ms_game_view_ms_pub_mk x s xms (ms_game_view_public_obs xms) MSGameStageAfterRom None).
 split; first by rewrite /G_MS_after_binding;
-  exact (L_ms_game_view_qssm_seed_mk x s xms witness MSGameStageAfterBinding None).
+  exact (L_ms_game_view_qssm_seed_mk x s xms (ms_game_view_public_obs xms) MSGameStageAfterBinding None).
 by rewrite /G_MS_after_rom;
-  exact (L_ms_game_view_qssm_seed_mk x s xms witness MSGameStageAfterRom None).
+  exact (L_ms_game_view_qssm_seed_mk x s xms (ms_game_view_public_obs xms) MSGameStageAfterRom None).
 qed.
 
 lemma L_ms_MS3a_stage_premises (x : qssm_public_input) (xms : ms_public_input) (s : seed) :
@@ -58,17 +58,17 @@ lemma L_ms_MS3a_stage_premises (x : qssm_public_input) (xms : ms_public_input) (
   ms_game_view_qssm_seed (G_MS_after_bitness x xms s) x s.
 proof.
 split; first by rewrite /ms_game_after_rom_stage /G_MS_after_rom /=;
-  exact (L_ms_game_view_stage_mk x s xms witness MSGameStageAfterRom None).
+  exact (L_ms_game_view_stage_mk x s xms (ms_game_view_public_obs xms) MSGameStageAfterRom None).
 split; first by rewrite /ms_game_after_bitness_stage /G_MS_after_bitness /=;
-  exact (L_ms_game_view_stage_mk x s xms witness MSGameStageAfterBitness None).
+  exact (L_ms_game_view_stage_mk x s xms (ms_game_view_public_obs xms) MSGameStageAfterBitness None).
 split; first by rewrite /G_MS_after_rom;
-  exact (L_ms_game_view_ms_pub_mk x s xms witness MSGameStageAfterRom None).
+  exact (L_ms_game_view_ms_pub_mk x s xms (ms_game_view_public_obs xms) MSGameStageAfterRom None).
 split; first by rewrite /G_MS_after_bitness;
-  exact (L_ms_game_view_ms_pub_mk x s xms witness MSGameStageAfterBitness None).
+  exact (L_ms_game_view_ms_pub_mk x s xms (ms_game_view_public_obs xms) MSGameStageAfterBitness None).
 split; first by rewrite /G_MS_after_rom;
-  exact (L_ms_game_view_qssm_seed_mk x s xms witness MSGameStageAfterRom None).
+  exact (L_ms_game_view_qssm_seed_mk x s xms (ms_game_view_public_obs xms) MSGameStageAfterRom None).
 by rewrite /G_MS_after_bitness;
-  exact (L_ms_game_view_qssm_seed_mk x s xms witness MSGameStageAfterBitness None).
+  exact (L_ms_game_view_qssm_seed_mk x s xms (ms_game_view_public_obs xms) MSGameStageAfterBitness None).
 qed.
 
 lemma L_ms_MS3b_stage_premises (x : qssm_public_input) (xms : ms_public_input) (s : seed) :
@@ -80,17 +80,17 @@ lemma L_ms_MS3b_stage_premises (x : qssm_public_input) (xms : ms_public_input) (
   ms_game_view_qssm_seed (G_MS_after_comparison x xms s) x s.
 proof.
 split; first by rewrite /ms_game_after_bitness_stage /G_MS_after_bitness /=;
-  exact (L_ms_game_view_stage_mk x s xms witness MSGameStageAfterBitness None).
+  exact (L_ms_game_view_stage_mk x s xms (ms_game_view_public_obs xms) MSGameStageAfterBitness None).
 split; first by rewrite /ms_game_after_comparison_stage /G_MS_after_comparison /=;
-  exact (L_ms_game_view_stage_mk x s xms witness MSGameStageAfterComparison None).
+  exact (L_ms_game_view_stage_mk x s xms (ms_game_view_public_obs xms) MSGameStageAfterComparison None).
 split; first by rewrite /G_MS_after_bitness;
-  exact (L_ms_game_view_ms_pub_mk x s xms witness MSGameStageAfterBitness None).
+  exact (L_ms_game_view_ms_pub_mk x s xms (ms_game_view_public_obs xms) MSGameStageAfterBitness None).
 split; first by rewrite /G_MS_after_comparison;
-  exact (L_ms_game_view_ms_pub_mk x s xms witness MSGameStageAfterComparison None).
+  exact (L_ms_game_view_ms_pub_mk x s xms (ms_game_view_public_obs xms) MSGameStageAfterComparison None).
 split; first by rewrite /G_MS_after_bitness;
-  exact (L_ms_game_view_qssm_seed_mk x s xms witness MSGameStageAfterBitness None).
+  exact (L_ms_game_view_qssm_seed_mk x s xms (ms_game_view_public_obs xms) MSGameStageAfterBitness None).
 by rewrite /G_MS_after_comparison;
-  exact (L_ms_game_view_qssm_seed_mk x s xms witness MSGameStageAfterComparison None).
+  exact (L_ms_game_view_qssm_seed_mk x s xms (ms_game_view_public_obs xms) MSGameStageAfterComparison None).
 qed.
 
 lemma L_ms_MS3c_stage_premises (x : qssm_public_input) (xms : ms_public_input) (s : seed) :
@@ -102,17 +102,17 @@ lemma L_ms_MS3c_stage_premises (x : qssm_public_input) (xms : ms_public_input) (
   ms_game_view_qssm_seed (G_MS_sim x xms s) x s.
 proof.
 split; first by rewrite /ms_game_after_comparison_stage /G_MS_after_comparison /=;
-  exact (L_ms_game_view_stage_mk x s xms witness MSGameStageAfterComparison None).
+  exact (L_ms_game_view_stage_mk x s xms (ms_game_view_public_obs xms) MSGameStageAfterComparison None).
 split; first by rewrite /ms_game_sim_stage /G_MS_sim /G1_ms_sim_le_real /=;
-  exact (L_ms_game_view_stage_mk x s xms witness MSGameStageSim None).
+  exact (L_ms_game_view_stage_mk x s xms (ms_game_view_public_obs xms) MSGameStageSim None).
 split; first by rewrite /G_MS_after_comparison;
-  exact (L_ms_game_view_ms_pub_mk x s xms witness MSGameStageAfterComparison None).
+  exact (L_ms_game_view_ms_pub_mk x s xms (ms_game_view_public_obs xms) MSGameStageAfterComparison None).
 split; first by rewrite /G_MS_sim /G1_ms_sim_le_real;
-  exact (L_ms_game_view_ms_pub_mk x s xms witness MSGameStageSim None).
+  exact (L_ms_game_view_ms_pub_mk x s xms (ms_game_view_public_obs xms) MSGameStageSim None).
 split; first by rewrite /G_MS_after_comparison;
-  exact (L_ms_game_view_qssm_seed_mk x s xms witness MSGameStageAfterComparison None).
+  exact (L_ms_game_view_qssm_seed_mk x s xms (ms_game_view_public_obs xms) MSGameStageAfterComparison None).
 by rewrite /G_MS_sim /G1_ms_sim_le_real;
-  exact (L_ms_game_view_qssm_seed_mk x s xms witness MSGameStageSim None).
+  exact (L_ms_game_view_qssm_seed_mk x s xms (ms_game_view_public_obs xms) MSGameStageSim None).
 qed.
 
 (* MS1 canonical hash-binding hop obligation on the concrete stage pair used in

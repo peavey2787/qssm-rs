@@ -25,6 +25,7 @@ FILES=(
   ms/BitnessOne.ec
   ms/BitnessVector.ec
   ms/TranscriptObservable.ec
+  ms/SourceTypes.ec
   ms/true_clause/TrueClauseTypes.ec
   ms/true_clause/TrueClauseMSB.ec
   ms/true_clause/TrueClauseTheorem.ec
@@ -51,7 +52,6 @@ FILES=(
   ms/comparison/ComparisonTheorem.ec
   ms/Comparison.ec
   ms/SourceModel.ec
-  ms/source/SourceTypes.ec
   ms/source/SourceConstructors.ec
   ms/source/SourcePayloadDistributions.ec
   ms/source/SourceCouplingTypes.ec

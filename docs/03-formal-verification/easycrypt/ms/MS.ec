@@ -1,5 +1,5 @@
 require import AllCore List.
-require import Algebra QssmTypes Comparison ComparisonTypes ComparisonDigests ComparisonPayload ComparisonCoupling ComparisonTheorem.
+require import Algebra QssmTypes SourceTypes SourceModel Comparison ComparisonTypes ComparisonDigests ComparisonPayload ComparisonCoupling ComparisonTheorem.
 require import SourceDistributions.
 require import TrueClause.
 
@@ -12,7 +12,7 @@ op ms_real_transcript (xms : ms_public_input) : game_view =
     msgv_qssm_pub = witness;
     msgv_seed = witness;
     msgv_ms_pub = xms;
-    msgv_ms_obs = witness;
+    msgv_ms_obs = ms3a_public_v2_observable xms;
     msgv_stage = MSGameStageReal;
     msgv_le_placeholder = None;
   |}.
@@ -22,7 +22,7 @@ op ms_sim_transcript (xms : ms_public_input) (s : seed) : game_view =
     msgv_qssm_pub = witness;
     msgv_seed = s;
     msgv_ms_pub = xms;
-    msgv_ms_obs = witness;
+    msgv_ms_obs = ms3a_public_v2_observable xms;
     msgv_stage = MSGameStageSim;
     msgv_le_placeholder = None;
   |}.

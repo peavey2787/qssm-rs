@@ -1,5 +1,6 @@
 require import AllCore List Distr.
 require import Algebra QssmTypes FS SchnorrBranch TrueClause BitnessOne.
+require export SourceTypes.
 
 type ms_comparison_clause_surface = {
   mscc_true_clause_ix : int;
@@ -88,7 +89,7 @@ op ms3c_make_sim_clause_surface (p : ms3c_sim_comparison_payload) : ms_compariso
    `ms3c_public_stmt_digest x` (single source of truth). `ms3c_comparison_stmt_digest`
    aliases it so legacy call sites stay aligned. *)
 
-op ms3c_public_stmt_digest (x : ms_public_input) : digest = witness.
+op ms3c_public_stmt_digest (x : ms_public_input) : digest = x.`mspi_stmt_digest.
 
 op ms3c_comparison_stmt_digest (x : ms_public_input) : digest = ms3c_public_stmt_digest x.
 

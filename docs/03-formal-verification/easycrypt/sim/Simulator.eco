@@ -1,7 +1,7 @@
 {
   "version": 3,
   "echash": "n/a",
-  "root": { "kind": "ec", "digest": "ea49af68124e8caf90f89b484061e625" },
+  "root": { "kind": "ec", "digest": "966367e87c3528fe07efa9a704bc0f1e" },
   "depends": {
     "AlgTactic": {
       "direct": false,
@@ -151,7 +151,7 @@
     "ComparisonTypes": {
       "direct": false,
       "kind": "ec",
-      "digest": "c6f71ed2be599002efe0e0ead7e79f99"
+      "digest": "6fb0d8c2195530eba0673e6a0d73cb1a"
     },
     "Core": {
       "direct": false,
@@ -316,7 +316,7 @@
     "MS": {
       "direct": true,
       "kind": "ec",
-      "digest": "97367f818ca159ab31f324808cea989d"
+      "digest": "a7bc1d0c2d5ea7d2bf1b3ff8a0744d37"
     },
     "Means": {
       "direct": false,
@@ -351,7 +351,7 @@
     "QssmTypes": {
       "direct": true,
       "kind": "ec",
-      "digest": "a01add13b9a617f8cee8c968779c907c"
+      "digest": "eab707740558cbb9a122450d870e334d"
     },
     "Real": {
       "direct": false,
@@ -426,7 +426,7 @@
     "SourceCouplingTypes": {
       "direct": false,
       "kind": "ec",
-      "digest": "2c49159f845a4aaed13852466aec21cc"
+      "digest": "242240b11d822fc9728c7c1956968c39"
     },
     "SourceDistributionLemmas": {
       "direct": false,
@@ -441,7 +441,7 @@
     "SourceModel": {
       "direct": false,
       "kind": "ec",
-      "digest": "1260c8d53836a730becd2f4a5430fc12"
+      "digest": "99b5f34791e1e4808dd4c5803e1f9a7c"
     },
     "SourceObservableDistributions": {
       "direct": false,
@@ -454,9 +454,9 @@
       "digest": "bc6b309b8f0144322e29f5e46f4bed92"
     },
     "SourceTypes": {
-      "direct": false,
+      "direct": true,
       "kind": "ec",
-      "digest": "c54f90cef7093fff5627706eb35c2464"
+      "digest": "db8ab0a27cf2834a3b72e38bbb6f3e24"
     },
     "StdBigop": {
       "direct": false,
@@ -501,7 +501,7 @@
     "TrueClauseTypes": {
       "direct": false,
       "kind": "ec",
-      "digest": "754d7c7490274ad6b0abf184d28c0802"
+      "digest": "f936af6024e0d67ca7cb8eff269ef398"
     },
     "Xint": {
       "direct": false,

@@ -1,5 +1,5 @@
 require import AllCore.
-require import QssmTypes MS LESurface LEModel.
+require import QssmTypes SourceTypes MS LESurface LEModel.
 
 (* Public-only simulator interfaces *)
 op ms_simulator : ms_public_input -> seed -> ms_transcript_observable.

@@ -1,5 +1,5 @@
 require import AllCore List Distr.
-require import QssmTypes FS.
+require import QssmTypes SourceTypes FS.
 require import SchnorrBranch.
 require import BitnessOne BitnessVector TranscriptObservable.
 require import TrueClause Comparison ComparisonTypes ComparisonDigests ComparisonPayload ComparisonCoupling ComparisonTheorem.
@@ -12,17 +12,81 @@ op ms_comparison_global_challenge : ms_transcript_observable -> digest.
 op ms_transcript_digest : ms_transcript_observable -> digest.
 
 (* ------------------------------------------------------------------------- *)
-(* MS-3a public spine: six field projections from `ms_public_input`, aligned  *)
-(* to `ms3a_{real,sim}_payload_seed` / v2 observable surface (`SourceTypes`). *)
-(* Uninterpreted `op`s only — future seed laws / games may assume equalities   *)
-(* tying these to sampled seeds; no axioms bundled here.                      *)
+(* MS-3a public spine: concrete projections from the base-layer public record. *)
 
-op ms3a_public_stmt_digest (x : ms_public_input) : digest.
-op ms3a_public_result_bit (x : ms_public_input) : bool.
-op ms3a_public_bits (x : ms_public_input) : ms_single_bit_or_transcript list.
-op ms3a_public_bitness_globals (x : ms_public_input) : digest list.
-op ms3a_public_comparison_global (x : ms_public_input) : digest.
-op ms3a_public_transcript_digest (x : ms_public_input) : digest.
+op ms3a_public_stmt_digest (x : ms_public_input) : digest = x.`mspi_stmt_digest.
+
+op ms3a_public_result_bit (x : ms_public_input) : bool = x.`mspi_result_bit.
+
+op ms3a_public_bit_at (x : ms_public_input) (i : int) : ms_single_bit_or_transcript =
+  ms_public_bit_transcript x i.
+
+op ms3a_public_bits (x : ms_public_input) : ms_single_bit_or_transcript list =
+  [ ms3a_public_bit_at x 0;  ms3a_public_bit_at x 1;  ms3a_public_bit_at x 2;
+    ms3a_public_bit_at x 3;  ms3a_public_bit_at x 4;  ms3a_public_bit_at x 5;
+    ms3a_public_bit_at x 6;  ms3a_public_bit_at x 7;  ms3a_public_bit_at x 8;
+    ms3a_public_bit_at x 9;  ms3a_public_bit_at x 10; ms3a_public_bit_at x 11;
+    ms3a_public_bit_at x 12; ms3a_public_bit_at x 13; ms3a_public_bit_at x 14;
+    ms3a_public_bit_at x 15; ms3a_public_bit_at x 16; ms3a_public_bit_at x 17;
+    ms3a_public_bit_at x 18; ms3a_public_bit_at x 19; ms3a_public_bit_at x 20;
+    ms3a_public_bit_at x 21; ms3a_public_bit_at x 22; ms3a_public_bit_at x 23;
+    ms3a_public_bit_at x 24; ms3a_public_bit_at x 25; ms3a_public_bit_at x 26;
+    ms3a_public_bit_at x 27; ms3a_public_bit_at x 28; ms3a_public_bit_at x 29;
+    ms3a_public_bit_at x 30; ms3a_public_bit_at x 31; ms3a_public_bit_at x 32;
+    ms3a_public_bit_at x 33; ms3a_public_bit_at x 34; ms3a_public_bit_at x 35;
+    ms3a_public_bit_at x 36; ms3a_public_bit_at x 37; ms3a_public_bit_at x 38;
+    ms3a_public_bit_at x 39; ms3a_public_bit_at x 40; ms3a_public_bit_at x 41;
+    ms3a_public_bit_at x 42; ms3a_public_bit_at x 43; ms3a_public_bit_at x 44;
+    ms3a_public_bit_at x 45; ms3a_public_bit_at x 46; ms3a_public_bit_at x 47;
+    ms3a_public_bit_at x 48; ms3a_public_bit_at x 49; ms3a_public_bit_at x 50;
+    ms3a_public_bit_at x 51; ms3a_public_bit_at x 52; ms3a_public_bit_at x 53;
+    ms3a_public_bit_at x 54; ms3a_public_bit_at x 55; ms3a_public_bit_at x 56;
+    ms3a_public_bit_at x 57; ms3a_public_bit_at x 58; ms3a_public_bit_at x 59;
+    ms3a_public_bit_at x 60; ms3a_public_bit_at x 61; ms3a_public_bit_at x 62;
+    ms3a_public_bit_at x 63 ].
+
+op ms3a_public_bitness_global_at (x : ms_public_input) (i : int) : digest =
+  ms_public_bit_global_digest x i.
+
+op ms3a_public_bitness_globals (x : ms_public_input) : digest list =
+  [ ms3a_public_bitness_global_at x 0;  ms3a_public_bitness_global_at x 1;
+    ms3a_public_bitness_global_at x 2;  ms3a_public_bitness_global_at x 3;
+    ms3a_public_bitness_global_at x 4;  ms3a_public_bitness_global_at x 5;
+    ms3a_public_bitness_global_at x 6;  ms3a_public_bitness_global_at x 7;
+    ms3a_public_bitness_global_at x 8;  ms3a_public_bitness_global_at x 9;
+    ms3a_public_bitness_global_at x 10; ms3a_public_bitness_global_at x 11;
+    ms3a_public_bitness_global_at x 12; ms3a_public_bitness_global_at x 13;
+    ms3a_public_bitness_global_at x 14; ms3a_public_bitness_global_at x 15;
+    ms3a_public_bitness_global_at x 16; ms3a_public_bitness_global_at x 17;
+    ms3a_public_bitness_global_at x 18; ms3a_public_bitness_global_at x 19;
+    ms3a_public_bitness_global_at x 20; ms3a_public_bitness_global_at x 21;
+    ms3a_public_bitness_global_at x 22; ms3a_public_bitness_global_at x 23;
+    ms3a_public_bitness_global_at x 24; ms3a_public_bitness_global_at x 25;
+    ms3a_public_bitness_global_at x 26; ms3a_public_bitness_global_at x 27;
+    ms3a_public_bitness_global_at x 28; ms3a_public_bitness_global_at x 29;
+    ms3a_public_bitness_global_at x 30; ms3a_public_bitness_global_at x 31;
+    ms3a_public_bitness_global_at x 32; ms3a_public_bitness_global_at x 33;
+    ms3a_public_bitness_global_at x 34; ms3a_public_bitness_global_at x 35;
+    ms3a_public_bitness_global_at x 36; ms3a_public_bitness_global_at x 37;
+    ms3a_public_bitness_global_at x 38; ms3a_public_bitness_global_at x 39;
+    ms3a_public_bitness_global_at x 40; ms3a_public_bitness_global_at x 41;
+    ms3a_public_bitness_global_at x 42; ms3a_public_bitness_global_at x 43;
+    ms3a_public_bitness_global_at x 44; ms3a_public_bitness_global_at x 45;
+    ms3a_public_bitness_global_at x 46; ms3a_public_bitness_global_at x 47;
+    ms3a_public_bitness_global_at x 48; ms3a_public_bitness_global_at x 49;
+    ms3a_public_bitness_global_at x 50; ms3a_public_bitness_global_at x 51;
+    ms3a_public_bitness_global_at x 52; ms3a_public_bitness_global_at x 53;
+    ms3a_public_bitness_global_at x 54; ms3a_public_bitness_global_at x 55;
+    ms3a_public_bitness_global_at x 56; ms3a_public_bitness_global_at x 57;
+    ms3a_public_bitness_global_at x 58; ms3a_public_bitness_global_at x 59;
+    ms3a_public_bitness_global_at x 60; ms3a_public_bitness_global_at x 61;
+    ms3a_public_bitness_global_at x 62; ms3a_public_bitness_global_at x 63 ].
+
+op ms3a_public_comparison_global (x : ms_public_input) : digest =
+  x.`mspi_comparison_global.
+
+op ms3a_public_transcript_digest (x : ms_public_input) : digest =
+  x.`mspi_transcript_digest.
 
 (* Abstract observable agrees with the canonical v2 record (linking layer).   *)
 pred ms_abstract_observable_aligns_v2
@@ -62,6 +126,11 @@ pred ms3a_public_transcript_shape_ok (x : ms_public_input) =
       (ms3a_public_bitness_globals x) (ms3a_public_comparison_global x)
       (ms3a_public_transcript_digest x)).
 
+op ms3a_public_v2_observable (x : ms_public_input) : ms_v2_transcript_observable =
+  ms3a_pack_observable (ms3a_public_stmt_digest x) (ms3a_public_result_bit x)
+    (ms3a_public_bitness_globals x) (ms3a_public_comparison_global x)
+    (ms3a_public_transcript_digest x).
+
 (* Projection from canonical v2 observable to abstract observable carrier.      *)
 op ms3a_observable_of_v2 : ms_v2_transcript_observable -> ms_transcript_observable.
 
@@ -81,11 +150,191 @@ axiom A_ms3a_observable_of_v2_aligns :
    proved lemma derived from this one. No new axiom is introduced overall: this is the
    same logical content moved to its proper layer next to the abstract source model
    (which already imports `FS` and `BitnessVector`). *)
-axiom A_ms3a_public_spine_programmed_layer (x : ms_public_input) :
+lemma ms3a_public_bits_nth_valid (x : ms_public_input) (i : int) :
+  ms_bit_index_valid i =>
+  ms_nth_single_bit_or (ms3a_public_bits x) i = ms3a_public_bit_at x i.
+proof.
+move=> Hi.
+have Hcases :
+  i = 0  \/ i = 1  \/ i = 2  \/ i = 3  \/ i = 4  \/ i = 5  \/ i = 6  \/ i = 7  \/
+  i = 8  \/ i = 9  \/ i = 10 \/ i = 11 \/ i = 12 \/ i = 13 \/ i = 14 \/ i = 15 \/
+  i = 16 \/ i = 17 \/ i = 18 \/ i = 19 \/ i = 20 \/ i = 21 \/ i = 22 \/ i = 23 \/
+  i = 24 \/ i = 25 \/ i = 26 \/ i = 27 \/ i = 28 \/ i = 29 \/ i = 30 \/ i = 31 \/
+  i = 32 \/ i = 33 \/ i = 34 \/ i = 35 \/ i = 36 \/ i = 37 \/ i = 38 \/ i = 39 \/
+  i = 40 \/ i = 41 \/ i = 42 \/ i = 43 \/ i = 44 \/ i = 45 \/ i = 46 \/ i = 47 \/
+  i = 48 \/ i = 49 \/ i = 50 \/ i = 51 \/ i = 52 \/ i = 53 \/ i = 54 \/ i = 55 \/
+  i = 56 \/ i = 57 \/ i = 58 \/ i = 59 \/ i = 60 \/ i = 61 \/ i = 62 \/ i = 63 by smt.
+move: Hcases.
+rewrite /ms_nth_single_bit_or /ms3a_public_bits /=.
+move=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+by smt.
+qed.
+
+lemma ms3a_public_bitness_globals_nth_valid (x : ms_public_input) (i : int) :
+  ms_bit_index_valid i =>
+  nth witness (ms3a_public_bitness_globals x) i = ms3a_public_bitness_global_at x i.
+proof.
+move=> Hi.
+have Hcases :
+  i = 0  \/ i = 1  \/ i = 2  \/ i = 3  \/ i = 4  \/ i = 5  \/ i = 6  \/ i = 7  \/
+  i = 8  \/ i = 9  \/ i = 10 \/ i = 11 \/ i = 12 \/ i = 13 \/ i = 14 \/ i = 15 \/
+  i = 16 \/ i = 17 \/ i = 18 \/ i = 19 \/ i = 20 \/ i = 21 \/ i = 22 \/ i = 23 \/
+  i = 24 \/ i = 25 \/ i = 26 \/ i = 27 \/ i = 28 \/ i = 29 \/ i = 30 \/ i = 31 \/
+  i = 32 \/ i = 33 \/ i = 34 \/ i = 35 \/ i = 36 \/ i = 37 \/ i = 38 \/ i = 39 \/
+  i = 40 \/ i = 41 \/ i = 42 \/ i = 43 \/ i = 44 \/ i = 45 \/ i = 46 \/ i = 47 \/
+  i = 48 \/ i = 49 \/ i = 50 \/ i = 51 \/ i = 52 \/ i = 53 \/ i = 54 \/ i = 55 \/
+  i = 56 \/ i = 57 \/ i = 58 \/ i = 59 \/ i = 60 \/ i = 61 \/ i = 62 \/ i = 63 by smt.
+move: Hcases.
+rewrite /ms3a_public_bitness_globals /=.
+move=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+move: Hcases=> [-> | Hcases]; first by [].
+by smt.
+qed.
+
+lemma A_ms3a_public_spine_programmed_layer (x : ms_public_input) :
   ms_bitness_vector_programmed_layer
     (ms3a_public_stmt_digest x)
     (ms3a_public_bits x)
     (ms3a_public_bitness_globals x).
+proof.
+rewrite /ms_bitness_vector_programmed_layer; split.
+- rewrite /ms_per_bit_programmed => i Hi.
+  have -> : ms_nth_single_bit_or (ms3a_public_bits x) i = ms3a_public_bit_at x i.
+    exact (ms3a_public_bits_nth_valid x i Hi).
+  exact (ms_public_bit_transcript_programmed x i).
+rewrite /ms_ordered_challenge_vector_matches /ms_bitness_vector_length_ok /=; split.
+- by [].
+split.
+- by rewrite /ms_bitness_global_challenge_vector_length_ok /ms3a_public_bitness_globals /=.
+move=> i Hi.
+have Hglob := ms3a_public_bitness_globals_nth_valid x i Hi.
+have Hbit := ms3a_public_bits_nth_valid x i Hi.
+rewrite Hglob Hbit /ms3a_public_bitness_global_at /ms_public_bit_global_digest.
+by rewrite /ms3a_public_bit_at /ms_public_bit_transcript /ms_pack_single_bit_or /=.
+qed.
 
 (* Frame constructor relation for packed observables.                           *)
 pred ms3a_packed_frame

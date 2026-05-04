@@ -1,6 +1,7 @@
 require import AllCore List.
 require import Ring.
 require import QssmTypes.
+require import GameTypes.
 require import GameViews.
 
 op game_pr : game_view -> distinguisher -> real.

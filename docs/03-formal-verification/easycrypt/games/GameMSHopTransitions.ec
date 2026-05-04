@@ -10,10 +10,10 @@ rewrite /G_MS_real /G_MS_after_binding /G0_real_qssm /mk_ms_game_view.
 rewrite /ms1_hash_binding_step /=.
 exists
   {| msgv_qssm_pub = x; msgv_seed = s; msgv_ms_pub = xms;
-    msgv_ms_obs = witness; msgv_stage = MSGameStageReal;
+    msgv_ms_obs = ms_game_view_public_obs xms; msgv_stage = MSGameStageReal;
     msgv_le_placeholder = None |}
   {| msgv_qssm_pub = x; msgv_seed = s; msgv_ms_pub = xms;
-    msgv_ms_obs = witness; msgv_stage = MSGameStageAfterBinding;
+    msgv_ms_obs = ms_game_view_public_obs xms; msgv_stage = MSGameStageAfterBinding;
     msgv_le_placeholder = None |}.
 by [].
 qed.
@@ -40,10 +40,10 @@ rewrite /G_MS_after_binding /G_MS_after_rom /mk_ms_game_view.
 rewrite /ms2_rom_programming_step /=.
 exists
   {| msgv_qssm_pub = x; msgv_seed = s; msgv_ms_pub = xms;
-    msgv_ms_obs = witness; msgv_stage = MSGameStageAfterBinding;
+    msgv_ms_obs = ms_game_view_public_obs xms; msgv_stage = MSGameStageAfterBinding;
     msgv_le_placeholder = None |}
   {| msgv_qssm_pub = x; msgv_seed = s; msgv_ms_pub = xms;
-    msgv_ms_obs = witness; msgv_stage = MSGameStageAfterRom;
+    msgv_ms_obs = ms_game_view_public_obs xms; msgv_stage = MSGameStageAfterRom;
     msgv_le_placeholder = None |}.
 by [].
 qed.
@@ -72,10 +72,10 @@ split; first exact Hequiv.
 rewrite /G_MS_after_rom /G_MS_after_bitness /mk_ms_game_view.
 exists
   {| msgv_qssm_pub = x; msgv_seed = s; msgv_ms_pub = xms;
-    msgv_ms_obs = witness; msgv_stage = MSGameStageAfterRom;
+    msgv_ms_obs = ms_game_view_public_obs xms; msgv_stage = MSGameStageAfterRom;
     msgv_le_placeholder = None |}
   {| msgv_qssm_pub = x; msgv_seed = s; msgv_ms_pub = xms;
-    msgv_ms_obs = witness; msgv_stage = MSGameStageAfterBitness;
+    msgv_ms_obs = ms_game_view_public_obs xms; msgv_stage = MSGameStageAfterBitness;
     msgv_le_placeholder = None |}.
 by [].
 qed.
@@ -109,10 +109,10 @@ split; first exact H3b.
 rewrite /G_MS_after_bitness /G_MS_after_comparison /mk_ms_game_view.
 exists
   {| msgv_qssm_pub = x; msgv_seed = s; msgv_ms_pub = xms;
-    msgv_ms_obs = witness; msgv_stage = MSGameStageAfterBitness;
+    msgv_ms_obs = ms_game_view_public_obs xms; msgv_stage = MSGameStageAfterBitness;
     msgv_le_placeholder = None |}
   {| msgv_qssm_pub = x; msgv_seed = s; msgv_ms_pub = xms;
-    msgv_ms_obs = witness; msgv_stage = MSGameStageAfterComparison;
+    msgv_ms_obs = ms_game_view_public_obs xms; msgv_stage = MSGameStageAfterComparison;
     msgv_le_placeholder = None |}.
 by [].
 qed.
@@ -151,10 +151,10 @@ split; first exact H3c.
 rewrite /G_MS_after_comparison /G_MS_sim /G1_ms_sim_le_real /mk_ms_game_view.
 exists
   {| msgv_qssm_pub = x; msgv_seed = s; msgv_ms_pub = xms;
-    msgv_ms_obs = witness; msgv_stage = MSGameStageAfterComparison;
+    msgv_ms_obs = ms_game_view_public_obs xms; msgv_stage = MSGameStageAfterComparison;
     msgv_le_placeholder = None |}
   {| msgv_qssm_pub = x; msgv_seed = s; msgv_ms_pub = xms;
-    msgv_ms_obs = witness; msgv_stage = MSGameStageSim;
+    msgv_ms_obs = ms_game_view_public_obs xms; msgv_stage = MSGameStageSim;
     msgv_le_placeholder = None |}.
 by [].
 qed.

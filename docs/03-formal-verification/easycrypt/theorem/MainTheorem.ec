@@ -1,7 +1,7 @@
 require import AllCore List.
 require import StdOrder.
 (*---*) import RealOrder.
-require import QssmTypes Algebra FS SchnorrBranch TrueClause Comparison ComparisonTypes ComparisonDigests ComparisonPayload ComparisonCoupling ComparisonTheorem MS.
+require import QssmTypes SourceTypes Algebra FS SchnorrBranch TrueClause Comparison ComparisonTypes ComparisonDigests ComparisonPayload ComparisonCoupling ComparisonTheorem MS.
 require import SourceDistributions SourceTheorem.
 require import LESurface LEModel Games GameAdvantage GameMSHops GameMSHopComposition GameLEBridge.
 

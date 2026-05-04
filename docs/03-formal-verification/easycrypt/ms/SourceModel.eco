@@ -1,7 +1,7 @@
 {
   "version": 3,
   "echash": "n/a",
-  "root": { "kind": "ec", "digest": "1260c8d53836a730becd2f4a5430fc12" },
+  "root": { "kind": "ec", "digest": "99b5f34791e1e4808dd4c5803e1f9a7c" },
   "depends": {
     "AlgTactic": {
       "direct": false,
@@ -151,7 +151,7 @@
     "ComparisonTypes": {
       "direct": true,
       "kind": "ec",
-      "digest": "c6f71ed2be599002efe0e0ead7e79f99"
+      "digest": "6fb0d8c2195530eba0673e6a0d73cb1a"
     },
     "Core": {
       "direct": false,
@@ -241,7 +241,7 @@
     "QssmTypes": {
       "direct": true,
       "kind": "ec",
-      "digest": "a01add13b9a617f8cee8c968779c907c"
+      "digest": "eab707740558cbb9a122450d870e334d"
     },
     "Real": {
       "direct": false,
@@ -288,6 +288,11 @@
       "kind": "ec",
       "digest": "412f88972028a1faf35fcbe2d02b210f"
     },
+    "SourceTypes": {
+      "direct": true,
+      "kind": "ec",
+      "digest": "db8ab0a27cf2834a3b72e38bbb6f3e24"
+    },
     "StdBigop": {
       "direct": false,
       "kind": "ec",
@@ -331,7 +336,7 @@
     "TrueClauseTypes": {
       "direct": false,
       "kind": "ec",
-      "digest": "754d7c7490274ad6b0abf184d28c0802"
+      "digest": "f936af6024e0d67ca7cb8eff269ef398"
     },
     "Xint": {
       "direct": false,

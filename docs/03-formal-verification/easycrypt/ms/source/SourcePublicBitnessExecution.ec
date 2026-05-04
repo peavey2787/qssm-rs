@@ -1,5 +1,6 @@
 require import AllCore List.
 require import QssmTypes BitnessOne BitnessVector.
+require import SourceTypes.
 require import SourceModel.
 
 (* MS-3a public bitness execution boundary.

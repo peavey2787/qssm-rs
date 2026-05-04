@@ -1,6 +1,7 @@
 require import AllCore List Distr.
 require import QssmTypes BitnessVector.
-require import SourceTypes SourcePayloadDistributions SourceConstructors.
+require export SourceTypes.
+require import SourcePayloadDistributions SourceConstructors.
 
 (* MS-3a seed coupling: structured joint
    `dmap (d_ms3a_seed_spine_joint x s) ms3a_real_sim_seed_pair_of_bitness_layer`
