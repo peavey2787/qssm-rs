@@ -153,17 +153,15 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
   - `A_LE_rejection_distribution_defined`
   - `A_LE_rejection_acceptance_probability_bounded`
   - `A_LE_rejection_output_shape_preserved`
-  - `A_LE_rejection_surrogate_preserves_shape`
   - `A_LE_fs_query_surface_defined`
   - `A_LE_fs_programmable_oracle_available`
   - `A_LE_fs_programming_preserves_transcript_shape`
   - `A_LE_fs_surrogate_preserves_shape`
-  - `A_LE_rejection_surrogate_sdist_bound`
   - `A_LE_fs_surrogate_sdist_bound`
 - Critical-path audit, May 2026:
   - `LEViewIndist.ec`, `LEStatisticalDistance.ec`, `LEHVZK.ec`, and `games/GameLEBridge.ec` do not add new axioms; they only package lower obligations.
   - The active theorem path is:
-    `A_LE_rejection_surrogate_sdist_bound` + `A_LE_fs_surrogate_sdist_bound`
+    `A_LE_fs_surrogate_sdist_bound`
     -> `A_LE_combined_hiding_bounds_sdist`
     -> `A_LE_view_advantage_bound_from_indistinguishability`
     -> `A_LE_real_sim_transcript_equiv_bound`
@@ -172,33 +170,27 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     -> `A_G1_to_G2_le_transition_bound`
     -> theorem-level use of `A4_le_hvzk` in `MainTheorem.ec`.
   - The rejection-definition / acceptance / output-shape bundle and the FS query/oracle/shape bundle feed the hiding predicates used by the same chain, via `A_LE_rejection_sampling_hiding_bound` and `A_LE_fs_programming_bound`.
-  - `A_LE_rejection_surrogate_preserves_shape` and `A_LE_fs_surrogate_preserves_shape` remain declared debt, but they are currently not referenced by that active chain.
-  - Recommended first target: `A_LE_rejection_surrogate_sdist_bound`. It is the earliest quantitative theorem on the critical path, it anchors the concrete meaning of `d_le_post_rejection_view`, and proving it is the most likely way to collapse several rejection-side helper axioms together rather than only removing a packaging leaf.
-  - Probe result, May 2026: a direct proof attempt for `A_LE_rejection_surrogate_sdist_bound` does not close from the current surface. After unfolding `le_rejection_sampling_hiding_bound`, the rejection hypotheses collapse to the same budget fact `0%r <= epsilon_le`, while `le_rejection_distribution_defined`, `le_rejection_acceptance_probability_bounded`, and `le_rejection_output_shape_preserved` remain purely predicate packaging with no quantitative link to `sdist`. The exact missing theorem is therefore a sampler theorem below the current rejection facade, not another packaging lemma. A suitable target is a distinguisher-independent statement of the form
-    `forall (x : qssm_public_input) (s : seed),`
-    `  le_real_view_distribution_defined x s =>`
-    `  le_rejection_distribution_defined x s =>`
-    `  le_rejection_acceptance_probability_bounded x s =>`
-    `  le_rejection_output_shape_preserved x s =>`
-    `  sdist (d_le_real_view x s) (d_le_post_rejection_view x s) <= (1%r / 2%r) * epsilon_le.`
-    Any honest discharge of `A_LE_rejection_surrogate_sdist_bound` needs this kind of rejection-sampler coupling / distance theorem, or an equivalent lower theorem from which it is derivable.
-  - Design refinement, May 2026: name that lower theorem surface explicitly as
-    `A_LE_rejection_sampler_sdist_bound` in `le/LERejection.ec`. It should stay
-    a lower-layer theorem target, not a replacement quantitative axiom. At the
-    current abstraction boundary it is still blocked because `d_le_real_view`
-    is abstract in `LESurface.ec`, while `d_le_post_rejection_view` is only the
-    definitional `dmap` push-forward through abstract `le_post_rejection_surrogate`.
-    The next honest implementation patch must therefore introduce a concrete LE
-    rejection execution / sampler surface below those operators, or prove an
-    equivalent coupling theorem from such a surface.
-  - Minimal sampler skeleton, May 2026: `le/LERejectionSampler.ec` now adds the
-    lower ops `d_le_rejection_real_execution_view`, `le_rejection_transform`, and
-    `d_le_rejection_post_execution_view`, together with comment-only bridge targets
-    `le_real_view_matches_rejection_execution`,
-    `le_post_rejection_view_matches_execution_transform`, and
-    `A_LE_rejection_sampler_sdist_bound`. This keeps the import direction clean:
-    the lower sampler file depends on `LESurface.ec`, but `LERejection.ec` and
-    `LEModel.ec` do not import it yet.
+  - `A_LE_fs_surrogate_preserves_shape` remains declared debt, but the rejection-side surrogate shape obligation is now discharged as a lemma because the rejection transform is concrete.
+  - Rejection concretization, May 2026: `le_post_rejection_surrogate` in `LESurface.ec` is now the identity on `le_transcript_observable`. This makes `A_LE_rejection_surrogate_preserves_shape` immediate by unfolding and discharges `A_LE_rejection_surrogate_sdist_bound` by zero distance, via `dmap_id` and `sdistdd`.
+  - Design refinement, May 2026: `A_LE_rejection_sampler_sdist_bound` remains a
+    proved lemma in `le/LERejection.ec`, but it is no longer a repackaging of a
+    surrogate-side axiom. It now rests on the concrete identity rejection
+    transform and the resulting zero-distance lemma.
+  - Sampler bridge closure, May 2026: `le/LERejectionSampler.ec` now defines
+    `d_le_rejection_real_execution_view` as `d_le_real_view`, defines
+    `le_rejection_transform` as `le_post_rejection_surrogate`, keeps
+    `d_le_rejection_post_execution_view` as the corresponding push-forward, and
+    proves the bridge lemmas `le_real_view_matches_rejection_execution` and
+    `le_post_rejection_view_matches_execution_transform`. `LERejection.ec` now
+    imports that sampler bridge layer; `LEModel.ec` still does not.
+  - Remaining blocker after rejection concretization, May 2026: the rejection
+    transform is no longer the obstruction. The active lower real-side debt is
+    that `d_le_real_view` is still abstract in `LESurface.ec`; because the
+    `qssm_public_input` and `le_transcript_observable` carriers are still
+    abstract below that file, and the only existing LE-output interface lives in
+    `sim/Simulator.ec` above `LESurface.ec`, the next honest real-side step is a
+    lower LE real-execution surface below the facade. On the quantitative path,
+    the remaining LE surrogate axiom is now `A_LE_fs_surrogate_sdist_bound`.
 - `games/GameLEBridge.ec` no longer carries a game-layer projection axiom:
   `A_game_pr_LE_projection_semantics` is now a lemma on the split views
   `G1_le_real_projection` / `G2_full_sim`.

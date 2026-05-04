@@ -20,7 +20,7 @@ op ms3a_canonical_public_source (x : ms_public_input) : ms3a_bitness_layer_sourc
    (same record used by `d_ms3a_real_payload_seed` below). With this definition the previous
    axioms `A_ms3a_spine_real_marginal_matches_seed` and
    `A_ms3a_seed_pair_public_fields_match_on_support` are now proved lemmas. The remaining
-   axiom `A_ms3a_seed_spine_support_wf` simplifies to `ms3a_source_wf` of the canonical source
+  named fact `A_ms3a_seed_spine_support_wf` simplifies to `ms3a_source_wf` of the canonical source
    on the singleton support, and is the lone primitive carrying the abstract programmed-bitness
    fact about the public spine. *)
 op d_ms3a_seed_spine_joint (x : ms_public_input) (_s : seed) : ms3a_bitness_layer_source distr =

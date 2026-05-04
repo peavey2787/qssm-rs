@@ -38,7 +38,8 @@ axiom A4_le_hvzk_bound_nonneg :
 op d_le_real_view : qssm_public_input -> seed -> le_transcript_observable distr.
 
 (* Measurable transforms on the LE observable surface: rejection hop, then FS. *)
-op le_post_rejection_surrogate : le_transcript_observable -> le_transcript_observable.
+op le_post_rejection_surrogate
+  (obs : le_transcript_observable) : le_transcript_observable = obs.
 op le_fs_view_surrogate : le_transcript_observable -> le_transcript_observable.
 
 (* Post-rejection marginal: push-forward of the real view after the rejection-sampling
