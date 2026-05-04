@@ -45,7 +45,21 @@ op d_le_fs_programmed_response_carrier
   (x : qssm_public_input) (s : seed) : le_fs_programmed_response_carrier distr =
   dmap (d_le_pre_fs_programming_view x s) le_fs_programmed_response_of_observable.
 
+lemma le_fs_surrogate_matches_programmed_view :
+  forall (x : qssm_public_input) (s : seed),
+    d_le_post_fs_programmed_view x s =
+      dmap (d_le_pre_fs_programming_view x s) le_fs_surrogate_transform.
+proof.
+by move=> x s; rewrite /d_le_post_fs_programmed_view.
+qed.
+
 (* Intended bridge/analysis targets for the lower FS-programming surface.
+
+   The first bridge fact above is definitional. The next lower shape theorem is
+   still blocked here because `le_fs_surrogate_transform` only unfolds to the
+   abstract facade operator `le_fs_view_surrogate`; below `LEFsProgramming.ec`
+   there is not yet any concrete constructor or fieldwise equality theorem for
+   that transform on `le_transcript_observable`.
 
    lemma le_fs_query_surface_sound :
      forall (obs : le_transcript_observable),
@@ -62,11 +76,6 @@ op d_le_fs_programmed_response_carrier
        le_challenge_seed_obs (le_fs_surrogate_transform obs) = le_challenge_seed_obs obs /\
        le_programmed_query_digest_obs (le_fs_surrogate_transform obs) =
          le_programmed_query_digest_obs obs.
-
-   lemma le_fs_surrogate_matches_programmed_view :
-     forall (x : qssm_public_input) (s : seed),
-       d_le_post_fs_programmed_view x s =
-         dmap (d_le_pre_fs_programming_view x s) le_fs_surrogate_transform.
 
    lemma A_LE_fs_programming_sampler_sdist_bound :
      forall (x : qssm_public_input) (s : seed) (D : distinguisher),
