@@ -241,7 +241,7 @@
     "GameAdvantage": {
       "direct": true,
       "kind": "ec",
-      "digest": "0fab0a15daa5b8b8aa98a0e9b534cb73"
+      "digest": "653340544346435fb3a212d6a20404ac"
     },
     "GameLEBridge": {
       "direct": true,
@@ -361,7 +361,7 @@
     "MSProbabilitySurface": {
       "direct": false,
       "kind": "ec",
-      "digest": "d7b29a621d8919ac32874c9fe98b4382"
+      "digest": "d5f53cf78ec2ea7de301c8a1091ca9bd"
     },
     "Means": {
       "direct": false,

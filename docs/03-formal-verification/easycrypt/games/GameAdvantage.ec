@@ -229,7 +229,7 @@ rewrite /game_pr_ms_core.
 exact (A_MS1_hash_binding_bad_event_bound x s xms D).
 qed.
 
-axiom A_MS2_rom_programming_game_pr_core_bound :
+lemma A_MS2_rom_programming_game_pr_core_bound :
   forall (x : qssm_public_input) (s : seed) (xms : ms_public_input)
          (obs : ms_v2_transcript_observable)
          (lep : le_transcript_observable option) (D : distinguisher),
@@ -237,6 +237,11 @@ axiom A_MS2_rom_programming_game_pr_core_bound :
     game_pr_ms_core x s xms obs MSGameStageAfterBinding lep D -
     game_pr_ms_core x s xms obs MSGameStageAfterRom lep D <=
     epsilon_ms_rom_programmability.
+proof.
+move=> x s xms obs lep D Hnonneg.
+rewrite /game_pr_ms_core.
+exact (A_MS2_rom_programming_transition_bound x s xms D).
+qed.
 
 op game_pr_g2_core : qssm_public_input -> seed -> distinguisher -> real.
 
