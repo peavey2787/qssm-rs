@@ -12,18 +12,20 @@ type ms3b_concrete_comparison_carrier = {
   ms3bc_true_clause_blinder : scalar;
 }.
 
-(* Phase-1 concrete comparison carrier: one-bit operands derived from the
-  public result bit and a true-clause opening derived from the comparison
-  digest. This keeps the MS-3b surface concrete without reintroducing a free
-  witness-based carrier. *)
+(* Phase-1 concrete comparison carrier: one-bit operands still use the public
+   result bit, while the true-clause index and opening now come from the
+   native comparison slice carried on `ms_public_input`. *)
+op ms3b_phase1_comparison_true_opening (x : ms_public_input) : ms_comparison_opening =
+  ms_public_comparison_true_opening x.
+
 op ms3b_phase1_comparison_true_share (x : ms_public_input) : scalar =
-  ms_query_to_scalar x.`mspi_comparison_global.
+  (ms3b_phase1_comparison_true_opening x).`2.
 
 op ms3b_phase1_comparison_carrier (x : ms_public_input) : ms3b_concrete_comparison_carrier =
   {| ms3bc_value_bits = [x.`mspi_result_bit];
      ms3bc_target_bits = [false];
-     ms3bc_true_clause_ix = 0;
-    ms3bc_true_clause_pub = sch_pubkey (ms3b_phase1_comparison_true_share x);
+     ms3bc_true_clause_ix = ms_public_comparison_true_clause_index x;
+     ms3bc_true_clause_pub = (ms3b_phase1_comparison_true_opening x).`1;
     ms3bc_true_clause_blinder = ms3b_phase1_comparison_true_share x |}.
 
 pred ms3b_comparison_operand_bits

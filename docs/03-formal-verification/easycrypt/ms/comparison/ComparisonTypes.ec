@@ -80,72 +80,107 @@ op ms3c_make_real_clause_surface (p : ms3c_real_comparison_payload) : ms_compari
 op ms3c_make_sim_clause_surface (p : ms3c_sim_comparison_payload) : ms_comparison_clause_surface =
   ms3c_make_clause_surface p.
 
-(* MS-3c projection surface: bridge abstract ms_public_input and
-   ms_transcript_observable to future concrete ms3c_*_payload_from_seed.
-   Bodies are Phase-1 placeholders (witness / 0 / []) until public input and
-   transcript observables are refined.
+(* MS-3c projection surface: bridge concrete `ms_public_input` and the
+   MS observable to the comparison payload lane.
 
-   Canonical comparison statement digest for ROM query hashing is
-   `ms3c_public_stmt_digest x` (single source of truth). `ms3c_comparison_stmt_digest`
-   aliases it so legacy call sites stay aligned. *)
+   The public carrier now provides a native comparison slice (true-clause index
+   plus indexed false openings), and the observable carries native comparison
+   openings directly. Canonical comparison statement digest for ROM query
+   hashing remains `ms3c_public_stmt_digest x` (single source of truth).
+   `ms3c_comparison_stmt_digest` aliases it so legacy call sites stay aligned. *)
 
 op ms3c_public_stmt_digest (x : ms_public_input) : digest = x.`mspi_stmt_digest.
 
 op ms3c_comparison_stmt_digest (x : ms_public_input) : digest = ms3c_public_stmt_digest x.
 
-op ms3c_public_false_branch_count (_x : ms_public_input) : int = 1.
+op ms3c_public_slice (x : ms_public_input) : ms_comparison_slice =
+  ms_public_comparison_slice x.
 
-op ms3c_public_true_clause_index (_x : ms_public_input) : int = 0.
+op ms3c_public_true_opening (x : ms_public_input) : ms_comparison_opening =
+  ms_public_comparison_true_opening x.
 
-op ms3c_public_false_clause_indices (_x : ms_public_input) : int list = [0].
+op ms3c_public_false_openings (x : ms_public_input) : ms_comparison_opening list =
+  ms_public_comparison_false_openings x.
+
+op ms3c_public_false_branch_count (x : ms_public_input) : int =
+  size (ms_public_comparison_false_entries x).
+
+op ms3c_public_true_clause_index (x : ms_public_input) : int =
+  ms_public_comparison_true_clause_index x.
+
+op ms3c_public_false_clause_indices (x : ms_public_input) : int list =
+  ms_public_comparison_false_indices x.
 
 op ms3c_public_true_share (x : ms_public_input) : scalar =
-  ms_query_to_scalar x.`mspi_comparison_global.
+  (ms3c_public_true_opening x).`2.
 
 op ms3c_public_true_announcement (x : ms_public_input) : sch_point =
-  sch_pubkey (ms3c_public_true_share x).
+  (ms3c_public_true_opening x).`1.
 
 op ms3c_public_false_shares (x : ms_public_input) : scalar list =
-  map (fun (_i : int) => ms_query_to_scalar x.`mspi_transcript_digest)
-    (ms3c_public_false_clause_indices x).
+  map (fun (opening : ms_comparison_opening) => opening.`2)
+    (ms3c_public_false_openings x).
 
 op ms3c_public_false_announcements (x : ms_public_input) : sch_point list =
-  map sch_pubkey (ms3c_public_false_shares x).
+  map (fun (opening : ms_comparison_opening) => opening.`1)
+    (ms3c_public_false_openings x).
+
+op ms3c_obs_openings (obs : ms_transcript_observable) : ms_comparison_openings =
+  obs.`msv2_comparison_openings.
+
+op ms3c_obs_true_opening (obs : ms_transcript_observable) : ms_comparison_opening =
+  (ms3c_obs_openings obs).`mscos_true_opening.
+
+op ms3c_obs_false_openings (obs : ms_transcript_observable) : ms_comparison_opening list =
+  (ms3c_obs_openings obs).`mscos_false_openings.
 
 op ms3c_obs_programmed_challenge (obs : ms_transcript_observable) : digest =
   obs.`msv2_comparison_global_challenge.
 
 op ms3c_obs_share_true (obs : ms_transcript_observable) : scalar =
-  ms_query_to_scalar (ms3c_obs_programmed_challenge obs).
+  (ms3c_obs_true_opening obs).`2.
 
 op ms3c_obs_shares_false (obs : ms_transcript_observable) : scalar list =
-  [ms_query_to_scalar obs.`msv2_transcript_digest].
+  map (fun (opening : ms_comparison_opening) => opening.`2)
+    (ms3c_obs_false_openings obs).
 
 op ms3c_obs_ann_true (obs : ms_transcript_observable) : sch_point =
-  sch_pubkey (ms3c_obs_share_true obs).
+  (ms3c_obs_true_opening obs).`1.
 
 op ms3c_obs_anns_false (obs : ms_transcript_observable) : sch_point list =
-  map sch_pubkey (ms3c_obs_shares_false obs).
+  map (fun (opening : ms_comparison_opening) => opening.`1)
+    (ms3c_obs_false_openings obs).
 
 (* Strict positivity of public false-branch arity (comparison has ≥1 false clause). *)
 pred ms3c_public_false_branch_nonempty (x : ms_public_input) =
   0 < ms3c_public_false_branch_count x.
 
-lemma L_ms3c_public_false_branch_nonempty_placeholder (x : ms_public_input) :
-  ms3c_public_false_branch_nonempty x.
-proof.
-by rewrite /ms3c_public_false_branch_nonempty /=.
-qed.
-
 pred ms3c_public_shape_ok (x : ms_public_input) =
   0 <= ms3c_public_true_clause_index x /\
-  0 <= ms3c_public_false_branch_count x /\
-  size (ms3c_public_false_clause_indices x) = ms3c_public_false_branch_count x.
+  size (ms3c_public_false_announcements x) = size (ms3c_public_false_clause_indices x).
+
+lemma L_ms3c_public_shape_ok_of_native_slice (x : ms_public_input) :
+  ms3c_public_shape_ok x.
+proof.
+rewrite /ms3c_public_shape_ok /ms3c_public_true_clause_index.
+rewrite /ms_public_comparison_true_clause_index /ms_public_comparison_true_clause_index_raw.
+split.
+- by case: (0 <= (ms_public_comparison_slice x).`mscs_true_clause_ix).
+rewrite /ms3c_public_false_announcements /ms3c_public_false_clause_indices.
+rewrite /ms3c_public_false_openings /ms_public_comparison_false_openings.
+rewrite /ms_public_comparison_false_indices /ms_public_comparison_false_entries.
+by rewrite !size_map.
+qed.
 
 pred ms3c_observable_shape_ok (x : ms_public_input) (obs : ms_transcript_observable) =
   ms3c_public_shape_ok x /\
   size (ms3c_obs_shares_false obs) = ms3c_public_false_branch_count x /\
   size (ms3c_obs_anns_false obs) = ms3c_public_false_branch_count x.
+
+pred ms3c_public_false_openings_simulated (x : ms_public_input) =
+  forall (i : int), 0 <= i => i < size (ms3c_public_false_announcements x) =>
+    nth witness (ms3c_public_false_announcements x) i =
+      sch_pubkey (nth witness (ms3c_public_false_shares x) i).
 
 pred ms_comparison_clause_simulatable (c : ms_comparison_clause_surface) =
   0 <= c.`mscc_true_clause_ix /\
@@ -183,8 +218,8 @@ pred ms3c_comparison_global_programmable_under_A2 (x : ms_public_input) (s : see
   ms3c_programmed_comparison_rom_ready x s.
 
 pred ms3c_false_clauses_simulator_generated (x : ms_public_input) (s : seed) =
-  exists (c : ms_comparison_clause_surface),
-    ms_comparison_clause_simulatable c /\ 0 < size c.`mscc_ann_false.
+  ms3c_public_false_branch_nonempty x /\
+  ms3c_public_false_openings_simulated x.
 
 pred ms3c_true_clause_uses_ms3b_blinder_point (x : ms_public_input) (s : seed) =
   forall (vb : bool list) (tb : bool list) (p : int) (r : scalar) (c : ms_comparison_clause_surface),

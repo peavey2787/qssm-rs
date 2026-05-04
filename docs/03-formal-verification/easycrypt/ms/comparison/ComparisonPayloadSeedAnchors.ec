@@ -56,7 +56,17 @@ split.
 - rewrite /ms3c_phase1_comparison_carrier_from_public_input.
   rewrite /ms3b_phase1_comparison_carrier /ms3c_public_true_clause_index /=.
   by [].
-by [].
+have Hannsz : size (ms3c_public_false_announcements x) =
+  size (ms_public_comparison_false_entries x).
+  rewrite /ms3c_public_false_announcements /ms3c_public_false_openings.
+  rewrite /ms_public_comparison_false_openings /ms_public_comparison_false_entries.
+  by rewrite !size_map.
+have Hixsz : size (ms3c_public_false_clause_indices x) =
+  size (ms_public_comparison_false_entries x).
+  rewrite /ms3c_public_false_clause_indices /ms_public_comparison_false_indices.
+  rewrite /ms_public_comparison_false_entries.
+  by rewrite size_map.
+by rewrite Hannsz Hixsz.
 qed.
 
 lemma L_ms3c_real_seed_index_shape_valid (x : ms_public_input) (sr : ms3c_real_payload_seed) :
@@ -67,9 +77,10 @@ lemma L_ms3c_real_seed_index_shape_valid (x : ms_public_input) (sr : ms3c_real_p
 proof.
 move=> [Hfalse_ixs [Htrue_ix Hsz_ann_false]].
 split.
-- rewrite /ms3c_real_payload_from_seed /ms3c_phase1_payload_from_public_input.
+- have [Hix _] := L_ms3c_public_shape_ok_of_native_slice x.
+  rewrite /ms3c_real_payload_from_seed /ms3c_phase1_payload_from_public_input.
   rewrite /ms3c_phase1_comparison_carrier_from_public_input /ms3b_phase1_comparison_carrier /=.
-  by [].
+  exact Hix.
 by exact Hsz_ann_false.
 qed.
 
@@ -122,7 +133,17 @@ split.
 - rewrite /ms3c_phase1_comparison_carrier_from_public_input.
   rewrite /ms3b_phase1_comparison_carrier /ms3c_public_true_clause_index /=.
   by [].
-by [].
+have Hannsz : size (ms3c_public_false_announcements x) =
+  size (ms_public_comparison_false_entries x).
+  rewrite /ms3c_public_false_announcements /ms3c_public_false_openings.
+  rewrite /ms_public_comparison_false_openings /ms_public_comparison_false_entries.
+  by rewrite !size_map.
+have Hixsz : size (ms3c_public_false_clause_indices x) =
+  size (ms_public_comparison_false_entries x).
+  rewrite /ms3c_public_false_clause_indices /ms_public_comparison_false_indices.
+  rewrite /ms_public_comparison_false_entries.
+  by rewrite size_map.
+by rewrite Hannsz Hixsz.
 qed.
 
 lemma L_ms3c_sim_seed_index_shape_valid
@@ -134,8 +155,9 @@ lemma L_ms3c_sim_seed_index_shape_valid
 proof.
 move=> [Hfalse_ixs [Htrue_ix Hsz_ann_false]].
 split.
-- rewrite /ms3c_sim_payload_from_seed /ms3c_phase1_payload_from_public_input.
+- have [Hix _] := L_ms3c_public_shape_ok_of_native_slice x.
+  rewrite /ms3c_sim_payload_from_seed /ms3c_phase1_payload_from_public_input.
   rewrite /ms3c_phase1_comparison_carrier_from_public_input /ms3b_phase1_comparison_carrier /=.
-  by [].
+  exact Hix.
 by exact Hsz_ann_false.
 qed.

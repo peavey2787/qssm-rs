@@ -17,6 +17,9 @@ op ms_bitness_global_challenges (obs : ms_transcript_observable) : digest list =
 op ms_comparison_global_challenge (obs : ms_transcript_observable) : digest =
   obs.`msv2_comparison_global_challenge.
 
+op ms_comparison_openings (obs : ms_transcript_observable) : ms_comparison_openings =
+  obs.`msv2_comparison_openings.
+
 op ms_transcript_digest (obs : ms_transcript_observable) : digest =
   obs.`msv2_transcript_digest.
 
@@ -94,6 +97,13 @@ op ms3a_public_bitness_globals (x : ms_public_input) : digest list =
 op ms3a_public_comparison_global (x : ms_public_input) : digest =
   x.`mspi_comparison_global.
 
+op ms3a_public_comparison_slice (x : ms_public_input) : ms_comparison_slice =
+  ms_public_comparison_slice x.
+
+op ms3a_public_comparison_openings (x : ms_public_input) : ms_comparison_openings =
+  {| mscos_true_opening = ms_public_comparison_true_opening x;
+     mscos_false_openings = ms_public_comparison_false_openings x |}.
+
 op ms3a_public_transcript_digest (x : ms_public_input) : digest =
   x.`mspi_transcript_digest.
 
@@ -122,6 +132,7 @@ op ms3a_pack_observable
      msv2_result_bit = rbit;
      msv2_bitness_global_challenges = bitness_glob;
      msv2_comparison_global_challenge = comp_glob;
+  msv2_comparison_openings = witness;
      msv2_transcript_digest = td |}.
 
 (* Length / digest-cell shape on the public spine (no ROM or per-bit programming). *)
@@ -131,14 +142,20 @@ pred ms3a_public_bitness_shape_ok (x : ms_public_input) =
 
 pred ms3a_public_transcript_shape_ok (x : ms_public_input) =
   ms_transcript_digest_of_observable
-    (ms3a_pack_observable (ms3a_public_stmt_digest x) (ms3a_public_result_bit x)
-      (ms3a_public_bitness_globals x) (ms3a_public_comparison_global x)
-      (ms3a_public_transcript_digest x)).
+    {| msv2_statement_digest = ms3a_public_stmt_digest x;
+       msv2_result_bit = ms3a_public_result_bit x;
+       msv2_bitness_global_challenges = ms3a_public_bitness_globals x;
+       msv2_comparison_global_challenge = ms3a_public_comparison_global x;
+       msv2_comparison_openings = ms3a_public_comparison_openings x;
+       msv2_transcript_digest = ms3a_public_transcript_digest x |}.
 
 op ms3a_public_v2_observable (x : ms_public_input) : ms_v2_transcript_observable =
-  ms3a_pack_observable (ms3a_public_stmt_digest x) (ms3a_public_result_bit x)
-    (ms3a_public_bitness_globals x) (ms3a_public_comparison_global x)
-    (ms3a_public_transcript_digest x).
+  {| msv2_statement_digest = ms3a_public_stmt_digest x;
+     msv2_result_bit = ms3a_public_result_bit x;
+     msv2_bitness_global_challenges = ms3a_public_bitness_globals x;
+     msv2_comparison_global_challenge = ms3a_public_comparison_global x;
+     msv2_comparison_openings = ms3a_public_comparison_openings x;
+     msv2_transcript_digest = ms3a_public_transcript_digest x |}.
 
 (* Projection from canonical v2 observable to the observable carrier. Since the
    carrier now uses the same concrete record, this is the identity map.        *)

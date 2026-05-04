@@ -2,6 +2,7 @@ require import AllCore List Ring.
 require import StdOrder.
 (*---*) import RealOrder.
 require import QssmTypes Algebra Simulator FS TrueClause Comparison ComparisonTypes ComparisonDigests ComparisonPayload ComparisonCoupling ComparisonCouplingTypes ComparisonCouplingAxioms ComparisonCouplingTheorem ComparisonTheorem.
+require import SourceModel.
 require import SourceDistributions SourceTheorem MS LESurface LEModel.
 require import GameTypes GameViews GameAdvantage.
 
@@ -120,6 +121,8 @@ lemma L_ms_MS3c_public_obs_matches_phase1_payload
   let obs = ms_game_view_public_obs xms in
   (ms3c_phase1_payload_from_public_input xms).`mscp_programmed_challenge =
     ms3c_obs_programmed_challenge obs /\
+  (ms3c_phase1_payload_from_public_input xms).`mscp_global_challenge =
+    ms_comparison_global_challenge obs /\
   (ms3c_phase1_payload_from_public_input xms).`mscp_share_true =
     ms3c_obs_share_true obs /\
   (ms3c_phase1_payload_from_public_input xms).`mscp_ann_true =

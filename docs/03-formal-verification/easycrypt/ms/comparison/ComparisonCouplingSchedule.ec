@@ -174,7 +174,7 @@ have Hshr := A_ms3c_payload_challenge_shares_match x s Hann Ha2 Hfalse Htrue Hsu
 have Hcons :=
   L_ms3c_payload_challenge_share_consistency_from_sum_hook x s Hsum Hreal Hsim.
 have Hfalse_nt := A_ms3c_false_clauses_hook_implies_schedule_nontrivial x s Hfalse.
-have Hfalse_payload := A_ms3c_false_clause_simulation x s Hfalse_nt.
+have Hfalse_payload := A_ms3c_false_clause_simulation x s Hfalse Hfalse_nt.
 have Htrue_payload := L_ms3c_payload_true_clause_simulated_from_true_hook x s Htrue.
 have Hcpl :=
   A_ms3c_payload_support_coupling_from_components x s

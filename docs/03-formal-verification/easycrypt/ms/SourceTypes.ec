@@ -14,12 +14,38 @@ type ms_public_input = {
   mspi_stmt_digest : digest;
   mspi_result_bit : bool;
   mspi_bits : int -> ms_public_bit_input;
+  mspi_comparison_slice : ms_comparison_slice;
   mspi_comparison_global : digest;
   mspi_transcript_digest : digest;
 }.
 
 op ms_public_bit_payload (x : ms_public_input) (i : int) : ms_public_bit_input =
   x.`mspi_bits i.
+
+op ms_public_comparison_slice (x : ms_public_input) : ms_comparison_slice =
+  x.`mspi_comparison_slice.
+
+op ms_public_comparison_true_clause_index_raw (x : ms_public_input) : int =
+  (ms_public_comparison_slice x).`mscs_true_clause_ix.
+
+op ms_public_comparison_true_clause_index (x : ms_public_input) : int =
+  if 0 <= ms_public_comparison_true_clause_index_raw x
+  then ms_public_comparison_true_clause_index_raw x
+  else 0.
+
+op ms_public_comparison_true_opening (x : ms_public_input) : ms_comparison_opening =
+  (ms_public_comparison_slice x).`mscs_true_opening.
+
+op ms_public_comparison_false_entries (x : ms_public_input) : ms_comparison_false_entry list =
+  (ms_public_comparison_slice x).`mscs_false_entries.
+
+op ms_public_comparison_false_openings (x : ms_public_input) : ms_comparison_opening list =
+  map (fun (entry : ms_comparison_false_entry) => entry.`mscfe_opening)
+    (ms_public_comparison_false_entries x).
+
+op ms_public_comparison_false_indices (x : ms_public_input) : int list =
+  map (fun (entry : ms_comparison_false_entry) => entry.`mscfe_clause_ix)
+    (ms_public_comparison_false_entries x).
 
 op ms_public_bit_pub0 (x : ms_public_input) (i : int) : sch_point =
   (ms_public_bit_payload x i).`mspbi_branch0.`1.

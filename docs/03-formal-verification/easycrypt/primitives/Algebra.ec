@@ -3,8 +3,6 @@ require import QssmTypes.
 
 (* Permanent algebra model (abstract scalar / point group + homomorphism on the fixed generator). *)
 
-type sch_point.
-
 op sch_generator : sch_point.
 op sch_neutral_pt : sch_point.
 op sch_opp_pt : sch_point -> sch_point.

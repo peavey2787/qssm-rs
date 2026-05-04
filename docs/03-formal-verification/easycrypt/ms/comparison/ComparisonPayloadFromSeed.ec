@@ -9,12 +9,10 @@ op ms3c_phase1_comparison_carrier_from_public_input (x : ms_public_input) :
   ms3b_concrete_comparison_carrier =
   ms3b_phase1_comparison_carrier x.
 
-(* Phase-1 structural payload: public indices, false-branch arity from
-   `size (ms3c_public_false_clause_indices x)` (equals `ms3c_public_false_branch_count x`
-   under `ms3c_public_shape_ok x`); the true branch is derived from the
-   comparison-global digest and the false branch from the transcript digest, so
-   the payload is concrete even though it is still only a phase-1 derived
-   comparison slice. *)
+(* Phase-1 structural payload: the native comparison slice on `ms_public_input`
+  now carries the real false-branch arity/index data and native openings.
+  The payload uses those openings directly instead of deriving them from
+  transcript or comparison digests. *)
 op ms3c_phase1_payload_from_public_input (x : ms_public_input) : ms3c_comparison_clause_payload =
   {| mscp_true_clause_ix = (ms3c_phase1_comparison_carrier_from_public_input x).`ms3bc_true_clause_ix;
      mscp_false_clause_ixs = ms3c_public_false_clause_indices x;
@@ -66,18 +64,12 @@ by rewrite eqz_leq; split=> //.
 qed.
 
 lemma L_ms_false_clause_simulated_phase1_from_public_input (x : ms_public_input) :
+  ms3c_public_false_openings_simulated x =>
   ms_false_clause_simulated (ms3c_make_clause_surface (ms3c_phase1_payload_from_public_input x)).
 proof.
+move=> Hsim.
 rewrite /ms_false_clause_simulated /ms3c_make_clause_surface /ms3c_phase1_payload_from_public_input /=.
-have Hix : ms3c_public_false_clause_indices x = [0] by trivial.
-move=> i Hi_lo Hi_hi.
-have sz1 : size (ms3c_public_false_announcements x) = 1 by trivial.
-have hi1 : i < 1.
-  rewrite -sz1.
-  exact Hi_hi.
-have i0 : i = 0 by apply (L_ms3c_int_lt1_eq0 i Hi_lo hi1).
-rewrite /ms3c_public_false_announcements /ms3c_public_false_shares Hix /= i0.
-by [].
+exact Hsim.
 qed.
 
 op ms3c_real_payload_from_seed (x : ms_public_input) (sr : ms3c_real_payload_seed) :

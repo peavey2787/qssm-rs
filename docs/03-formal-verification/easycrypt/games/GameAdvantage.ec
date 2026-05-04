@@ -33,6 +33,66 @@ pred ms3c_comparison_game_pr_equiv (xms : ms_public_input) (s : seed) =
   ms3c_clause_challenge_shares_sum xms s =>
   ms_comparison_exact_simulation_equiv xms s.
 
+lemma L_ms3c_obs_true_share_public_obs (xms : ms_public_input) :
+  ms3c_obs_share_true (ms_game_view_public_obs xms) =
+  (ms_public_comparison_true_opening xms).`2.
+proof.
+case: xms=> mspi_stmt_digest mspi_result_bit mspi_bits mspi_comparison_slice
+  mspi_comparison_global mspi_transcript_digest /=.
+case: mspi_comparison_slice=> mscs_true_clause_ix mscs_true_opening mscs_false_entries /=.
+rewrite /ms_game_view_public_obs /ms3a_public_v2_observable /ms3a_public_comparison_openings.
+rewrite /ms3c_obs_share_true /ms3c_obs_openings /ms3c_obs_true_opening.
+rewrite /ms_public_comparison_true_opening /ms_public_comparison_slice /=.
+by smt.
+qed.
+
+lemma L_ms3c_obs_true_ann_public_obs (xms : ms_public_input) :
+  ms3c_obs_ann_true (ms_game_view_public_obs xms) =
+  (ms_public_comparison_true_opening xms).`1.
+proof.
+case: xms=> mspi_stmt_digest mspi_result_bit mspi_bits mspi_comparison_slice
+  mspi_comparison_global mspi_transcript_digest /=.
+case: mspi_comparison_slice=> mscs_true_clause_ix mscs_true_opening mscs_false_entries /=.
+rewrite /ms_game_view_public_obs /ms3a_public_v2_observable /ms3a_public_comparison_openings.
+rewrite /ms3c_obs_ann_true /ms3c_obs_openings /ms3c_obs_true_opening.
+rewrite /ms_public_comparison_true_opening /ms_public_comparison_slice /=.
+by smt.
+qed.
+
+lemma L_ms3c_obs_programmed_public_obs (xms : ms_public_input) :
+  ms3c_obs_programmed_challenge (ms_game_view_public_obs xms) =
+  xms.`mspi_comparison_global.
+proof.
+by rewrite /ms_game_view_public_obs /ms3a_public_v2_observable /ms3c_obs_programmed_challenge.
+qed.
+
+lemma L_ms3c_obs_global_public_obs (xms : ms_public_input) :
+  ms_comparison_global_challenge (ms_game_view_public_obs xms) =
+  xms.`mspi_comparison_global.
+proof.
+by rewrite /ms_game_view_public_obs /ms3a_public_v2_observable /ms_comparison_global_challenge.
+qed.
+
+lemma L_ms3c_obs_shares_false_public_obs (xms : ms_public_input) :
+  ms3c_obs_shares_false (ms_game_view_public_obs xms) =
+  ms3c_public_false_shares xms.
+proof.
+by rewrite /ms_game_view_public_obs /ms3a_public_v2_observable
+  /ms3c_obs_shares_false /ms3c_obs_false_openings /ms3c_obs_openings
+  /ms3a_public_comparison_openings /ms3c_public_false_shares
+  /ms3c_public_false_openings.
+qed.
+
+lemma L_ms3c_obs_anns_false_public_obs (xms : ms_public_input) :
+  ms3c_obs_anns_false (ms_game_view_public_obs xms) =
+  ms3c_public_false_announcements xms.
+proof.
+by rewrite /ms_game_view_public_obs /ms3a_public_v2_observable
+  /ms3c_obs_anns_false /ms3c_obs_false_openings /ms3c_obs_openings
+  /ms3a_public_comparison_openings /ms3c_public_false_announcements
+  /ms3c_public_false_openings.
+qed.
+
 lemma L_ms3c_public_obs_payload_alignment (xms : ms_public_input) :
   let obs = ms_game_view_public_obs xms in
   (ms3c_phase1_payload_from_public_input xms).`mscp_programmed_challenge =
@@ -48,20 +108,24 @@ lemma L_ms3c_public_obs_payload_alignment (xms : ms_public_input) :
   (ms3c_phase1_payload_from_public_input xms).`mscp_ann_false =
     ms3c_obs_anns_false obs.
 proof.
-rewrite /ms_game_view_public_obs /ms3a_public_v2_observable /ms3a_pack_observable.
-rewrite /ms3c_phase1_payload_from_public_input /ms3c_phase1_comparison_carrier_from_public_input.
-rewrite /ms3b_phase1_comparison_carrier /ms3b_phase1_comparison_true_share.
-rewrite /ms3c_public_false_announcements /ms3c_public_false_shares.
-rewrite /ms3c_obs_programmed_challenge /ms3c_obs_share_true /ms3c_obs_ann_true.
-rewrite /ms3c_obs_shares_false /ms3c_obs_anns_false /ms_comparison_global_challenge /=.
-have Hix : ms3c_public_false_clause_indices xms = [0] by trivial.
-rewrite Hix /=.
-  split; first by [].
-  split; first by [].
-  split; first by [].
-  split; first by [].
-  split; first by [].
-  by [].
+rewrite /=.
+have [_ [Hann_true Hshare_true]] := L_ms3c_phase1_payload_uses_ms3b_carrier xms.
+have [Hann_false [Hshare_false [Hprog Hglob]]] :=
+  L_ms3c_phase1_payload_uses_concrete_public_surface xms.
+have Hann_true_pub := Hann_true.
+rewrite /ms3c_phase1_comparison_carrier_from_public_input
+  /ms3b_phase1_comparison_carrier /ms3b_phase1_comparison_true_opening
+  /ms3b_phase1_comparison_true_share /= in Hann_true_pub.
+have Hshare_true_pub := Hshare_true.
+rewrite /ms3c_phase1_comparison_carrier_from_public_input
+  /ms3b_phase1_comparison_carrier /ms3b_phase1_comparison_true_opening
+  /ms3b_phase1_comparison_true_share /= in Hshare_true_pub.
+split; first by rewrite (L_ms3c_obs_programmed_public_obs xms); exact Hprog.
+split; first by rewrite (L_ms3c_obs_global_public_obs xms); exact Hglob.
+split; first by rewrite (L_ms3c_obs_true_share_public_obs xms); exact Hshare_true_pub.
+split; first by rewrite (L_ms3c_obs_true_ann_public_obs xms); exact Hann_true_pub.
+split; first by rewrite (L_ms3c_obs_shares_false_public_obs xms); exact Hshare_false.
+by rewrite (L_ms3c_obs_anns_false_public_obs xms); exact Hann_false.
 qed.
 
 op ms3c_game_pr_stage (xms : ms_public_input) (s : seed) (st : ms_game_stage) : ms_game_stage =

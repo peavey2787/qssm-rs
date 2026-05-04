@@ -40,7 +40,7 @@ split; first by move=> c Hpayload Hsim;
   apply (L_ms3c_digest_announcement_only x s Hann c Hpayload Hsim).
 split.
   have Hfalse_nt := A_ms3c_false_clauses_hook_implies_schedule_nontrivial x s Hfalse.
-  move: (A_ms3c_false_clause_simulation x s Hfalse_nt).
+  move: (A_ms3c_false_clause_simulation x s Hfalse Hfalse_nt).
   rewrite /ms3c_ax_payload_false_clauses_simulated; case=> Hfr Hfs.
   split; first by move=> pr Hpr; apply (Hfr pr Hpr).
   by move=> ps Hps; apply (Hfs ps Hps).

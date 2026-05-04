@@ -1,7 +1,7 @@
 {
   "version": 3,
   "echash": "n/a",
-  "root": { "kind": "ec", "digest": "c60daec51cbe6ac00af523d8fb35d884" },
+  "root": { "kind": "ec", "digest": "d1530966979543a963ade1c183490b97" },
   "depends": {
     "AlgTactic": {
       "direct": false,
