@@ -78,6 +78,7 @@ FILES=(
   ms/MS.ec
   le/LESurface.ec
   le/LERejectionSampler.ec
+  le/LEFsProgrammingSurface.ec
   le/LESetB.ec
   le/LERejection.ec
   le/LEFsProgramming.ec
