@@ -9,9 +9,8 @@ require import ComparisonPayloadTypes ComparisonPayloadSeedTypes.
 
 (* Minimal MS-side probability interface below `games/GameAdvantage.ec`.
 
-   This file introduces the lower observable/probability surface needed to
-   eventually define `game_pr_ms_core` from concrete MS distributions, without
-   changing the current bridge-axiom boundary.
+   This file introduces the lower observable/probability surface now used by
+   `games/GameAdvantage.ec` to define `game_pr_ms_core` on MS views.
 
    Current status:
    - Real/Sim endpoints already have concrete observable laws from
@@ -21,9 +20,9 @@ require import ComparisonPayloadTypes ComparisonPayloadSeedTypes.
    - AfterRom now reuses the real source law plus the sampled comparison
      challenge-seed surface, while AfterBitness / AfterComparison still remain
      point-mass placeholders at the canonical public v2 observable.
-   - This is a concrete surface, but it is intentionally not yet wired into
-     `game_pr_ms_core`; the existing lower bridge axioms remain the active
-     semantic boundary until stage-specific MS1/MS2 theorems close. *)
+   - MS1 is now wired upward through `game_pr_ms_core` and proved there.
+     MS2 still remains axiomatized at the game layer until its lower
+     transition theorem closes. *)
 
 op ms_distinguisher_event (D : distinguisher) : ms_v2_transcript_observable -> bool.
 

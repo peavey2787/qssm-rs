@@ -182,9 +182,10 @@ split; first exact Hann_false.
 exact Hsim.
 qed.
 
-(* MS1 hash-binding theorem surface: the remaining lower assumption now lives
-  in `GameAdvantage.ec` on `game_pr_ms_core`; this concrete GV_ms pair is a
-  lemma obtained by unfolding `Adv` and `game_pr` down to that boundary. *)
+(* MS1 hash-binding theorem surface: `GameAdvantage.ec` now computes
+  `game_pr_ms_core` from the concrete lower MS probability surface, and the
+  lower Real/AfterBinding bound there is a proved lemma. This concrete GV_ms
+  pair theorem is obtained by unfolding `Adv` and `game_pr` to that boundary. *)
 lemma A_MS1_hash_binding_concrete_pair_advantage_bound :
   forall (x : qssm_public_input) (s : seed) (xms : ms_public_input)
          (obs : ms_v2_transcript_observable)
@@ -235,7 +236,7 @@ apply (A_MS1_hash_binding_step_advantage_bound
 exact Hnonneg.
 qed.
 
-(* MS2 ROM-programming theorem surface: the remaining lower assumption now
+(* MS2 ROM-programming theorem surface: the remaining lower assumption still
   lives in `GameAdvantage.ec` on `game_pr_ms_core`; this concrete GV_ms pair
   is a lemma obtained by unfolding `Adv` and `game_pr` down to that boundary. *)
 lemma A_MS2_rom_programming_concrete_pair_advantage_bound :

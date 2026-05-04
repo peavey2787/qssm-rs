@@ -7,6 +7,7 @@ require import GameViews.
 require import TranscriptObservable.
 require import SourceModel.
 require import SourceDistributions.
+require import MSProbabilitySurface.
 require import TrueClause ComparisonTypes ComparisonDigests ComparisonPayloadTypes ComparisonPayloadFromSeed.
 require import MS FS.
 
@@ -199,20 +200,22 @@ op ms3a_game_pr_stage (xms : ms_public_input) (s : seed) (st : ms_game_stage) : 
   then MSGameStageAfterRom
   else st.
 
-op game_pr_ms_core : qssm_public_input -> seed -> ms_public_input ->
-  ms_v2_transcript_observable -> ms_game_stage -> le_transcript_observable option ->
-  distinguisher -> real.
+op game_pr_ms_core
+  (x : qssm_public_input) (s : seed) (xms : ms_public_input)
+  (obs : ms_v2_transcript_observable) (st : ms_game_stage)
+  (lep : le_transcript_observable option)
+  (D : distinguisher) : real =
+  ms_view_distinguish_pr (d_ms_game_stage_observable_v2 x s xms st) D.
 
-(* Prepared lower probability interface: `ms/MSProbabilitySurface.ec` now
-  exposes `ms_distinguisher_event`, `ms_view_distinguish_pr`, and
-  `d_ms_game_stage_observable_v2`. Keep `game_pr_ms_core` abstract until those
-  intermediate stage laws are strong enough to replace
-  `A_MS1_hash_binding_game_pr_core_bound` and
-  `A_MS2_rom_programming_game_pr_core_bound` with no net axiom increase. *)
+(* Concrete lower probability interface for MS views. The stored `obs` / `lep`
+  fields remain part of `game_view`, but the MS probability projection is now
+  computed from the stage-indexed lower distribution surface. MS1 is proved on
+  that surface below; MS2 still remains axiomatized here until its lower
+  transition theorem is available. *)
 
 (* Lower MS1/MS2 bridge surface: all public fields remain fixed and only the
    abstract MS stage changes inside `game_pr_ms_core`. *)
-axiom A_MS1_hash_binding_game_pr_core_bound :
+lemma A_MS1_hash_binding_game_pr_core_bound :
   forall (x : qssm_public_input) (s : seed) (xms : ms_public_input)
          (obs : ms_v2_transcript_observable)
          (lep : le_transcript_observable option) (D : distinguisher),
@@ -220,6 +223,11 @@ axiom A_MS1_hash_binding_game_pr_core_bound :
     game_pr_ms_core x s xms obs MSGameStageReal lep D -
     game_pr_ms_core x s xms obs MSGameStageAfterBinding lep D <=
     epsilon_ms_hash_binding.
+proof.
+move=> x s xms obs lep D Hnonneg.
+rewrite /game_pr_ms_core.
+exact (A_MS1_hash_binding_bad_event_bound x s xms D).
+qed.
 
 axiom A_MS2_rom_programming_game_pr_core_bound :
   forall (x : qssm_public_input) (s : seed) (xms : ms_public_input)
