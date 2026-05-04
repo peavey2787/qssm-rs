@@ -109,6 +109,27 @@ have Hw : le_rejection_witness_hiding_statistical_bound x s D.
 by case: Hw.
 qed.
 
+(* Lower rejection-sampler target needed to eventually remove
+   `A_LE_rejection_surrogate_sdist_bound` without renaming the quantitative debt.
+
+   Intended theorem surface:
+
+   lemma A_LE_rejection_sampler_sdist_bound :
+     forall (x : qssm_public_input) (s : seed),
+       le_real_view_distribution_defined x s =>
+       le_rejection_distribution_defined x s =>
+       le_rejection_acceptance_probability_bounded x s =>
+       le_rejection_output_shape_preserved x s =>
+       sdist (d_le_real_view x s) (d_le_post_rejection_view x s)
+         <= (1%r / 2%r) * epsilon_le.
+
+   This does not live at the current facade yet: `d_le_real_view` is still an
+   abstract operator in `LESurface.ec`, and `d_le_post_rejection_view` is only
+   the `dmap` push-forward of that abstract law through the abstract
+   `le_post_rejection_surrogate`. A future lower sampler layer must either make
+   those distributions concrete or prove an equivalent sampler coupling / sdist
+   theorem from a concrete rejection execution surface. *)
+
 axiom A_LE_rejection_surrogate_sdist_bound :
   forall (x : qssm_public_input) (s : seed) (D : distinguisher),
     le_real_view_distribution_defined x s =>

@@ -77,6 +77,7 @@ FILES=(
   ms/MSProbabilitySurface.ec
   ms/MS.ec
   le/LESurface.ec
+  le/LERejectionSampler.ec
   le/LESetB.ec
   le/LERejection.ec
   le/LEFsProgramming.ec
