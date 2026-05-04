@@ -11,7 +11,9 @@ pred ms3c_sim_payload_on_support (x : ms_public_input) (s : seed) (ps : ms3c_sim
   ps \in d_ms3c_sim_comparison_payload x s.
 
 lemma L_ms3c_real_payload_on_support_eq_phase1 (x : ms_public_input) (pr : ms3c_real_comparison_payload) :
-  ms3c_real_payload_on_support x pr => pr = ms3c_phase1_payload_from_public_input x.
+  ms3c_real_payload_on_support x pr =>
+  ms3c_make_real_clause_surface pr =
+    ms3c_make_clause_surface (ms3c_phase1_payload_from_public_input x).
 proof.
 move=> Hsup.
 rewrite /ms3c_real_payload_on_support /d_ms3c_real_comparison_payload in Hsup.
@@ -22,7 +24,9 @@ qed.
 
 lemma L_ms3c_sim_payload_on_support_eq_phase1
   (x : ms_public_input) (s : seed) (ps : ms3c_sim_comparison_payload) :
-  ms3c_sim_payload_on_support x s ps => ps = ms3c_phase1_payload_from_public_input x.
+  ms3c_sim_payload_on_support x s ps =>
+  ms3c_make_sim_clause_surface ps =
+    ms3c_make_clause_surface (ms3c_phase1_payload_from_public_input x).
 proof.
 move=> Hsup.
 rewrite /ms3c_sim_payload_on_support /d_ms3c_sim_comparison_payload in Hsup.

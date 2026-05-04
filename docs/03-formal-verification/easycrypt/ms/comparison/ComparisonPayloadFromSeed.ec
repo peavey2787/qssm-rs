@@ -2,8 +2,8 @@ require import AllCore Int List Distr.
 require import Algebra QssmTypes FS SchnorrBranch TrueClauseTypes BitnessOne.
 require import ComparisonTypes ComparisonPayloadTypes ComparisonPayloadSeedTypes.
 
-(* Phase-1 structural payload and dmap pushforwards; cross-marginal payload
-   equality on support; schedule/surface packaging. *)
+(* Phase-1 structural payload and dmap pushforwards; surface-field equalities on
+  support plus payload-only sampled-coin propagation; schedule/surface packaging. *)
 
 op ms3c_phase1_comparison_carrier_from_public_input (x : ms_public_input) :
   ms3b_concrete_comparison_carrier =
@@ -20,7 +20,9 @@ op ms3c_payload_from_seed_components
      mscp_share_false = sc.`ms3csc_share_false;
      mscp_global_challenge = sc.`ms3csc_global_challenge;
      mscp_query_digest = sc.`ms3csc_query_digest;
-     mscp_programmed_challenge = sc.`ms3csc_programmed_challenge |}.
+    mscp_programmed_challenge = sc.`ms3csc_programmed_challenge;
+    mscp_rom_coin = sc.`ms3csc_rom_coin;
+    mscp_transcript_coin = sa.`ms3csa_transcript_coin |}.
 
 (* Phase-1 structural payload: the native comparison slice on `ms_public_input`
   now carries the real false-branch arity/index data and native openings.
@@ -121,6 +123,20 @@ rewrite Htrue_ix Hfalse_ixs Hann_true Hann_false Hshare_true Hshare_false Hglob 
 by smt.
 qed.
 
+lemma L_ms3c_real_payload_from_seed_visible_coin_fields
+  (x : ms_public_input) (sr : ms3c_real_payload_seed) :
+  sr \in d_ms3c_real_payload_seed x =>
+  (ms3c_real_payload_from_seed x sr).`mscp_rom_coin = sr.`1.`ms3csc_rom_coin /\
+  (ms3c_real_payload_from_seed x sr).`mscp_transcript_coin = sr.`2.`ms3csa_transcript_coin.
+proof.
+move=> Hsr.
+rewrite /d_ms3c_real_payload_seed supp_dprod in Hsr.
+case: sr Hsr => sc sa /=.
+move=> [_ _].
+rewrite /ms3c_real_payload_from_seed /ms3c_payload_from_seed_components /=.
+by split.
+qed.
+
 lemma L_ms3c_sim_payload_from_seed_support_phase1_fields
   (x : ms_public_input) (s : seed) (ss : ms3c_sim_payload_seed) :
   ss \in d_ms3c_sim_payload_seed x s =>
@@ -157,38 +173,44 @@ rewrite Htrue_ix Hfalse_ixs Hann_true Hann_false Hshare_true Hshare_false Hglob 
 by smt.
 qed.
 
+lemma L_ms3c_sim_payload_from_seed_visible_coin_fields
+  (x : ms_public_input) (s : seed) (ss : ms3c_sim_payload_seed) :
+  ss \in d_ms3c_sim_payload_seed x s =>
+  (ms3c_sim_payload_from_seed x s ss).`mscp_rom_coin = ss.`1.`ms3csc_rom_coin /\
+  (ms3c_sim_payload_from_seed x s ss).`mscp_transcript_coin = ss.`2.`ms3csa_transcript_coin.
+proof.
+move=> Hss.
+rewrite /d_ms3c_sim_payload_seed supp_dprod in Hss.
+case: ss Hss => sc sa /=.
+move=> [_ _].
+rewrite /ms3c_sim_payload_from_seed /ms3c_payload_from_seed_components /=.
+by split.
+qed.
+
 lemma L_ms3c_real_payload_from_seed_on_support_eq_phase1
   (x : ms_public_input) (sr : ms3c_real_payload_seed) :
   sr \in d_ms3c_real_payload_seed x =>
-  ms3c_real_payload_from_seed x sr = ms3c_phase1_payload_from_public_input x.
+  ms3c_make_real_clause_surface (ms3c_real_payload_from_seed x sr) =
+  ms3c_make_clause_surface (ms3c_phase1_payload_from_public_input x).
 proof.
 move=> Hsr.
 have [Htrue_ix [Hfalse_ixs [Hann_true [Hann_false [Hshare_true [Hshare_false [Hglob [Hquery Hprog]]]]]]]]
   := L_ms3c_real_payload_from_seed_support_phase1_fields x sr Hsr.
-case: (ms3c_real_payload_from_seed x sr) Htrue_ix Hfalse_ixs Hann_true Hann_false
-      Hshare_true Hshare_false Hglob Hquery Hprog.
-case: (ms3c_phase1_payload_from_public_input x).
-move=> tr fr atr afr str sfr gcr qdr pcr tr0 fr0 atr0 afr0 str0 sfr0 gcr0 qdr0 pcr0 /=.
-move=> Htrue_ix Hfalse_ixs Hann_true Hann_false Hshare_true Hshare_false Hglob Hquery Hprog.
-subst.
-by [].
+rewrite /ms3c_make_real_clause_surface /ms3c_make_clause_surface /=.
+by rewrite Htrue_ix Hfalse_ixs Hann_true Hann_false Hshare_true Hshare_false Hglob Hquery Hprog.
 qed.
 
 lemma L_ms3c_sim_payload_from_seed_on_support_eq_phase1
   (x : ms_public_input) (s : seed) (ss : ms3c_sim_payload_seed) :
   ss \in d_ms3c_sim_payload_seed x s =>
-  ms3c_sim_payload_from_seed x s ss = ms3c_phase1_payload_from_public_input x.
+  ms3c_make_sim_clause_surface (ms3c_sim_payload_from_seed x s ss) =
+  ms3c_make_clause_surface (ms3c_phase1_payload_from_public_input x).
 proof.
 move=> Hss.
 have [Htrue_ix [Hfalse_ixs [Hann_true [Hann_false [Hshare_true [Hshare_false [Hglob [Hquery Hprog]]]]]]]]
   := L_ms3c_sim_payload_from_seed_support_phase1_fields x s ss Hss.
-case: (ms3c_sim_payload_from_seed x s ss) Htrue_ix Hfalse_ixs Hann_true Hann_false
-      Hshare_true Hshare_false Hglob Hquery Hprog.
-case: (ms3c_phase1_payload_from_public_input x).
-move=> tr fr atr afr str sfr gcr qdr pcr tr0 fr0 atr0 afr0 str0 sfr0 gcr0 qdr0 pcr0 /=.
-move=> Htrue_ix Hfalse_ixs Hann_true Hann_false Hshare_true Hshare_false Hglob Hquery Hprog.
-subst.
-by [].
+rewrite /ms3c_make_sim_clause_surface /ms3c_make_clause_surface /=.
+by rewrite Htrue_ix Hfalse_ixs Hann_true Hann_false Hshare_true Hshare_false Hglob Hquery Hprog.
 qed.
 
 op d_ms3c_real_comparison_payload (x : ms_public_input) : ms3c_real_comparison_payload distr =
@@ -197,15 +219,15 @@ op d_ms3c_real_comparison_payload (x : ms_public_input) : ms3c_real_comparison_p
 op d_ms3c_sim_comparison_payload (x : ms_public_input) (s : seed) : ms3c_sim_comparison_payload distr =
   dmap (d_ms3c_sim_payload_seed x s) (ms3c_sim_payload_from_seed x s).
 
-(* Real and sim payload laws are independent `dmap`s of seeds, but Phase-1
-   `from_seed` ignores seeds: every support point is the same
-   `ms3c_phase1_payload_from_public_input x`, hence cross-marginal equality. *)
-lemma L_ms3c_cross_support_real_sim_payload_equal
+(* Real and sim payload laws are independent `dmap`s of seeds. Sampled coins now
+   survive in payload-only fields, but the folded comparison surface is still the
+   same Phase-1 image on support. *)
+lemma L_ms3c_cross_support_real_sim_payload_surface_equal
   (x : ms_public_input) (s : seed)
   (pr : ms3c_real_comparison_payload) (ps : ms3c_sim_comparison_payload) :
   pr \in d_ms3c_real_comparison_payload x =>
   ps \in d_ms3c_sim_comparison_payload x s =>
-  pr = ps.
+  ms3c_make_real_clause_surface pr = ms3c_make_sim_clause_surface ps.
 proof.
 move=> Hpr Hps.
 case/supp_dmap: Hpr => sr [Hsr Heqpr].

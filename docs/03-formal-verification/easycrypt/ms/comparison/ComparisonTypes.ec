@@ -14,7 +14,10 @@ type ms_comparison_clause_surface = {
   mscc_programmed_challenge : digest;
 }.
 
-(* Payload records: scheduling carriers before folding into `ms_comparison_clause_surface`. *)
+(* Payload records: scheduling carriers before folding into `ms_comparison_clause_surface`.
+   Payload-only sampled-coin fields are ignored by `ms3c_make_clause_surface`, so the
+   coupling layer can remain surface-oriented while lower layers expose sampled ROM /
+   transcript state end to end. *)
 type ms3c_comparison_clause_payload = {
   mscp_true_clause_ix : int;
   mscp_false_clause_ixs : int list;
@@ -25,6 +28,8 @@ type ms3c_comparison_clause_payload = {
   mscp_global_challenge : digest;
   mscp_query_digest : digest;
   mscp_programmed_challenge : digest;
+  mscp_rom_coin : scalar;
+  mscp_transcript_coin : scalar;
 }.
 
 type ms3c_real_comparison_payload = ms3c_comparison_clause_payload.
@@ -66,7 +71,9 @@ op ms3c_clause_surface_to_payload (c : ms_comparison_clause_surface) : ms3c_comp
      mscp_share_false = c.`mscc_share_false;
      mscp_global_challenge = c.`mscc_global_challenge;
      mscp_query_digest = c.`mscc_query_digest;
-     mscp_programmed_challenge = c.`mscc_programmed_challenge |}.
+  mscp_programmed_challenge = c.`mscc_programmed_challenge;
+  mscp_rom_coin = ms_query_to_scalar c.`mscc_query_digest;
+  mscp_transcript_coin = c.`mscc_share_true |}.
 
 lemma L_ms3c_make_clause_surface_clause_surface_to_payload (c : ms_comparison_clause_surface) :
   ms3c_make_clause_surface (ms3c_clause_surface_to_payload c) = c.

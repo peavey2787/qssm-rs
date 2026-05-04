@@ -115,9 +115,9 @@ split.
 exact (A_ms3c_real_seed_false_clause_nonempty x s sr Hfalse Hsr).
 qed.
 
-(* Phase-1 payloads on support are exactly `ms3c_phase1_payload_from_public_input x`,
-   whose false announcements are `map sch_pubkey` of the false shares; hence
-   `ms_false_clause_simulated` holds without extra axioms. *)
+(* Payloads on support now agree with `ms3c_phase1_payload_from_public_input x` only at
+   the folded comparison surface. The false-clause proof uses that surface equality,
+   so payload-only sampled-coin fields can vary without affecting the simulator law. *)
 lemma A_ms3c_real_false_announcements_match_shares_on_support :
   forall (x : ms_public_input) (s : seed) (pr : ms3c_real_comparison_payload),
     ms3c_false_clauses_simulator_generated x s =>

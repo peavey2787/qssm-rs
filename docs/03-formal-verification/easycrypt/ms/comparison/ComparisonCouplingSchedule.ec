@@ -22,8 +22,8 @@ lemma L_ms3c_payload_surface_match_of_field_fragments
   ms3c_payload_pair_challenge_shares_match pr ps =>
   ms3c_payload_pair_surface_match pr ps.
 proof.
-case: pr=> tr fr atr afr str sfr gcr qdr pcr.
-case: ps=> ts fs ats afs sts sfs gcs qds pcs /=.
+case: pr=> tr fr atr afr str sfr gcr qdr pcr rcr tcr.
+case: ps=> ts fs ats afs sts sfs gcs qds pcs rcs tcs /=.
 move=> Hpub Hshr.
 move: Hpub=> [Htr [Hfr [Hatr [Hafr [Hqd [Hgc Hpc]]]]]].
 move: Hshr=> [Hstr Hsfr].
