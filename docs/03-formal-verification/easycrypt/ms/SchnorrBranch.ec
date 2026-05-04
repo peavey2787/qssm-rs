@@ -11,13 +11,55 @@ axiom duni_scalar_lossless :
 axiom duni_scalar_invariant_add (t : scalar) :
   dlet duni_scalar (fun alpha => dunit (sch_s_add alpha t)) = duni_scalar.
 
+lemma sch_smul_sub_add_gen (x y : scalar) :
+  sch_smul (sch_s_sub (sch_s_add x y) y) sch_generator =
+  sch_smul x sch_generator.
+proof.
+rewrite -(sch_smul_sub_gen (sch_s_add x y) y) sch_smul_add_gen.
+exact (sch_pt_add_cancel (sch_smul x sch_generator)
+        (sch_smul y sch_generator)).
+qed.
+
 (* Uniform-shift reparameterization at pair level (finite-field standard fact):
    alpha <- U; output (alpha*H, alpha+t)  ==  z <- U; output ((z-t)*H, z). *)
-axiom duni_scalar_shift_reparam (t : scalar) :
+lemma duni_scalar_shift_reparam (t : scalar) :
   dlet duni_scalar (fun alpha =>
     dunit ((sch_smul alpha sch_generator), (sch_s_add alpha t))) =
   dlet duni_scalar (fun z =>
     dunit ((sch_smul (sch_s_sub z t) sch_generator), z)).
+proof.
+pose G (z : scalar) :=
+  dunit ((sch_smul (sch_s_sub z t) sch_generator), z).
+have Hpoint :
+  dlet duni_scalar (fun alpha =>
+    dlet (dunit (sch_s_add alpha t)) G) =
+  dlet duni_scalar (fun alpha =>
+    dunit ((sch_smul alpha sch_generator), (sch_s_add alpha t))).
+  apply in_eq_dlet=> alpha _.
+  have Hunit :
+    dlet (dunit (sch_s_add alpha t)) G =
+    dunit ((sch_smul (sch_s_sub (sch_s_add alpha t) t) sch_generator),
+      (sch_s_add alpha t)).
+    by rewrite (dlet_unit G (sch_s_add alpha t)) /G.
+  have Hpair :
+    dunit ((sch_smul (sch_s_sub (sch_s_add alpha t) t) sch_generator),
+      (sch_s_add alpha t)) =
+    dunit ((sch_smul alpha sch_generator), (sch_s_add alpha t)).
+    apply (qssm_dunit_eq
+    ((sch_smul (sch_s_sub (sch_s_add alpha t) t) sch_generator),
+      (sch_s_add alpha t))
+    ((sch_smul alpha sch_generator), (sch_s_add alpha t))).
+    apply (qssm_pair_eq
+      (sch_smul (sch_s_sub (sch_s_add alpha t) t) sch_generator)
+      (sch_smul alpha sch_generator)
+      (sch_s_add alpha t)
+      (sch_s_add alpha t)).
+    - by rewrite sch_smul_sub_add_gen.
+    - by [].
+  by smt().
+rewrite -Hpoint -dlet_dlet duni_scalar_invariant_add /G.
+by [].
+qed.
 
 (* Single-bit observable: announcement point * FS response scalar.
    Branch pairs keep internal randomness (alpha or z) next to (A,z). *)
