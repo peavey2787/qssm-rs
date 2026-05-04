@@ -43,6 +43,8 @@ pred set_b_parameter_well_formed =
 
 op epsilon_le : real.
 
+(* Primitive LE budget assumption: the abstract HVZK error budget must be
+  nonnegative so the half-budget statistical-distance steps compose honestly. *)
 axiom A4_le_hvzk_bound_nonneg :
   0%r <= epsilon_le.
 

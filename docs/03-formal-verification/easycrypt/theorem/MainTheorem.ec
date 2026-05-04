@@ -12,12 +12,6 @@ axiom A1_ms_hash_binding :
 axiom A2_ms_rom_programmability :
   forall (D : distinguisher), 0%r <= epsilon_ms_rom_programmability.
 
-lemma A4_le_hvzk :
-  forall (D : distinguisher), 0%r <= epsilon_le.
-proof.
-by move=> D; exact A4_le_hvzk_bound_nonneg.
-qed.
-
 (* Bridge to MS-3a/b/c placeholders (MS-3a via `ms/source/SourceTheorem.ec`). *)
 lemma use_MS_3a (x : ms_public_input) (s : seed) : ms3a_bitness_real_sim_equiv x s.
 proof.
@@ -67,7 +61,7 @@ have H01p : Adv_G0_G1_MS x xms s D <= epsilon_ms_hash_binding + epsilon_ms_rom_p
 have Hmid : Adv_G1_MS_to_LE x xms s D <= 0%r.
   exact (A_G1_MS_to_LE_transition_bound x s D).
 have H12p : Adv_G1_G2_LE x xms s D <= epsilon_le.
-  exact (A_G1_to_G2_le_transition_bound x xms s D Hsetb (A4_le_hvzk D) Hleeqv).
+  exact (A_G1_to_G2_le_transition_bound x xms s D Hsetb A4_le_hvzk_bound_nonneg Hleeqv).
 have Htri : Adv_G0_G2_QSSM x xms s D <=
   Adv_G0_G1_MS x xms s D + Adv_G1_MS_to_LE x xms s D + Adv_G1_G2_LE x xms s D.
   exact (A_adv_gamehop_triangle x xms s D).

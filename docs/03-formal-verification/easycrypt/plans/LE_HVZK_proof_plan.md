@@ -170,8 +170,8 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     -> `A_LE_SetB_HVZK_bound`
     -> `A_LE_HVZK_transition_bound`
     -> `A_G1_to_G2_le_transition_bound`
-     -> theorem-local lemma `A4_le_hvzk` in `MainTheorem.ec`, now derived from
-       `A4_le_hvzk_bound_nonneg` rather than assumed as an axiom.
+     -> direct theorem-level use of the primitive LE budget assumption
+        `A4_le_hvzk_bound_nonneg` from `LESurface.ec` in `MainTheorem.ec`.
   - The rejection-definition / acceptance / output-shape bundle and the FS query/oracle/shape bundle feed the hiding predicates used by the same chain, via `A_LE_rejection_sampling_hiding_bound` and `A_LE_fs_programming_bound`.
   - The rejection-side and FS-side surrogate shape obligations are now discharged as lemmas; the remaining surrogate debt on the active theorem path is quantitative.
   - Rejection concretization, May 2026: `le_post_rejection_surrogate` in `LESurface.ec` is now the identity on `le_transcript_observable`. This makes `A_LE_rejection_surrogate_preserves_shape` immediate by unfolding and discharges `A_LE_rejection_surrogate_sdist_bound` by zero distance, via `dmap_id` and `sdistdd`.
@@ -255,14 +255,17 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     `LERealExecution.ec`. Hidden query material is now concrete too: the
     carrier is `unit`, and `le_real_execution_hidden_query_material_of` is
     definitional `tt`.
-  - Exact next LE proof target, May 2026: the lower real-execution lane is now
-    fully concrete, and the theorem-local `A4_le_hvzk` placeholder in
-    `MainTheorem.ec` is gone. The next LE target should therefore move one hop
-    lower to the remaining LE axiom surface itself: audit whether
-    `A4_le_hvzk_bound_nonneg` in `LESurface.ec` should stay as the explicit LE
-    advantage budget assumption or be folded into a cleaner theorem-facing
-    contract, and remove any stale theorem-facing packaging in `LEHVZK.ec` or
-    `LEModel.ec` that still reflects the old placeholder structure.
+  - LE budget surface cleanup, May 2026: that audit is now complete.
+    `A4_le_hvzk_bound_nonneg` remains as the intellectually honest primitive LE
+    budget assumption on the abstract parameter `epsilon_le`; it is not
+    derivable from the current LE lemmas, and folding it upward would only hide
+    the true abstraction boundary. The redundant theorem-local wrapper in
+    `MainTheorem.ec` has been removed, so `LEHVZK.ec`, `LEModel.ec`, and the
+    theorem now expose the minimal necessary LE budget surface.
+  - Exact next LE proof target, May 2026: there is no further LE budget-surface
+    cleanup to do under the current abstraction. Any additional LE work should
+    be substantive theorem or semantics work above this surface, not more
+    boundary reshuffling.
   - Exact next FS proof target, May 2026: if a non-identity FS programming story is still desired, enrich `le_query_material` with a concrete programmable-query component and reintroduce a corresponding lower sampler/coupling theorem on that richer carrier. Otherwise the natural next LE target is the theorem-level cleanup above the now-fully-concrete `d_le_real_view` lane.
 - `games/GameLEBridge.ec` no longer carries a game-layer projection axiom:
   `A_game_pr_LE_projection_semantics` is now a lemma on the split views
