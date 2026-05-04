@@ -114,6 +114,7 @@ pred ms_abstract_observable_aligns_v2
   ms_result_bit obs = o.`msv2_result_bit /\
   ms_bitness_global_challenges obs = o.`msv2_bitness_global_challenges /\
   ms_comparison_global_challenge obs = o.`msv2_comparison_global_challenge /\
+  ms_comparison_openings obs = o.`msv2_comparison_openings /\
   ms_transcript_digest obs = o.`msv2_transcript_digest.
 
 (* Abstract transcript + v2 record + digest cell (reusable MS-3a frame).      *)
@@ -169,8 +170,8 @@ proof.
 move=> o.
 rewrite /ms_abstract_observable_aligns_v2 /ms3a_observable_of_v2.
 rewrite /ms_statement_digest /ms_result_bit /ms_bitness_global_challenges.
-rewrite /ms_comparison_global_challenge /ms_transcript_digest.
-by split=> //; split=> //; split=> //; split.
+rewrite /ms_comparison_global_challenge /ms_comparison_openings /ms_transcript_digest.
+by split=> //; split=> //; split=> //; split=> //; split.
 qed.
 
 (* ROM/FS-side programmability of the MS-3a public spine.

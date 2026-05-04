@@ -1,19 +1,63 @@
-require import AllCore.
+require import AllCore List.
 require import Algebra QssmTypes FS SchnorrBranch TrueClause BitnessOne.
 require import ComparisonTypes.
 
 (* MS-3c seed component types (challenge vs announcement material).
-   ms3c_real_seed_challenge and ms3c_sim_seed_challenge are intentionally unit for
-   now: challenge-side randomness for real and sim will move into richer carriers
-   when transcript and ROM wiring land; laws are dunit on unit (see
-   ComparisonPayloadSeedTypes.ec) so losslessness is proved without axioms.
-   ms3c_real_seed_announcement and ms3c_sim_seed_announcement are unit for
-   Phase-1 scaffolding only; not the final semantic announcement or Schnorr
-   samplers (transcript and simulator wiring still open). *)
-type ms3c_real_seed_challenge = unit.
-type ms3c_real_seed_announcement = unit.
-type ms3c_sim_seed_challenge = unit.
-type ms3c_sim_seed_announcement = unit.
+    The challenge carrier now stores the ROM-facing digest material plus the
+    native comparison indices and shares, while the announcement carrier stores
+    the concrete announcement points. Real and sim currently share the same
+    Phase-1 record shapes; the laws in `ComparisonPayloadSeedTypes.ec` sample
+    deterministic records from the native public comparison slice/openings. *)
+type ms3c_seed_challenge = {
+   ms3csc_stmt_digest : digest;
+   ms3csc_true_clause_ix : int;
+   ms3csc_false_clause_ixs : int list;
+   ms3csc_share_true : scalar;
+   ms3csc_share_false : scalar list;
+   ms3csc_global_challenge : digest;
+   ms3csc_programmed_challenge : digest;
+   ms3csc_query_digest : digest;
+}.
+
+type ms3c_seed_announcement = {
+   ms3csa_ann_true : sch_point;
+   ms3csa_ann_false : sch_point list;
+}.
+
+type ms3c_real_seed_challenge = ms3c_seed_challenge.
+type ms3c_real_seed_announcement = ms3c_seed_announcement.
+type ms3c_sim_seed_challenge = ms3c_seed_challenge.
+type ms3c_sim_seed_announcement = ms3c_seed_announcement.
 
 type ms3c_real_payload_seed = (ms3c_real_seed_challenge * ms3c_real_seed_announcement).
 type ms3c_sim_payload_seed = (ms3c_sim_seed_challenge * ms3c_sim_seed_announcement).
+
+op ms3c_phase1_seed_ann_digests (x : ms_public_input) : digest list =
+   ms3c_digest_true_announcement (ms3c_public_true_announcement x)
+      :: ms3c_digest_false_announcements (ms3c_public_false_announcements x).
+
+op ms3c_phase1_seed_query_digest (x : ms_public_input) : digest =
+   ms_comparison_query_digest (ms3c_public_stmt_digest x)
+      (ms3c_phase1_seed_ann_digests x).
+
+op ms3c_phase1_seed_challenge_from_public_input (x : ms_public_input) : ms3c_seed_challenge =
+   {| ms3csc_stmt_digest = ms3c_public_stmt_digest x;
+       ms3csc_true_clause_ix = ms3c_public_true_clause_index x;
+       ms3csc_false_clause_ixs = ms3c_public_false_clause_indices x;
+       ms3csc_share_true = ms3c_public_true_share x;
+       ms3csc_share_false = ms3c_public_false_shares x;
+       ms3csc_global_challenge = x.`mspi_comparison_global;
+       ms3csc_programmed_challenge = x.`mspi_comparison_global;
+       ms3csc_query_digest = ms3c_phase1_seed_query_digest x |}.
+
+op ms3c_phase1_seed_announcement_from_public_input (x : ms_public_input) : ms3c_seed_announcement =
+   {| ms3csa_ann_true = ms3c_public_true_announcement x;
+       ms3csa_ann_false = ms3c_public_false_announcements x |}.
+
+op ms3c_phase1_real_payload_seed_from_public_input (x : ms_public_input) : ms3c_real_payload_seed =
+   (ms3c_phase1_seed_challenge_from_public_input x,
+    ms3c_phase1_seed_announcement_from_public_input x).
+
+op ms3c_phase1_sim_payload_seed_from_public_input (x : ms_public_input) (_s : seed) : ms3c_sim_payload_seed =
+   (ms3c_phase1_seed_challenge_from_public_input x,
+    ms3c_phase1_seed_announcement_from_public_input x).

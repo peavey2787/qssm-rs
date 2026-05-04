@@ -179,11 +179,11 @@ Record **`ms_single_bit_or_transcript`**: statement digest `msbt_stmt`, public p
 
 ## Transcript observable layer (`ms/TranscriptObservable.ec` + `ms/SourceModel.ec`)
 
-**Canonical record shape:** **`ms_transcript_observable`** now lives in `primitives/QssmTypes.ec` with the v2 field layout (statement digest, result bit, `msv2_bitness_global_challenges`, comparison digest, transcript digest); `ms_v2_transcript_observable` in `ms/TranscriptObservable.ec` is the stable alias used by the source/game lane.
+**Canonical record shape:** **`ms_transcript_observable`** now lives in `primitives/QssmTypes.ec` with the v2 field layout (statement digest, result bit, `msv2_bitness_global_challenges`, comparison digest, **`msv2_comparison_openings`**, transcript digest); `ms_v2_transcript_observable` in `ms/TranscriptObservable.ec` is the stable alias used by the source/game lane.
 
 **Relations:** `ms_bitness_vector_matches_observable` (bitness list + stmt + result), `ms_transcript_digest_of_observable` (digest cell vs abstract `ms_transcript_digest_public_fields`).
 
-**Concrete link + packaging:** `ms_abstract_observable_aligns_v2`, `ms3a_observable_of_v2`, `ms3a_pack_observable`, and `ms3a_packed_frame` in `ms/SourceModel.ec` now sit over the concrete base carrier; `ms3a_observable_of_v2` is the identity map and `A_ms3a_observable_of_v2_aligns` is a proved lemma.
+**Concrete link + packaging:** `ms_abstract_observable_aligns_v2`, `ms3a_observable_of_v2`, `ms3a_pack_observable`, and `ms3a_packed_frame` in `ms/SourceModel.ec` now sit over the concrete base carrier; `ms3a_observable_of_v2` is the identity map, `A_ms3a_observable_of_v2_aligns` is a proved lemma, and the alignment predicate now includes the native comparison-opening field explicitly rather than dropping it from the source/model bridge.
 
 ## MS-3a global statement (layered)
 

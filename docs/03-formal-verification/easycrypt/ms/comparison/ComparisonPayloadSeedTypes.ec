@@ -4,25 +4,28 @@ require import ComparisonTypes ComparisonPayloadTypes.
 
 (* Phase-1 seed component laws (d_ms3c real/sim seed_challenge and
    seed_announcement) and joint seed distributions.
-   Losslessness is proved from dunit_ll on unit carriers; see module comment in
+   Losslessness is still proved from dunit_ll, but the sampled points are now
+   structured transcript/ROM seed records rather than unit placeholders; see module comment in
    ComparisonPayloadSeeds.ec (facade) for the full discharge narrative. *)
 
-(* Trivial real challenge-side law: placeholder until FS/challenge material is
-   modeled in `ms3c_real_seed_challenge`; lossless by `dunit_ll`. *)
-op d_ms3c_real_seed_challenge (_x : ms_public_input) : ms3c_real_seed_challenge distr =
-  dunit tt.
+(* Phase-1 real challenge-side law: deterministic transcript/ROM material from
+   the native public comparison slice/openings. *)
+op d_ms3c_real_seed_challenge (x : ms_public_input) : ms3c_real_seed_challenge distr =
+  dunit (ms3c_phase1_seed_challenge_from_public_input x).
 
-(* Phase-1 scaffolding: ignores x; not the final real announcement sampler. *)
-op d_ms3c_real_seed_announcement (_x : ms_public_input) : ms3c_real_seed_announcement distr =
-  dunit tt.
+(* Phase-1 real announcement-side law: deterministic native announcements. *)
+op d_ms3c_real_seed_announcement (x : ms_public_input) : ms3c_real_seed_announcement distr =
+  dunit (ms3c_phase1_seed_announcement_from_public_input x).
 
-(* Phase-1 scaffolding: not the final semantic sim ROM or FS challenge sampler. *)
-op d_ms3c_sim_seed_challenge (_x : ms_public_input) (_s : seed) : ms3c_sim_seed_challenge distr =
-  dunit tt.
+(* Phase-1 sim challenge-side law: same deterministic transcript/ROM material.
+   The sim seed argument remains for API stability until richer simulator coins land. *)
+op d_ms3c_sim_seed_challenge (x : ms_public_input) (_s : seed) : ms3c_sim_seed_challenge distr =
+  dunit (ms3c_phase1_seed_challenge_from_public_input x).
 
-(* Phase-1 scaffolding: ignores x and s; not the final sim announcement sampler. *)
-op d_ms3c_sim_seed_announcement (_x : ms_public_input) (_s : seed) : ms3c_sim_seed_announcement distr =
-  dunit tt.
+(* Phase-1 sim announcement-side law: same deterministic native announcements.
+   The sim seed argument remains for API stability until richer simulator coins land. *)
+op d_ms3c_sim_seed_announcement (x : ms_public_input) (_s : seed) : ms3c_sim_seed_announcement distr =
+  dunit (ms3c_phase1_seed_announcement_from_public_input x).
 
 op d_ms3c_real_payload_seed (x : ms_public_input) : ms3c_real_payload_seed distr =
   d_ms3c_real_seed_challenge x `*` d_ms3c_real_seed_announcement x.
