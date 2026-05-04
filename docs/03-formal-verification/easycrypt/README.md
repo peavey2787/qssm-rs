@@ -55,82 +55,29 @@ EASYCRYPT=/path/to/easycrypt ./check_easycrypt.sh
 
 The script type-checks theories in dependency order. Each file is checked with `easycrypt compile -R . <path>` so that theories in subfolders are resolved by **basename** (theory name equals the filename without `.ec`). Imports use those basenames (for example `require import QssmTypes FS.`).
 
-**Order (see `check_easycrypt.sh`):**
+**Compile-order authority:** `check_easycrypt.sh` is the canonical source of truth for the exact dependency list. The summary below is intentionally conceptual; if it ever diverges from the script, follow the script.
 
-1. `primitives/Domains.ec`
-2. `primitives/QssmTypes.ec` (named `QssmTypes` to avoid clashing with the EasyCrypt prelude theory `Types`)
-3. `primitives/Algebra.ec`
-4. `primitives/FS.ec`
-5. `ms/SchnorrBranch.ec`
-6. `ms/BitnessOne.ec`
-7. `ms/BitnessVector.ec`
-8. `ms/TranscriptObservable.ec`
-9. `ms/true_clause/TrueClauseTypes.ec`
-10. `ms/true_clause/TrueClauseMSB.ec`
-11. `ms/true_clause/TrueClauseTheorem.ec`
-12. `ms/TrueClause.ec` (facade)
-13. `ms/comparison/ComparisonTypes.ec`
-14. `ms/comparison/ComparisonDigests.ec`
-15. `ms/comparison/ComparisonPayloadTypes.ec`
-16. `ms/comparison/ComparisonPayloadSeedTypes.ec`
-17. `ms/comparison/ComparisonPayloadFromSeed.ec`
-18. `ms/comparison/ComparisonPayloadSeedAnchors.ec`
-19. `ms/comparison/ComparisonPayloadSeeds.ec` (facade: re-exports 16–18)
-20. `ms/comparison/ComparisonPayloadSupportTypes.ec`
-21. `ms/comparison/ComparisonPayloadSupportPublic.ec`
-22. `ms/comparison/ComparisonPayloadSupportShares.ec`
-23. `ms/comparison/ComparisonPayloadSupport.ec` (facade)
-24. `ms/comparison/ComparisonPayloadFalseClause.ec`
-25. `ms/comparison/ComparisonPayload.ec` (facade)
-26. `ms/comparison/ComparisonCouplingTypes.ec`
-27. `ms/comparison/ComparisonCouplingAxioms.ec`
-28. `ms/comparison/ComparisonCouplingMarginals.ec`
-29. `ms/comparison/ComparisonCouplingSchedule.ec`
-30. `ms/comparison/ComparisonCouplingTheorem.ec` (facade)
-31. `ms/comparison/ComparisonCoupling.ec` (facade)
-32. `ms/comparison/ComparisonTheorem.ec`
-33. `ms/Comparison.ec` (facade)
-34. `ms/SourceModel.ec` (MS-3a observable frame: abstract transcript ops, pack, digest helpers; abstract **`ms3a_public_*`** spine projections + **`ms3a_public_{bitness,transcript}_shape_ok`** from `ms_public_input`)
-35. `ms/source/SourceTypes.ec`
-36. `ms/source/SourceConstructors.ec` (constructors + Phase-1 **`ms3a_phase1_{real,sim}_payload_from_public_input`** from **`ms3a_public_*`**; imports **`SourceModel`**)
-37. `ms/source/SourcePayloadDistributions.ec` (payload seed + `dmap` payload laws)
-38. `ms/source/SourceCouplingTypes.ec` (MS-3a joint seed law: `dmap` of abstract spine `d_ms3a_seed_spine_joint` + coupled predicate + projection ops)
-39. `ms/source/SourceCouplingAxioms.ec` (marginal-bridge documentation + definitional unfold)
-40. `ms/source/SourceCouplingTheorem.ec` (spine preimage, `dmap_comp` projection folds, pair-relation from WF on spine support, layer-map lemmas)
-41. `ms/source/SourceBitnessDistributions.ec` (bitness-layer `dmap` + `dmap_comp` folds)
-42. `ms/source/SourceDistributionLemmas.ec` (support / constructor-image / payload-pair helpers)
-43. `ms/source/SourceObservableDistributions.ec` (observable pushforwards + layer bridge)
-44. `ms/source/SourceDistributions.ec` (facade: `require export` of payload, **`SourceCouplingTheorem`**, bitness, distribution lemmas, observable)
-45. `ms/source/SourceExecutionLink.ec` (standalone MS-3a execution/public-spine boundary: predicate `ms3a_execution_public_spine_link` packages the two remaining programmed bridges without changing current imports)
-46. `ms/source/SourceProgrammedObligations.ec`
-47. `ms/source/SourcePublicFieldObligations.ec` (paired-public axioms + **`L_ms3a_seed_pair_*_when_seeds_are_phase1`** conditional spine lemmas)
-48. `ms/source/SourceScheduleSeed.ec` (lemma `A_ms3a_bitness_layer_seed_schedule` + `L_ms3a_bitness_layer_seed_schedule_composed_form`)
-49. `ms/source/SourceSchedulePayload.ec` (payload `dmap` schedule, `ms3a_ax_*` from payload support, `ms3a_payload_schedule_equivalence`)
-50. `ms/source/SourceScheduleTheorem.ec` (`ms3a_source_eq_from_bitness_layer`, constructor-scoped lemmas)
-51. `ms/source/SourceScheduleObligations.ec` (facade: `require export` of the three schedule modules)
-52. `ms/source/SourceObligations.ec` (facade)
-53. `ms/source/SourceTheorem.ec`
-54. `ms/MS.ec`
-55. `le/LESurface.ec`
-56. `le/LESetB.ec`
-57. `le/LERejection.ec`
-58. `le/LEFsProgramming.ec`
-59. `le/LEViewIndist.ec`
-60. `le/LEStatisticalDistance.ec`
-61. `le/LEHVZK.ec`
-62. `le/LEModel.ec` (facade)
-63. `sim/Simulator.ec`
-64. `games/GameTypes.ec`
-65. `games/GameViews.ec`
-66. `games/GameAdvantage.ec`
-67. `games/GameMSHopTypes.ec`
-68. `games/GameMSHopTransitions.ec`
-69. `games/GameMSHopComposition.ec`
-70. `games/GameMSHops.ec` (facade)
-71. `games/GameLEBridge.ec`
-72. `games/Games.ec` (facade)
-73. `theorem/MainTheorem.ec`
-72. `theorem/MainTheorem.ec`
+To inspect the current order directly:
+
+```bash
+sed -n '/^FILES=(/,/^)/p' check_easycrypt.sh
+```
+
+**Conceptual order:**
+
+1. `primitives/` — root domains, shared types, algebra, and Fiat-Shamir surface.
+2. `ms/` foundations — Schnorr single-branch, one-bit bitness, vector bitness, and transcript observable lemmas.
+3. `ms/true_clause/` — MS-3b leaf chain, surfaced by the stable facade `ms/TrueClause.ec`.
+4. `ms/comparison/` — MS-3c comparison leaf chains, surfaced by the stable facade `ms/Comparison.ec`.
+5. `ms/SourceModel.ec` — public-spine / ROM-facing MS-3a bridge above comparison and below `ms/source/`.
+6. `ms/source/` — MS-3a source types, constructors, distributions, execution-link facts, schedule chain, and theorem packaging. Stable import surfaces are `SourceDistributions.ec`, `SourceScheduleObligations.ec`, `SourceObligations.ec`, and `SourceTheorem.ec`.
+7. `ms/MS.ec` — wrapper above the split MS-3a / MS-3b / MS-3c layers.
+8. `le/` — LE proof chain, surfaced by `LEModel.ec`.
+9. `sim/Simulator.ec` — simulator surface above the MS and LE layers.
+10. `games/` — abstract game views, advantage facts, MS-hop chain, and LE bridge. Stable import surfaces are `GameMSHops.ec` and `Games.ec`.
+11. `theorem/MainTheorem.ec` — top-level theorem layer.
+
+Directory-local guides for the split-heavy subtrees live in `ms/source/README.md`, `ms/comparison/README.md`, and `games/README.md`.
 
 If your EasyCrypt build exposes the binary as `ec` instead of `easycrypt`, the script falls back automatically when `easycrypt` is missing.
 
@@ -143,97 +90,39 @@ easycrypt compile -R . theorem/MainTheorem.ec
 
 ## Layout (directories)
 
-```
+The tree below is intentionally conceptual. Use the local README files in the split-heavy subdirectories and the filesystem itself for the exact inventory.
+
+```text
 docs/03-formal-verification/easycrypt/
 ├── README.md
 ├── check_easycrypt.sh
-├── primitives/
-│   ├── Domains.ec
-│   ├── QssmTypes.ec
-│   ├── Algebra.ec
-│   └── FS.ec
+├── primitives/                # shared domains, types, algebra, FS
 ├── ms/
-│   ├── SchnorrBranch.ec
-│   ├── BitnessOne.ec
-│   ├── BitnessVector.ec
-│   ├── TranscriptObservable.ec
-│   ├── true_clause/
-│   │   ├── TrueClauseTypes.ec
-│   │   ├── TrueClauseMSB.ec
-│   │   └── TrueClauseTheorem.ec
-│   ├── TrueClause.ec
+│   ├── TrueClause.ec          # stable facade for ms/true_clause/
+│   ├── Comparison.ec          # stable facade for ms/comparison/
+│   ├── SourceModel.ec         # MS-3a public-spine / ROM boundary
+│   ├── true_clause/           # MS-3b leaf chain
 │   ├── comparison/
-│   │   ├── ComparisonTypes.ec
-│   │   ├── ComparisonDigests.ec
-│   │   ├── ComparisonPayloadTypes.ec
-│   │   ├── ComparisonPayloadSeedTypes.ec
-│   │   ├── ComparisonPayloadFromSeed.ec
-│   │   ├── ComparisonPayloadSeedAnchors.ec
-│   │   ├── ComparisonPayloadSeeds.ec   (facade)
-│   │   ├── ComparisonPayloadSupportTypes.ec
-│   │   ├── ComparisonPayloadSupportPublic.ec
-│   │   ├── ComparisonPayloadSupportShares.ec
-│   │   ├── ComparisonPayloadSupport.ec
-│   │   ├── ComparisonPayloadFalseClause.ec
-│   │   ├── ComparisonPayload.ec
-│   │   ├── ComparisonCouplingTypes.ec
-│   │   ├── ComparisonCouplingAxioms.ec
-│   │   ├── ComparisonCouplingMarginals.ec
-│   │   ├── ComparisonCouplingSchedule.ec
-│   │   ├── ComparisonCouplingTheorem.ec
-│   │   ├── ComparisonCoupling.ec
-│   │   └── ComparisonTheorem.ec
-│   ├── Comparison.ec
-│   ├── SourceModel.ec
+│   │   ├── README.md
+│   │   └── *.ec
 │   ├── source/
-│   │   ├── SourceTypes.ec
-│   │   ├── SourceConstructors.ec
-│   │   ├── SourcePayloadDistributions.ec
-│   │   ├── SourceCouplingTypes.ec
-│   │   ├── SourceCouplingAxioms.ec
-│   │   ├── SourceCouplingTheorem.ec
-│   │   ├── SourceBitnessDistributions.ec
-│   │   ├── SourceDistributionLemmas.ec
-│   │   ├── SourceObservableDistributions.ec
-│   │   ├── SourceDistributions.ec (facade)
-│   │   ├── SourceProgrammedObligations.ec
-│   │   ├── SourcePublicFieldObligations.ec
-│   │   ├── SourceScheduleSeed.ec
-│   │   ├── SourceSchedulePayload.ec
-│   │   ├── SourceScheduleTheorem.ec
-│   │   ├── SourceScheduleObligations.ec (facade)
+│   │   ├── README.md
+│   │   ├── SourceDistributions.ec
+│   │   ├── SourceScheduleObligations.ec
 │   │   ├── SourceObligations.ec
-│   │   └── SourceTheorem.ec
-│   └── MS.ec
-├── le/
-│   ├── LESurface.ec
-│   ├── LESetB.ec
-│   ├── LERejection.ec
-│   ├── LEFsProgramming.ec
-│   ├── LEViewIndist.ec
-│   ├── LEStatisticalDistance.ec
-│   ├── LEHVZK.ec
-│   └── LEModel.ec
-├── sim/
-│   └── Simulator.ec
+│   │   ├── SourceTheorem.ec
+│   │   └── *.ec
+│   └── MS.ec                  # MS wrapper
+├── le/                        # LE chain, surfaced by LEModel.ec
+├── sim/                       # simulator surface
 ├── games/
-│   ├── GameTypes.ec
-│   ├── GameViews.ec
-│   ├── GameAdvantage.ec
-│   ├── GameMSHopTypes.ec
-│   ├── GameMSHopTransitions.ec
-│   ├── GameMSHopComposition.ec
-│   ├── GameMSHops.ec
+│   ├── README.md
+│   ├── GameMSHops.ec          # stable MS-hop facade
 │   ├── GameLEBridge.ec
-│   └── Games.ec
-├── theorem/
-│   └── MainTheorem.ec
-└── plans/
-    ├── MS_3a_proof_plan.md
-    ├── MS_3b_proof_plan.md
-    ├── MS_3c_proof_plan.md
-    ├── LE_HVZK_proof_plan.md
-    └── G0_G1_G2_game_plan.md
+│   ├── Games.ec               # stable top-level game facade
+│   └── *.ec
+├── theorem/                   # MainTheorem.ec
+└── plans/                     # proof-plan notes
 ```
 
 ## File map (legacy Qssm* names → current paths)
@@ -259,8 +148,8 @@ docs/03-formal-verification/easycrypt/
 ## Admitted / axiomatized placeholders (Phase 1)
 
 - **ROM / programmability (A2 surface):** `primitives/FS.ec` — `A2_ms_rom_programmability_nonneg`, `A2_programmable_oracle_exists`
-- **MS:** `ms/SourceModel.ec` and **`ms/source/`** still carry the MS-3a source scaffold: **`d_ms3a_seed_spine_joint`**, **`d_ms3a_real_payload_seed`**, and **`d_ms3a_sim_payload_seed`** are now all **definitional** point masses (resp. `dmap`s of one) at the canonical public-spine source **`ms3a_canonical_public_source`**, matching `d_ms3a_real_execution_public_seed` definitionally. The remaining MS-3a scaffold axiom **`A_ms3a_public_spine_programmed_layer`** now lives in **`ms/SourceModel.ec`** (the source-model / ROM-model layer, next to the abstract `ms3a_public_*` ops), and the previous source-distribution-level axiom **`A_ms3a_seed_spine_support_wf`** is now a proved lemma derived from it.
-- **MS:** `SourceExecutionLink.ec` remains the source-facing execution/public-spine boundary. **`SourcePublicBitnessConstructors.ec`** now fixes the concrete list-level constructor boundary on `ms3a_bitness_layer_source`, via **`ms3a_public_bits_of_execution`** and definitionally mapped **`ms3a_public_bitness_globals_of_execution`**; the structural constructor lemmas **`ms3a_public_bits_shape_of_execution`** and **`ms3a_public_bitness_globals_ordered_of_execution`** are proved, and **`ms3a_public_bits_per_bit_programmed_of_execution`** closes from **`ms3a_source_wf`**. **`SourcePublicBitnessExecution.ec`** now stays generic: it defines the package predicate **`ms3a_public_bitness_execution`** and the generic projection to `ms_bitness_vector_programmed_layer`, while **`SourceRealExecutionSeed.ec`** proves **`ms3a_game_public_bitness_source_wf`**, **`ms3a_public_bits_per_bit_programmed_of_game_execution`**, **`ms3a_public_bitness_execution_of_game_execution`**, **`ms3a_public_bitness_vector_programmed_of_game_execution`**, and **`ms3a_real_execution_seed_link_of_game_execution`** using the existing bridge axiom **`A_ms3a_real_payload_seed_matches_execution_seed`**. The former programmed-layer axiom names in `SourceProgrammedObligations.ec` remain lemmas, and the net named MS-3a axiom count is now **4**.
+- **MS:** `ms/SourceModel.ec` and **`ms/source/`** still carry the MS-3a source scaffold: **`d_ms3a_seed_spine_joint`**, **`d_ms3a_real_payload_seed`**, and **`d_ms3a_sim_payload_seed`** are now all **definitional** point masses (resp. `dmap`s of one) at the canonical public-spine source **`ms3a_canonical_public_source`**, matching `d_ms3a_real_execution_public_seed` definitionally. The remaining MS-3a scaffold axiom **`A_ms3a_public_spine_programmed_layer`** now lives in **`ms/SourceModel.ec`** (the source-model / ROM-model layer, next to the abstract `ms3a_public_*` ops), and the previous source-distribution-level axiom **`A_ms3a_seed_spine_support_wf`** is now a proved lemma derived from it. This phase confirmed the next blocker precisely: **`ms_public_input`** is still abstract, **`GameViews.ec`** / **`GameMSHopTransitions.ec`** still hardcode **`msgv_ms_obs = witness`**, and `game_view` carries no per-bit `ms_single_bit_or_transcript list` or ordered bitness-global digest vector, so the six **`ms3a_public_*`** ops cannot yet be made definitional from the current game surface.
+- **MS:** `SourceExecutionLink.ec` remains the source-facing execution/public-spine boundary. **`SourcePublicBitnessConstructors.ec`** now fixes the concrete list-level constructor boundary on `ms3a_bitness_layer_source`, via **`ms3a_public_bits_of_execution`** and definitionally mapped **`ms3a_public_bitness_globals_of_execution`**; the structural constructor lemmas **`ms3a_public_bits_shape_of_execution`** and **`ms3a_public_bitness_globals_ordered_of_execution`** are proved, and **`ms3a_public_bits_per_bit_programmed_of_execution`** closes from **`ms3a_source_wf`**. **`SourcePublicBitnessExecution.ec`** now stays generic: it defines the package predicate **`ms3a_public_bitness_execution`** and the generic projection to `ms_bitness_vector_programmed_layer`, while **`SourceRealExecutionSeed.ec`** proves **`ms3a_game_public_bitness_source_wf`**, **`ms3a_public_bits_per_bit_programmed_of_game_execution`**, **`ms3a_public_bitness_execution_of_game_execution`**, **`ms3a_public_bitness_vector_programmed_of_game_execution`**, and **`ms3a_real_execution_seed_link_of_game_execution`** using the proved singleton-spine lemmas plus the definitional bridge lemma **`A_ms3a_real_payload_seed_matches_execution_seed`**. The former programmed-layer axiom names in `SourceProgrammedObligations.ec` remain lemmas, and the net named MS-3a scaffold axiom count is now **1**.
 **Status C:** **`A_ms3a_real_seed_bitness_fields_are_public_on_support`** is a proved lemma. Support of **`d_ms3a_real_payload_seed`** is now the singleton image of the canonical public-spine source under `ms3a_real_payload_seed_of_bitness_layer`, and downstream support reasoning remains routed through the now-proved bridge lemma.
 **Status R:** **`A_ms3a_public_payload_bitness_programmed`** and **`A_ms3a_real_seed_bitness_fields_are_public_on_support`** no longer remain as standalone MS-3a axioms. `SourceProgrammedObligations.ec` now proves both names as lemmas, using the execution-seed bridge/package lemmas exported by `SourceRealExecutionSeed.ec`.
 **Execution/public-payload linkage status:** the concrete boundary law **`d_ms3a_real_execution_public_seed`** and the now-proved bridge **`A_ms3a_real_payload_seed_matches_execution_seed`** are enough to recover the full public-bitness execution theorem downstream. Both the former public-bitness package axiom and the real-seed bridge axiom have been removed; `SourceProgrammedObligations.ec` now depends only on proved theorem surfaces.
@@ -278,10 +167,10 @@ docs/03-formal-verification/easycrypt/
 
 ## Next proof target
 
-**MS-3a source obligations (file split):** `d_ms3a_*` sampling laws and related lemmas are split under **`ms/source/`** — **`SourcePayloadDistributions.ec`** (abstract spine joint + real marginal / WF / paired-public-support **axioms**; **sim** seed law **defined** as joint sim marginal), **`SourceBitnessDistributions.ec`**, **`SourceDistributionLemmas.ec`**, **`SourceObservableDistributions.ec`**, re-exported by facade **`SourceDistributions.ec`** (theory name **`SourceDistributions`** unchanged). Seed programming and packaged lemmas live in **`SourceProgrammedObligations.ec`**; paired public fields and payload-support bridges in **`SourcePublicFieldObligations.ec`**; schedule material is split across **`SourceScheduleSeed.ec`** (**lemma** **`A_ms3a_bitness_layer_seed_schedule`**), **`SourceSchedulePayload.ec`** (payload **`dmap`** schedule **`A_ms3a_payload_dmap_bitness_layer_schedule`**, `ms3a_ax_*` from support), **`SourceScheduleTheorem.ec`** (**`ms3a_source_eq_from_bitness_layer`**, constructor-scoped lemmas), re-exported by facade **`SourceScheduleObligations.ec`**. **`SourceObligations.ec`** is a thin **`require export`** facade (imports may still use theory **`SourceObligations`**).
+**MS-3a source obligations (file split):** `d_ms3a_*` sampling laws and related lemmas are split under **`ms/source/`** — **`SourcePayloadDistributions.ec`** now defines the spine joint and both seed laws from the canonical public-spine source, and proves **`A_ms3a_spine_real_marginal_matches_seed`**, **`A_ms3a_seed_spine_support_wf`**, **`A_ms3a_seed_pair_public_fields_match_on_support`**, and **`A_ms3a_spine_sim_marginal_matches_seed`** as lemmas. **`SourceBitnessDistributions.ec`**, **`SourceDistributionLemmas.ec`**, and **`SourceObservableDistributions.ec`** keep the same split and are re-exported by facade **`SourceDistributions.ec`** (theory name **`SourceDistributions`** unchanged). Seed programming and packaged lemmas live in **`SourceProgrammedObligations.ec`**; paired public fields and payload-support bridges in **`SourcePublicFieldObligations.ec`**; schedule material is split across **`SourceScheduleSeed.ec`** (**lemma** **`A_ms3a_bitness_layer_seed_schedule`**), **`SourceSchedulePayload.ec`** (payload **`dmap`** schedule **`A_ms3a_payload_dmap_bitness_layer_schedule`**, `ms3a_ax_*` from support), **`SourceScheduleTheorem.ec`** (**`ms3a_source_eq_from_bitness_layer`**, constructor-scoped lemmas), re-exported by facade **`SourceScheduleObligations.ec`**. **`SourceObligations.ec`** is a thin **`require export`** facade (imports may still use theory **`SourceObligations`**). The only remaining scaffold axiom is no longer in `ms/source/`; it is **`A_ms3a_public_spine_programmed_layer`** in **`ms/SourceModel.ec`**.
 
 **Execution/link boundary:** **`SourceExecutionLink.ec`** remains the standalone source-facing boundary for the remaining MS-3a execution/public-spine story. It defines predicate **`ms3a_execution_public_spine_link`** and the proved projection lemmas **`ms3a_public_payload_bitness_programmed_of_execution_link`** and **`ms3a_real_seed_public_fields_on_support_of_execution_link`**; `SourcePayloadDistributions.ec` remains below it to avoid cycles.
-**Concrete boundary on top:** **`SourceRealExecutionGameLink.ec`** now provides the minimal concrete execution/game-link objects: deterministic public source **`ms3a_game_public_bitness_source`**, point-mass source sampler **`d_ms3a_real_execution_bitness_source`**, and concrete seed law **`d_ms3a_real_execution_public_seed`** implemented as `dmap (d_ms3a_real_execution_bitness_source x) ms3a_real_payload_seed_of_bitness_layer`. The structural local lemmas on that boundary are proved in **`SourceRealExecutionGameLink.ec`**. The semantic closure now lives one layer higher: **`SourceRealExecutionSeed.ec`** proves **`ms3a_game_public_bitness_source_wf`**, **`ms3a_public_bits_per_bit_programmed_of_game_execution`**, **`ms3a_public_bitness_globals_ordered_of_game_execution`**, **`ms3a_public_bitness_execution_of_game_execution`**, and **`ms3a_public_bitness_vector_programmed_of_game_execution`**. **`SourcePublicBitnessConstructors.ec`** remains the concrete list-level constructor surface, but no extra globals bridge axiom was needed: the game-source WF theorem is obtained by placing the concrete game source on abstract spine support through the existing real-seed bridge. Imports stay acyclic: **`SourcePublicBitnessExecution.ec`** sits below `SourceRealExecutionGameLink.ec`, and **`SourceRealExecutionSeed.ec`** now proves the public-bitness execution theorem and **`ms3a_real_execution_seed_link_of_game_execution`**. The residual semantic debt is now only the real-seed bridge axiom **`A_ms3a_real_payload_seed_matches_execution_seed`**.
+**Concrete boundary on top:** **`SourceRealExecutionGameLink.ec`** now provides the minimal concrete execution/game-link objects: deterministic public source **`ms3a_game_public_bitness_source`**, point-mass source sampler **`d_ms3a_real_execution_bitness_source`**, and concrete seed law **`d_ms3a_real_execution_public_seed`** implemented as `dmap (d_ms3a_real_execution_bitness_source x) ms3a_real_payload_seed_of_bitness_layer`. The structural local lemmas on that boundary are proved in **`SourceRealExecutionGameLink.ec`**. The semantic closure now lives one layer higher: **`SourceRealExecutionSeed.ec`** proves **`ms3a_game_public_bitness_source_wf`**, **`ms3a_public_bits_per_bit_programmed_of_game_execution`**, **`ms3a_public_bitness_globals_ordered_of_game_execution`**, **`ms3a_public_bitness_execution_of_game_execution`**, and **`ms3a_public_bitness_vector_programmed_of_game_execution`**. **`SourcePublicBitnessConstructors.ec`** remains the concrete list-level constructor surface, but no extra globals bridge axiom was needed: the game-source WF theorem is obtained by placing the concrete game source on abstract spine support through the proved singleton-spine lemmas. Imports stay acyclic: **`SourcePublicBitnessExecution.ec`** sits below `SourceRealExecutionGameLink.ec`, and **`SourceRealExecutionSeed.ec`** now proves the public-bitness execution theorem and **`ms3a_real_execution_seed_link_of_game_execution`**. The residual semantic debt is now the missing constructive link from the abstract public spine to an actual `G_MS_*` game view carrying per-bit transcripts and ordered bitness-global digests.
 
 The concrete objects added in this phase are:
 
@@ -298,9 +187,9 @@ The key local lemmas/theorems on this boundary are:
 - **`ms3a_real_execution_public_seed_support_inv`** — support inversion for the `dmap`-implemented real execution seed law.
 - **`ms3a_real_execution_bitness_source_public_fields_on_support`** — concrete source support matches the same public stmt / bits / bitness globals.
 
-Current game files are still too abstract to discharge every remaining assumption directly: `MS.ec` / `GameViews.ec` / `GameMSHopTransitions.ec` continue to use `witness` for the MS observable, `Simulator.ec` exposes only abstract `ms_simulator` / `extract_ms_public`, and `GameAdvantage.ec` is only about abstract `game_pr` arithmetic. Even so, the source-side public-bitness gap, the real-seed bridge, the spine-marginal/paired-public-fields gaps, and the spine-support WF have all been collapsed by definitional unfolding plus a single ROM/FS-layer assumption: the WF obligation is now the canonical ROM/FS-layer axiom **`A_ms3a_public_spine_programmed_layer`** at the source-model layer (`ms/SourceModel.ec`), which directly asserts `ms_bitness_vector_programmed_layer` of the abstract public spine. The previous source-distribution-level axiom **`A_ms3a_seed_spine_support_wf`** is now a proved lemma derived from it.
+Current game files are still too abstract to discharge every remaining assumption directly: `MS.ec` / `GameViews.ec` / `GameMSHopTransitions.ec` continue to use `witness` for the MS observable, `Simulator.ec` exposes only abstract `ms_simulator` / `extract_ms_public`, and `GameAdvantage.ec` is only about abstract `game_pr` arithmetic. This phase confirmed a stronger structural blocker: `ms_public_input` is an abstract type, `game_view` carries only that opaque `xms` plus an abstract `msgv_ms_obs`, and **`ms/SourceModel.ec`** is checked before **`games/GameViews.ec`** / **`games/GameMSHopTransitions.ec`**, so the six **`ms3a_public_*`** ops cannot be made definitional from the current game-view surface without first changing the dependency graph and adding a concrete per-bit carrier. The source-side public-bitness gap, the real-seed bridge, the spine-marginal/paired-public-fields gaps, and the spine-support WF are all already closed; the only remaining scaffold axiom is **`A_ms3a_public_spine_programmed_layer`**.
 
-1. **MS-3a (residual)** — the **single** remaining MS-3a scaffold axiom is the ROM/FS-layer assumption **`A_ms3a_public_spine_programmed_layer`** in **`ms/SourceModel.ec`**, which directly asserts `ms_bitness_vector_programmed_layer (ms3a_public_stmt_digest x) (ms3a_public_bits x) (ms3a_public_bitness_globals x)` for every `ms_public_input`. **`A_ms3a_seed_spine_support_wf`**, **`A_ms3a_spine_real_marginal_matches_seed`**, **`A_ms3a_seed_pair_public_fields_match_on_support`**, and the bridge **`A_ms3a_real_payload_seed_matches_execution_seed`** are now all **proved lemmas**. **`ms3a_public_bitness_execution_of_game_execution`** and **`ms3a_real_execution_seed_link_of_game_execution`** are both **proved theorems**. Discharging the residual axiom requires the next layer down: tying the abstract `ms3a_public_*` ops to a concrete ROM-programmed game execution (a `ms_game_view` carrying explicit per-bit FS challenges and ordered global-challenge digests), at which point the assumption becomes a structural lemma over the existing `A2_*` ROM-programmability axioms in `primitives/FS.ec`. The four `A_ms3a_{real,sim}_seed_{bits,bitness_globals}_programmed_on_support` names remain **proved lemmas** packaged by **`A_ms3a_{real,sim}_seed_programmed_on_support`**; instantiate abstract **`d_ms3a_seed_spine_joint`** / **`d_ms3a_real_payload_seed`** from execution/games (**`d_ms3a_sim_payload_seed`** is already the joint sim marginal **by definition**; lemma **`A_ms3a_spine_sim_marginal_matches_seed`** is proved); payload **`ms3a_*_payload_from_seed`** is definitional identity on payload-shaped seeds; the four **`A_ms3a_seed_pair_*_source_shared`** facts and **`A_ms3a_bitness_layer_seed_schedule`** are already **proved lemmas** at the abstract interface; **`A_ms3a_seed_pair_public_fields_on_support`** is already a **proved lemma**; see `plans/MS_3a_proof_plan.md`.
+1. **MS-3a (residual)** — the **single** remaining MS-3a scaffold axiom is the ROM/FS-layer assumption **`A_ms3a_public_spine_programmed_layer`** in **`ms/SourceModel.ec`**, which directly asserts `ms_bitness_vector_programmed_layer (ms3a_public_stmt_digest x) (ms3a_public_bits x) (ms3a_public_bitness_globals x)` for every `ms_public_input`. **`A_ms3a_seed_spine_support_wf`**, **`A_ms3a_spine_real_marginal_matches_seed`**, **`A_ms3a_seed_pair_public_fields_match_on_support`**, and the bridge **`A_ms3a_real_payload_seed_matches_execution_seed`** are now all **proved lemmas**. **`ms3a_public_bitness_execution_of_game_execution`** and **`ms3a_real_execution_seed_link_of_game_execution`** are both **proved theorems**. This phase did **not** discharge the residual axiom, because the current game view has no field carrying `ms_single_bit_or_transcript list` or ordered bitness-global digests, `msgv_ms_obs` stays `witness`, and `ms_public_input` has no concrete selectors. The next required change is therefore a surface refinement, not another local proof: either enrich `ms_game_view_record` with a concrete bitness slice (and stop using `witness` in `G_MS_*`), or refine `ms_public_input` / `extract_ms_public` so that `ms3a_public_bits` and `ms3a_public_bitness_globals` can be defined constructively before `SourceModel.ec` is checked. Only after that can **`A_ms3a_public_spine_programmed_layer`** become a lemma over the existing `A2_*` ROM-programmability axioms in `primitives/FS.ec`.
 2. **MS-3b** — discharge axiom **`A_ms3b_operand_hdb_implies_value_gt_target`** (narrow value/target `nth` leaf); lemma **`A_ms3b_operand_hdb_implies_msb_first_strict_gt`** (**`ms3b_msb_first_strict_gt_at`**) is **proved** from it. Lemma **`A_ms3b_comparison_semantics`** projects the axiom; **`A_ms3b_hdb_implies_value_one_target_zero`** is definitional on **`ms3b_value_gt_target_at`**. Tie **`ms3b_comparison_operand_bits`** / **`ms3b_clause_opening_binds`** to transcript / execution material in **`ms/true_clause/`** (via theory **`TrueClause`**, facade **`ms/TrueClause.ec`**); see `plans/MS_3b_proof_plan.md`.
 
 Then: MS-3c comparison lane in **`ms/Comparison.ec`** / **`ms/comparison/`** (`plans/MS_3c_proof_plan.md`; **`d_ms3c_real_sim_payload_coupling`** is the **product** of the payload laws; each payload law is a **`dmap`** of **`d_ms3c_{real,sim}_payload_seed`**, itself the **product** of **Phase-1** **`dunit tt`** on **`unit`** for all four seed components (real/sim challenge and real/sim announcement); **`L_ms3c_{real,sim}_payload_seed_lossless`** and **`L_ms3c_{real,sim}_comparison_payload_law_lossless`** are **proved** from **`dprod_ll_auto`** / **`dmap_ll`** and the four component losslessness lemmata (**`L_ms3c_{real,sim}_seed_challenge_lossless`**, **`L_ms3c_real_seed_announcement_lossless`**, **`L_ms3c_sim_seed_announcement_lossless`**); Phase-1 **`ms3c_phase1_payload_from_public_input`** (surfaced as **`ms3c_{real,sim}_payload_from_seed`**) wires public clause indices and false-branch list lengths from **`ms3c_public_*`**; the four **`A_ms3c_{real,sim}_from_seed_uses_{public_indices,share_length}`** facts are **proved lemmas** in **`ComparisonPayloadSeedAnchors.ec`** (re-exported by facade **`ComparisonPayloadSeeds.ec`**; **`L_ms3c_{real,sim}_seed_index_shape_valid`**, **`L_ms3c_{real,sim}_seed_length_shape_valid`** still package schedule/transcript bridges). **`ms3c_obs_*`** remains scaffolding for transcript-backed fields; Phase-1 **`mscp_query_digest`** is **`ms_comparison_query_digest (ms3c_public_stmt_digest x) (ms3c_clause_ann_digests_from_surface …)`** (canonical statement digest **`ms3c_public_stmt_digest`**; announcement digest helpers live in **`ComparisonTypes.ec`**). Lemma **`A_ms3c_clause_surface_query_digest_constructed`** is **proved** (no `forall stmt`); surface bounds (**`A_ms3c_surface_query_digest_field_correct`**, **`A_ms3c_query_digest_statement_bound`**, etc.) now assume **`ms3c_clause_surface_to_payload c = ms3c_phase1_payload_from_public_input x`**. Marginal equality of **`d_ms3c_coupling_{real,sim}_projection`** vs standalone laws is **proved** from **`Distr`** given those lemmas; **`A_ms3c_coupling_pair_relation`** is a **proved** lemma in **`ComparisonCouplingSchedule.ec`** (marginal **`ms3c_ax_payload_*`** facts on joint payload support ⇒ pointwise **`ms3c_real_sim_payload_coupled`** via **`supp_dprod`** and digest list agreement); **`ComparisonCouplingAxioms.ec`** has **no** coupling fragment **axioms**: all **`A_ms3c_payload_*_match`** hooks are **proved lemmata** from **`L_ms3c_cross_support_real_sim_payload_equal`**. **`ms/comparison/*`** is **axiom-free**; the MS-3c **game** gap is axiom **`A_MS3c_comparison_bundle_implies_game_pr_equality`** (**`games/GameMSHopTypes.ec`**: bundle ⇒ **`game_pr`** equality on **`G_MS_after_comparison`** vs **`G_MS_sim`**). Lemma **`A_MS3c_canonical_comparison_exact_bound`** (same **`Adv … <= 0%r`** statement) is **proved** there from **`Adv_def`**; false-announcement support on payload support is **proved** (**`A_ms3c_{real,sim}_false_announcements_match_shares_on_support`** as **lemmata** in **`ComparisonPayloadFalseClause.ec`**, from Phase-1 **`map sch_pubkey`** wiring and **`L_ms_false_clause_simulated_phase1_from_public_input`**). **`ms3c_ax_payload_announcements_match_shape`** is unconditional via **`L_ms3c_ax_payload_announcements_match_shape_total`** in **`ComparisonPayloadSupportPublic.ec`** (re-exported by **`ComparisonPayloadSupport.ec`**); **`ms3c_ax_payload_announcement_digests_preserved`** follows from **`ms3c_ax_payload_public_fields_match`** via **`L_ms3c_payload_announcement_digests_preserved_from_public_fields`** in **`ComparisonCouplingSchedule.ec`**; projection and marginal packaging lemmas live in **`ComparisonCouplingMarginals.ec`**; **`A_ms3c_payload_schedule_eq_from_coupling`** is a **proved** lemma in **`ComparisonCouplingSchedule.ec`** (re-exported by **`ComparisonCouplingTheorem.ec`** / **`ComparisonCoupling.ec`**). Payload support uses the four proved from_seed anchor lemmas (**`A_ms3c_{real,sim}_from_seed_uses_share_length`**, **`A_ms3c_{real,sim}_from_seed_uses_public_indices`**, with **`L_ms3c_{real,sim}_seed_length_shape_valid`**) and derives support-shape as lemmas (**`A_ms3c_{real,sim}_payload_support_length_index_shapes`**) via `supp_dmap`, then uses proved **`L_ms3c_{real,sim}_payload_support_simulatable`**; announcement list shape on payloads is **proved** (**`L_ms3c_*_payload_ann_digest_list_shape_ok`**). False-clause path uses proved constructor lemmas **`L_ms3c_{real,sim}_constructor_false_index_nonempty`** (**`ms3c_public_false_branch_nonempty`** + public-index anchors + **`ms3c_public_shape_ok`**), placeholder **`L_ms3c_public_false_branch_nonempty_placeholder`** (`ComparisonTypes.ec` singleton false-branch placeholders), seed-level wrappers (**`A_ms3c_{real,sim}_seed_false_index_nonempty`**), proved support lemmata **`A_ms3c_{real,sim}_false_announcements_match_shares_on_support`** (false announcements vs **`sch_pubkey`** of false shares on support, Phase-1 constructor), and proved **`L_ms3c_false_clause_generation_on_support`** (**`ms3c_ax_payload_false_clauses_simulated`**); false-announcement nonempty is proved as lemmas (**`A_ms3c_real_seed_false_clause_nonempty`**, **`A_ms3c_sim_seed_false_clause_nonempty`**), and **`A_ms3c_false_clauses_hook_implies_schedule_nontrivial`** / **`A_ms3c_false_clause_simulation`** remain proved lemmas. Query digest: proved ann projection lemmas (**`L_ms3c_ann_digest_projection_correct`**, **`L_ms3c_ann_digests_alias`**), proved lemma **`A_ms3c_clause_surface_query_digest_constructed`** (Phase-1 payload, canonical **`ms3c_public_stmt_digest x`**), proved lemmas **`A_ms3c_surface_query_digest_field_correct`** / **`A_ms3c_query_digest_statement_bound`** (require **`ms3c_clause_surface_to_payload c = ms3c_phase1_payload_from_public_input x`**), **`L_ms3c_query_digest_uses_ann_digest_projection`**, **`L_ms3c_query_digest_ordered_announcements_bound`**, **`L_ms3c_query_digest_statement_bound_hash`**, same-announcement lemmas **`L_ms3c_query_digest_no_witness_fields`** / **`L_ms3c_query_digest_excludes_witness_fields`** (same **`x`** / Phase-1 payload hypothesis), and packaging **`L_ms3c_digest_announcement_only`** ( **`Hann`** is redundant with **`L_ms3c_ann_digest_list_shape`**). On the game layer, discharge canonical MS1 bound **`A_MS1_canonical_hash_binding_bound`** as a lemma layered over narrower hash-binding obligations **`A_MS1_hash_binding_surface_defined`**, **`A_MS1_hash_binding_bad_event_bounded`**, and **`A_MS1_hash_binding_replacement_advantage_bound`**; discharge canonical MS2 bound **`A_MS2_canonical_rom_programming_bound`** as a lemma layered over narrower ROM obligations **`A_MS2_rom_query_surface_defined`**, **`A_MS2_rom_programmed_points_bounded`**, and **`A_MS2_rom_reprogramming_advantage_bound`**; keep **`A_MS3a_canonical_bitness_exact_bound`** and **`A_MS3b_canonical_true_clause_bound`** as canonical **axioms**; for MS3c keep **`A_MS3c_comparison_bundle_implies_game_pr_equality`** as the remaining **axiom**, with **`A_MS3c_canonical_comparison_exact_bound`** a **proved lemma**. Generic step-wrapper axioms were removed, because canonical bounds on fixed `G_MS_*` views do not by themselves imply bounds for all arbitrary step-related `src`/`dst` views without an additional `Adv`-invariance theory over frozen observable/public fields. On LE, discharge **`A_LE_rejection_surrogate_sdist_bound`**, **`A_LE_fs_surrogate_sdist_bound`**, **`A_LE_rejection_surrogate_preserves_shape`**, **`A_LE_fs_surrogate_preserves_shape`** (and instantiate **`le_post_rejection_surrogate`** / **`le_fs_view_surrogate`**) from concrete rejection/FS distribution analysis alongside the remaining rejection/FS axiom bundles (`plans/LE_HVZK_proof_plan.md`); instantiate or relate **`le_distinguisher_event`** when bridging to concrete games; keep **`A_game_pr_LE_projection_semantics`** as the exact LE bridge/interface boundary until `game_pr` is concretized (`plans/G0_G1_G2_game_plan.md`).

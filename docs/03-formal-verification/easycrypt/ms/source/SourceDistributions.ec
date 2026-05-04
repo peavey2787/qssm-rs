@@ -1,5 +1,5 @@
-(* MS-3a distribution laws: payload seeds, bitness-layer pushforwards, support
-   lemmas, and observable packaging (split for file-size discipline). *)
+(* Stable facade for the MS-3a distribution surface: payload/seed laws,
+   bitness-layer pushforwards, coupling lemmas, and observable packaging. *)
 require export SourcePayloadDistributions.
 require export SourceCouplingTheorem.
 require export SourceBitnessDistributions.

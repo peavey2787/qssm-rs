@@ -1,5 +1,5 @@
-(* MS-3a schedule obligations: seed schedule, payload `dmap` schedule / `ms3a_ax_*`
-   from support, source equality, and constructor-scoped lemmas (split modules). *)
+(* Stable facade for the MS-3a schedule chain. It keeps the seed schedule,
+   payload schedule, and source-equality theorems behind one import surface. *)
 require export SourceScheduleSeed.
 require export SourceSchedulePayload.
 require export SourceScheduleTheorem.
