@@ -76,6 +76,7 @@ FILES=(
   ms/source/SourceTheorem.ec
   ms/MSProbabilitySurface.ec
   ms/MS.ec
+  le/LERealExecution.ec
   le/LESurface.ec
   le/LERejectionSampler.ec
   le/LEFsProgrammingSurface.ec

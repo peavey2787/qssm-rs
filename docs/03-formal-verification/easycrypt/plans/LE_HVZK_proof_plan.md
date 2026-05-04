@@ -191,15 +191,32 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     proves the bridge lemmas `le_real_view_matches_rejection_execution` and
     `le_post_rejection_view_matches_execution_transform`. `LERejection.ec` now
     imports that sampler bridge layer; `LEModel.ec` still does not.
-  - Remaining blocker after rejection concretization, May 2026: the rejection
-    transform is no longer the obstruction. The active lower real-side debt is
-    that `d_le_real_view` is still abstract in `LESurface.ec`; because the
-    `qssm_public_input` and `le_transcript_observable` carriers are still
-    abstract below that file, and the only existing LE-output interface lives in
-    `sim/Simulator.ec` above `LESurface.ec`, the next honest real-side step is a
-    lower LE real-execution surface below the facade. On the quantitative path,
-    the remaining theorem-facing surrogate axiom is gone, and the current lower FS carrier is fully closed. Any future nontrivial FS-programming semantics now requires enriching `le_query_material` or the lower real-execution surface rather than adding more FS-surrogate theorems above this layer.
-  - Exact next FS proof target, May 2026: if a non-identity FS programming story is still desired, enrich `le_query_material` with a concrete programmable-query component and reintroduce a corresponding lower sampler/coupling theorem on that richer carrier. Otherwise the natural next LE target is the lower real-execution surface under `d_le_real_view`.
+  - Lower real-view concretization, May 2026: `le/LERealExecution.ec` now adds
+    the lower names `le_real_execution_observable` and
+    `d_le_real_execution_view = dunit ...`, and `LESurface.ec` now defines
+    `d_le_real_view` as a direct alias of that lower sampler. This closes the
+    real-view distribution shell without creating an import cycle.
+  - Remaining blocker after real-view concretization, May 2026: the sampler
+    shell is no longer the obstruction. The active lower real-side debt is now
+    the still-abstract family of field-producing hooks in `LERealExecution.ec`
+    (`le_real_execution_commitment_coeffs`, `le_real_execution_t_coeffs`,
+    `le_real_execution_z_coeffs`, `le_real_execution_challenge_seed_obs`,
+    `le_real_execution_programmed_query_digest_obs`,
+    `le_real_execution_query_material`). These sit below the facade cleanly, but
+    they still need a concrete LE execution story from `(qssm_public_input,
+    seed)` without depending upward on `sim/Simulator.ec`. On the quantitative
+    path, the remaining theorem-facing surrogate axiom is gone, and the current
+    lower FS carrier is fully closed. Any future nontrivial FS-programming
+    semantics now requires enriching `le_query_material` or the lower real-execution surface rather than adding more FS-surrogate theorems above this layer.
+  - Exact next LE proof target, May 2026: refine the field-producing hooks in
+    `le/LERealExecution.ec` into a concrete lower public spine or execution
+    record, then prove simple projection lemmas showing that the resulting
+    `le_real_execution_observable` exposes the five theorem-facing observable
+    fields definitionally. If the separate `le_public_input` boundary is still
+    desired, factor that extractor below `LESurface.ec` in the same phase rather
+    than depending on the current abstract `extract_le_public` name in
+    `sim/Simulator.ec`.
+  - Exact next FS proof target, May 2026: if a non-identity FS programming story is still desired, enrich `le_query_material` with a concrete programmable-query component and reintroduce a corresponding lower sampler/coupling theorem on that richer carrier. Otherwise the natural next LE target remains the lower real-execution surface under `d_le_real_view`.
 - `games/GameLEBridge.ec` no longer carries a game-layer projection axiom:
   `A_game_pr_LE_projection_semantics` is now a lemma on the split views
   `G1_le_real_projection` / `G2_full_sim`.

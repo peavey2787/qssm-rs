@@ -2,7 +2,7 @@ require import AllCore Distr.
 require import StdOrder.
 require import Real.
 require import SDist.
-require import QssmTypes FS.
+require import QssmTypes FS LERealExecution.
 
 (*---*) import RealOrder.
 
@@ -47,7 +47,8 @@ axiom A4_le_hvzk_bound_nonneg :
   0%r <= epsilon_le.
 
 (* LE-only game-hop surface for the G1->G2 transition. *)
-op d_le_real_view : qssm_public_input -> seed -> le_transcript_observable distr.
+op d_le_real_view : qssm_public_input -> seed -> le_transcript_observable distr =
+  d_le_real_execution_view.
 
 (* Measurable transforms on the LE observable surface: rejection hop, then FS. *)
 op le_post_rejection_surrogate
