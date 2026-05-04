@@ -11,6 +11,54 @@ axiom A_ms3b_operand_hdb_implies_value_gt_target :
     ms_highest_differing_bit vb tb p =>
     ms3b_value_gt_target_at vb tb p.
 
+(* The remaining MS-3b leaf cannot be reduced from the current definitions
+   alone: the two MS-3b surface predicates still ignore `x`, and HDB does not
+   fix the value/target direction without an additional comparison-semantics
+   link from transcript or execution material. *)
+lemma L_ms3b_comparison_operand_bits_ignores_public_input
+  (x1 x2 : ms_public_input) (vb tb : bool list) :
+  ms3b_comparison_operand_bits x1 vb tb <=> ms3b_comparison_operand_bits x2 vb tb.
+proof.
+by rewrite /ms3b_comparison_operand_bits.
+qed.
+
+lemma L_ms3b_clause_opening_binds_ignores_public_input
+  (x1 x2 : ms_public_input) (vb tb : bool list) (p : int)
+  (clause_pub : sch_point) (r : scalar) :
+  ms3b_clause_opening_binds x1 vb tb p clause_pub r <=>
+  ms3b_clause_opening_binds x2 vb tb p clause_pub r.
+proof.
+by rewrite /ms3b_clause_opening_binds.
+qed.
+
+lemma L_ms3b_operand_hdb_value_direction_counterexample (x : ms_public_input) :
+  exists (vb tb : bool list) (p : int),
+    ms3b_comparison_operand_bits x vb tb /\
+    ms_highest_differing_bit vb tb p /\
+    nth witness vb p = false /\
+    nth witness tb p = true.
+proof.
+exists [false].
+exists [true].
+exists 0.
+split.
+- by rewrite /ms3b_comparison_operand_bits /=.
+split.
+- have Hwf : ms_bitlists_wf_for_index [false] [true] 0.
+  * by rewrite /ms_bitlists_wf_for_index /=.
+  have Hneq : nth witness [false] 0 <> nth witness [true] 0.
+  * by rewrite /=.
+  have Hag : ms_bits_agree_more_significant [false] [true] 0.
+  * rewrite /ms_bits_agree_more_significant /=.
+    move=> i Hi0 Hlt.
+    by smt.
+  rewrite /ms_highest_differing_bit.
+  split; first exact Hwf.
+  split; first exact Hneq.
+  exact Hag.
+- by [].
+qed.
+
 lemma A_ms3b_operand_hdb_implies_msb_first_strict_gt :
   forall (x : ms_public_input) (vb : bool list) (tb : bool list) (p : int),
     ms3b_comparison_operand_bits x vb tb =>
