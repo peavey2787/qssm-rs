@@ -6,12 +6,6 @@ require import Simulator.
 require import SourceDistributions SourceTheorem.
 require import LESurface LEModel Games GameAdvantage GameMSHops GameMSHopComposition GameLEBridge.
 
-axiom A1_ms_hash_binding :
-  forall (D : distinguisher), 0%r <= epsilon_ms_hash_binding.
-
-axiom A2_ms_rom_programmability :
-  forall (D : distinguisher), 0%r <= epsilon_ms_rom_programmability.
-
 (* Bridge to MS-3a/b/c placeholders (MS-3a via `ms/source/SourceTheorem.ec`). *)
 lemma use_MS_3a (x : ms_public_input) (s : seed) : ms3a_bitness_real_sim_equiv x s.
 proof.
@@ -53,8 +47,8 @@ move=> Hsetb Hleeqv.
 pose xms := extract_ms_public x.
 have H01p : Adv_G0_G1_MS x xms s D <= epsilon_ms_hash_binding + epsilon_ms_rom_programmability.
   exact (A_G0_to_G1_ms_transition_bound x xms s D
-    (A1_ms_hash_binding D)
-    (A2_ms_rom_programmability D)
+    A1_ms_hash_binding_nonneg
+    A2_ms_rom_programmability_nonneg
     (use_MS_3a xms s)
     (use_MS_3b xms)
     (use_MS_3c xms s)).

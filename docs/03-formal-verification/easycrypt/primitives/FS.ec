@@ -37,6 +37,7 @@ op le_programmed_query_digest :
 (* ROM programmability placeholders *)
 op epsilon_ms_rom_programmability : real.
 
+(* Primitive ROM-programmability budget assumption on the abstract MS2 error budget. *)
 axiom A2_ms_rom_programmability_nonneg :
   0%r <= epsilon_ms_rom_programmability.
 

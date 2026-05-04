@@ -29,6 +29,7 @@ op ms_sim_transcript (xms : ms_public_input) (s : seed) : game_view =
 
 op epsilon_ms_hash_binding : real.
 
+(* Primitive MS hash-binding budget assumption on the abstract error budget. *)
 axiom A1_ms_hash_binding_nonneg :
   0%r <= epsilon_ms_hash_binding.
 
@@ -36,7 +37,8 @@ axiom A1_ms_hash_binding_nonneg :
    QSSM/MS public slices, seed, LE placeholder, and MS transcript observable stay fixed.
    This is the semantic side of the hash-binding replacement step; the game-layer bound
    is `A_MS1_canonical_hash_binding_bound` in `games/Games.ec`, using the same
-   `epsilon_ms_hash_binding` budget as `A1_ms_hash_binding_nonneg` / theorem-level `A1_ms_hash_binding`. *)
+  `epsilon_ms_hash_binding` budget as `A1_ms_hash_binding_nonneg`, which the theorem
+  layer now consumes directly. *)
 pred ms1_hash_binding_step (src dst : game_view) (xms : ms_public_input) =
   exists (r1 r2 : ms_game_view_record),
     src = GV_ms r1 /\
@@ -53,7 +55,8 @@ pred ms1_hash_binding_step (src dst : game_view) (xms : ms_public_input) =
    seed, LE placeholder, and MS transcript observable on both sides. Game-layer bound:
    `A_MS2_canonical_rom_programming_bound` in `games/Games.ec` with budget
    `epsilon_ms_rom_programmability` from `primitives/FS.ec` (`A2_ms_rom_programmability_nonneg`,
-   theorem-level `A2_ms_rom_programmability`; programmable oracle surface `A2_programmable_oracle_exists`). *)
+  consumed directly at the theorem layer; programmable oracle surface
+  `A2_programmable_oracle_exists`). *)
 pred ms2_rom_programming_step (src dst : game_view) (xms : ms_public_input) =
   exists (r1 r2 : ms_game_view_record),
     src = GV_ms r1 /\

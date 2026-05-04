@@ -12,6 +12,11 @@ Carry the closed MS game-hop boundary forward so the composed MS transition theo
 
 depends only on named cryptographic budgets and proved MS-3a / MS-3b / MS-3c statements, not on residual game-layer axioms.
 
+Update, May 2026: the theorem-facing MS budget wrappers in `theorem/MainTheorem.ec`
+are now gone. The theorem consumes `A1_ms_hash_binding_nonneg` from `ms/MS.ec`
+and `A2_ms_rom_programmability_nonneg` from `primitives/FS.ec` directly, so the
+remaining MS assumption surface is no longer duplicated at the theorem layer.
+
 ## MS-3c handoff status
 
 - **Stable projection layer:** **`games/GameAdvantage.ec`** now owns **`ms3a_game_pr_stage`**, **`ms3b_game_pr_stage`**, **`ms3c_game_pr_stage`**, **`game_pr`**, **`Adv`**, **`A_adv_ms_hop_telescope`**, the concrete MS probability core **`game_pr_ms_core`**, and the proved lower bridge lemmas **`A_MS1_hash_binding_game_pr_core_bound`** and **`A_MS2_rom_programming_game_pr_core_bound`**.
@@ -35,6 +40,10 @@ depends only on named cryptographic budgets and proved MS-3a / MS-3b / MS-3c sta
 - **MS telescope:** **`A_adv_ms_hop_telescope`** is a proved lemma in **`games/GameAdvantage.ec`**.
 - **Debt reduction already achieved:** the MS1/MS2 game-layer axiom surface in **`games/GameMSHopTypes.ec`** dropped from six provisional axioms to zero, and the lower **`game_pr_ms_core`** boundary in **`games/GameAdvantage.ec`** is now also axiom-free for MS1/MS2.
 - **Composed MS transition theorem:** **`A_G0_to_G1_ms_transition_bound`** is already a proved lemma in **`games/GameMSHopComposition.ec`**. Its MS1/MS2 dependence now flows only through proved lower bridge lemmas in **`games/GameAdvantage.ec`**.
+- **Theorem-level cleanup:** `theorem/MainTheorem.ec` no longer rewraps the MS1/MS2
+	nonnegativity assumptions. It now passes `A1_ms_hash_binding_nonneg` and
+	`A2_ms_rom_programmability_nonneg` directly into
+	`A_G0_to_G1_ms_transition_bound`.
 
 ## Relevant dependencies to carry from MS-3c into MS-3d
 
