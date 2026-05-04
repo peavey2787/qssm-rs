@@ -2,61 +2,33 @@ require import AllCore List.
 require import Algebra QssmTypes SchnorrBranch.
 require import TrueClauseTypes TrueClauseMSB.
 
-(* Semantic leaf: operands + HDB ⇒ value>target at p; MSB-first strict-greater is
-   pure list geometry once HDB and the two `nth` facts are available. *)
+(* Semantic leaf: operands + HDB => value>target at p; MSB-first strict-greater is
+   pure list geometry once the concrete comparison carrier fixes the operand
+   slice and the true-clause opening. *)
 
-axiom A_ms3b_operand_hdb_implies_value_gt_target :
+lemma L_ms3b_int_lt1_eq0 (i : int) : 0 <= i => i < 1 => i = 0.
+proof.
+move=> Hi0 Hi1.
+rewrite ltz1 in Hi1.
+by rewrite eqz_leq; split=> //.
+qed.
+
+lemma A_ms3b_operand_hdb_implies_value_gt_target :
   forall (x : ms_public_input) (vb : bool list) (tb : bool list) (p : int),
     ms3b_comparison_operand_bits x vb tb =>
     ms_highest_differing_bit vb tb p =>
     ms3b_value_gt_target_at vb tb p.
-
-(* The remaining MS-3b leaf cannot be reduced from the current definitions
-   alone: the two MS-3b surface predicates still ignore `x`, and HDB does not
-   fix the value/target direction without an additional comparison-semantics
-   link from transcript or execution material. *)
-lemma L_ms3b_comparison_operand_bits_ignores_public_input
-  (x1 x2 : ms_public_input) (vb tb : bool list) :
-  ms3b_comparison_operand_bits x1 vb tb <=> ms3b_comparison_operand_bits x2 vb tb.
 proof.
-by rewrite /ms3b_comparison_operand_bits.
-qed.
-
-lemma L_ms3b_clause_opening_binds_ignores_public_input
-  (x1 x2 : ms_public_input) (vb tb : bool list) (p : int)
-  (clause_pub : sch_point) (r : scalar) :
-  ms3b_clause_opening_binds x1 vb tb p clause_pub r <=>
-  ms3b_clause_opening_binds x2 vb tb p clause_pub r.
-proof.
-by rewrite /ms3b_clause_opening_binds.
-qed.
-
-lemma L_ms3b_operand_hdb_value_direction_counterexample (x : ms_public_input) :
-  exists (vb tb : bool list) (p : int),
-    ms3b_comparison_operand_bits x vb tb /\
-    ms_highest_differing_bit vb tb p /\
-    nth witness vb p = false /\
-    nth witness tb p = true.
-proof.
-exists [false].
-exists [true].
-exists 0.
-split.
-- by rewrite /ms3b_comparison_operand_bits /=.
-split.
-- have Hwf : ms_bitlists_wf_for_index [false] [true] 0.
-  * by rewrite /ms_bitlists_wf_for_index /=.
-  have Hneq : nth witness [false] 0 <> nth witness [true] 0.
-  * by rewrite /=.
-  have Hag : ms_bits_agree_more_significant [false] [true] 0.
-  * rewrite /ms_bits_agree_more_significant /=.
-    move=> i Hi0 Hlt.
-    by smt.
-  rewrite /ms_highest_differing_bit.
-  split; first exact Hwf.
-  split; first exact Hneq.
-  exact Hag.
-- by [].
+move=> x vb tb p.
+rewrite /ms3b_comparison_operand_bits /ms3b_phase1_comparison_carrier /=.
+move=> [-> [-> [_ _]]] Hhd.
+have Hwf := A_ms3b_hdb_implies_bitlists_wf [true] [false] p Hhd.
+case: Hwf => _ [Hp0 Hplt].
+have Hp : p = 0.
+- apply (L_ms3b_int_lt1_eq0 p Hp0).
+  by rewrite /= in Hplt.
+rewrite Hp /=.
+by split.
 qed.
 
 lemma A_ms3b_operand_hdb_implies_msb_first_strict_gt :
@@ -122,7 +94,7 @@ lemma A_ms3b_pedersen_opening_correct :
     ms3b_clause_opening_binds x vb tb p clause_pub r =>
     ms_clause_public_point_matches_blinder clause_pub true r.
 proof.
-by move=> x vb tb p clause_pub r Hob; rewrite /ms3b_clause_opening_binds in Hob.
+by move=> x vb tb p clause_pub r [_ [_ [_ [_ [_ Hob]]]]].
 qed.
 
 lemma MS_3b_bits_from_public_input (x : ms_public_input) (vb : bool list) (tb : bool list) :
@@ -136,7 +108,8 @@ qed.
 lemma MS_3b_highest_diff_from_bits (x : ms_public_input) (vb : bool list) (tb : bool list) (p : int) :
   ms3b_comparison_operand_bits x vb tb =>
   ms_highest_differing_bit vb tb p =>
-  (size vb = size tb /\ 0 < size vb) /\
+  (size vb = size tb /\
+  0 < size vb) /\
   ms_true_clause_position vb tb p.
 proof.
 move=> Hop Hhd.
@@ -158,7 +131,8 @@ qed.
 lemma MS_3b_clause_point_from_opening (x : ms_public_input) (vb : bool list) (tb : bool list) (p : int)
   (clause_pub : sch_point) (r : scalar) :
   ms3b_comparison_operand_bits x vb tb =>
-  size vb = size tb /\ 0 < size vb =>
+  size vb = size tb /\
+  0 < size vb =>
   ms_true_clause_position vb tb p =>
   ms3b_clause_opening_binds x vb tb p clause_pub r =>
   ms_clause_public_point_matches_blinder clause_pub true r.

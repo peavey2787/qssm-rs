@@ -101,12 +101,12 @@
     "ComparisonPayloadFromSeed": {
       "direct": false,
       "kind": "ec",
-      "digest": "98ce3462031067dd1e968137cddcc030"
+      "digest": "6afd23d8c50639c192a03385d8d5d66a"
     },
     "ComparisonPayloadSeedAnchors": {
       "direct": false,
       "kind": "ec",
-      "digest": "ea383f3e139cf9458d80f563307a5039"
+      "digest": "946d66eeabbe0b10d0a830b39ade4ca5"
     },
     "ComparisonPayloadSeedTypes": {
       "direct": false,
@@ -241,7 +241,7 @@
     "GameAdvantage": {
       "direct": true,
       "kind": "ec",
-      "digest": "59c7ba95d701d1225c92ae16c61df6e3"
+      "digest": "615bd76093fe4c95d9299ec86cae182f"
     },
     "GameLEBridge": {
       "direct": true,
@@ -261,7 +261,7 @@
     "GameMSHopTypes": {
       "direct": false,
       "kind": "ec",
-      "digest": "78946964ccef084934e340c05f366bb1"
+      "digest": "1b65aa59f18ef8f7fc2fcd83e348b60d"
     },
     "GameMSHops": {
       "direct": true,
@@ -356,7 +356,7 @@
     "MS": {
       "direct": false,
       "kind": "ec",
-      "digest": "c0e9f9cd80734df817350c9d76b70b8c"
+      "digest": "7fbec753ea5aa1b1f04254c9035fd392"
     },
     "Means": {
       "direct": false,
@@ -601,12 +601,12 @@
     "TrueClauseTheorem": {
       "direct": false,
       "kind": "ec",
-      "digest": "b281551e3774d64d7ba029a4d8b9d658"
+      "digest": "a3a654153c25bd4e34f2096e1bc567f1"
     },
     "TrueClauseTypes": {
       "direct": false,
       "kind": "ec",
-      "digest": "f936af6024e0d67ca7cb8eff269ef398"
+      "digest": "ddac412094b05a22e8e7c8f59860799b"
     },
     "Xint": {
       "direct": false,

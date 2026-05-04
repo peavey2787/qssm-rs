@@ -106,9 +106,10 @@ pred ms3b_true_clause_exact_step (src dst : game_view) (xms : ms_public_input) =
     r2.`msgv_stage = MSGameStageAfterComparison.
 
 (* MS3c comparison hop: AfterComparison -> Sim; first conjunct is the existing MS-3c
-   implication bundle ending in `ms_comparison_exact_simulation_equiv`.
-   Game-layer: `A_MS3c_comparison_bundle_implies_game_pr_equality` in
-   `games/GameMSHopTypes.ec`; `A_MS3c_canonical_comparison_exact_bound` is a lemma there. *)
+  implication bundle ending in `ms_comparison_exact_simulation_equiv`.
+  Game-layer: `A_MS3c_comparison_bundle_implies_game_pr_equality` and
+  `A_MS3c_canonical_comparison_exact_bound` are both proved lemmas in
+  `games/GameMSHopTypes.ec`. *)
 pred ms3c_comparison_exact_step (src dst : game_view) (xms : ms_public_input) (s : seed) =
   (ms3c_comparison_query_digest_ann_only xms s =>
     ms3c_comparison_global_programmable_under_A2 xms s =>

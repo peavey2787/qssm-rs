@@ -1,9 +1,13 @@
 require import AllCore Int List Distr.
-require import Algebra QssmTypes FS SchnorrBranch TrueClause BitnessOne.
+require import Algebra QssmTypes FS SchnorrBranch TrueClauseTypes BitnessOne.
 require import ComparisonTypes ComparisonPayloadTypes ComparisonPayloadSeedTypes.
 
 (* Phase-1 structural payload and dmap pushforwards; cross-marginal payload
    equality on support; schedule/surface packaging. *)
+
+op ms3c_phase1_comparison_carrier_from_public_input (x : ms_public_input) :
+  ms3b_concrete_comparison_carrier =
+  ms3b_phase1_comparison_carrier x.
 
 (* Phase-1 structural payload: public indices, false-branch arity from
    `size (ms3c_public_false_clause_indices x)` (equals `ms3c_public_false_branch_count x`
@@ -11,32 +15,43 @@ require import ComparisonTypes ComparisonPayloadTypes ComparisonPayloadSeedTypes
    are `sch_pubkey` of the parallel placeholder scalar shares so
    `ms_false_clause_simulated` holds definitionally on support. *)
 op ms3c_phase1_payload_from_public_input (x : ms_public_input) : ms3c_comparison_clause_payload =
-  {| mscp_true_clause_ix = ms3c_public_true_clause_index x;
+  {| mscp_true_clause_ix = (ms3c_phase1_comparison_carrier_from_public_input x).`ms3bc_true_clause_ix;
      mscp_false_clause_ixs = ms3c_public_false_clause_indices x;
-     mscp_ann_true = witness;
+     mscp_ann_true = (ms3c_phase1_comparison_carrier_from_public_input x).`ms3bc_true_clause_pub;
      mscp_ann_false =
        map sch_pubkey (map (fun (_i : int) => witness) (ms3c_public_false_clause_indices x));
-     mscp_share_true = witness;
+     mscp_share_true = (ms3c_phase1_comparison_carrier_from_public_input x).`ms3bc_true_clause_blinder;
      mscp_share_false =
        map (fun (_i : int) => witness) (ms3c_public_false_clause_indices x);
-     mscp_global_challenge = witness;
+     mscp_global_challenge = x.`mspi_comparison_global;
      mscp_query_digest =
        ms_comparison_query_digest (ms3c_public_stmt_digest x)
          (ms3c_clause_ann_digests_from_surface
            (ms3c_make_clause_surface
-             {| mscp_true_clause_ix = ms3c_public_true_clause_index x;
+             {| mscp_true_clause_ix = (ms3c_phase1_comparison_carrier_from_public_input x).`ms3bc_true_clause_ix;
                 mscp_false_clause_ixs = ms3c_public_false_clause_indices x;
-                mscp_ann_true = witness;
+                mscp_ann_true = (ms3c_phase1_comparison_carrier_from_public_input x).`ms3bc_true_clause_pub;
                 mscp_ann_false =
                   map sch_pubkey (map (fun (_i : int) => witness)
                     (ms3c_public_false_clause_indices x));
-                mscp_share_true = witness;
+                mscp_share_true = (ms3c_phase1_comparison_carrier_from_public_input x).`ms3bc_true_clause_blinder;
                 mscp_share_false =
                   map (fun (_i : int) => witness) (ms3c_public_false_clause_indices x);
-                mscp_global_challenge = witness;
+                mscp_global_challenge = x.`mspi_comparison_global;
                 mscp_query_digest = witness;
-                mscp_programmed_challenge = witness |}));
-     mscp_programmed_challenge = witness |}.
+                mscp_programmed_challenge = x.`mspi_comparison_global |}));
+     mscp_programmed_challenge = x.`mspi_comparison_global |}.
+
+lemma L_ms3c_phase1_payload_uses_ms3b_carrier (x : ms_public_input) :
+  (ms3c_phase1_payload_from_public_input x).`mscp_true_clause_ix =
+    (ms3c_phase1_comparison_carrier_from_public_input x).`ms3bc_true_clause_ix /\
+  (ms3c_phase1_payload_from_public_input x).`mscp_ann_true =
+    (ms3c_phase1_comparison_carrier_from_public_input x).`ms3bc_true_clause_pub /\
+  (ms3c_phase1_payload_from_public_input x).`mscp_share_true =
+    (ms3c_phase1_comparison_carrier_from_public_input x).`ms3bc_true_clause_blinder.
+proof.
+by rewrite /ms3c_phase1_payload_from_public_input /ms3c_phase1_comparison_carrier_from_public_input.
+qed.
 
 lemma L_ms3c_int_lt1_eq0 (i : int) : 0 <= i => i < 1 => i = 0.
 proof.

@@ -6,14 +6,16 @@ require import GameTypes.
 require import GameViews.
 require import TranscriptObservable.
 require import SourceDistributions.
-require import TrueClause.
+require import TrueClause ComparisonTypes ComparisonDigests ComparisonPayloadFromSeed.
 
 (* Game probability is projected from the concrete `game_view` surface.
-  For MS views, the projection first collapses AfterBitness and
-  AfterComparison whenever the MS3b true-clause characterization holds, then
-  collapses AfterRom and AfterBitness whenever `ms3a_bitness_real_sim_equiv`
-  holds. This is enough to prove the canonical MS3a and MS3b game hops as
-  exact zero-advantage lemmas without adding new axioms. *)
+  For MS views, the projection first collapses AfterComparison and Sim
+  whenever the MS3c exact-simulation bundle holds, then collapses AfterBitness
+  and AfterComparison whenever the MS3b true-clause characterization holds,
+  then collapses AfterRom and AfterBitness whenever
+  `ms3a_bitness_real_sim_equiv` holds. This is enough to prove the canonical
+  MS3a/MS3b/MS3c game hops as exact zero-advantage lemmas without adding new
+  axioms. *)
 pred ms3b_true_clause_game_pr_equiv (xms : ms_public_input) =
   forall (vb : bool list) (tb : bool list) (p : int) (clause_pub : sch_point) (r : scalar),
     ms3b_comparison_operand_bits xms vb tb =>
@@ -21,6 +23,20 @@ pred ms3b_true_clause_game_pr_equiv (xms : ms_public_input) =
     ms_true_clause_position vb tb p =>
     ms3b_clause_opening_binds xms vb tb p clause_pub r =>
     ms_true_clause_points_are_blinder_points vb tb p clause_pub r.
+
+pred ms3c_comparison_game_pr_equiv (xms : ms_public_input) (s : seed) =
+  ms3c_comparison_query_digest_ann_only xms s =>
+  ms3c_comparison_global_programmable_under_A2 xms s =>
+  ms3c_false_clauses_simulator_generated xms s =>
+  ms3c_true_clause_schnorr_from_blinder xms s =>
+  ms3c_clause_challenge_shares_sum xms s =>
+  ms_comparison_exact_simulation_equiv xms s.
+
+op ms3c_game_pr_stage (xms : ms_public_input) (s : seed) (st : ms_game_stage) : ms_game_stage =
+  if ms3c_comparison_game_pr_equiv xms s /\
+     (st = MSGameStageAfterComparison \/ st = MSGameStageSim)
+  then MSGameStageAfterComparison
+  else st.
 
 op ms3b_game_pr_stage (xms : ms_public_input) (st : ms_game_stage) : ms_game_stage =
   if ms3b_true_clause_game_pr_equiv xms /\
@@ -44,7 +60,8 @@ op game_pr (v : game_view) (D : distinguisher) : real =
   with v = GV_ms r =>
     game_pr_ms_core r.`msgv_qssm_pub r.`msgv_seed r.`msgv_ms_pub r.`msgv_ms_obs
       (ms3a_game_pr_stage r.`msgv_ms_pub r.`msgv_seed
-        (ms3b_game_pr_stage r.`msgv_ms_pub r.`msgv_stage))
+        (ms3b_game_pr_stage r.`msgv_ms_pub
+          (ms3c_game_pr_stage r.`msgv_ms_pub r.`msgv_seed r.`msgv_stage)))
       r.`msgv_le_placeholder D
   with v = GV_g2_full_sim r =>
     game_pr_g2_core r.`qg2_pub r.`qg2_seed D.

@@ -49,8 +49,14 @@ lemma A_ms3c_real_from_seed_uses_public_indices :
 proof.
 move=> x sr.
 rewrite /ms3c_real_from_seed_public_index_anchor /ms3c_real_payload_from_seed
-  /ms3c_phase1_payload_from_public_input /=.
-by split=> //; rewrite size_map.
+  /ms3c_phase1_payload_from_public_input.
+split.
+- by [].
+split.
+- rewrite /ms3c_phase1_comparison_carrier_from_public_input.
+  rewrite /ms3b_phase1_comparison_carrier /ms3c_public_true_clause_index /=.
+  by [].
+by [].
 qed.
 
 lemma L_ms3c_real_seed_index_shape_valid (x : ms_public_input) (sr : ms3c_real_payload_seed) :
@@ -60,12 +66,10 @@ lemma L_ms3c_real_seed_index_shape_valid (x : ms_public_input) (sr : ms3c_real_p
   size (ms3c_real_payload_from_seed x sr).`mscp_false_clause_ixs.
 proof.
 move=> [Hfalse_ixs [Htrue_ix Hsz_ann_false]].
-(* `ms3c_public_shape_ok x` holds for placeholder public ops; first conjunct supplies `0 <=` public true index. *)
-have Hpub : ms3c_public_shape_ok x.
-  rewrite /ms3c_public_shape_ok /=.
-  by split=> //; split=> //.
 split.
-- by rewrite Htrue_ix; case: Hpub.
+- rewrite /ms3c_real_payload_from_seed /ms3c_phase1_payload_from_public_input.
+  rewrite /ms3c_phase1_comparison_carrier_from_public_input /ms3b_phase1_comparison_carrier /=.
+  by [].
 by exact Hsz_ann_false.
 qed.
 
@@ -111,8 +115,14 @@ lemma A_ms3c_sim_from_seed_uses_public_indices :
 proof.
 move=> x s ss.
 rewrite /ms3c_sim_from_seed_public_index_anchor /ms3c_sim_payload_from_seed
-  /ms3c_phase1_payload_from_public_input /=.
-by split=> //; rewrite size_map.
+  /ms3c_phase1_payload_from_public_input.
+split.
+- by [].
+split.
+- rewrite /ms3c_phase1_comparison_carrier_from_public_input.
+  rewrite /ms3b_phase1_comparison_carrier /ms3c_public_true_clause_index /=.
+  by [].
+by [].
 qed.
 
 lemma L_ms3c_sim_seed_index_shape_valid
@@ -123,10 +133,9 @@ lemma L_ms3c_sim_seed_index_shape_valid
   size (ms3c_sim_payload_from_seed x s ss).`mscp_false_clause_ixs.
 proof.
 move=> [Hfalse_ixs [Htrue_ix Hsz_ann_false]].
-have Hpub : ms3c_public_shape_ok x.
-  rewrite /ms3c_public_shape_ok /=.
-  by split=> //; split=> //.
 split.
-- by rewrite Htrue_ix; case: Hpub.
+- rewrite /ms3c_sim_payload_from_seed /ms3c_phase1_payload_from_public_input.
+  rewrite /ms3c_phase1_comparison_carrier_from_public_input /ms3b_phase1_comparison_carrier /=.
+  by [].
 by exact Hsz_ann_false.
 qed.
