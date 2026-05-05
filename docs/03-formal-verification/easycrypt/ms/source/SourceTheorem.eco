@@ -36,7 +36,7 @@
     "BitnessOne": {
       "direct": true,
       "kind": "ec",
-      "digest": "4f169808b32bf66afa4c45a2da8e454b"
+      "digest": "0eeb063612460d0c16e5368eecce458e"
     },
     "BitnessVector": {
       "direct": true,
@@ -191,7 +191,7 @@
     "FS": {
       "direct": true,
       "kind": "ec",
-      "digest": "2dd6f7a9dfa45980d2f36ff305e6cba9"
+      "digest": "a80e3e0abd26ead6b7ee6e9684d2b425"
     },
     "FinType": {
       "direct": false,

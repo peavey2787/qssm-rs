@@ -41,14 +41,12 @@ op epsilon_ms_rom_programmability : real.
 axiom A2_ms_rom_programmability_nonneg :
   0%r <= epsilon_ms_rom_programmability.
 
-axiom A2_programmable_oracle_exists :
-  forall (q : digest), exists (s : scalar), ms_query_to_scalar q = s.
-
-(* Bitness query digest is a valid ROM query point: some scalar response exists.
-   Corollary of A2_programmable_oracle_exists (not a new cryptographic axiom). *)
+(* Bitness query digest is a valid ROM query point: `ms_query_to_scalar` is already
+   total, so existence follows by choosing its value directly. *)
 lemma A2_bitness_programmed_challenge (stmt : digest) (i : int) (d0 d1 : digest) :
   exists (s : scalar),
     ms_query_to_scalar (ms_bitness_query_digest stmt i d0 d1) = s.
 proof.
-exact (A2_programmable_oracle_exists (ms_bitness_query_digest stmt i d0 d1)).
+exists (ms_query_to_scalar (ms_bitness_query_digest stmt i d0 d1)).
+by [].
 qed.

@@ -127,6 +127,5 @@ lemma MS_3a_single_bit_programmed_or_split_exact_simulation (w0 w1 c0 c1 cglob :
   d_ms_bit_or_real_bittrue w0 w1 c0 c1 = d_ms_bit_or_sim_both w0 w1 c0 c1.
 proof.
 move=> _Hfs Hsplit.
-have _ := A2_bitness_programmed_challenge stmt i d0 d1.
 exact (MS_3a_single_bit_or_split_exact_simulation w0 w1 c0 c1 cglob Hsplit).
 qed.
