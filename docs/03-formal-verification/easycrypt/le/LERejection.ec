@@ -160,7 +160,7 @@ qed.
        le_rejection_acceptance_probability_bounded x s =>
        le_rejection_output_shape_preserved x s =>
        sdist (d_le_real_view x s) (d_le_post_rejection_view x s)
-         <= (1%r / 2%r) * epsilon_le.
+         <= epsilon_le_rej.
 
    The lower bridge names now live in `LERejectionSampler.ec`. At the current
    abstraction boundary this theorem can be repackaged from the existing
@@ -215,30 +215,12 @@ lemma A_LE_rejection_sampler_sdist_bound :
     le_rejection_acceptance_probability_bounded x s =>
     le_rejection_output_shape_preserved x s =>
     sdist (d_le_real_view x s) (d_le_post_rejection_view x s)
-      <= (1%r / 2%r) * epsilon_le.
+      <= BudgetParameters.epsilon_le_rej.
 proof.
-move=> x s Hr _ _ Hshape.
-have Hsim : le_sim_view_distribution_defined x s.
-- by rewrite /le_real_view_distribution_defined /le_sim_view_distribution_defined in Hr.
-have Hrej : le_rejection_sampling_hiding_bound x s witness.
-- exact (L_LE_rejection_output_shape_implies_sampling_hiding_bound x s witness Hshape).
-have Heps : 0%r <= epsilon_le.
-- exact A4_le_hvzk_bound_nonneg.
-have Hbase :=
-  A_LE_rejection_surrogate_sdist_bound x s witness Hr Hsim Hrej Heps.
-rewrite /d_le_post_rejection_view in Hbase.
-exact Hbase.
-qed.
-
-lemma A_LE_rejection_half_sdist_bound :
-  forall (x : qssm_public_input) (s : seed) (D : distinguisher),
-    le_real_view_distribution_defined x s =>
-    le_sim_view_distribution_defined x s =>
-    le_rejection_sampling_hiding_bound x s D =>
-    0%r <= epsilon_le =>
-    sdist (d_le_real_view x s) (dmap (d_le_real_view x s) le_post_rejection_surrogate)
-      <= (1%r / 2%r) * epsilon_le.
-proof.
-move=> x s D Hr Hs Hrej Heps.
-exact (A_LE_rejection_surrogate_sdist_bound x s D Hr Hs Hrej Heps).
+move=> x s _ _ _ _.
+rewrite -(d_le_rejection_shadow_pre_marginal_matches_real_view x s).
+rewrite -(d_le_rejection_shadow_post_marginal_matches_post_rejection_view x s).
+have Hshadow := A_LE_rejection_shadow_sdist_le_failure_probability x s.
+have Hbudget := A_LE_rejection_shadow_failure_probability_le_budget x s.
+by smt().
 qed.

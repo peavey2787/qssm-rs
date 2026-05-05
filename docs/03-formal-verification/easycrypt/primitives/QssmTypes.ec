@@ -35,7 +35,13 @@ type qssm_public_input.
 (* Query material *)
 type ms_bitness_query.
 type ms_comparison_query.
-type le_query_material = unit.
+type le_query_material = {
+	leqm_row_challenge_seed : digest;
+	leqm_row_programmed_query_digest : digest;
+	leqm_programmed_response_digest : digest;
+	leqm_programming_log : digest list;
+	leqm_bad_flag : bool;
+}.
 
 (* Transcript observables *)
 type qssm_event_payload = {

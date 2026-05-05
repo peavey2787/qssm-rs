@@ -12,9 +12,14 @@ require import AllCore.
    - Shadow LE rejection component: `epsilon_le_rej` is installed as the
      future lower rejection budget, but it is intentionally kept at `0%r`
      until the shadow rejection lane is wired into the active LE theorem path.
-   - LE HVZK: `le_post_rejection_surrogate` and `le_fs_view_surrogate` are the
-     identity on the modeled observable, so the LE real and sim view
-     distributions coincide and the underlying sdist is identically 0.
+   - Shadow LE FS component: `epsilon_le_fs` is installed as the future lower
+     FS-programming budget, but it is intentionally kept at `0%r` until the
+     FS component lane replaces the current compatibility half-budget path in
+     the global LE arithmetic.
+   - LE HVZK umbrella budget: `epsilon_le` is now defined as the sum of the
+     lower component budgets `epsilon_le_rej + epsilon_le_fs`. In the current
+     model both component lanes are still exact-zero, so the LE real and sim
+     view distributions coincide and the umbrella bound is also identically 0.
 
    Therefore each budget is defined as `0%r`. This is NOT a nonzero
    cryptographic security bound; it records the exact-zero gap of the current
@@ -40,8 +45,22 @@ lemma A4_le_rejection_nonneg :
   0%r <= epsilon_le_rej.
 proof. by rewrite /epsilon_le_rej. qed.
 
-op epsilon_le : real = 0%r.
+op epsilon_le_fs : real = 0%r.
+
+lemma A4_le_fs_nonneg :
+  0%r <= epsilon_le_fs.
+proof. by rewrite /epsilon_le_fs. qed.
+
+op epsilon_le : real = epsilon_le_rej + epsilon_le_fs.
+
+lemma epsilon_le_component_sum :
+  epsilon_le = epsilon_le_rej + epsilon_le_fs.
+proof. by rewrite /epsilon_le. qed.
 
 lemma A4_le_hvzk_bound_nonneg :
   0%r <= epsilon_le.
-proof. by rewrite /epsilon_le. qed.
+proof.
+rewrite /epsilon_le /epsilon_le_rej /epsilon_le_fs.
+have -> : 0%r + 0%r = 0%r by ring.
+by [].
+qed.

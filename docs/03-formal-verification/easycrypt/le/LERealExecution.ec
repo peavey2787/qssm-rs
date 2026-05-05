@@ -58,8 +58,37 @@ type le_real_execution_record = {
   lerec_query_material : le_query_material;
 }.
 
+op le_real_execution_hidden_query_row_challenge_seed
+  (s : seed) : digest =
+  le_challenge_seed
+    DOMAIN_LE_FS
+    DOMAIN_LE_CHALLENGE_POLY
+    false
+    s
+    (hash_domain DOMAIN_LE_FS [])
+    (hash_domain DOMAIN_LE_CHALLENGE_POLY [])
+    (hash_domain LABEL_LE_GLOBAL_SIM_CHALLENGE_SEED [])
+    (hash_domain LABEL_CROSS_PROTOCOL_DIGEST_V1 []).
+
+op le_real_execution_hidden_query_row_programmed_query_digest
+  (s : seed) : digest =
+  le_programmed_query_digest
+    LABEL_LE_PROGRAMMED_QUERY_DIGEST
+    (le_real_execution_hidden_query_row_challenge_seed s)
+    (hash_domain LABEL_LE_PROGRAMMED_QUERY_DIGEST [])
+    (hash_domain LABEL_FS_V2 [])
+    (hash_domain LABEL_DST_LE_COMMIT [])
+    (hash_domain DOMAIN_ZK_SIM []).
+
 op le_real_execution_hidden_query_material_of
-  (x : qssm_public_input) (s : seed) : le_query_material = tt.
+  (x : qssm_public_input) (s : seed) : le_query_material =
+  {| leqm_row_challenge_seed =
+       le_real_execution_hidden_query_row_challenge_seed s;
+     leqm_row_programmed_query_digest =
+       le_real_execution_hidden_query_row_programmed_query_digest s;
+     leqm_programmed_response_digest = hash_domain LABEL_FS_V2 [];
+     leqm_programming_log = [];
+     leqm_bad_flag = false |}.
 
 op le_real_execution_constant_coeff_vector (tag : int) : coeff_vector = [tag].
 

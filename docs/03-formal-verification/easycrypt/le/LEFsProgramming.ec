@@ -2,8 +2,12 @@ require import QssmTypes.
 require import AllCore Distr.
 require import Real.
 require import SDist.
+require import StdOrder.
 require import LESurface.
 require import LEFsProgrammingSurface.
+require BudgetParameters.
+
+(*---*) import RealOrder.
 
 pred le_fs_query_surface_defined (x : qssm_public_input) (s : seed) =
   le_real_sim_transcript_equiv x s.
@@ -91,32 +95,38 @@ proof.
 exact le_fs_programming_preserves_shape_lower.
 qed.
 
+lemma A_LE_fs_programming_sampler_sdist_le_budget :
+  forall (x : qssm_public_input) (s : seed) (D : distinguisher),
+    le_real_view_distribution_defined x s =>
+    le_sim_view_distribution_defined x s =>
+    le_fs_programming_hiding_bound x s D =>
+    sdist (d_le_post_rejection_view x s)
+      (dmap (d_le_post_rejection_view x s) le_fs_view_surrogate)
+      <= BudgetParameters.epsilon_le_fs.
+proof.
+move=> x s D _ _ _.
+have Hshadow := LEFsProgrammingSurface.A_LE_fs_shadow_sdist_le_failure_probability x s.
+have Hbudget := LEFsProgrammingSurface.A_LE_fs_shadow_failure_probability_le_budget x s.
+have Hshadow_budget :
+    sdist (LEFsProgrammingSurface.d_le_fs_shadow_pre_marginal x s)
+      (LEFsProgrammingSurface.d_le_fs_shadow_post_marginal x s)
+      <= BudgetParameters.epsilon_le_fs.
+  exact (ler_trans _ _ _ Hshadow Hbudget).
+move: Hshadow_budget.
+rewrite LEFsProgrammingSurface.d_le_fs_shadow_pre_marginal_matches_post_rejection_view.
+rewrite LEFsProgrammingSurface.d_le_fs_shadow_post_marginal_matches_programmed_view.
+by [].
+qed.
+
 lemma A_LE_fs_surrogate_sdist_bound :
   forall (x : qssm_public_input) (s : seed) (D : distinguisher),
     le_real_view_distribution_defined x s =>
     le_sim_view_distribution_defined x s =>
     le_fs_programming_hiding_bound x s D =>
-    0%r <= epsilon_le =>
     sdist (d_le_post_rejection_view x s)
         (dmap (d_le_post_rejection_view x s) le_fs_view_surrogate)
-      <= (1%r / 2%r) * epsilon_le.
+      <= BudgetParameters.epsilon_le_fs.
 proof.
-move=> x s D Hr Hs Hfs Heps.
-have Hlower := A_LE_fs_programming_sampler_sdist_bound x s D Hr Hs Hfs Heps.
-rewrite /d_le_pre_fs_programming_view /d_le_post_fs_programmed_view in Hlower.
-exact Hlower.
-qed.
-
-lemma A_LE_fs_half_sdist_bound :
-  forall (x : qssm_public_input) (s : seed) (D : distinguisher),
-    le_real_view_distribution_defined x s =>
-    le_sim_view_distribution_defined x s =>
-    le_fs_programming_hiding_bound x s D =>
-    0%r <= epsilon_le =>
-    sdist (d_le_post_rejection_view x s)
-        (dmap (d_le_post_rejection_view x s) le_fs_view_surrogate)
-      <= (1%r / 2%r) * epsilon_le.
-proof.
-move=> x s D Hr Hs Hfs Heps.
-exact (A_LE_fs_surrogate_sdist_bound x s D Hr Hs Hfs Heps).
+move=> x s D Hr Hs Hfs.
+exact (A_LE_fs_programming_sampler_sdist_le_budget x s D Hr Hs Hfs).
 qed.

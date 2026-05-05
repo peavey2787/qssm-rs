@@ -4,6 +4,7 @@ require import QssmTypes FS.
 
 (*---*) import RealOrder.
 
+require BudgetParameters.
 require import LESurface.
 require import LERejection.
 require import LEFsProgramming.
@@ -19,11 +20,17 @@ lemma A_LE_rejection_contributes_to_sdist :
     le_sim_view_distribution_defined x s =>
     le_rejection_sampling_hiding_bound x s D =>
     0%r <= epsilon_le =>
-    sdist (d_le_real_view x s) (d_le_post_rejection_view x s) <= (1%r / 2%r) * epsilon_le.
+    sdist (d_le_real_view x s) (d_le_post_rejection_view x s)
+      <= BudgetParameters.epsilon_le_rej.
 proof.
-move=> x s D Hr Hs Hrej Heps.
-rewrite (A_LE_real_to_post_rejection_distribution_link x s Hr).
-exact (A_LE_rejection_half_sdist_bound x s D Hr Hs Hrej Heps).
+move=> x s D Hr _ Hrej _.
+have Hdef : le_rejection_distribution_defined x s.
+  exact (A_LE_rejection_distribution_defined x s Hrej).
+have Hacc : le_rejection_acceptance_probability_bounded x s.
+  exact (A_LE_rejection_acceptance_probability_bounded x s Hdef).
+have Hshape : le_rejection_output_shape_preserved x s.
+  exact (A_LE_rejection_output_shape_preserved x s Hacc).
+exact (A_LE_rejection_sampler_sdist_bound x s Hr Hdef Hacc Hshape).
 qed.
 
 lemma A_LE_fs_contributes_to_sdist :
@@ -32,11 +39,12 @@ lemma A_LE_fs_contributes_to_sdist :
     le_sim_view_distribution_defined x s =>
     le_fs_programming_hiding_bound x s D =>
     0%r <= epsilon_le =>
-    sdist (d_le_post_rejection_view x s) (d_le_sim_view x s) <= (1%r / 2%r) * epsilon_le.
+    sdist (d_le_post_rejection_view x s) (d_le_sim_view x s)
+      <= BudgetParameters.epsilon_le_fs.
 proof.
-move=> x s D Hr Hs Hfs Heps.
+move=> x s D Hr Hs Hfs _.
 rewrite /d_le_sim_view.
-exact (A_LE_fs_half_sdist_bound x s D Hr Hs Hfs Heps).
+exact (A_LE_fs_surrogate_sdist_bound x s D Hr Hs Hfs).
 qed.
 
 lemma A_LE_combined_hiding_bounds_sdist :
@@ -53,22 +61,17 @@ rewrite /le_view_statistical_distance_bound /le_view_statistical_distance.
 pose dr := d_le_real_view x s.
 pose dmid := d_le_post_rejection_view x s.
 pose ds := d_le_sim_view x s.
-have Hrej' : sdist dr dmid <= (1%r / 2%r) * epsilon_le.
+have Hrej' : sdist dr dmid <= BudgetParameters.epsilon_le_rej.
   exact (A_LE_rejection_contributes_to_sdist x s D Hr Hs Hrej Heps).
-have Hfs' : sdist dmid ds <= (1%r / 2%r) * epsilon_le.
+have Hfs' : sdist dmid ds <= BudgetParameters.epsilon_le_fs.
   exact (A_LE_fs_contributes_to_sdist x s D Hr Hs Hfs Heps).
 have Htri : sdist dr ds <= sdist dr dmid + sdist dmid ds.
   exact (sdist_triangle dmid dr ds).
 apply (ler_trans (sdist dr dmid + sdist dmid ds)).
   exact Htri.
-apply (ler_trans (((1%r / 2%r) * epsilon_le) + ((1%r / 2%r) * epsilon_le))).
+apply (ler_trans (BudgetParameters.epsilon_le_rej + BudgetParameters.epsilon_le_fs)).
   by apply ler_add.
-have Heq :
-  ((1%r / 2%r) * epsilon_le) + ((1%r / 2%r) * epsilon_le) = epsilon_le.
-  rewrite -(RField.mulrDl (1%r / 2%r) (1%r / 2%r) epsilon_le).
-  have ->: (1%r / 2%r) + (1%r / 2%r) = 1%r by exact (RField.double_half 1%r).
-  by rewrite RField.mul1r.
-rewrite Heq.
+rewrite /epsilon_le.
 by apply lerr.
 qed.
 
