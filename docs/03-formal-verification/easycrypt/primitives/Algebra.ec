@@ -14,26 +14,36 @@ op sch_sub_pt (x y : sch_point) : sch_point =
 
 op sch_smul : scalar -> sch_point -> sch_point.
 
-op sch_s_add : scalar -> scalar -> scalar.
-op sch_s_sub : scalar -> scalar -> scalar.
-op sch_s_mul : scalar -> scalar -> scalar.
+op sch_s_add : scalar -> scalar -> scalar = SchScalarRing.( + ).
+
+op sch_s_sub (x y : scalar) : scalar =
+  sch_s_add x (SchScalarRing.([-]) y).
+
+op sch_s_mul : scalar -> scalar -> scalar = SchScalarRing.( * ).
 
 (* P = w * H *)
 op sch_pubkey (w : scalar) : sch_point = sch_smul w sch_generator.
 
 (* Scalar group fragment (needed for Schnorr algebra on exponents) *)
 
-axiom sch_s_addA (x y z : scalar) :
+lemma sch_s_addA (x y z : scalar) :
   sch_s_add x (sch_s_add y z) = sch_s_add (sch_s_add x y) z.
+proof. exact (SchScalarRing.addrA x y z). qed.
 
-axiom sch_s_addC (x y : scalar) :
+lemma sch_s_addC (x y : scalar) :
   sch_s_add x y = sch_s_add y x.
+proof. exact (SchScalarRing.addrC x y). qed.
 
-axiom sch_s_sub_def (x y : scalar) :
+lemma sch_s_sub_def (x y : scalar) :
   sch_s_add (sch_s_sub x y) y = x.
+proof.
+rewrite /sch_s_sub /sch_s_add.
+exact (SchScalarRing.subrK x y).
+qed.
 
-axiom sch_s_mul_add_distr (c w1 w2 : scalar) :
+lemma sch_s_mul_add_distr (c w1 w2 : scalar) :
   sch_s_mul c (sch_s_add w1 w2) = sch_s_add (sch_s_mul c w1) (sch_s_mul c w2).
+proof. exact (SchScalarRing.mulrDr c w1 w2). qed.
 
 (* Point group fragment + homomorphism at H *)
 

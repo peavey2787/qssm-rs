@@ -1,11 +1,13 @@
 require import AllCore List.
 require Group.
+require Ring.
 
 clone Group.ComGroup as SchPointGroup.
+clone Ring.ComRing as SchScalarRing.
 
 (* Core abstract data *)
 type digest.
-type scalar.
+type scalar = SchScalarRing.t.
 type sch_point = SchPointGroup.group.
 type seed.
 type coeff_vector = int list.
