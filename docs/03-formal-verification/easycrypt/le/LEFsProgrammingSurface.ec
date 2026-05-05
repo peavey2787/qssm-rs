@@ -415,10 +415,57 @@ type le_fs_shadow_state = {
   lefss_hidden_material : le_fs_shadow_hidden_material;
 }.
 
-op le_fs_shadow_local_bad_branch_mass : real = 1%r.
+op le_fs_shadow_branch_support : bool list = [false; true].
 
 op d_le_fs_shadow_branch_choice : bool distr =
-  dunit true.
+  duniform le_fs_shadow_branch_support.
+
+op le_fs_shadow_local_bad_branch_mass : real =
+  mu d_le_fs_shadow_branch_choice (fun (bad : bool) => bad).
+
+lemma le_fs_shadow_branch_support_uniq :
+  uniq le_fs_shadow_branch_support.
+proof. by rewrite /le_fs_shadow_branch_support. qed.
+
+lemma le_fs_shadow_branch_choice_lossless :
+  is_lossless d_le_fs_shadow_branch_choice.
+proof.
+rewrite /d_le_fs_shadow_branch_choice /le_fs_shadow_branch_support.
+by apply duniform_ll.
+qed.
+
+lemma le_fs_shadow_good_branch_has_support :
+  false \in d_le_fs_shadow_branch_choice.
+proof.
+rewrite /d_le_fs_shadow_branch_choice /le_fs_shadow_branch_support.
+by rewrite supp_duniform.
+qed.
+
+lemma le_fs_shadow_bad_branch_has_support :
+  true \in d_le_fs_shadow_branch_choice.
+proof.
+rewrite /d_le_fs_shadow_branch_choice /le_fs_shadow_branch_support.
+by rewrite supp_duniform.
+qed.
+
+lemma le_fs_shadow_local_bad_branch_mass_nonneg :
+  0%r <= le_fs_shadow_local_bad_branch_mass.
+proof.
+rewrite /le_fs_shadow_local_bad_branch_mass.
+have Hsub :
+  mu d_le_fs_shadow_branch_choice (fun (bad : bool) => ! bad) <=
+  mu d_le_fs_shadow_branch_choice predT.
+  apply mu_sub => bad /=.
+  by case: bad.
+have Hnot :
+  mu d_le_fs_shadow_branch_choice (fun (bad : bool) => ! bad) =
+  mu d_le_fs_shadow_branch_choice predT -
+  mu d_le_fs_shadow_branch_choice (fun (bad : bool) => bad).
+  by rewrite mu_not /weight.
+move: Hsub.
+rewrite Hnot.
+by smt().
+qed.
 
 op le_fs_shadow_programming_log_of_observable
   (obs : le_transcript_observable) : digest list =
@@ -534,10 +581,9 @@ pred le_fs_shadow_good_event
 
 op d_le_fs_shadow_coupled_state
   (x : qssm_public_input) (s : seed) : le_fs_shadow_state distr =
-  dlet (d_le_pre_fs_programming_view x s)
-    (fun (obs : le_transcript_observable) =>
-      dmap d_le_fs_shadow_branch_choice
-        (fun (bad : bool) => le_fs_shadow_state_of_branch_observable obs bad)).
+  dmap ((d_le_pre_fs_programming_view x s) `*` d_le_fs_shadow_branch_choice)
+    (fun (p : le_transcript_observable * bool) =>
+      le_fs_shadow_state_of_branch_observable (fst p) (snd p)).
 
 op d_le_fs_shadow_pre_marginal
   (x : qssm_public_input) (s : seed) : le_transcript_observable distr =
@@ -556,13 +602,13 @@ op d_le_fs_shadow_semantic_post_marginal
 
 op le_fs_shadow_failure_probability
   (x : qssm_public_input) (s : seed) =
-  mu (d_le_fs_shadow_coupled_state x s)
-    le_fs_shadow_bad_event.
+  mu (dmap (d_le_fs_shadow_coupled_state x s) le_fs_shadow_bad_event)
+    (fun (bad : bool) => bad).
 
 op le_fs_shadow_semantic_failure_probability
   (x : qssm_public_input) (s : seed) =
-  mu (d_le_fs_shadow_coupled_state x s)
-    le_fs_shadow_semantic_bad_event.
+  mu (dmap (d_le_fs_shadow_coupled_state x s) le_fs_shadow_semantic_bad_event)
+    (fun (bad : bool) => bad).
 
 lemma le_fs_shadow_hidden_bad_flag_matches_pre_query_material
   (obs : le_transcript_observable) :
@@ -704,32 +750,57 @@ rewrite /le_fs_shadow_hidden_material_of_observable_branch /le_fs_programmed_res
 by [].
 qed.
 
-lemma d_le_fs_shadow_coupled_state_bad_branchE :
+lemma le_fs_shadow_dmap_dprod_fst_lossless ['a 'b] (da : 'a distr) (db : 'b distr) :
+  is_lossless db =>
+  dmap (da `*` db) fst = da.
+proof.
+move=> Hll.
+rewrite (dprod_marginalL da db (fun (a : 'a) => a)).
+rewrite dmap_id.
+have Hw : weight db = 1%r by apply (is_losslessP _ Hll).
+rewrite Hw dscalar1.
+by [].
+qed.
+
+lemma le_fs_shadow_dmap_dprod_snd_lossless ['a 'b] (da : 'a distr) (db : 'b distr) :
+  is_lossless da =>
+  dmap (da `*` db) snd = db.
+proof.
+move=> Hll.
+rewrite (dprod_marginalR da db (fun (b : 'b) => b)).
+rewrite dmap_id.
+have Hw : weight da = 1%r by apply (is_losslessP _ Hll).
+rewrite Hw dscalar1.
+by [].
+qed.
+
+lemma d_le_pre_fs_programming_view_dunit
+  (x : qssm_public_input) (s : seed) :
+  d_le_pre_fs_programming_view x s = dunit (le_real_execution_observable x s).
+proof.
+rewrite /d_le_pre_fs_programming_view /d_le_post_rejection_view.
+rewrite /d_le_real_view /d_le_real_execution_view.
+rewrite dmap_dunit.
+by rewrite /le_post_rejection_surrogate.
+qed.
+
+lemma d_le_pre_fs_programming_view_lossless
+  (x : qssm_public_input) (s : seed) :
+  is_lossless (d_le_pre_fs_programming_view x s).
+proof.
+rewrite (d_le_pre_fs_programming_view_dunit x s).
+rewrite /is_lossless /weight dunitE /=.
+by [].
+qed.
+
+lemma d_le_fs_shadow_coupled_state_pairE :
   forall (x : qssm_public_input) (s : seed),
     d_le_fs_shadow_coupled_state x s =
-      dmap (d_le_pre_fs_programming_view x s)
-        (fun (obs : le_transcript_observable) =>
-          le_fs_shadow_state_of_branch_observable obs true).
+      dmap ((d_le_pre_fs_programming_view x s) `*` d_le_fs_shadow_branch_choice)
+        (fun (p : le_transcript_observable * bool) =>
+          le_fs_shadow_state_of_branch_observable (fst p) (snd p)).
 proof.
-move=> x s.
-rewrite /d_le_fs_shadow_coupled_state.
-have Hbranch :
-  dlet (d_le_pre_fs_programming_view x s)
-    (fun (obs : le_transcript_observable) =>
-      dmap d_le_fs_shadow_branch_choice
-        (fun (bad : bool) => le_fs_shadow_state_of_branch_observable obs bad)) =
-  dlet (d_le_pre_fs_programming_view x s)
-    (fun (obs : le_transcript_observable) =>
-      dunit (le_fs_shadow_state_of_branch_observable obs true)).
-  apply in_eq_dlet=> obs _.
-  have Hchoice :
-    dmap d_le_fs_shadow_branch_choice
-      (fun (bad : bool) => le_fs_shadow_state_of_branch_observable obs bad) =
-    dunit (le_fs_shadow_state_of_branch_observable obs true).
-    by rewrite /d_le_fs_shadow_branch_choice dmap_dunit.
-  exact Hchoice.
-rewrite Hbranch.
-by [].
+by move=> x s; rewrite /d_le_fs_shadow_coupled_state.
 qed.
 
 lemma le_fs_shadow_bad_event_current_model
@@ -800,22 +871,24 @@ lemma d_le_fs_shadow_pre_marginal_matches_pre_programming_view :
 proof.
 move=> x s.
 rewrite /d_le_fs_shadow_pre_marginal.
-rewrite (d_le_fs_shadow_coupled_state_bad_branchE x s).
-rewrite (dmap_comp (fun (obs : le_transcript_observable) =>
-    le_fs_shadow_state_of_branch_observable obs true)
+rewrite (d_le_fs_shadow_coupled_state_pairE x s).
+rewrite (dmap_comp (fun (p : le_transcript_observable * bool) =>
+    le_fs_shadow_state_of_branch_observable (fst p) (snd p))
   le_fs_shadow_pre_observable
-  (d_le_pre_fs_programming_view x s)).
+  ((d_le_pre_fs_programming_view x s) `*` d_le_fs_shadow_branch_choice)).
 have Hmap :
-  dmap (d_le_pre_fs_programming_view x s)
+  dmap ((d_le_pre_fs_programming_view x s) `*` d_le_fs_shadow_branch_choice)
     (le_fs_shadow_pre_observable \o
-      (fun (obs : le_transcript_observable) =>
-        le_fs_shadow_state_of_branch_observable obs true)) =
-  dmap (d_le_pre_fs_programming_view x s)
-    (fun (obs : le_transcript_observable) => obs).
-  apply eq_dmap_in=> obs _ /=.
+      (fun (p : le_transcript_observable * bool) =>
+        le_fs_shadow_state_of_branch_observable (fst p) (snd p))) =
+  dmap ((d_le_pre_fs_programming_view x s) `*` d_le_fs_shadow_branch_choice) fst.
+  apply eq_dmap_in=> p _ /=.
+  case: p=> obs bad /=.
   by rewrite /le_fs_shadow_pre_observable /le_fs_shadow_state_of_branch_observable /(\o).
 rewrite Hmap.
-by rewrite dmap_id.
+exact (le_fs_shadow_dmap_dprod_fst_lossless
+  (d_le_pre_fs_programming_view x s) d_le_fs_shadow_branch_choice
+  le_fs_shadow_branch_choice_lossless).
 qed.
 
 lemma d_le_fs_shadow_pre_marginal_supportE
@@ -853,22 +926,29 @@ lemma d_le_fs_shadow_post_marginal_matches_programmed_view :
 proof.
 move=> x s.
 rewrite /d_le_fs_shadow_post_marginal.
-rewrite (d_le_fs_shadow_coupled_state_bad_branchE x s).
-rewrite (dmap_comp (fun (obs : le_transcript_observable) =>
-    le_fs_shadow_state_of_branch_observable obs true)
+rewrite (d_le_fs_shadow_coupled_state_pairE x s).
+rewrite (dmap_comp (fun (p : le_transcript_observable * bool) =>
+    le_fs_shadow_state_of_branch_observable (fst p) (snd p))
   le_fs_shadow_post_observable
-  (d_le_pre_fs_programming_view x s)).
+  ((d_le_pre_fs_programming_view x s) `*` d_le_fs_shadow_branch_choice)).
 have Hmap :
-  dmap (d_le_pre_fs_programming_view x s)
+  dmap ((d_le_pre_fs_programming_view x s) `*` d_le_fs_shadow_branch_choice)
     (le_fs_shadow_post_observable \o
-      (fun (obs : le_transcript_observable) =>
-        le_fs_shadow_state_of_branch_observable obs true)) =
-  dmap (d_le_pre_fs_programming_view x s)
-    le_fs_surrogate_transform.
-  apply eq_dmap_in=> obs Hobs /=.
+      (fun (p : le_transcript_observable * bool) =>
+        le_fs_shadow_state_of_branch_observable (fst p) (snd p))) =
+  dmap ((d_le_pre_fs_programming_view x s) `*` d_le_fs_shadow_branch_choice)
+    (fun (p : le_transcript_observable * bool) =>
+      le_fs_surrogate_transform (fst p)).
+  apply eq_dmap_in=> p _ /=.
+  case: p=> obs bad /=.
   rewrite /le_fs_shadow_post_observable /(\o).
-  exact (le_fs_shadow_projected_post_branch_matches_surrogate obs true).
+  exact (le_fs_shadow_projected_post_branch_matches_surrogate obs bad).
 rewrite Hmap.
+rewrite -(dmap_comp fst le_fs_surrogate_transform
+  ((d_le_pre_fs_programming_view x s) `*` d_le_fs_shadow_branch_choice)).
+rewrite (le_fs_shadow_dmap_dprod_fst_lossless
+  (d_le_pre_fs_programming_view x s) d_le_fs_shadow_branch_choice
+  le_fs_shadow_branch_choice_lossless).
 by rewrite /d_le_post_fs_programmed_view.
 qed.
 
@@ -909,22 +989,53 @@ rewrite Hmap.
 by rewrite dmap_id.
 qed.
 
-lemma d_le_fs_shadow_semantic_post_marginal_bad_branchE :
+lemma d_le_fs_shadow_semantic_post_marginal_pairE :
   forall (x : qssm_public_input) (s : seed),
     d_le_fs_shadow_semantic_post_marginal x s =
-      dmap (d_le_pre_fs_programming_view x s)
-        (fun (obs : le_transcript_observable) =>
-          (le_fs_shadow_state_of_branch_observable obs true).`lefss_semantic_post_observable).
+      dmap ((d_le_pre_fs_programming_view x s) `*` d_le_fs_shadow_branch_choice)
+        (fun (p : le_transcript_observable * bool) =>
+          (le_fs_shadow_state_of_branch_observable (fst p) (snd p)).`lefss_semantic_post_observable).
 proof.
 move=> x s.
 rewrite /d_le_fs_shadow_semantic_post_marginal.
-rewrite (d_le_fs_shadow_coupled_state_bad_branchE x s).
-rewrite (dmap_comp (fun (obs : le_transcript_observable) =>
-    le_fs_shadow_state_of_branch_observable obs true)
+rewrite (d_le_fs_shadow_coupled_state_pairE x s).
+rewrite (dmap_comp (fun (p : le_transcript_observable * bool) =>
+    le_fs_shadow_state_of_branch_observable (fst p) (snd p))
   le_fs_shadow_semantic_post_state_observable
-  (d_le_pre_fs_programming_view x s)).
-apply eq_dmap_in=> obs _ /=.
+  ((d_le_pre_fs_programming_view x s) `*` d_le_fs_shadow_branch_choice)).
+apply eq_dmap_in=> p _ /=.
+case: p=> obs bad /=.
 by rewrite /le_fs_shadow_semantic_post_state_observable /(\o).
+qed.
+
+lemma d_le_fs_shadow_bad_event_image_zero :
+  forall (x : qssm_public_input) (s : seed),
+    dmap (d_le_fs_shadow_coupled_state x s) le_fs_shadow_bad_event = dunit false.
+proof.
+move=> x s.
+rewrite (d_le_fs_shadow_coupled_state_pairE x s).
+rewrite (dmap_comp (fun (p : le_transcript_observable * bool) =>
+    le_fs_shadow_state_of_branch_observable (fst p) (snd p))
+  le_fs_shadow_bad_event
+  ((d_le_pre_fs_programming_view x s) `*` d_le_fs_shadow_branch_choice)).
+have Hmap :
+  dmap ((d_le_pre_fs_programming_view x s) `*` d_le_fs_shadow_branch_choice)
+    (le_fs_shadow_bad_event \o
+      (fun (p : le_transcript_observable * bool) =>
+        le_fs_shadow_state_of_branch_observable (fst p) (snd p))) =
+  dmap ((d_le_pre_fs_programming_view x s) `*` d_le_fs_shadow_branch_choice)
+    (fun (p : le_transcript_observable * bool) => false).
+  apply eq_dmap_in=> p _ /=.
+  case: p=> obs bad /=.
+  by rewrite /(\o) (le_fs_shadow_bad_event_branch_stateE obs bad).
+rewrite Hmap.
+rewrite -(dmap_comp fst (fun (_ : le_transcript_observable) => false)
+  ((d_le_pre_fs_programming_view x s) `*` d_le_fs_shadow_branch_choice)).
+rewrite (le_fs_shadow_dmap_dprod_fst_lossless
+  (d_le_pre_fs_programming_view x s) d_le_fs_shadow_branch_choice
+  le_fs_shadow_branch_choice_lossless).
+rewrite (d_le_pre_fs_programming_view_dunit x s).
+by rewrite dmap_dunit.
 qed.
 
 lemma le_fs_shadow_failure_probability_zero :
@@ -933,13 +1044,34 @@ lemma le_fs_shadow_failure_probability_zero :
 proof.
 move=> x s.
 rewrite /le_fs_shadow_failure_probability.
-rewrite (d_le_fs_shadow_coupled_state_bad_branchE x s).
-rewrite /d_le_pre_fs_programming_view /d_le_post_rejection_view.
-rewrite /d_le_real_view /d_le_real_execution_view /le_post_rejection_surrogate.
-rewrite dmap_dunit dmap_dunit dunitE /=.
-rewrite (le_fs_shadow_bad_event_branch_stateE
-  (le_real_execution_observable x s) true).
-by [].
+rewrite (d_le_fs_shadow_bad_event_image_zero x s).
+by rewrite dunitE /=.
+qed.
+
+lemma d_le_fs_shadow_semantic_bad_event_image_branch_choice :
+  forall (x : qssm_public_input) (s : seed),
+    dmap (d_le_fs_shadow_coupled_state x s) le_fs_shadow_semantic_bad_event =
+      d_le_fs_shadow_branch_choice.
+proof.
+move=> x s.
+rewrite (d_le_fs_shadow_coupled_state_pairE x s).
+rewrite (dmap_comp (fun (p : le_transcript_observable * bool) =>
+    le_fs_shadow_state_of_branch_observable (fst p) (snd p))
+  le_fs_shadow_semantic_bad_event
+  ((d_le_pre_fs_programming_view x s) `*` d_le_fs_shadow_branch_choice)).
+have Hmap :
+  dmap ((d_le_pre_fs_programming_view x s) `*` d_le_fs_shadow_branch_choice)
+    (le_fs_shadow_semantic_bad_event \o
+      (fun (p : le_transcript_observable * bool) =>
+        le_fs_shadow_state_of_branch_observable (fst p) (snd p))) =
+  dmap ((d_le_pre_fs_programming_view x s) `*` d_le_fs_shadow_branch_choice) snd.
+  apply eq_dmap_in=> p _ /=.
+  case: p=> obs bad /=.
+  by rewrite /(\o) (le_fs_shadow_semantic_bad_event_branch_stateE obs bad).
+rewrite Hmap.
+exact (le_fs_shadow_dmap_dprod_snd_lossless
+  (d_le_pre_fs_programming_view x s) d_le_fs_shadow_branch_choice
+  (d_le_pre_fs_programming_view_lossless x s)).
 qed.
 
 lemma le_fs_shadow_semantic_failure_probability_exact_branch_mass :
@@ -948,14 +1080,8 @@ lemma le_fs_shadow_semantic_failure_probability_exact_branch_mass :
     le_fs_shadow_local_bad_branch_mass.
 proof.
 move=> x s.
-rewrite /le_fs_shadow_semantic_failure_probability.
-rewrite (d_le_fs_shadow_coupled_state_bad_branchE x s).
-rewrite /d_le_pre_fs_programming_view /d_le_post_rejection_view.
-rewrite /d_le_real_view /d_le_real_execution_view /le_post_rejection_surrogate.
-rewrite dmap_dunit dmap_dunit dunitE /=.
-rewrite (le_fs_shadow_semantic_bad_event_branch_stateE
-  (le_real_execution_observable x s) true).
-rewrite /le_fs_shadow_local_bad_branch_mass.
+rewrite /le_fs_shadow_semantic_failure_probability /le_fs_shadow_local_bad_branch_mass.
+rewrite (d_le_fs_shadow_semantic_bad_event_image_branch_choice x s).
 by [].
 qed.
 

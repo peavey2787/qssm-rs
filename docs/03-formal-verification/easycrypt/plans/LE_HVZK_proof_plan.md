@@ -291,10 +291,13 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     `le_fs_shadow_local_bad_branch_mass`,
     `d_le_fs_shadow_semantic_post_marginal`,
     `le_fs_shadow_semantic_bad_event`, and
-    `le_fs_shadow_semantic_failure_probability`. The current local sampler puts
-    all of its internal mass on the bad branch, so the semantic branch lane is
-    genuinely nontrivial while the exported projected-post theorems remain
-    unchanged. The active theorem-facing endpoint still uses
+    `le_fs_shadow_semantic_failure_probability`. The current local sampler is
+    now a genuine two-branch law with both good and bad support, and the local
+    semantic failure probability is identified with the sampler-local bad-branch
+    mass `mu d_le_fs_shadow_branch_choice (fun bad => bad)`. The exported
+    projected-post theorems remain unchanged because the theorem-facing shadow
+    post marginal still forgets the sampled branch and projects only the
+    surrogate-facing observable lane. The active theorem-facing endpoint still uses
     `d_le_fs_shadow_post_marginal_matches_programmed_view`,
     `d_le_fs_shadow_pre_post_marginals_equal`,
     `A_LE_fs_shadow_sdist_le_failure_probability`, and
