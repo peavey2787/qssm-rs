@@ -24,20 +24,29 @@ pred le_rejection_witness_hiding_statistical_bound
 pred le_rejection_witness_hiding_core (x : qssm_public_input) (s : seed) (D : distinguisher) =
   le_rejection_sampling_hiding_bound x s D.
 
-axiom A_LE_rejection_distribution_defined :
+lemma A_LE_rejection_distribution_defined :
   forall (x : qssm_public_input) (s : seed),
     le_rejection_sampling_bound_ok =>
     le_rejection_distribution_defined x s.
+proof.
+by move=> x s H; rewrite /le_rejection_distribution_defined.
+qed.
 
-axiom A_LE_rejection_acceptance_probability_bounded :
+lemma A_LE_rejection_acceptance_probability_bounded :
   forall (x : qssm_public_input) (s : seed),
     le_rejection_distribution_defined x s =>
     le_rejection_acceptance_probability_bounded x s.
+proof.
+by move=> x s H; rewrite /le_rejection_acceptance_probability_bounded.
+qed.
 
-axiom A_LE_rejection_output_shape_preserved :
+lemma A_LE_rejection_output_shape_preserved :
   forall (x : qssm_public_input) (s : seed),
     le_rejection_acceptance_probability_bounded x s =>
     le_rejection_output_shape_preserved x s.
+proof.
+by move=> x s H; rewrite /le_rejection_output_shape_preserved.
+qed.
 
 (* Rejection surrogate fixes the observable transcript shape (Set-B surface). *)
 lemma A_LE_rejection_surrogate_preserves_shape :

@@ -38,20 +38,22 @@ The obligations below are organized by topic (same names as in the `.ec` files):
     `A_LE_SetB_eta_gamma_relation_valid`
   - `A_LE_SetB_params_sound` and inverse packaging `L_LE_set_b_params_sound_implies_ok`
 - LE rejection-sampling / witness-hiding sub-layer:
-  - `A_LE_rejection_distribution_defined`
-  - `A_LE_rejection_acceptance_probability_bounded`
-  - `A_LE_rejection_output_shape_preserved`
-  - axiom `A_LE_rejection_surrogate_preserves_shape` (coefficients / digest fields
+  - proved lemmas `A_LE_rejection_distribution_defined`,
+    `A_LE_rejection_acceptance_probability_bounded`,
+    `A_LE_rejection_output_shape_preserved` by definitional unfolding of the
+    wrapper predicates to `le_rejection_sampling_bound_ok`
+  - proved lemma `A_LE_rejection_surrogate_preserves_shape` (coefficients / digest fields
     fixed by `le_post_rejection_surrogate` on each observable)
   - proved lemmas `L_LE_rejection_output_shape_implies_sampling_bound_ok`,
     `L_LE_rejection_output_shape_implies_sampling_hiding_bound`,
     `A_LE_rejection_surrogate_hides_witness` (currently definitional on
     `le_rejection_witness_hiding_core`), `A_LE_rejection_witness_hiding_statistical_bound`
 - LE FS/ROM sub-layer:
-  - `A_LE_fs_query_surface_defined`
-  - `A_LE_fs_programmable_oracle_available`
-  - `A_LE_fs_programming_preserves_transcript_shape`
-  - axiom `A_LE_fs_surrogate_preserves_shape` (coefficients / digest fields fixed
+  - proved lemmas `A_LE_fs_query_surface_defined`,
+    `A_LE_fs_programmable_oracle_available`,
+    `A_LE_fs_programming_preserves_transcript_shape` by definitional unfolding of
+    the wrapper predicates to `le_real_sim_transcript_equiv x s`
+  - proved lemma `A_LE_fs_surrogate_preserves_shape` (coefficients / digest fields fixed
     by `le_fs_view_surrogate` on each observable)
   - proved lemma `A_LE_fs_programming_cost_bounded_by_epsilon_le` (pred packaging
     from transcript-shape preservation and `A4_le_hvzk_bound_nonneg`)
@@ -150,13 +152,13 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
 
 ## Remaining LE Proof Debt
 
-- Remaining LE-HVZK axioms are:
-  - `A_LE_rejection_distribution_defined`
-  - `A_LE_rejection_acceptance_probability_bounded`
-  - `A_LE_rejection_output_shape_preserved`
-  - `A_LE_fs_query_surface_defined`
-  - `A_LE_fs_programmable_oracle_available`
-  - `A_LE_fs_programming_preserves_transcript_shape`
+- Remaining theorem-path LE wrapper axioms are now gone: `A_LE_rejection_distribution_defined`,
+  `A_LE_rejection_acceptance_probability_bounded`, `A_LE_rejection_output_shape_preserved`,
+  `A_LE_fs_query_surface_defined`, `A_LE_fs_programmable_oracle_available`, and
+  `A_LE_fs_programming_preserves_transcript_shape` are all proved lemmas by direct
+  unfolding of the current wrapper predicates.
+- The remaining LE theorem-path assumption is the primitive budget fact
+  `A4_le_hvzk_bound_nonneg` in `LESurface.ec`; the rest of the active LE chain below it is lemma-only.
 - Critical-path audit, May 2026:
   - `LEViewIndist.ec`, `LEStatisticalDistance.ec`, `LEHVZK.ec`, and `games/GameLEBridge.ec` do not add new axioms; they only package lower obligations.
   - The active theorem path is:

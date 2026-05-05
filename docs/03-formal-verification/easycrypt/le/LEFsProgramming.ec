@@ -18,20 +18,33 @@ pred le_fs_programming_cost_bounded_by_epsilon_le
   (x : qssm_public_input) (s : seed) (D : distinguisher) =
   0%r <= epsilon_le /\ le_fs_programming_hiding_bound x s D.
 
-axiom A_LE_fs_query_surface_defined :
+lemma A_LE_fs_query_surface_defined :
   forall (x : qssm_public_input) (s : seed),
     le_fs_programming_bound_ok x s =>
     le_fs_query_surface_defined x s.
+proof.
+move=> x s H.
+rewrite /le_fs_query_surface_defined.
+by rewrite /le_fs_programming_bound_ok in H.
+qed.
 
-axiom A_LE_fs_programmable_oracle_available :
+lemma A_LE_fs_programmable_oracle_available :
   forall (x : qssm_public_input) (s : seed),
     le_fs_query_surface_defined x s =>
     le_fs_programmable_oracle_available x s.
+proof.
+by move=> x s H; rewrite /le_fs_programmable_oracle_available.
+qed.
 
-axiom A_LE_fs_programming_preserves_transcript_shape :
+lemma A_LE_fs_programming_preserves_transcript_shape :
   forall (x : qssm_public_input) (s : seed),
     le_fs_programmable_oracle_available x s =>
     le_fs_programming_preserves_transcript_shape x s.
+proof.
+move=> x s H.
+rewrite /le_fs_programming_preserves_transcript_shape.
+by rewrite /le_fs_programmable_oracle_available /le_fs_query_surface_defined in H.
+qed.
 
 lemma A_LE_fs_programming_cost_bounded_by_epsilon_le :
   forall (x : qssm_public_input) (s : seed) (D : distinguisher),
