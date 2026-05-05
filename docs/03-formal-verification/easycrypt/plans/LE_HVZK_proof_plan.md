@@ -145,11 +145,14 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
    - Package rejection + FS hiding into `le_real_sim_view_indistinguishable` via
      proved `A_LE_real_sim_view_indistinguishable` /
      `A_LE_real_sim_view_indistinguishable_from_bound_ok` (crypto still lives in
-     the rejection and FS axiom bundles below).
+     the rejection and FS lower theorem surfaces below; this line is now
+     historical because the active tree no longer depends on in-tree axiom bundles here).
    - **Done (skeleton):** `A_LE_view_indist_to_sd_bound` is proved from
      `A_LE_combined_hiding_bounds_sdist`, which uses `sdist_triangle` on
      `d_le_real_view`, `d_le_post_rejection_view`, `d_le_sim_view` and the two
-     half-budget lemmas above. Proof debt is instantiating the surrogates and
+     then-live half-budget lemmas above. This note is now historical: the active
+     tree closes through component-budget endpoints and the semantic-budget
+     wrappers instead. The old proof debt was instantiating the surrogates and
      discharging `A_LE_rejection_surrogate_sdist_bound`,
      `A_LE_fs_surrogate_sdist_bound`, `A_LE_rejection_surrogate_preserves_shape`, and
      `A_LE_fs_surrogate_preserves_shape` from concrete rejection / FS distribution
@@ -371,7 +374,7 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     direct semantic bridge theorem `A_G1_to_G2_le_semantic_transition_bound`
     with bound `epsilon_le_rej + le_fs_shadow_local_bad_branch_mass` on
     `Adv_G1_G2_LE`. At the top level, `theorem/MainTheorem.ec` now adds
-    `qssm_main_theorem_semantic_budget` with bound
+    `qssm_main_theorem_semantic_budget_local_mass` with bound
     `epsilon_ms_hash_binding + epsilon_ms_rom_programmability +
     epsilon_le_rej + le_fs_shadow_local_bad_branch_mass`, and that theorem now
     uses the semantic G1->G2 bridge directly rather than widening through the
@@ -379,8 +382,12 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     parallel: `BudgetParameters.ec`, `A_G1_to_G2_le_transition_bound`,
     `qssm_main_theorem_skeleton`, and `qssm_main_theorem` remain unchanged.
   - Primitive-owned semantic FS budget, May 2026: `primitives/BudgetParameters.ec`
-    now defines `epsilon_le_fs_semantic = 1%r / 2%r` with nonnegativity lemma
-    `A4_le_fs_semantic_nonneg`. `le/LEFsProgrammingSurface.ec` proves both
+    now defines the primitive branch law
+    `d_le_fs_semantic_branch_choice = duniform [false; true]` and the owned
+    semantic FS budget `epsilon_le_fs_semantic = mu1
+    d_le_fs_semantic_branch_choice true`, together with nonnegativity lemma
+    `A4_le_fs_semantic_nonneg`. That owned formula still closes in the current
+    model to `1%r / 2%r`. `le/LEFsProgrammingSurface.ec` proves both
     `le_fs_shadow_local_bad_branch_mass = epsilon_le_fs_semantic` and
     `le_fs_shadow_local_bad_branch_mass <= epsilon_le_fs_semantic`, so the
     local semantic mass is now connected to a primitive-owned budget without an
@@ -403,10 +410,17 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     `A_LE_HVZK_semantic_umbrella_transition_bound`; `games/GameLEBridge.ec`
     adds `A_G1_to_G2_le_semantic_umbrella_transition_bound`; and
     `theorem/MainTheorem.ec` now adds
-    `qssm_main_theorem_semantic_budget_umbrella` with bound
+    `qssm_main_theorem_semantic_budget` with bound
     `epsilon_ms_hash_binding + epsilon_ms_rom_programmability +
-    epsilon_le_semantic`. The exact-zero route, the local-mass semantic route,
-    and the owned component-sum route all remain checked in parallel.
+    epsilon_le_semantic`. `qssm_main_theorem_nonzero_budget` is now a façade
+    alias to that same public umbrella theorem, while
+    `qssm_main_theorem_semantic_budget_umbrella` is retained only as a
+    compatibility alias and `qssm_main_theorem_semantic_budget_owned` plus
+    `qssm_main_theorem_semantic_budget_local_mass` remain as comparison lemmas.
+    This makes `epsilon_le_semantic` the preferred nonzero LE budget umbrella
+    and `qssm_main_theorem_semantic_budget` the preferred nonzero top-level
+    theorem name to cite, while the exact-zero route still remains checked in
+    parallel.
   - Design refinement, May 2026: `A_LE_rejection_sampler_sdist_bound` remains a
     proved lemma in `le/LERejection.ec`, but it is no longer a repackaging of a
     surrogate-side axiom. It now rests on the concrete identity rejection

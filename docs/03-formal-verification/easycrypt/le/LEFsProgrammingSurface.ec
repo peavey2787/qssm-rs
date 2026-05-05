@@ -415,53 +415,55 @@ type le_fs_shadow_state = {
   lefss_hidden_material : le_fs_shadow_hidden_material;
 }.
 
-op le_fs_shadow_branch_support : bool list = [false; true].
+op le_fs_shadow_branch_support : bool list =
+  BudgetParameters.le_fs_semantic_branch_support.
 
 op d_le_fs_shadow_branch_choice : bool distr =
-  duniform le_fs_shadow_branch_support.
+  BudgetParameters.d_le_fs_semantic_branch_choice.
 
 op le_fs_shadow_local_bad_branch_mass : real =
   mu d_le_fs_shadow_branch_choice (fun (bad : bool) => bad).
 
 lemma le_fs_shadow_branch_support_uniq :
   uniq le_fs_shadow_branch_support.
-proof. by rewrite /le_fs_shadow_branch_support. qed.
+proof.
+rewrite /le_fs_shadow_branch_support.
+exact BudgetParameters.le_fs_semantic_branch_support_uniq.
+qed.
 
 lemma le_fs_shadow_branch_choice_lossless :
   is_lossless d_le_fs_shadow_branch_choice.
 proof.
-rewrite /d_le_fs_shadow_branch_choice /le_fs_shadow_branch_support.
-by apply duniform_ll.
+rewrite /d_le_fs_shadow_branch_choice.
+exact BudgetParameters.le_fs_semantic_branch_choice_lossless.
 qed.
 
 lemma le_fs_shadow_good_branch_has_support :
   false \in d_le_fs_shadow_branch_choice.
 proof.
-rewrite /d_le_fs_shadow_branch_choice /le_fs_shadow_branch_support.
-by rewrite supp_duniform.
+rewrite /d_le_fs_shadow_branch_choice.
+exact BudgetParameters.le_fs_semantic_good_branch_has_support.
 qed.
 
 lemma le_fs_shadow_bad_branch_has_support :
   true \in d_le_fs_shadow_branch_choice.
 proof.
-rewrite /d_le_fs_shadow_branch_choice /le_fs_shadow_branch_support.
-by rewrite supp_duniform.
+rewrite /d_le_fs_shadow_branch_choice.
+exact BudgetParameters.le_fs_semantic_bad_branch_has_support.
 qed.
 
 lemma le_fs_shadow_branch_choice_mass_false :
   mu1 d_le_fs_shadow_branch_choice false = 1%r / 2%r.
 proof.
-rewrite /d_le_fs_shadow_branch_choice /le_fs_shadow_branch_support duniform1E_uniq.
-  by [].
-by rewrite /le_fs_shadow_branch_support.
+rewrite /d_le_fs_shadow_branch_choice.
+exact BudgetParameters.le_fs_semantic_branch_choice_mass_false.
 qed.
 
 lemma le_fs_shadow_branch_choice_mass_true :
   mu1 d_le_fs_shadow_branch_choice true = 1%r / 2%r.
 proof.
-rewrite /d_le_fs_shadow_branch_choice /le_fs_shadow_branch_support duniform1E_uniq.
-  by [].
-by rewrite /le_fs_shadow_branch_support.
+rewrite /d_le_fs_shadow_branch_choice.
+exact BudgetParameters.le_fs_semantic_branch_choice_mass_true.
 qed.
 
 lemma le_fs_shadow_local_bad_branch_mass_is_true_mass :
@@ -485,8 +487,9 @@ qed.
 lemma le_fs_shadow_local_bad_branch_mass_eq_epsilon_le_fs_semantic :
   le_fs_shadow_local_bad_branch_mass = BudgetParameters.epsilon_le_fs_semantic.
 proof.
-rewrite le_fs_shadow_local_bad_branch_mass_closed_form.
-by rewrite /BudgetParameters.epsilon_le_fs_semantic.
+rewrite le_fs_shadow_local_bad_branch_mass_is_true_mass.
+rewrite /d_le_fs_shadow_branch_choice /BudgetParameters.epsilon_le_fs_semantic.
+by [].
 qed.
 
 lemma le_fs_shadow_local_bad_branch_mass_le_epsilon_le_fs_semantic :
@@ -1238,7 +1241,8 @@ lemma le_fs_shadow_branch_choice_sdist_dunit_false_le_bad_branch_mass :
   le_fs_shadow_local_bad_branch_mass.
 proof.
 apply sdist_le_ub=> E.
-rewrite /d_le_fs_shadow_branch_choice /le_fs_shadow_branch_support duniformE /=.
+rewrite /d_le_fs_shadow_branch_choice /BudgetParameters.d_le_fs_semantic_branch_choice.
+rewrite /BudgetParameters.le_fs_semantic_branch_support duniformE /=.
 rewrite dunitE.
 case: (E false); case: (E true) => /=;
 rewrite le_fs_shadow_local_bad_branch_mass_closed_form;

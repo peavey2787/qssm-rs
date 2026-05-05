@@ -8,6 +8,8 @@ As of May 2026, the EasyCrypt tree under this directory checks cleanly with `./c
 
 The active theorem path is therefore fully machine-checked at the current abstraction boundary. The important caveat is that the current boundary is an exact-zero model: the theorem closes because the current MS and LE component budgets are defined as `0%r`, and the active lower surfaces close by exact equality or identity transport.
 
+Alongside that exact-zero path, the tree now also carries a checked semantic-budget theorem path for nonzero LE FS modeling. The intended public citation targets are `qssm_main_theorem` for the exact-zero abstraction theorem and `qssm_main_theorem_semantic_budget` for the semantic-budget theorem; `qssm_main_theorem_nonzero_budget` is a façade alias for discoverability.
+
 ## What the `0 axioms` Claim Means
 
 `0 axioms` means there are currently no named `axiom` declarations in the EasyCrypt `*.ec` files under this directory.
@@ -29,17 +31,19 @@ What has happened is narrower and more precise:
 
 The active theorem stack is checker-green end to end.
 
+- `theorem/MainTheorem.ec` now exposes two public theorem modes: `qssm_main_theorem` is the exact-zero abstraction theorem, and `qssm_main_theorem_semantic_budget` is the preferred semantic-budget theorem closing at `epsilon_le_semantic`
+- `qssm_main_theorem_nonzero_budget` is a façade alias to the same semantic theorem, while `qssm_main_theorem_semantic_budget_local_mass`, `qssm_main_theorem_semantic_budget_owned`, and `qssm_main_theorem_semantic_budget_umbrella` are retained for proof history and bisectability
 - `theorem/MainTheorem.ec` consumes the MS and LE game-hop chain on the current exact-zero model
 - `ms/` closes the MS1, MS2, MS-3a, MS-3b, and MS-3c game-hop surfaces on the current carrier
 - `le/` closes the rejection and FS component bounds on the current lower carriers and component budgets
 - `games/` packages the MS and LE transition bounds into the final additive theorem path
 - `sim/Simulator.ec` closes the public-surface bridge needed for the MS-to-LE handoff
 
-## Exact-Zero Budget Model
+## Budget Models Today
 
 The current budget surface is defined in `primitives/BudgetParameters.ec`.
 
-The active values are:
+The exact-zero theorem path uses these values:
 
 - `epsilon_ms_hash_binding = 0%r`
 - `epsilon_ms_rom_programmability = 0%r`
@@ -47,7 +51,13 @@ The active values are:
 - `epsilon_le_fs = 0%r`
 - `epsilon_le = epsilon_le_rej + epsilon_le_fs = 0%r`
 
-The current theorem-facing result is therefore an exact-zero bound on the active formal model. That is an honest description of the present development state. It is not a claim that the real system has a nontrivial cryptographic bound of zero gap for the deployed implementation.
+The parallel semantic-budget theorem path adds these LE-side values:
+
+- `d_le_fs_semantic_branch_choice = duniform [false; true]`
+- `epsilon_le_fs_semantic = mu1 d_le_fs_semantic_branch_choice true = 1%r / 2%r`
+- `epsilon_le_semantic = epsilon_le_rej + epsilon_le_fs_semantic = 1%r / 2%r`
+
+The current theorem-facing results therefore split into two checked modes: an exact-zero bound on the active abstraction theorem path, and a separate semantic-budget theorem path that packages the present nonzero LE FS modeling through `epsilon_le_semantic`. The semantic FS component is now primitive-owned as a branch-weight formula rather than a bare literal, even though it still evaluates in the current model to `1%r / 2%r`. Neither statement should be confused with a final realistic cryptographic reduction for the deployed implementation.
 
 ## What Is Proved on the Live Path
 
@@ -70,11 +80,10 @@ The following items remain outside the current exact-zero theorem path:
 
 ## Current Next Target
 
-The next exact local target is the LE FS shadow refinement:
+The next exact local target is to refine the semantic-budget lane below the now-stable public theorem API:
 
-- make the shadow bad-event / failure-probability lane semantically nontrivial
-- prove a support-aware good-branch collapse theorem for a branch-sensitive `le_fs_shadow_post_of_observable`
-- recover the refined `d_le_fs_shadow_post_marginal_matches_programmed_view` and `d_le_fs_shadow_pre_post_marginals_equal` lemmas
-- keep theorem-facing names and global LE arithmetic stable while the lower refinement lands
+- replace the current toy semantic FS component budget with a more realistic lower-derived quantity or explicit programming expression
+- keep `qssm_main_theorem` as the exact-zero abstraction theorem and `qssm_main_theorem_semantic_budget` as the preferred nonzero citation target
+- decide later whether the retained comparison lemmas should remain exported or move behind a narrower compatibility surface
 
 For the longer-lived trail that led to the current state, see [PROOF_HISTORY.md](PROOF_HISTORY.md).

@@ -77,7 +77,7 @@ have Hadd : Adv_G0_G1_MS x xms s D + Adv_G1_MS_to_LE x xms s D + Adv_G1_G2_LE x 
 by apply (ler_trans _ _ _ Htri Hadd).
 qed.
 
-lemma qssm_main_theorem_semantic_budget
+lemma qssm_main_theorem_semantic_budget_local_mass
   (x : qssm_public_input) (s : seed) (D : distinguisher) :
   set_b_parameter_well_formed =>
   le_real_sim_transcript_equiv x s =>
@@ -177,7 +177,7 @@ have Hadd : Adv_G0_G1_MS x xms s D + Adv_G1_MS_to_LE x xms s D + Adv_G1_G2_LE x 
 by apply (ler_trans _ _ _ Htri Hadd).
 qed.
 
-lemma qssm_main_theorem_semantic_budget_umbrella
+lemma qssm_main_theorem_semantic_budget
   (x : qssm_public_input) (s : seed) (D : distinguisher) :
   set_b_parameter_well_formed =>
   le_real_sim_transcript_equiv x s =>
@@ -220,6 +220,32 @@ have Hadd : Adv_G0_G1_MS x xms s D + Adv_G1_MS_to_LE x xms s D + Adv_G1_G2_LE x 
     epsilon_ms_hash_binding + epsilon_ms_rom_programmability + BudgetParameters.epsilon_le_semantic by ring.
   exact Hsum012.
 by apply (ler_trans _ _ _ Htri Hadd).
+qed.
+
+lemma qssm_main_theorem_semantic_budget_umbrella
+  (x : qssm_public_input) (s : seed) (D : distinguisher) :
+  set_b_parameter_well_formed =>
+  le_real_sim_transcript_equiv x s =>
+  Adv_G0_G2_QSSM x (extract_ms_public x) s D <=
+    epsilon_ms_hash_binding +
+    epsilon_ms_rom_programmability +
+    BudgetParameters.epsilon_le_semantic.
+proof.
+move=> Hsetb Hleeqv.
+exact (qssm_main_theorem_semantic_budget x s D Hsetb Hleeqv).
+qed.
+
+lemma qssm_main_theorem_nonzero_budget
+  (x : qssm_public_input) (s : seed) (D : distinguisher) :
+  set_b_parameter_well_formed =>
+  le_real_sim_transcript_equiv x s =>
+  Adv_G0_G2_QSSM x (extract_ms_public x) s D <=
+    epsilon_ms_hash_binding +
+    epsilon_ms_rom_programmability +
+    BudgetParameters.epsilon_le_semantic.
+proof.
+move=> Hsetb Hleeqv.
+exact (qssm_main_theorem_semantic_budget x s D Hsetb Hleeqv).
 qed.
 
 (* Concrete zero-budget corollary.

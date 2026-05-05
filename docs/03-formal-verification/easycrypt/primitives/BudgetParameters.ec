@@ -1,4 +1,4 @@
-require import AllCore.
+require import AllCore Distr List.
 
 (* Concrete zero-budget model.
 
@@ -57,12 +57,65 @@ lemma A4_le_fs_nonneg :
   0%r <= epsilon_le_fs.
 proof. by rewrite /epsilon_le_fs. qed.
 
-op epsilon_le_fs_semantic : real = 1%r / 2%r.
+op le_fs_semantic_branch_support : bool list = [false; true].
+
+lemma le_fs_semantic_branch_support_uniq :
+  uniq le_fs_semantic_branch_support.
+proof. by rewrite /le_fs_semantic_branch_support. qed.
+
+op d_le_fs_semantic_branch_choice : bool distr =
+  duniform le_fs_semantic_branch_support.
+
+lemma le_fs_semantic_branch_choice_lossless :
+  is_lossless d_le_fs_semantic_branch_choice.
+proof.
+rewrite /d_le_fs_semantic_branch_choice /le_fs_semantic_branch_support.
+by apply duniform_ll.
+qed.
+
+lemma le_fs_semantic_good_branch_has_support :
+  false \in d_le_fs_semantic_branch_choice.
+proof.
+rewrite /d_le_fs_semantic_branch_choice /le_fs_semantic_branch_support.
+by rewrite supp_duniform.
+qed.
+
+lemma le_fs_semantic_bad_branch_has_support :
+  true \in d_le_fs_semantic_branch_choice.
+proof.
+rewrite /d_le_fs_semantic_branch_choice /le_fs_semantic_branch_support.
+by rewrite supp_duniform.
+qed.
+
+lemma le_fs_semantic_branch_choice_mass_false :
+  mu1 d_le_fs_semantic_branch_choice false = 1%r / 2%r.
+proof.
+rewrite /d_le_fs_semantic_branch_choice /le_fs_semantic_branch_support duniform1E_uniq.
+  by [].
+by rewrite /le_fs_semantic_branch_support.
+qed.
+
+lemma le_fs_semantic_branch_choice_mass_true :
+  mu1 d_le_fs_semantic_branch_choice true = 1%r / 2%r.
+proof.
+rewrite /d_le_fs_semantic_branch_choice /le_fs_semantic_branch_support duniform1E_uniq.
+  by [].
+by rewrite /le_fs_semantic_branch_support.
+qed.
+
+op epsilon_le_fs_semantic : real = mu1 d_le_fs_semantic_branch_choice true.
+
+lemma epsilon_le_fs_semantic_closed_form :
+  epsilon_le_fs_semantic = 1%r / 2%r.
+proof.
+rewrite /epsilon_le_fs_semantic.
+exact le_fs_semantic_branch_choice_mass_true.
+qed.
 
 lemma A4_le_fs_semantic_nonneg :
   0%r <= epsilon_le_fs_semantic.
 proof.
-rewrite /epsilon_le_fs_semantic.
+rewrite epsilon_le_fs_semantic_closed_form.
 by smt().
 qed.
 

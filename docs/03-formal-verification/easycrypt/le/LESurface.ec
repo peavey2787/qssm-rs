@@ -64,7 +64,7 @@ pred set_b_parameter_well_formed =
 op epsilon_le : real = BudgetParameters.epsilon_le.
 
 (* Primitive LE budget assumption: the abstract HVZK error budget must be
-  nonnegative so the half-budget statistical-distance steps compose honestly. *)
+  nonnegative so the theorem-facing LE statistical-distance arithmetic composes honestly. *)
 lemma A4_le_hvzk_bound_nonneg :
   0%r <= epsilon_le.
 proof. exact BudgetParameters.A4_le_hvzk_bound_nonneg. qed.
