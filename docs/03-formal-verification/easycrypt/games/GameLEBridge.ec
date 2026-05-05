@@ -1,6 +1,8 @@
-require import AllCore List.
+require import AllCore List Distr.
 require import QssmTypes Algebra Simulator FS TrueClause Comparison ComparisonTypes ComparisonDigests ComparisonPayload ComparisonCoupling ComparisonTheorem.
-require import SourceDistributions SourceTheorem MS LESurface LEModel LEHVZK.
+require BudgetParameters.
+require import SourceDistributions SourceTheorem MS LERealExecution LESurface LEModel LEStatisticalDistance LEHVZK.
+require import LEFsProgrammingSurface.
 require import GameTypes GameViews GameAdvantage.
 
 pred le_game_bridge_consistent
@@ -221,6 +223,98 @@ rewrite /le_game_bridge_consistent.
 exact (A_LE_projected_adv_matches_game_adv x xms s D HG1 HG2).
 qed.
 
+lemma le_distinguisher_event_on_semantic_branch_image_matches_surrogate
+  (obs : le_transcript_observable) (bad : bool) (D : distinguisher) :
+  le_distinguisher_event D
+    (LEFsProgrammingSurface.le_fs_shadow_semantic_branch_image_of_observable obs bad) =
+  le_distinguisher_event D (le_fs_view_surrogate obs).
+proof.
+case: bad.
+- rewrite /LEFsProgrammingSurface.le_fs_shadow_semantic_branch_image_of_observable.
+  rewrite /LEFsProgrammingSurface.le_fs_shadow_semantic_programmed_view_of_observable.
+  rewrite /LEFsProgrammingSurface.le_fs_shadow_semantic_post_observable.
+  rewrite /LEFsProgrammingSurface.le_fs_shadow_hidden_material_of_observable_branch.
+  rewrite /LEFsProgrammingSurface.le_fs_programmed_response_of_observable.
+  rewrite /LEFsProgrammingSurface.le_fs_surrogate_transform.
+  rewrite /le_distinguisher_event /le_qssm_event_payload /le_fs_view_surrogate /=.
+  by [].
+by rewrite /LEFsProgrammingSurface.le_fs_shadow_semantic_branch_image_of_observable
+  /LEFsProgrammingSurface.le_fs_surrogate_transform.
+qed.
+
+lemma A_LE_semantic_projected_sim_adv_layout :
+  forall (x : qssm_public_input) (s : seed) (D : distinguisher),
+    le_projected_sim_adv x s D =
+      le_view_distinguish_pr
+        (LEFsProgrammingSurface.d_le_fs_shadow_semantic_post_marginal x s) D.
+proof.
+move=> x s D.
+rewrite /le_projected_sim_adv /le_projected_sim_adv_base /le_view_distinguish_pr.
+have -> : d_le_sim_view x s = LEFsProgrammingSurface.d_le_post_fs_programmed_view x s.
+  by rewrite /d_le_sim_view /LEFsProgrammingSurface.d_le_post_fs_programmed_view
+    /LEFsProgrammingSurface.d_le_pre_fs_programming_view
+    /LEFsProgrammingSurface.le_fs_surrogate_transform.
+rewrite (LEFsProgrammingSurface.d_le_post_fs_programmed_view_fixed_branch_imageE x s).
+rewrite (LEFsProgrammingSurface.d_le_fs_shadow_semantic_post_marginal_fixed_branch_imageE x s).
+pose F := fun bad =>
+  LEFsProgrammingSurface.le_fs_shadow_semantic_branch_image_of_observable
+    (le_real_execution_observable x s) bad.
+pose P := fun bad => le_distinguisher_event D (F bad).
+rewrite !dmapE.
+have Hconst : forall bad, P bad = P false.
+  move=> bad.
+  rewrite /P /F.
+  by rewrite (le_distinguisher_event_on_semantic_branch_image_matches_surrogate
+    (le_real_execution_observable x s) bad D)
+    (le_distinguisher_event_on_semantic_branch_image_matches_surrogate
+    (le_real_execution_observable x s) false D).
+have Hleft :
+    mu (dunit false) P = mu (dunit false) (fun (_ : bool) => P false).
+  apply/mu_eq=> bad /=.
+  exact (Hconst bad).
+have Hright :
+    mu LEFsProgrammingSurface.d_le_fs_shadow_branch_choice P =
+    mu LEFsProgrammingSurface.d_le_fs_shadow_branch_choice (fun (_ : bool) => P false).
+  apply/mu_eq=> bad /=.
+  exact (Hconst bad).
+rewrite Hleft Hright.
+case: (P false).
+- have HleftT :
+      mu (dunit false) (fun (_ : bool) => true) = mu (dunit false) predT.
+    apply/mu_eq=> bad /=.
+    by [].
+  have HrightT :
+      mu LEFsProgrammingSurface.d_le_fs_shadow_branch_choice (fun (_ : bool) => true) =
+      mu LEFsProgrammingSurface.d_le_fs_shadow_branch_choice predT.
+    apply/mu_eq=> bad /=.
+    by [].
+  have Hw : weight LEFsProgrammingSurface.d_le_fs_shadow_branch_choice = 1%r.
+    exact (is_losslessP _ LEFsProgrammingSurface.le_fs_shadow_branch_choice_lossless).
+  rewrite HleftT HrightT.
+  by rewrite dunit_ll /weight Hw.
+have Hleft0 :
+    mu (dunit false) (fun (_ : bool) => false) = mu (dunit false) pred0.
+  apply/mu_eq=> bad /=.
+  by [].
+have Hright0 :
+    mu LEFsProgrammingSurface.d_le_fs_shadow_branch_choice (fun (_ : bool) => false) =
+    mu LEFsProgrammingSurface.d_le_fs_shadow_branch_choice pred0.
+  apply/mu_eq=> bad /=.
+  by [].
+by rewrite Hleft0 Hright0 !mu0.
+qed.
+
+lemma A_LE_semantic_projected_adv_matches_game_adv :
+  forall (x : qssm_public_input) (xms : ms_public_input) (s : seed) (D : distinguisher),
+    Adv_G1_G2_LE x xms s D = le_semantic_view_distinguishing_adv x s D.
+proof.
+move=> x xms s D.
+rewrite (A_Adv_G1_G2_LE_unfolds_to_projected_views x xms s D).
+rewrite (A_LE_projected_real_adv_layout x xms s D).
+rewrite (A_LE_semantic_projected_sim_adv_layout x s D).
+by rewrite /le_semantic_view_distinguishing_adv.
+qed.
+
 lemma A_G1_to_G2_le_transition_bound :
   forall (x : qssm_public_input) (xms : ms_public_input) (s : seed) (D : distinguisher),
     set_b_parameter_well_formed =>
@@ -234,4 +328,19 @@ rewrite /le_hvzk_transition_bound in Hhvzk.
 have Hbridge := A_LE_game_bridge_consistency x xms s D.
 rewrite /le_game_bridge_consistent in Hbridge.
 by rewrite Hbridge; exact Hhvzk.
+qed.
+
+lemma A_G1_to_G2_le_semantic_transition_bound :
+  forall (x : qssm_public_input) (xms : ms_public_input) (s : seed) (D : distinguisher),
+    set_b_parameter_well_formed =>
+    0%r <= epsilon_le =>
+    le_real_sim_transcript_equiv x s =>
+    Adv_G1_G2_LE x xms s D <=
+      BudgetParameters.epsilon_le_rej +
+      LEFsProgrammingSurface.le_fs_shadow_local_bad_branch_mass.
+proof.
+move=> x xms s D Hsetb Heps Hleeqv.
+have Hhvzk := A_LE_HVZK_semantic_transition_bound x s D Hsetb Heps Hleeqv.
+rewrite /le_semantic_view_advantage_bound_from_indistinguishability in Hhvzk.
+by rewrite (A_LE_semantic_projected_adv_matches_game_adv x xms s D); exact Hhvzk.
 qed.

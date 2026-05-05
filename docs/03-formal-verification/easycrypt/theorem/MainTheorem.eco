@@ -1,7 +1,7 @@
 {
   "version": 3,
   "echash": "n/a",
-  "root": { "kind": "ec", "digest": "7d52e31d1b45e80f5fa669355924a7ff" },
+  "root": { "kind": "ec", "digest": "071258c47392cd4e09f3b4732af99ace" },
   "depends": {
     "ActionOwner": {
       "direct": false,
@@ -256,7 +256,7 @@
     "GameLEBridge": {
       "direct": true,
       "kind": "ec",
-      "digest": "c1a2c7f887d55609b4f1c074c9415f95"
+      "digest": "ac8066758b541a375cc0a89bf46de4ff"
     },
     "GameMSHopComposition": {
       "direct": true,
