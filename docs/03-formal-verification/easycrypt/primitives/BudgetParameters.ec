@@ -55,6 +55,15 @@ lemma A4_le_fs_nonneg :
   0%r <= epsilon_le_fs.
 proof. by rewrite /epsilon_le_fs. qed.
 
+op epsilon_le_fs_semantic : real = 1%r / 2%r.
+
+lemma A4_le_fs_semantic_nonneg :
+  0%r <= epsilon_le_fs_semantic.
+proof.
+rewrite /epsilon_le_fs_semantic.
+by smt().
+qed.
+
 op epsilon_le : real = epsilon_le_rej + epsilon_le_fs.
 
 lemma epsilon_le_component_sum :

@@ -26,6 +26,12 @@ pred le_semantic_view_advantage_bound_from_indistinguishability
     BudgetParameters.epsilon_le_rej +
     LEFsProgrammingSurface.le_fs_shadow_local_bad_branch_mass.
 
+pred le_semantic_view_advantage_bound_from_owned_budget
+  (x : qssm_public_input) (s : seed) (D : distinguisher) =
+  le_semantic_view_distinguishing_adv x s D <=
+    BudgetParameters.epsilon_le_rej +
+    BudgetParameters.epsilon_le_fs_semantic.
+
 lemma A_LE_rejection_contributes_to_sdist :
   forall (x : qssm_public_input) (s : seed) (D : distinguisher),
     le_real_view_distribution_defined x s =>
@@ -73,6 +79,20 @@ move=> x s D Hr Hs Hfs _.
 exact (A_LE_fs_semantic_programming_sampler_sdist_le_bad_branch_mass x s D Hr Hs Hfs).
 qed.
 
+lemma A_LE_fs_semantic_contributes_to_sdist_owned_budget :
+  forall (x : qssm_public_input) (s : seed) (D : distinguisher),
+    le_real_view_distribution_defined x s =>
+    le_sim_view_distribution_defined x s =>
+    le_fs_programming_hiding_bound x s D =>
+    0%r <= epsilon_le =>
+    sdist (dmap (d_le_post_rejection_view x s) le_fs_view_surrogate)
+      (LEFsProgrammingSurface.d_le_fs_shadow_semantic_post_marginal x s)
+      <= BudgetParameters.epsilon_le_fs_semantic.
+proof.
+move=> x s D Hr Hs Hfs _.
+exact (A_LE_fs_semantic_programming_sampler_sdist_le_owned_budget x s D Hr Hs Hfs).
+qed.
+
 lemma A_LE_semantic_combined_hiding_bounds_sdist :
   forall (x : qssm_public_input) (s : seed) (D : distinguisher),
     le_real_view_distribution_defined x s =>
@@ -114,6 +134,31 @@ have -> : BudgetParameters.epsilon_le_rej +
     (0%r + LEFsProgrammingSurface.le_fs_shadow_local_bad_branch_mass) =
   BudgetParameters.epsilon_le_rej + LEFsProgrammingSurface.le_fs_shadow_local_bad_branch_mass by ring.
 exact Hstep.
+qed.
+
+lemma A_LE_semantic_combined_hiding_bounds_sdist_owned_budget :
+  forall (x : qssm_public_input) (s : seed) (D : distinguisher),
+    le_real_view_distribution_defined x s =>
+    le_sim_view_distribution_defined x s =>
+    le_rejection_sampling_hiding_bound x s D =>
+    le_fs_programming_hiding_bound x s D =>
+    0%r <= epsilon_le =>
+    sdist (d_le_real_view x s)
+      (LEFsProgrammingSurface.d_le_fs_shadow_semantic_post_marginal x s)
+      <= BudgetParameters.epsilon_le_rej +
+         BudgetParameters.epsilon_le_fs_semantic.
+proof.
+move=> x s D Hr Hs Hrej Hfs Heps.
+have Hmass :=
+  A_LE_semantic_combined_hiding_bounds_sdist x s D Hr Hs Hrej Hfs Heps.
+have Hrefl : BudgetParameters.epsilon_le_rej <= BudgetParameters.epsilon_le_rej.
+  by [].
+have Hextend :
+    BudgetParameters.epsilon_le_rej + LEFsProgrammingSurface.le_fs_shadow_local_bad_branch_mass <=
+    BudgetParameters.epsilon_le_rej + BudgetParameters.epsilon_le_fs_semantic.
+  exact (ler_add _ _ _ _ Hrefl
+    LEFsProgrammingSurface.le_fs_shadow_local_bad_branch_mass_le_epsilon_le_fs_semantic).
+exact (ler_trans _ _ _ Hmass Hextend).
 qed.
 
 lemma A_LE_combined_hiding_bounds_sdist :
@@ -242,4 +287,27 @@ have Hle : mu dr E - mu ds E <= `|mu dr E - mu ds E|.
   exact (ler_norm (mu dr E - mu ds E)).
 apply (ler_trans _ _ _ Hle).
 apply (ler_trans _ _ _ Habs Hstat).
+qed.
+
+lemma A_LE_semantic_view_advantage_bound_from_owned_budget :
+  forall (x : qssm_public_input) (s : seed) (D : distinguisher),
+    le_real_view_distribution_defined x s =>
+    le_sim_view_distribution_defined x s =>
+    le_real_sim_view_indistinguishable x s D =>
+    0%r <= epsilon_le =>
+    le_semantic_view_advantage_bound_from_owned_budget x s D.
+proof.
+move=> x s D Hr Hs Hind Heps.
+rewrite /le_semantic_view_advantage_bound_from_owned_budget.
+have Hmass :=
+  A_LE_semantic_view_advantage_bound_from_indistinguishability x s D Hr Hs Hind Heps.
+rewrite /le_semantic_view_advantage_bound_from_indistinguishability in Hmass.
+have Hrefl : BudgetParameters.epsilon_le_rej <= BudgetParameters.epsilon_le_rej.
+  by [].
+have Hextend :
+    BudgetParameters.epsilon_le_rej + LEFsProgrammingSurface.le_fs_shadow_local_bad_branch_mass <=
+    BudgetParameters.epsilon_le_rej + BudgetParameters.epsilon_le_fs_semantic.
+  exact (ler_add _ _ _ _ Hrefl
+    LEFsProgrammingSurface.le_fs_shadow_local_bad_branch_mass_le_epsilon_le_fs_semantic).
+exact (ler_trans _ _ _ Hmass Hextend).
 qed.

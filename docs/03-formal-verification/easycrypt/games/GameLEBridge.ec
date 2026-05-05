@@ -344,3 +344,18 @@ have Hhvzk := A_LE_HVZK_semantic_transition_bound x s D Hsetb Heps Hleeqv.
 rewrite /le_semantic_view_advantage_bound_from_indistinguishability in Hhvzk.
 by rewrite (A_LE_semantic_projected_adv_matches_game_adv x xms s D); exact Hhvzk.
 qed.
+
+lemma A_G1_to_G2_le_semantic_owned_budget_transition_bound :
+  forall (x : qssm_public_input) (xms : ms_public_input) (s : seed) (D : distinguisher),
+    set_b_parameter_well_formed =>
+    0%r <= epsilon_le =>
+    le_real_sim_transcript_equiv x s =>
+    Adv_G1_G2_LE x xms s D <=
+      BudgetParameters.epsilon_le_rej +
+      BudgetParameters.epsilon_le_fs_semantic.
+proof.
+move=> x xms s D Hsetb Heps Hleeqv.
+have Hhvzk := A_LE_HVZK_semantic_owned_budget_transition_bound x s D Hsetb Heps Hleeqv.
+rewrite /le_semantic_view_advantage_bound_from_owned_budget in Hhvzk.
+by rewrite (A_LE_semantic_projected_adv_matches_game_adv x xms s D); exact Hhvzk.
+qed.

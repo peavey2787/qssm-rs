@@ -482,6 +482,20 @@ rewrite le_fs_shadow_local_bad_branch_mass_is_true_mass.
 exact le_fs_shadow_branch_choice_mass_true.
 qed.
 
+lemma le_fs_shadow_local_bad_branch_mass_eq_epsilon_le_fs_semantic :
+  le_fs_shadow_local_bad_branch_mass = BudgetParameters.epsilon_le_fs_semantic.
+proof.
+rewrite le_fs_shadow_local_bad_branch_mass_closed_form.
+by rewrite /BudgetParameters.epsilon_le_fs_semantic.
+qed.
+
+lemma le_fs_shadow_local_bad_branch_mass_le_epsilon_le_fs_semantic :
+  le_fs_shadow_local_bad_branch_mass <= BudgetParameters.epsilon_le_fs_semantic.
+proof.
+rewrite le_fs_shadow_local_bad_branch_mass_eq_epsilon_le_fs_semantic.
+by [].
+qed.
+
 lemma le_fs_shadow_local_bad_branch_mass_nonneg :
   0%r <= le_fs_shadow_local_bad_branch_mass.
 proof.

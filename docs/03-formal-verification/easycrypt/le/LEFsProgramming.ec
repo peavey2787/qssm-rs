@@ -149,3 +149,19 @@ rewrite /LEFsProgrammingSurface.d_le_post_fs_programmed_view
 rewrite sdistC.
 exact Hshadow.
 qed.
+
+lemma A_LE_fs_semantic_programming_sampler_sdist_le_owned_budget :
+  forall (x : qssm_public_input) (s : seed) (D : distinguisher),
+    le_real_view_distribution_defined x s =>
+    le_sim_view_distribution_defined x s =>
+    le_fs_programming_hiding_bound x s D =>
+    sdist (dmap (d_le_post_rejection_view x s) le_fs_view_surrogate)
+      (LEFsProgrammingSurface.d_le_fs_shadow_semantic_post_marginal x s)
+      <= BudgetParameters.epsilon_le_fs_semantic.
+proof.
+move=> x s D Hr Hs Hfs.
+have Hmass :=
+  A_LE_fs_semantic_programming_sampler_sdist_le_bad_branch_mass x s D Hr Hs Hfs.
+exact (ler_trans _ _ _ Hmass
+  LEFsProgrammingSurface.le_fs_shadow_local_bad_branch_mass_le_epsilon_le_fs_semantic).
+qed.

@@ -378,6 +378,22 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     exact-zero skeleton. The exact-zero route still remains checked in
     parallel: `BudgetParameters.ec`, `A_G1_to_G2_le_transition_bound`,
     `qssm_main_theorem_skeleton`, and `qssm_main_theorem` remain unchanged.
+  - Primitive-owned semantic FS budget, May 2026: `primitives/BudgetParameters.ec`
+    now defines `epsilon_le_fs_semantic = 1%r / 2%r` with nonnegativity lemma
+    `A4_le_fs_semantic_nonneg`. `le/LEFsProgrammingSurface.ec` proves both
+    `le_fs_shadow_local_bad_branch_mass = epsilon_le_fs_semantic` and
+    `le_fs_shadow_local_bad_branch_mass <= epsilon_le_fs_semantic`, so the
+    local semantic mass is now connected to a primitive-owned budget without an
+    import-cycle inversion. `le/LEFsProgramming.ec`,
+    `le/LEStatisticalDistance.ec`, and `le/LEHVZK.ec` each now add owned-budget
+    semantic wrapper theorems ending in `epsilon_le_fs_semantic`; the game
+    layer exposes `A_G1_to_G2_le_semantic_owned_budget_transition_bound` with
+    bound `epsilon_le_rej + epsilon_le_fs_semantic`; and
+    `theorem/MainTheorem.ec` now adds `qssm_main_theorem_semantic_budget_owned`
+    with bound `epsilon_ms_hash_binding + epsilon_ms_rom_programmability +
+    epsilon_le_rej + epsilon_le_fs_semantic`. The exact-zero route and the
+    existing local-mass semantic route both remain checked alongside that owned-
+    budget path.
   - Design refinement, May 2026: `A_LE_rejection_sampler_sdist_bound` remains a
     proved lemma in `le/LERejection.ec`, but it is no longer a repackaging of a
     surrogate-side axiom. It now rests on the concrete identity rejection
