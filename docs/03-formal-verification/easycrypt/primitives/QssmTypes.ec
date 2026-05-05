@@ -82,7 +82,18 @@ type qssm_public_view = {
 	qssmpv_programmed_query_digest_obs : digest;
 	qssmpv_query_material : le_query_material;
 }.
+
+op qssm_observable_event_payload (p : qssm_event_payload) : qssm_event_payload =
+	{| qsep_statement_digest = p.`qsep_statement_digest;
+	   qsep_result_bit = p.`qsep_result_bit;
+	   qsep_bitness_global_challenges = p.`qsep_bitness_global_challenges;
+	   qsep_comparison_global_challenge = p.`qsep_comparison_global_challenge;
+	   qsep_comparison_openings = witness;
+	   qsep_transcript_digest = p.`qsep_transcript_digest |}.
+
 type qssm_transcript_observable.
 
 (* Distinguishers / game views *)
 type distinguisher.
+
+op qssm_distinguisher_event (D : distinguisher) : qssm_event_payload -> bool.

@@ -1,4 +1,4 @@
-require import AllCore.
+require import AllCore Distr.
 require import QssmTypes SourceTypes MS LERealExecution LESurface LEModel.
 require export SourceModel.
 require import SourceDistributions MSProbabilitySurface.
@@ -62,14 +62,79 @@ rewrite qssm_view_to_le_observable_preserves_event_payload.
 by [].
 qed.
 
+lemma qssm_real_view_event_equality (x : qssm_public_input) (s : seed) (D : distinguisher) :
+  ms_distinguisher_event D (qssm_view_to_ms_observable (qssm_real_view x s)) =
+  le_distinguisher_event D (qssm_view_to_le_observable (qssm_real_view x s)).
+proof.
+rewrite ms_distinguisher_event_on_qssm_view_projection.
+rewrite le_distinguisher_event_on_qssm_view_projection.
+by [].
+qed.
+
+lemma ms_qssm_real_view_probability_eq_shared
+  (x : qssm_public_input) (s : seed) (D : distinguisher) :
+  ms_view_distinguish_pr (dunit (qssm_view_to_ms_observable (qssm_real_view x s))) D =
+  mu (dunit (qssm_observable_event_payload (qssmpv_event_payload (qssm_real_view x s))))
+    (qssm_distinguisher_event D).
+proof.
+rewrite /ms_view_distinguish_pr.
+rewrite !dunitE.
+by rewrite ms_distinguisher_event_on_qssm_view_projection.
+qed.
+
+lemma le_qssm_real_view_probability_eq_shared
+  (x : qssm_public_input) (s : seed) (D : distinguisher) :
+  le_view_distinguish_pr (dunit (qssm_view_to_le_observable (qssm_real_view x s))) D =
+  mu (dunit (qssm_observable_event_payload (qssmpv_event_payload (qssm_real_view x s))))
+    (qssm_distinguisher_event D).
+proof.
+rewrite /le_view_distinguish_pr.
+rewrite !dunitE.
+by rewrite le_distinguisher_event_on_qssm_view_projection.
+qed.
+
+lemma ms_real_projection_probability_eq_shared
+  (x : qssm_public_input) (s : seed) (D : distinguisher) :
+  ms_view_distinguish_pr
+    (d_ms3a_bitness_real_observable_v2 (extract_ms_public x)) D =
+  mu (dunit (qssm_observable_event_payload (qssmpv_event_payload (qssm_real_view x s))))
+    (qssm_distinguisher_event D).
+proof.
+rewrite d_ms3a_bitness_real_observable_v2_canonical.
+rewrite /ms_view_distinguish_pr.
+rewrite !dunitE.
+rewrite /ms_distinguisher_event.
+rewrite /ms_qssm_event_payload /ms3a_pack_observable.
+rewrite /qssm_observable_event_payload /qssm_real_view.
+rewrite /qssm_event_payload_of_ms_public /qssm_event_payload_of_ms_fields.
+by [].
+qed.
+
+lemma le_real_projection_probability_eq_shared
+  (x : qssm_public_input) (s : seed) (D : distinguisher) :
+  le_view_distinguish_pr (d_le_real_view x s) D =
+  mu (dunit (qssm_observable_event_payload (qssmpv_event_payload (qssm_real_view x s))))
+    (qssm_distinguisher_event D).
+proof.
+rewrite /d_le_real_view /d_le_real_execution_view.
+rewrite -(qssm_real_view_projects_to_le x s).
+exact (le_qssm_real_view_probability_eq_shared x s D).
+qed.
+
 (* Canonical composed simulator entry point *)
 op simulate_qssm_transcript :
   qssm_public_input -> seed -> qssm_transcript_observable.
 
 (* Public extraction bridge: the extracted MS public surface is the MS-side
    view of the same QSSM public input that drives the LE real view. *)
-axiom A_extract_ms_public_real_view_probability_eq :
+lemma A_extract_ms_public_real_view_probability_eq :
   forall (x : qssm_public_input) (s : seed) (D : distinguisher),
     ms_view_distinguish_pr
       (d_ms3a_bitness_real_observable_v2 (extract_ms_public x)) D =
     le_view_distinguish_pr (d_le_real_view x s) D.
+proof.
+move=> x s D.
+rewrite (ms_real_projection_probability_eq_shared x s D).
+rewrite (le_real_projection_probability_eq_shared x s D).
+by [].
+qed.

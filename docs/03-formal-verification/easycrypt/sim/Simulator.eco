@@ -1,7 +1,7 @@
 {
   "version": 3,
   "echash": "n/a",
-  "root": { "kind": "ec", "digest": "81ae34d8519f4e9b1267d1054081ce2a" },
+  "root": { "kind": "ec", "digest": "cbc6339e5a22b81ced300b82525a9ea9" },
   "depends": {
     "AlgTactic": {
       "direct": false,
@@ -199,7 +199,7 @@
       "digest": "7bfc7bffc1442385fc98161d37676888"
     },
     "Distr": {
-      "direct": false,
+      "direct": true,
       "kind": "ec",
       "digest": "97f21c11171f5d46d4b4289b18fa9c04"
     },
@@ -316,7 +316,7 @@
     "LESurface": {
       "direct": true,
       "kind": "ec",
-      "digest": "06af03280e0fd9528679f7abc8d132a7"
+      "digest": "df8bfe79cc4c856d1ff085579071ecad"
     },
     "LEViewIndist": {
       "direct": false,
@@ -341,7 +341,7 @@
     "MSProbabilitySurface": {
       "direct": true,
       "kind": "ec",
-      "digest": "d5f53cf78ec2ea7de301c8a1091ca9bd"
+      "digest": "476e50ab3d50acf34e4139b03ad72df3"
     },
     "Means": {
       "direct": false,
@@ -381,7 +381,7 @@
     "QssmTypes": {
       "direct": true,
       "kind": "ec",
-      "digest": "0e36a92029b737858d4fe1023856d294"
+      "digest": "263f8c258922ff79b1c790a0c60f13a5"
     },
     "Real": {
       "direct": false,

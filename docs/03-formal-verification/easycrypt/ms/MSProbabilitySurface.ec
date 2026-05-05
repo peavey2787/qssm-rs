@@ -26,10 +26,23 @@ require import ComparisonPayloadTypes ComparisonPayloadSeedTypes.
      MS2 still remains axiomatized at the game layer until its lower
      transition theorem closes. *)
 
-op ms_distinguisher_event (D : distinguisher) : ms_v2_transcript_observable -> bool.
+op ms_distinguisher_event (D : distinguisher) : ms_v2_transcript_observable -> bool =
+  fun (obs : ms_v2_transcript_observable) =>
+    qssm_distinguisher_event D
+      (qssm_observable_event_payload (ms_qssm_event_payload obs)).
 
 op ms_view_distinguish_pr (d : ms_v2_transcript_observable distr) (D : distinguisher) : real =
   mu d (ms_distinguisher_event D).
+
+lemma ms_distinguisher_event_on_qssm_view_projection
+  (v : qssm_public_view) (D : distinguisher) :
+  ms_distinguisher_event D (qssm_view_to_ms_observable v) =
+  qssm_distinguisher_event D
+    (qssm_observable_event_payload v.`qssmpv_event_payload).
+proof.
+rewrite /ms_distinguisher_event.
+by rewrite qssm_view_to_ms_observable_preserves_event_payload.
+qed.
 
 lemma ms_view_distinguish_pr_respects_distribution_equality
   (d d' : ms_v2_transcript_observable distr) (D : distinguisher) :

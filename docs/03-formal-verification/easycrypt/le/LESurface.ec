@@ -100,10 +100,23 @@ op d_le_sim_view (x : qssm_public_input) (s : seed) : le_transcript_observable d
   dmap (d_le_post_rejection_view x s) le_fs_view_surrogate.
 
 (* Distinguisher as an event on LE transcript observables (interface to mu / sdist). *)
-op le_distinguisher_event (D : distinguisher) : le_transcript_observable -> bool.
+op le_distinguisher_event (D : distinguisher) : le_transcript_observable -> bool =
+  fun (obs : le_transcript_observable) =>
+    qssm_distinguisher_event D
+      (qssm_observable_event_payload (le_qssm_event_payload obs)).
 
 op le_view_distinguish_pr (d : le_transcript_observable distr) (D : distinguisher) : real =
   mu d (le_distinguisher_event D).
+
+lemma le_distinguisher_event_on_qssm_view_projection
+  (v : qssm_public_view) (D : distinguisher) :
+  le_distinguisher_event D (qssm_view_to_le_observable v) =
+  qssm_distinguisher_event D
+    (qssm_observable_event_payload v.`qssmpv_event_payload).
+proof.
+rewrite /le_distinguisher_event.
+by rewrite qssm_view_to_le_observable_preserves_event_payload.
+qed.
 
 op le_projected_real_adv_base (x : qssm_public_input) (s : seed) (D : distinguisher) : real =
   le_view_distinguish_pr (d_le_real_view x s) D.
