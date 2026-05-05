@@ -75,3 +75,26 @@ have Hadd : Adv_G0_G1_MS x xms s D + Adv_G1_MS_to_LE x xms s D + Adv_G1_G2_LE x 
   exact Hsum012.
 by apply (ler_trans _ _ _ Htri Hadd).
 qed.
+
+(* Concrete zero-budget corollary.
+
+   With `epsilon_ms_hash_binding`, `epsilon_ms_rom_programmability`, and
+   `epsilon_le` all defined as `0%r` in `primitives/BudgetParameters.ec`
+   (justified by exact distribution / sdist equalities at every transition in
+   the current model), the additive bound collapses to `<= 0%r`. This is the
+   exact-zero gap of the current model, NOT a nonzero cryptographic security
+   bound. *)
+lemma qssm_main_theorem
+  (x : qssm_public_input) (s : seed) (D : distinguisher) :
+  set_b_parameter_well_formed =>
+  le_real_sim_transcript_equiv x s =>
+  Adv_G0_G2_QSSM x (extract_ms_public x) s D <= 0%r.
+proof.
+move=> Hsetb Hleeqv.
+have Hskel := qssm_main_theorem_skeleton x s D Hsetb Hleeqv.
+have Heq :
+  epsilon_ms_hash_binding + epsilon_ms_rom_programmability + epsilon_le = 0%r.
+- rewrite /epsilon_ms_hash_binding /epsilon_ms_rom_programmability /epsilon_le.
+  by ring.
+by rewrite -Heq.
+qed.
