@@ -251,22 +251,27 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     theorem to keep the downstream name `A_LE_fs_surrogate_sdist_bound`
     unchanged. `LEStatisticalDistance.ec` therefore stays unchanged while the
     theorem-facing FS endpoint now rests on the semantic shadow lane.
-  - Attempted non-identity FS shadow refinement, May 2026: a branch-sensitive
-    shadow post constructor that switched to semantic post query material on a
-    bad branch was explored but rolled back to keep the tree green. The first
-    missing local theorem is a support-aware good-branch collapse for that
-    branch-sensitive `le_fs_shadow_post_of_observable` on the support of
-    `d_le_pre_fs_programming_view x s`. Concretely, the refinement needs a
-    theorem strong enough to recover
-    `d_le_fs_shadow_post_marginal_matches_programmed_view` and then
-    `d_le_fs_shadow_pre_post_marginals_equal` under the current exact-zero
-    sampler, without changing theorem-facing names or global LE arithmetic.
-  - The next local target is therefore still to make the shadow bad-event /
-    failure-probability lane semantically nontrivial, but only after that
-    support-aware good-branch collapse theorem is identified or proved.
-    The preferred future interpretation of `epsilon_le_fs` remains an upper
-    bound on that bad-event/failure probability, or a symbolic ROM-programming
-    bound that dominates it, rather than a raw identity-derived zero.
+  - Support-aware FS shadow good-branch closure, May 2026: the missing local
+    theorem is now closed on the current exact-zero constructor shape.
+    `LEFsProgrammingSurface.ec` now proves
+    `d_le_pre_fs_programming_view_supportE`,
+    `d_le_fs_shadow_pre_marginal_supportE`,
+    `le_fs_shadow_good_event_on_pre_programming_support`,
+    `le_fs_shadow_good_event_on_pre_marginal_support`, and
+    `le_fs_shadow_good_branch_post_matches_surrogate_on_pre_support`. The
+    recovered local bridge is then used directly inside
+    `d_le_fs_shadow_post_marginal_matches_programmed_view`, and
+    `d_le_fs_shadow_pre_post_marginals_equal` remains recovered without any
+    theorem-facing changes to `LEFsProgramming.ec`, `LEStatisticalDistance.ec`,
+    or `MainTheorem.ec`.
+  - Branch-sensitive FS shadow refinement remains deferred: the active shadow
+    post constructor is still surrogate-shaped, so the new support-aware
+    theorem is currently a preparation theorem rather than the final nonzero
+    budget step. The next local target is to reintroduce the branch-sensitive
+    bad branch / semantic post-query-material update on top of that support
+    theorem, reprove the same post-marginal and pre/post equalities on the
+    refined constructor, and only then revisit the quantitative
+    failure-probability / budget interpretation of `epsilon_le_fs`.
   - Design refinement, May 2026: `A_LE_rejection_sampler_sdist_bound` remains a
     proved lemma in `le/LERejection.ec`, but it is no longer a repackaging of a
     surrogate-side axiom. It now rests on the concrete identity rejection

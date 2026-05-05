@@ -4,7 +4,7 @@ This directory contains the EasyCrypt proof development for the QSSM theorem sta
 
 Current status: the tree checks cleanly with `./check_easycrypt.sh`, the repo-local named `axiom` count in `*.ec` files under this directory is currently `0`, and the active theorem path closes on a concrete exact-zero budget model. That is a machine-checked statement about the current abstraction boundary, not yet a nonzero cryptographic security estimate for the deployed system.
 
-The main live refinement track is the LE shadow lane. Rejection and FS theorem-facing component bounds already route through lower shadow surfaces, but the active FS bad-event lane is still exact-zero on the current model. The next missing local result is a support-aware good-branch collapse theorem for a branch-sensitive shadow post constructor.
+The main live refinement track is the LE shadow lane. Rejection and FS theorem-facing component bounds already route through lower shadow surfaces, and the support-aware good-branch collapse theorem for the FS shadow post constructor is now proved on the current exact-zero model. The next target is to reintroduce the branch-sensitive shadow bad branch on top of that local support theorem without disturbing theorem-facing files.
 
 ## What This Directory Covers
 
@@ -124,5 +124,6 @@ Every plan file and local subtree guide linked from this README includes a retur
 - The EasyCrypt tree is checker-green today.
 - Repo-local named axioms in `*.ec` files under this directory are currently at `0`.
 - The active theorem path is exact-zero because the current budget model sets the MS and LE component budgets to `0%r` and the lower proof lanes close by exact distribution equality or identity transport.
+- The LE FS shadow surface now has support-aware helper lemmas and a local good-branch collapse theorem sufficient to recover the shadow post-marginal/programmed-view bridge on the active constructor shape.
 - The proof stack is therefore machine-checked as a formal scaffold with concrete lower carriers, not yet as a nonzero end-to-end cryptographic bound.
-- The next meaningful refinement remains the LE FS shadow lane, not another round of README expansion.
+- The next meaningful refinement remains the LE FS shadow lane: reintroduce the branch-sensitive bad branch on top of the now-closed support theorem, then revisit the quantitative failure/budget story.

@@ -4,6 +4,7 @@ require import List.
 require import Real.
 require import SDist.
 require import StdOrder.
+require import LERealExecution.
 require import LESurface.
 require BudgetParameters.
 
@@ -458,6 +459,10 @@ op le_fs_shadow_bad_event
   (st : le_fs_shadow_state) : bool =
   st.`lefss_hidden_material.`lefshm_bad_flag.
 
+pred le_fs_shadow_good_event
+  (x : qssm_public_input) (s : seed) (obs : le_transcript_observable) =
+  ! (le_fs_query_material_obs obs).`leqm_bad_flag.
+
 op d_le_fs_shadow_coupled_state
   (x : qssm_public_input) (s : seed) : le_fs_shadow_state distr =
   dmap (d_le_pre_fs_programming_view x s)
@@ -514,6 +519,56 @@ rewrite /le_fs_shadow_bad_event /le_fs_shadow_state_of_observable.
 by rewrite /le_fs_shadow_hidden_material_of_observable.
 qed.
 
+lemma le_real_execution_query_material_bad_flag_false
+  (x : qssm_public_input) (s : seed) :
+  ! (le_real_execution_query_material x s).`leqm_bad_flag.
+proof.
+rewrite /le_real_execution_query_material /le_real_execution_record_of.
+rewrite /le_real_execution_query_material_of_spine /le_real_execution_spine_of.
+rewrite /le_real_execution_primitive_material_of /le_real_execution_residual_material_of.
+rewrite /le_real_execution_hidden_query_material_of.
+by [].
+qed.
+
+lemma d_le_pre_fs_programming_view_supportE
+  (x : qssm_public_input) (s : seed) (obs : le_transcript_observable) :
+  obs \in d_le_pre_fs_programming_view x s =>
+  obs = le_real_execution_observable x s.
+proof.
+move=> Hobs.
+rewrite /d_le_pre_fs_programming_view /d_le_post_rejection_view.
+rewrite /d_le_real_view /d_le_real_execution_view in Hobs.
+case/supp_dmap: Hobs=> pre_obs [Hpre ->].
+move: Hpre; rewrite supp_dunit => ->.
+by rewrite /le_post_rejection_surrogate.
+qed.
+
+lemma le_fs_shadow_good_event_on_pre_programming_support
+  (x : qssm_public_input) (s : seed) (obs : le_transcript_observable) :
+  obs \in d_le_pre_fs_programming_view x s =>
+  le_fs_shadow_good_event x s obs.
+proof.
+move=> Hobs.
+rewrite /le_fs_shadow_good_event /le_fs_query_material_obs.
+rewrite (d_le_pre_fs_programming_view_supportE x s obs Hobs).
+rewrite (le_real_execution_observable_exposes_query_material x s).
+exact (le_real_execution_query_material_bad_flag_false x s).
+qed.
+
+lemma le_fs_shadow_good_branch_post_matches_surrogate_on_pre_support
+  (x : qssm_public_input) (s : seed) (obs : le_transcript_observable) :
+  obs \in d_le_pre_fs_programming_view x s =>
+  le_fs_shadow_good_event x s obs =>
+  le_fs_shadow_post_of_observable obs
+    (le_fs_shadow_hidden_material_of_observable obs) =
+  le_fs_surrogate_transform obs.
+proof.
+move=> _ _.
+rewrite /le_fs_shadow_post_of_observable.
+rewrite /le_fs_shadow_hidden_material_of_observable.
+by rewrite /le_fs_programmed_response_of_observable.
+qed.
+
 lemma d_le_fs_shadow_pre_marginal_matches_pre_programming_view :
   forall (x : qssm_public_input) (s : seed),
     d_le_fs_shadow_pre_marginal x s = d_le_pre_fs_programming_view x s.
@@ -532,6 +587,26 @@ have Hmap :
   by rewrite /le_fs_shadow_pre_observable /le_fs_shadow_state_of_observable /(\o).
 rewrite Hmap.
 by rewrite dmap_id.
+qed.
+
+lemma d_le_fs_shadow_pre_marginal_supportE
+  (x : qssm_public_input) (s : seed) (obs : le_transcript_observable) :
+  obs \in d_le_fs_shadow_pre_marginal x s =>
+  obs = le_real_execution_observable x s.
+proof.
+move=> Hobs.
+rewrite d_le_fs_shadow_pre_marginal_matches_pre_programming_view in Hobs.
+exact (d_le_pre_fs_programming_view_supportE x s obs Hobs).
+qed.
+
+lemma le_fs_shadow_good_event_on_pre_marginal_support
+  (x : qssm_public_input) (s : seed) (obs : le_transcript_observable) :
+  obs \in d_le_fs_shadow_pre_marginal x s =>
+  le_fs_shadow_good_event x s obs.
+proof.
+move=> Hobs.
+rewrite d_le_fs_shadow_pre_marginal_matches_pre_programming_view in Hobs.
+exact (le_fs_shadow_good_event_on_pre_programming_support x s obs Hobs).
 qed.
 
 lemma d_le_fs_shadow_pre_marginal_matches_post_rejection_view :
@@ -557,9 +632,11 @@ have Hmap :
     (le_fs_shadow_post_observable \o le_fs_shadow_state_of_observable) =
   dmap (d_le_pre_fs_programming_view x s)
     le_fs_surrogate_transform.
-  apply eq_dmap_in=> obs _ /=.
-  rewrite /le_fs_shadow_post_observable /(\o).
-  exact (le_fs_shadow_post_of_observable_matches_surrogate obs).
+  apply eq_dmap_in=> obs Hobs /=.
+  rewrite /le_fs_shadow_post_observable /(\o) /le_fs_shadow_state_of_observable /=.
+  exact (le_fs_shadow_good_branch_post_matches_surrogate_on_pre_support
+    x s obs Hobs
+    (le_fs_shadow_good_event_on_pre_programming_support x s obs Hobs)).
 rewrite Hmap.
 by rewrite /d_le_post_fs_programmed_view.
 qed.
