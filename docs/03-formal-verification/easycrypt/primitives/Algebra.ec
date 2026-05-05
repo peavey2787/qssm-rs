@@ -1,12 +1,13 @@
 require import AllCore Distr.
 require import QssmTypes.
+require PointInterface.
 
 (* Permanent algebra model (abstract scalar / point group + homomorphism on the fixed generator). *)
 
 op sch_generator : sch_point.
-op sch_neutral_pt : sch_point.
-op sch_opp_pt : sch_point -> sch_point.
-op sch_add_pt : sch_point -> sch_point -> sch_point.
+op sch_neutral_pt : sch_point = PointInterface.sch_neutral_pt.
+op sch_opp_pt : sch_point -> sch_point = PointInterface.sch_opp_pt.
+op sch_add_pt : sch_point -> sch_point -> sch_point = PointInterface.sch_add_pt.
 
 op sch_sub_pt (x y : sch_point) : sch_point =
   sch_add_pt x (sch_opp_pt y).
@@ -36,17 +37,21 @@ axiom sch_s_mul_add_distr (c w1 w2 : scalar) :
 
 (* Point group fragment + homomorphism at H *)
 
-axiom sch_addA (x y z : sch_point) :
+lemma sch_addA (x y z : sch_point) :
   sch_add_pt x (sch_add_pt y z) = sch_add_pt (sch_add_pt x y) z.
+proof. exact (PointInterface.sch_addA x y z). qed.
 
-axiom sch_addC (x y : sch_point) :
+lemma sch_addC (x y : sch_point) :
   sch_add_pt x y = sch_add_pt y x.
+proof. exact (PointInterface.sch_addC x y). qed.
 
-axiom sch_neutralL (x : sch_point) :
+lemma sch_neutralL (x : sch_point) :
   sch_add_pt sch_neutral_pt x = x.
+proof. exact (PointInterface.sch_neutralL x). qed.
 
-axiom sch_oppL (x : sch_point) :
+lemma sch_oppL (x : sch_point) :
   sch_add_pt (sch_opp_pt x) x = sch_neutral_pt.
+proof. exact (PointInterface.sch_oppL x). qed.
 
 axiom sch_smul_add_gen (s t : scalar) :
   sch_smul (sch_s_add s t) sch_generator =

@@ -1,7 +1,7 @@
 {
   "version": 3,
   "echash": "n/a",
-  "root": { "kind": "ec", "digest": "fff9917806730b507d425fdf0b00fce2" },
+  "root": { "kind": "ec", "digest": "bb9b58b61685601fff8b94dbdd330e90" },
   "depends": {
     "AlgTactic": {
       "direct": false,
@@ -107,6 +107,11 @@
       "direct": true,
       "kind": "ec",
       "digest": "0f385a91ae1a1269de2ba2b7fad360d0"
+    },
+    "PointInterface": {
+      "direct": true,
+      "kind": "ec",
+      "digest": "be6f95153923b9ac879437876a110dcf"
     },
     "QssmTypes": {
       "direct": true,
