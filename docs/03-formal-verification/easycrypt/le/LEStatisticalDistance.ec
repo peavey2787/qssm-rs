@@ -32,6 +32,11 @@ pred le_semantic_view_advantage_bound_from_owned_budget
     BudgetParameters.epsilon_le_rej +
     BudgetParameters.epsilon_le_fs_semantic.
 
+pred le_semantic_view_advantage_bound_from_umbrella_budget
+  (x : qssm_public_input) (s : seed) (D : distinguisher) =
+  le_semantic_view_distinguishing_adv x s D <=
+    BudgetParameters.epsilon_le_semantic.
+
 lemma A_LE_rejection_contributes_to_sdist :
   forall (x : qssm_public_input) (s : seed) (D : distinguisher),
     le_real_view_distribution_defined x s =>
@@ -159,6 +164,24 @@ have Hextend :
   exact (ler_add _ _ _ _ Hrefl
     LEFsProgrammingSurface.le_fs_shadow_local_bad_branch_mass_le_epsilon_le_fs_semantic).
 exact (ler_trans _ _ _ Hmass Hextend).
+qed.
+
+lemma A_LE_semantic_combined_hiding_bounds_sdist_umbrella_budget :
+  forall (x : qssm_public_input) (s : seed) (D : distinguisher),
+    le_real_view_distribution_defined x s =>
+    le_sim_view_distribution_defined x s =>
+    le_rejection_sampling_hiding_bound x s D =>
+    le_fs_programming_hiding_bound x s D =>
+    0%r <= epsilon_le =>
+    sdist (d_le_real_view x s)
+      (LEFsProgrammingSurface.d_le_fs_shadow_semantic_post_marginal x s)
+      <= BudgetParameters.epsilon_le_semantic.
+proof.
+move=> x s D Hr Hs Hrej Hfs Heps.
+have Howned :=
+  A_LE_semantic_combined_hiding_bounds_sdist_owned_budget x s D Hr Hs Hrej Hfs Heps.
+rewrite BudgetParameters.epsilon_le_semantic_component_sum.
+exact Howned.
 qed.
 
 lemma A_LE_combined_hiding_bounds_sdist :
@@ -310,4 +333,21 @@ have Hextend :
   exact (ler_add _ _ _ _ Hrefl
     LEFsProgrammingSurface.le_fs_shadow_local_bad_branch_mass_le_epsilon_le_fs_semantic).
 exact (ler_trans _ _ _ Hmass Hextend).
+qed.
+
+lemma A_LE_semantic_view_advantage_bound_from_umbrella_budget :
+  forall (x : qssm_public_input) (s : seed) (D : distinguisher),
+    le_real_view_distribution_defined x s =>
+    le_sim_view_distribution_defined x s =>
+    le_real_sim_view_indistinguishable x s D =>
+    0%r <= epsilon_le =>
+    le_semantic_view_advantage_bound_from_umbrella_budget x s D.
+proof.
+move=> x s D Hr Hs Hind Heps.
+rewrite /le_semantic_view_advantage_bound_from_umbrella_budget.
+have Howned :=
+  A_LE_semantic_view_advantage_bound_from_owned_budget x s D Hr Hs Hind Heps.
+rewrite /le_semantic_view_advantage_bound_from_owned_budget in Howned.
+rewrite BudgetParameters.epsilon_le_semantic_component_sum.
+exact Howned.
 qed.

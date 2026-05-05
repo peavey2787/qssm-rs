@@ -1,7 +1,7 @@
 {
   "version": 3,
   "echash": "n/a",
-  "root": { "kind": "ec", "digest": "b6171b1e3571aaec9b64b391297d1a61" },
+  "root": { "kind": "ec", "digest": "6af6379bc037292f7be10950fa0714f9" },
   "depends": {
     "ActionOwner": {
       "direct": false,
@@ -56,7 +56,7 @@
     "BudgetParameters": {
       "direct": true,
       "kind": "ec",
-      "digest": "968e84c3b4fc5a2a36d6be316ccdcf53"
+      "digest": "52971452ef798889061d433ab80ca189"
     },
     "Comparison": {
       "direct": true,
@@ -256,7 +256,7 @@
     "GameLEBridge": {
       "direct": true,
       "kind": "ec",
-      "digest": "1e1f458ac59b35cf7a3e1bc3fd975604"
+      "digest": "60ac030c4baea55568ec777b9fee03e5"
     },
     "GameMSHopComposition": {
       "direct": true,
@@ -336,7 +336,7 @@
     "LEHVZK": {
       "direct": false,
       "kind": "ec",
-      "digest": "e529b51fc45ea1f4cfb34aff48f4f237"
+      "digest": "dd5a231c7094775c53ea92d9d9a1921f"
     },
     "LEModel": {
       "direct": true,
@@ -366,7 +366,7 @@
     "LEStatisticalDistance": {
       "direct": false,
       "kind": "ec",
-      "digest": "cc9620e90fdcbfbd814b2951d18469cf"
+      "digest": "71aa92678298173a5a423181d03ccb96"
     },
     "LESurface": {
       "direct": true,

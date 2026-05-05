@@ -25,11 +25,13 @@ require import AllCore.
      model both component lanes are still exact-zero, so the LE real and sim
      view distributions coincide and the umbrella bound is also identically 0.
 
-  Therefore each budget is defined as `0%r`. This is NOT a nonzero
-  cryptographic security bound; it records the exact-zero gap of the current
-  model. Any future refinement that introduces a non-identity rejection
-  sampler, a genuinely supported FS bad branch, or a quantitative ROM model
-  must restore a nonzero budget formula here. *)
+  Therefore each active exact-zero budget is defined as `0%r`. This is NOT a
+  nonzero cryptographic security bound; it records the exact-zero gap of the
+  current model. Parallel semantic-owned LE budgets may coexist beside that
+  exact-zero route without changing it. Any future refinement that introduces a
+  non-identity rejection sampler, a genuinely supported FS bad branch, or a
+  quantitative ROM model on the active route must restore a nonzero budget
+  formula here. *)
 
 op epsilon_ms_hash_binding : real = 0%r.
 
@@ -61,6 +63,19 @@ lemma A4_le_fs_semantic_nonneg :
   0%r <= epsilon_le_fs_semantic.
 proof.
 rewrite /epsilon_le_fs_semantic.
+by smt().
+qed.
+
+op epsilon_le_semantic : real = epsilon_le_rej + epsilon_le_fs_semantic.
+
+lemma epsilon_le_semantic_component_sum :
+  epsilon_le_semantic = epsilon_le_rej + epsilon_le_fs_semantic.
+proof. by rewrite /epsilon_le_semantic. qed.
+
+lemma epsilon_le_semantic_nonneg :
+  0%r <= epsilon_le_semantic.
+proof.
+rewrite /epsilon_le_semantic /epsilon_le_rej /epsilon_le_fs_semantic.
 by smt().
 qed.
 

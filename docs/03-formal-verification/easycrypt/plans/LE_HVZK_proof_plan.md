@@ -394,6 +394,19 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     epsilon_le_rej + epsilon_le_fs_semantic`. The exact-zero route and the
     existing local-mass semantic route both remain checked alongside that owned-
     budget path.
+  - Semantic umbrella LE budget, May 2026: `primitives/BudgetParameters.ec`
+    now also defines `epsilon_le_semantic = epsilon_le_rej +
+    epsilon_le_fs_semantic`, together with `epsilon_le_semantic_component_sum`
+    and `epsilon_le_semantic_nonneg`. `le/LEStatisticalDistance.ec` adds
+    umbrella wrappers that close directly at `epsilon_le_semantic` while
+    preserving the owned component-sum theorem; `le/LEHVZK.ec` adds
+    `A_LE_HVZK_semantic_umbrella_transition_bound`; `games/GameLEBridge.ec`
+    adds `A_G1_to_G2_le_semantic_umbrella_transition_bound`; and
+    `theorem/MainTheorem.ec` now adds
+    `qssm_main_theorem_semantic_budget_umbrella` with bound
+    `epsilon_ms_hash_binding + epsilon_ms_rom_programmability +
+    epsilon_le_semantic`. The exact-zero route, the local-mass semantic route,
+    and the owned component-sum route all remain checked in parallel.
   - Design refinement, May 2026: `A_LE_rejection_sampler_sdist_bound` remains a
     proved lemma in `le/LERejection.ec`, but it is no longer a repackaging of a
     surrogate-side axiom. It now rests on the concrete identity rejection

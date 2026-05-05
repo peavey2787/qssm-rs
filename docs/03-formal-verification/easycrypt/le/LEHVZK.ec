@@ -108,6 +108,21 @@ have Hfs' := A_LE_fs_programming_bound x s D Hfs.
 exact (A_LE_real_sim_transcript_semantic_owned_budget_equiv_bound x s D Hsetb' Hrej' Hfs').
 qed.
 
+lemma A_LE_SetB_HVZK_semantic_umbrella_bound :
+  forall (x : qssm_public_input) (s : seed) (D : distinguisher),
+    le_set_b_params_ok =>
+    le_rejection_sampling_bound_ok =>
+    le_fs_programming_bound_ok x s =>
+    le_semantic_view_advantage_bound_from_umbrella_budget x s D.
+proof.
+move=> x s D Hsetb Hrej Hfs.
+have Howned := A_LE_SetB_HVZK_semantic_owned_budget_bound x s D Hsetb Hrej Hfs.
+rewrite /le_semantic_view_advantage_bound_from_umbrella_budget.
+rewrite /le_semantic_view_advantage_bound_from_owned_budget in Howned.
+rewrite BudgetParameters.epsilon_le_semantic_component_sum.
+exact Howned.
+qed.
+
 lemma A_LE_HVZK_transition_bound :
   forall (x : qssm_public_input) (s : seed) (D : distinguisher),
     set_b_parameter_well_formed =>
@@ -140,4 +155,15 @@ lemma A_LE_HVZK_semantic_owned_budget_transition_bound :
 proof.
 move=> x s D Hsetb Heps Hfs.
 exact (A_LE_SetB_HVZK_semantic_owned_budget_bound x s D Hsetb Heps Hfs).
+qed.
+
+lemma A_LE_HVZK_semantic_umbrella_transition_bound :
+  forall (x : qssm_public_input) (s : seed) (D : distinguisher),
+    set_b_parameter_well_formed =>
+    0%r <= epsilon_le =>
+    le_real_sim_transcript_equiv x s =>
+    le_semantic_view_advantage_bound_from_umbrella_budget x s D.
+proof.
+move=> x s D Hsetb Heps Hfs.
+exact (A_LE_SetB_HVZK_semantic_umbrella_bound x s D Hsetb Heps Hfs).
 qed.
