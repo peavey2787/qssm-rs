@@ -330,6 +330,30 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     `le_real_execution_observable x s`. These remain purely local facts in
     `LEFsProgrammingSurface.ec`; `BudgetParameters.ec`, `LEFsProgramming.ec`,
     `LEStatisticalDistance.ec`, and `MainTheorem.ec` remain unchanged.
+    Semantic/programmed-view split closure, May 2026: the next local bridge is
+    now explicit without changing the theorem-facing path. The good branch image
+    is packaged by
+    `le_fs_shadow_semantic_post_good_branch_matches_programmed_view` and the
+    distribution-level equality
+    `d_le_fs_shadow_semantic_good_branch_image_matches_programmed_view`; the bad
+    branch image is packaged by
+    `le_fs_shadow_semantic_post_bad_branch_matches_semantic_programmed_view` via
+    the local operator
+    `le_fs_shadow_semantic_programmed_view_of_observable`. The semantic-post
+    marginal itself now closes as a branch split by
+    `d_le_fs_shadow_semantic_post_marginal_branch_split_pairE` and, on the fixed
+    real-execution support, by
+    `d_le_fs_shadow_semantic_post_marginal_fixed_branch_imageE`. The local
+    deviation theorem
+    `le_fs_shadow_semantic_post_differs_from_programmed_view_only_on_bad_branch`
+    records that semantic/programmed disagreement can only occur on the bad
+    branch, and the future-budget bridge target
+    `A_LE_fs_shadow_semantic_post_marginal_sdist_le_bad_branch_mass` is now
+    proved locally: `sdist (d_le_fs_shadow_semantic_post_marginal x s)
+    (d_le_post_fs_programmed_view x s) <= le_fs_shadow_local_bad_branch_mass`.
+    This still does not alter `epsilon_le_fs`, `epsilon_le`, or the theorem-
+    facing exact-zero corollary; it only prepares the lower semantic lane for a
+    later component-budget connection.
   - Design refinement, May 2026: `A_LE_rejection_sampler_sdist_bound` remains a
     proved lemma in `le/LERejection.ec`, but it is no longer a repackaging of a
     surrogate-side axiom. It now rests on the concrete identity rejection
