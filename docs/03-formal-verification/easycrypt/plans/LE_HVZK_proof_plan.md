@@ -249,9 +249,19 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     theorem to keep the downstream name `A_LE_fs_surrogate_sdist_bound`
     unchanged. `LEStatisticalDistance.ec` therefore stays unchanged while the
     theorem-facing FS endpoint now rests on the semantic shadow lane.
-  - The next local target is to make the shadow bad-event / failure-probability
-    lane semantically nontrivial, so the shadow sdist-vs-failure and
-    failure-vs-budget theorems no longer collapse by identity transport alone.
+  - Attempted non-identity FS shadow refinement, May 2026: a branch-sensitive
+    shadow post constructor that switched to semantic post query material on a
+    bad branch was explored but rolled back to keep the tree green. The first
+    missing local theorem is a support-aware good-branch collapse for that
+    branch-sensitive `le_fs_shadow_post_of_observable` on the support of
+    `d_le_pre_fs_programming_view x s`. Concretely, the refinement needs a
+    theorem strong enough to recover
+    `d_le_fs_shadow_post_marginal_matches_programmed_view` and then
+    `d_le_fs_shadow_pre_post_marginals_equal` under the current exact-zero
+    sampler, without changing theorem-facing names or global LE arithmetic.
+  - The next local target is therefore still to make the shadow bad-event /
+    failure-probability lane semantically nontrivial, but only after that
+    support-aware good-branch collapse theorem is identified or proved.
     The preferred future interpretation of `epsilon_le_fs` remains an upper
     bound on that bad-event/failure probability, or a symbolic ROM-programming
     bound that dominates it, rather than a raw identity-derived zero.
