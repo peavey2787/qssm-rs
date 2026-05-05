@@ -3,6 +3,7 @@ require import StdOrder.
 require import Real.
 require import SDist.
 require import QssmTypes FS LERealExecution.
+require BudgetParameters.
 
 (*---*) import RealOrder.
 
@@ -60,12 +61,13 @@ pred set_b_parameter_well_formed =
   0 < BETA /\
   ETA <= GAMMA.
 
-op epsilon_le : real.
+op epsilon_le : real = BudgetParameters.epsilon_le.
 
 (* Primitive LE budget assumption: the abstract HVZK error budget must be
   nonnegative so the half-budget statistical-distance steps compose honestly. *)
-axiom A4_le_hvzk_bound_nonneg :
+lemma A4_le_hvzk_bound_nonneg :
   0%r <= epsilon_le.
+proof. exact BudgetParameters.A4_le_hvzk_bound_nonneg. qed.
 
 (* LE-only game-hop surface for the G1->G2 transition. *)
 op d_le_real_view : qssm_public_input -> seed -> le_transcript_observable distr =

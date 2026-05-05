@@ -1,5 +1,6 @@
 require import AllCore List.
 require import Domains QssmTypes.
+require BudgetParameters.
 
 (* Abstract hash/oracle surfaces (domain tags from Domains.domain_label). *)
 op hash_domain : domain_label -> digest list -> digest.
@@ -35,11 +36,13 @@ op le_programmed_query_digest :
   domain_label -> digest -> digest -> digest -> digest -> digest -> digest.
 
 (* ROM programmability placeholders *)
-op epsilon_ms_rom_programmability : real.
+op epsilon_ms_rom_programmability : real =
+  BudgetParameters.epsilon_ms_rom_programmability.
 
 (* Primitive ROM-programmability budget assumption on the abstract MS2 error budget. *)
-axiom A2_ms_rom_programmability_nonneg :
+lemma A2_ms_rom_programmability_nonneg :
   0%r <= epsilon_ms_rom_programmability.
+proof. exact BudgetParameters.A2_ms_rom_programmability_nonneg. qed.
 
 (* Bitness query digest is a valid ROM query point: `ms_query_to_scalar` is already
    total, so existence follows by choosing its value directly. *)

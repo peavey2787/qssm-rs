@@ -1,8 +1,13 @@
 {
   "version": 3,
   "echash": "n/a",
-  "root": { "kind": "ec", "digest": "0825aa0aafd6b534b49ab0f568632545" },
+  "root": { "kind": "ec", "digest": "8d2619c169307adf51c53f5c6208152d" },
   "depends": {
+    "ActionOwner": {
+      "direct": true,
+      "kind": "ec",
+      "digest": "e38f7ae160664801c1fe2d973e57cac9"
+    },
     "AlgTactic": {
       "direct": false,
       "kind": "ec",
@@ -74,7 +79,7 @@
       "digest": "b97d32983e1fb562a4ce3233cef9e7b6"
     },
     "Group": {
-      "direct": true,
+      "direct": false,
       "kind": "ec",
       "digest": "9154fe8bbcb35bd2460a28b8967cf431"
     },
@@ -161,7 +166,7 @@
     "ScalarOwner": {
       "direct": true,
       "kind": "ec",
-      "digest": "078652cfbe6945c2fea81e9fa54a72c8"
+      "digest": "ed808c117af1c93300566b78d2f643b0"
     },
     "StdBigop": {
       "direct": false,

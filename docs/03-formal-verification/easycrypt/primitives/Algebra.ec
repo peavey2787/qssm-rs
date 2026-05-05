@@ -1,10 +1,10 @@
 require import AllCore Distr.
-require import QssmTypes.
+require import QssmTypes ActionOwner.
 require PointInterface.
 
-(* Permanent algebra model (abstract scalar / point group + homomorphism on the fixed generator). *)
+(* Permanent algebra model over the unified cyclic/action owner. *)
 
-op sch_generator : sch_point.
+op sch_generator : sch_point = ActionOwner.point_generator.
 op sch_neutral_pt : sch_point = PointInterface.sch_neutral_pt.
 op sch_opp_pt : sch_point -> sch_point = PointInterface.sch_opp_pt.
 op sch_add_pt : sch_point -> sch_point -> sch_point = PointInterface.sch_add_pt.
@@ -12,7 +12,7 @@ op sch_add_pt : sch_point -> sch_point -> sch_point = PointInterface.sch_add_pt.
 op sch_sub_pt (x y : sch_point) : sch_point =
   sch_add_pt x (sch_opp_pt y).
 
-op sch_smul : scalar -> sch_point -> sch_point.
+op sch_smul : scalar -> sch_point -> sch_point = ActionOwner.point_smul.
 
 op sch_s_add : scalar -> scalar -> scalar = SchScalarRing.( + ).
 
@@ -63,13 +63,21 @@ lemma sch_oppL (x : sch_point) :
   sch_add_pt (sch_opp_pt x) x = sch_neutral_pt.
 proof. exact (PointInterface.sch_oppL x). qed.
 
-axiom sch_smul_add_gen (s t : scalar) :
+lemma sch_smul_add_gen (s t : scalar) :
   sch_smul (sch_s_add s t) sch_generator =
   sch_add_pt (sch_smul s sch_generator) (sch_smul t sch_generator).
+proof.
+rewrite /sch_smul /sch_s_add /sch_generator /sch_add_pt.
+exact (ActionOwner.action_add_gen s t).
+qed.
 
-axiom sch_smul_mul_embed (c w : scalar) :
+lemma sch_smul_mul_embed (c w : scalar) :
   sch_smul (sch_s_mul c w) sch_generator =
   sch_smul c (sch_smul w sch_generator).
+proof.
+rewrite /sch_smul /sch_s_mul /sch_generator.
+exact (ActionOwner.action_mul_embed c w).
+qed.
 
 lemma sch_neutralR (x : sch_point) :
   sch_add_pt x sch_neutral_pt = x.

@@ -2,6 +2,7 @@ require import AllCore List.
 require import Algebra QssmTypes SourceTypes SourceModel Comparison ComparisonTypes ComparisonDigests ComparisonPayload ComparisonCoupling ComparisonTheorem.
 require import SourceDistributions.
 require import TrueClause.
+require BudgetParameters.
 
 (* MS façade: simulator transcript hooks, hash-binding budget, MS-3c wrapper.
    MS-3a observable frame lives in `ms/SourceModel.ec`; source/types/distributions
@@ -27,11 +28,13 @@ op ms_sim_transcript (xms : ms_public_input) (s : seed) : game_view =
     msgv_le_placeholder = None;
   |}.
 
-op epsilon_ms_hash_binding : real.
+op epsilon_ms_hash_binding : real =
+  BudgetParameters.epsilon_ms_hash_binding.
 
 (* Primitive MS hash-binding budget assumption on the abstract error budget. *)
-axiom A1_ms_hash_binding_nonneg :
+lemma A1_ms_hash_binding_nonneg :
   0%r <= epsilon_ms_hash_binding.
+proof. exact BudgetParameters.A1_ms_hash_binding_nonneg. qed.
 
 (* MS1 (hash-binding) hop interface: only the stage tag moves Real -> AfterBinding;
    QSSM/MS public slices, seed, LE placeholder, and MS transcript observable stay fixed.

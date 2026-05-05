@@ -18,6 +18,8 @@ fi
 
 FILES=(
   primitives/Domains.ec
+  primitives/BudgetParameters.ec
+  primitives/ActionOwner.ec
   primitives/ScalarOwner.ec
   primitives/QssmTypes.ec
   primitives/ScalarSampler.ec

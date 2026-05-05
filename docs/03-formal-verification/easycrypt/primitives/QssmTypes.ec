@@ -1,14 +1,12 @@
 require import AllCore List.
-require Group.
-require ScalarOwner.
+require ActionOwner ScalarOwner.
 
-clone Group.ComGroup as SchPointGroup.
 clone export ScalarOwner.ScalarRing as SchScalarRing.
 
 (* Core abstract data *)
 type digest.
 type scalar = ScalarOwner.scalar.
-type sch_point = SchPointGroup.group.
+type sch_point = ActionOwner.point.
 type seed.
 type coeff_vector = int list.
 
