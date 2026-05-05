@@ -264,14 +264,23 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     `d_le_fs_shadow_pre_post_marginals_equal` remains recovered without any
     theorem-facing changes to `LEFsProgramming.ec`, `LEStatisticalDistance.ec`,
     or `MainTheorem.ec`.
-  - Branch-sensitive FS shadow refinement remains deferred: the active shadow
-    post constructor is still surrogate-shaped, so the new support-aware
-    theorem is currently a preparation theorem rather than the final nonzero
-    budget step. The next local target is to reintroduce the branch-sensitive
-    bad branch / semantic post-query-material update on top of that support
-    theorem, reprove the same post-marginal and pre/post equalities on the
-    refined constructor, and only then revisit the quantitative
-    failure-probability / budget interpretation of `epsilon_le_fs`.
+  - Branch-sensitive FS shadow refinement, May 2026: the active shadow post
+    constructor is no longer surrogate-shaped. `LEFsProgrammingSurface.ec` now
+    makes the hidden bad flag follow the pre-query bad bit, keeps the good
+    branch collapsing to `le_fs_surrogate_transform` on pre-support via the
+    support-aware closure lemmas, and routes the bad branch through a semantic
+    post observable rebuilt from the shadow hidden material. The recovered
+    local shadow theorems still close on that refined constructor:
+    `d_le_fs_shadow_post_marginal_matches_programmed_view`,
+    `d_le_fs_shadow_pre_post_marginals_equal`,
+    `le_fs_shadow_failure_probability_zero`,
+    `A_LE_fs_shadow_sdist_le_failure_probability`, and
+    `A_LE_fs_shadow_failure_probability_le_budget` remain proved, and the
+    theorem-facing files `LEFsProgramming.ec`, `LEStatisticalDistance.ec`, and
+    `MainTheorem.ec` stay unchanged. The next local target is therefore no
+    longer constructor recovery; it is to give this shadow lane a nontrivial
+    failure-probability / budget interpretation beyond the current exact-zero
+    semantics.
   - Design refinement, May 2026: `A_LE_rejection_sampler_sdist_bound` remains a
     proved lemma in `le/LERejection.ec`, but it is no longer a repackaging of a
     surrogate-side axiom. It now rests on the concrete identity rejection

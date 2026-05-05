@@ -4,7 +4,7 @@ This directory contains the EasyCrypt proof development for the QSSM theorem sta
 
 Current status: the tree checks cleanly with `./check_easycrypt.sh`, the repo-local named `axiom` count in `*.ec` files under this directory is currently `0`, and the active theorem path closes on a concrete exact-zero budget model. That is a machine-checked statement about the current abstraction boundary, not yet a nonzero cryptographic security estimate for the deployed system.
 
-The main live refinement track is the LE shadow lane. Rejection and FS theorem-facing component bounds already route through lower shadow surfaces, and the support-aware good-branch collapse theorem for the FS shadow post constructor is now proved on the current exact-zero model. The next target is to reintroduce the branch-sensitive shadow bad branch on top of that local support theorem without disturbing theorem-facing files.
+The main live refinement track is the LE shadow lane. Rejection and FS theorem-facing component bounds already route through lower shadow surfaces, and the branch-sensitive FS shadow post constructor is now landed and checker-validated on the current exact-zero model. The good branch still collapses to the surrogate on pre-support, the bad branch now rebuilds a semantic post observable from the shadow hidden material, and the recovered shadow post-marginal / pre-post equality / failure-probability theorems keep theorem-facing files unchanged. The next target is to give that refined shadow lane a nontrivial quantitative interpretation rather than only the current exact-zero closure.
 
 ## What This Directory Covers
 
@@ -124,6 +124,6 @@ Every plan file and local subtree guide linked from this README includes a retur
 - The EasyCrypt tree is checker-green today.
 - Repo-local named axioms in `*.ec` files under this directory are currently at `0`.
 - The active theorem path is exact-zero because the current budget model sets the MS and LE component budgets to `0%r` and the lower proof lanes close by exact distribution equality or identity transport.
-- The LE FS shadow surface now has support-aware helper lemmas and a local good-branch collapse theorem sufficient to recover the shadow post-marginal/programmed-view bridge on the active constructor shape.
+- The LE FS shadow surface now has a checker-validated branch-sensitive post constructor: the good branch collapses to the surrogate on support, the bad branch carries semantic post-query material, and the recovered shadow bridge and exact-zero quantitative lemmas still close without changing theorem-facing files.
 - The proof stack is therefore machine-checked as a formal scaffold with concrete lower carriers, not yet as a nonzero end-to-end cryptographic bound.
-- The next meaningful refinement remains the LE FS shadow lane: reintroduce the branch-sensitive bad branch on top of the now-closed support theorem, then revisit the quantitative failure/budget story.
+- The next meaningful refinement remains the LE FS shadow lane: keep the new branch-sensitive constructor, but replace its current exact-zero quantitative interpretation with a nontrivial failure/budget account.
