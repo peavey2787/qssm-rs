@@ -251,7 +251,7 @@
     "QssmTypes": {
       "direct": false,
       "kind": "ec",
-      "digest": "263f8c258922ff79b1c790a0c60f13a5"
+      "digest": "0825aa0aafd6b534b49ab0f568632545"
     },
     "Real": {
       "direct": false,
@@ -293,10 +293,20 @@
       "kind": "ec",
       "digest": "1679a80ea225fe5d8904c9cd0f5d99c1"
     },
+    "ScalarOwner": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "078652cfbe6945c2fea81e9fa54a72c8"
+    },
+    "ScalarSampler": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "859c70e3e2796fd25b95709b018c2b37"
+    },
     "SchnorrBranch": {
       "direct": false,
       "kind": "ec",
-      "digest": "1d23692845d24bf73adfeff57ab9c6b6"
+      "digest": "cc4a45419b84af152dab58085c05d9b4"
     },
     "SourceTypes": {
       "direct": false,

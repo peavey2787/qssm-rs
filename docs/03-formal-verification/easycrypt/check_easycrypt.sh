@@ -18,7 +18,9 @@ fi
 
 FILES=(
   primitives/Domains.ec
+  primitives/ScalarOwner.ec
   primitives/QssmTypes.ec
+  primitives/ScalarSampler.ec
   primitives/Algebra.ec
   primitives/FS.ec
   ms/SchnorrBranch.ec

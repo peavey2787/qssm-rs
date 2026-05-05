@@ -1,7 +1,7 @@
 {
   "version": 3,
   "echash": "n/a",
-  "root": { "kind": "ec", "digest": "263f8c258922ff79b1c790a0c60f13a5" },
+  "root": { "kind": "ec", "digest": "0825aa0aafd6b534b49ab0f568632545" },
   "depends": {
     "AlgTactic": {
       "direct": false,
@@ -154,9 +154,14 @@
       "digest": "45dbd392e40bc39bbbbf6a3845111d26"
     },
     "Ring": {
-      "direct": true,
+      "direct": false,
       "kind": "ec",
       "digest": "1679a80ea225fe5d8904c9cd0f5d99c1"
+    },
+    "ScalarOwner": {
+      "direct": true,
+      "kind": "ec",
+      "digest": "078652cfbe6945c2fea81e9fa54a72c8"
     },
     "StdBigop": {
       "direct": false,

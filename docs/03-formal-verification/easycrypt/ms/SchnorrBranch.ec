@@ -1,15 +1,20 @@
 require import AllCore Distr.
-require import Algebra QssmTypes.
+require import Algebra QssmTypes ScalarSampler.
 
 (* Uniform scalar source (abstract; ROM / hash_to_scalar instantiates). *)
 
-op duni_scalar : scalar distr.
+op duni_scalar : scalar distr = canonical_scalar_sampler.
 
-axiom duni_scalar_lossless :
+lemma duni_scalar_lossless :
   is_lossless duni_scalar.
+proof. exact scalar_sampler_lossless. qed.
 
-axiom duni_scalar_invariant_add (t : scalar) :
+lemma duni_scalar_invariant_add (t : scalar) :
   dlet duni_scalar (fun alpha => dunit (sch_s_add alpha t)) = duni_scalar.
+proof.
+rewrite /duni_scalar /sch_s_add /scalar_sampler_translate.
+exact (scalar_sampler_translation_invariant t).
+qed.
 
 lemma sch_smul_sub_add_gen (x y : scalar) :
   sch_smul (sch_s_sub (sch_s_add x y) y) sch_generator =
