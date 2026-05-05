@@ -281,10 +281,29 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     semantically on the shadow state rather than as a raw hidden flag, but it
     still closes to `0%r` in the current model because the active support is a
     `dunit` image of `le_real_execution_observable x s` and the concrete real
-    query material fixes `leqm_bad_flag = false`. The next local target is
-    therefore no longer constructor recovery; it is to refine the lower FS
-    model until that semantic failure-probability / budget lane becomes
-    genuinely nonzero.
+    query material fixes `leqm_bad_flag = false`. Design audit result: the
+    smallest nonzero-support migration should not sample bad flags in the real
+    execution view or change `d_le_real_view` first. Instead, add a separate
+    lower FS shadow experiment law with explicit good/bad branch mass beside
+    the current deterministic pre-FS observable path. That staging step is now
+    landed in local form: `LEFsProgrammingSurface.ec` additionally defines the
+    sampled semantic branch objects `d_le_fs_shadow_branch_choice`,
+    `le_fs_shadow_local_bad_branch_mass`,
+    `d_le_fs_shadow_semantic_post_marginal`,
+    `le_fs_shadow_semantic_bad_event`, and
+    `le_fs_shadow_semantic_failure_probability`. The current local sampler puts
+    all of its internal mass on the bad branch, so the semantic branch lane is
+    genuinely nontrivial while the exported projected-post theorems remain
+    unchanged. The active theorem-facing endpoint still uses
+    `d_le_fs_shadow_post_marginal_matches_programmed_view`,
+    `d_le_fs_shadow_pre_post_marginals_equal`,
+    `A_LE_fs_shadow_sdist_le_failure_probability`, and
+    `A_LE_fs_shadow_failure_probability_le_budget` on the zero-budget path, so
+    `LEFsProgramming.ec`, `LEStatisticalDistance.ec`, `MainTheorem.ec`, and
+    `BudgetParameters.ec` remain unchanged and `epsilon_le_fs` / `epsilon_le`
+    stay `0%r`. The next migration step is to connect that local semantic mass
+    to theorem-facing budget arithmetic only after the top-level exact-zero LE
+    corollary is relaxed or replaced with a compatible component-budget bridge.
   - Design refinement, May 2026: `A_LE_rejection_sampler_sdist_bound` remains a
     proved lemma in `le/LERejection.ec`, but it is no longer a repackaging of a
     surrogate-side axiom. It now rests on the concrete identity rejection

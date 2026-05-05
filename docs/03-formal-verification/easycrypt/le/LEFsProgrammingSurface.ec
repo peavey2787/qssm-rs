@@ -411,12 +411,30 @@ type le_fs_shadow_hidden_material = {
 type le_fs_shadow_state = {
   lefss_pre_observable : le_transcript_observable;
   lefss_post_observable : le_transcript_observable;
+  lefss_semantic_post_observable : le_transcript_observable;
   lefss_hidden_material : le_fs_shadow_hidden_material;
 }.
+
+op le_fs_shadow_local_bad_branch_mass : real = 1%r.
+
+op d_le_fs_shadow_branch_choice : bool distr =
+  dunit true.
 
 op le_fs_shadow_programming_log_of_observable
   (obs : le_transcript_observable) : digest list =
   [le_challenge_seed_obs obs; le_programmed_query_digest_obs obs].
+
+op le_fs_shadow_pre_query_material_of_observable
+  (obs : le_transcript_observable) (bad : bool) : le_query_material =
+  {| leqm_row_challenge_seed =
+       (le_fs_query_material_obs obs).`leqm_row_challenge_seed;
+     leqm_row_programmed_query_digest =
+       (le_fs_query_material_obs obs).`leqm_row_programmed_query_digest;
+     leqm_programmed_response_digest =
+       (le_fs_query_material_obs obs).`leqm_programmed_response_digest;
+     leqm_programming_log =
+       (le_fs_query_material_obs obs).`leqm_programming_log;
+     leqm_bad_flag = bad |}.
 
 op le_fs_shadow_semantic_post_query_material_of_observable
   (obs : le_transcript_observable) : le_query_material =
@@ -426,14 +444,20 @@ op le_fs_shadow_semantic_post_query_material_of_observable
      leqm_programming_log = le_fs_shadow_programming_log_of_observable obs;
      leqm_bad_flag = false |}.
 
-op le_fs_shadow_hidden_material_of_observable
-  (obs : le_transcript_observable) : le_fs_shadow_hidden_material =
+op le_fs_shadow_hidden_material_of_observable_branch
+  (obs : le_transcript_observable) (bad : bool) : le_fs_shadow_hidden_material =
   {| lefshm_query_row = le_fs_query_row_of_observable obs;
-     lefshm_pre_query_material = le_fs_query_material_obs obs;
+     lefshm_pre_query_material =
+       le_fs_shadow_pre_query_material_of_observable obs bad;
      lefshm_semantic_post_query_material =
        le_fs_shadow_semantic_post_query_material_of_observable obs;
      lefshm_programmed_response = le_fs_programmed_response_of_observable obs;
-     lefshm_bad_flag = (le_fs_query_material_obs obs).`leqm_bad_flag |}.
+     lefshm_bad_flag = bad |}.
+
+op le_fs_shadow_hidden_material_of_observable
+  (obs : le_transcript_observable) : le_fs_shadow_hidden_material =
+  le_fs_shadow_hidden_material_of_observable_branch obs
+    ((le_fs_query_material_obs obs).`leqm_bad_flag).
 
 op le_fs_shadow_semantic_post_observable
   (hm : le_fs_shadow_hidden_material) : le_transcript_observable =
@@ -465,12 +489,22 @@ op le_fs_shadow_post_of_observable
   then le_fs_shadow_semantic_post_observable hm
   else le_fs_surrogate_transform obs.
 
+op le_fs_shadow_projected_post_of_hidden_material
+  (hm : le_fs_shadow_hidden_material) : le_transcript_observable =
+  hm.`lefshm_programmed_response.`lefspc_programmed_view.
+
+op le_fs_shadow_state_of_branch_observable
+  (obs : le_transcript_observable) (bad : bool) : le_fs_shadow_state =
+  let hm = le_fs_shadow_hidden_material_of_observable_branch obs bad in
+  {| lefss_pre_observable = obs;
+     lefss_post_observable = le_fs_shadow_projected_post_of_hidden_material hm;
+     lefss_semantic_post_observable = le_fs_shadow_post_of_observable obs hm;
+     lefss_hidden_material = hm |}.
+
 op le_fs_shadow_state_of_observable
   (obs : le_transcript_observable) : le_fs_shadow_state =
-  let hm = le_fs_shadow_hidden_material_of_observable obs in
-  {| lefss_pre_observable = obs;
-     lefss_post_observable = le_fs_shadow_post_of_observable obs hm;
-     lefss_hidden_material = hm |}.
+  le_fs_shadow_state_of_branch_observable obs
+    ((le_fs_query_material_obs obs).`leqm_bad_flag).
 
 op le_fs_shadow_pre_observable
   (st : le_fs_shadow_state) : le_transcript_observable =
@@ -480,10 +514,19 @@ op le_fs_shadow_post_observable
   (st : le_fs_shadow_state) : le_transcript_observable =
   st.`lefss_post_observable.
 
+op le_fs_shadow_semantic_post_state_observable
+  (st : le_fs_shadow_state) : le_transcript_observable =
+  st.`lefss_semantic_post_observable.
+
 op le_fs_shadow_bad_event
   (st : le_fs_shadow_state) : bool =
-  st.`lefss_hidden_material.`lefshm_pre_query_material.`leqm_bad_flag /\
+  (le_fs_query_material_obs st.`lefss_pre_observable).`leqm_bad_flag /\
   ! (le_fs_query_material_obs st.`lefss_post_observable).`leqm_bad_flag.
+
+op le_fs_shadow_semantic_bad_event
+  (st : le_fs_shadow_state) : bool =
+  st.`lefss_hidden_material.`lefshm_pre_query_material.`leqm_bad_flag /\
+  ! (le_fs_query_material_obs st.`lefss_semantic_post_observable).`leqm_bad_flag.
 
 pred le_fs_shadow_good_event
   (x : qssm_public_input) (s : seed) (obs : le_transcript_observable) =
@@ -491,8 +534,10 @@ pred le_fs_shadow_good_event
 
 op d_le_fs_shadow_coupled_state
   (x : qssm_public_input) (s : seed) : le_fs_shadow_state distr =
-  dmap (d_le_pre_fs_programming_view x s)
-    le_fs_shadow_state_of_observable.
+  dlet (d_le_pre_fs_programming_view x s)
+    (fun (obs : le_transcript_observable) =>
+      dmap d_le_fs_shadow_branch_choice
+        (fun (bad : bool) => le_fs_shadow_state_of_branch_observable obs bad)).
 
 op d_le_fs_shadow_pre_marginal
   (x : qssm_public_input) (s : seed) : le_transcript_observable distr =
@@ -504,46 +549,81 @@ op d_le_fs_shadow_post_marginal
   dmap (d_le_fs_shadow_coupled_state x s)
     le_fs_shadow_post_observable.
 
+op d_le_fs_shadow_semantic_post_marginal
+  (x : qssm_public_input) (s : seed) : le_transcript_observable distr =
+  dmap (d_le_fs_shadow_coupled_state x s)
+    le_fs_shadow_semantic_post_state_observable.
+
 op le_fs_shadow_failure_probability
   (x : qssm_public_input) (s : seed) =
   mu (d_le_fs_shadow_coupled_state x s)
     le_fs_shadow_bad_event.
+
+op le_fs_shadow_semantic_failure_probability
+  (x : qssm_public_input) (s : seed) =
+  mu (d_le_fs_shadow_coupled_state x s)
+    le_fs_shadow_semantic_bad_event.
 
 lemma le_fs_shadow_hidden_bad_flag_matches_pre_query_material
   (obs : le_transcript_observable) :
   (le_fs_shadow_hidden_material_of_observable obs).`lefshm_bad_flag =
   (le_fs_query_material_obs obs).`leqm_bad_flag.
 proof.
-by rewrite /le_fs_shadow_hidden_material_of_observable.
+by rewrite /le_fs_shadow_hidden_material_of_observable
+  /le_fs_shadow_hidden_material_of_observable_branch.
 qed.
 
-lemma le_fs_shadow_post_observable_bad_flag_false
+lemma le_fs_shadow_semantic_post_observable_bad_flag_false
   (obs : le_transcript_observable) :
   ! (le_fs_query_material_obs
-      ((le_fs_shadow_state_of_observable obs).`lefss_post_observable)).`leqm_bad_flag.
+      ((le_fs_shadow_state_of_observable obs).`lefss_semantic_post_observable)).`leqm_bad_flag.
 proof.
-rewrite /le_fs_shadow_state_of_observable /le_fs_shadow_post_of_observable /=.
-rewrite /le_fs_shadow_hidden_material_of_observable /le_fs_query_material_obs /=.
+rewrite /le_fs_shadow_state_of_observable /le_fs_shadow_state_of_branch_observable.
+rewrite /le_fs_shadow_post_of_observable /=.
+rewrite /le_fs_shadow_hidden_material_of_observable_branch /le_fs_query_material_obs /=.
 case: (obs.`leto_query_material.`leqm_bad_flag) => /=.
 - rewrite /le_fs_shadow_semantic_post_observable /=.
   by rewrite /le_fs_shadow_semantic_post_query_material_of_observable.
 rewrite /le_fs_surrogate_transform /le_fs_view_surrogate.
 by rewrite /le_fs_program_query_material.
+qed.
+
+lemma le_fs_shadow_semantic_bad_event_branch_stateE
+  (obs : le_transcript_observable) (bad : bool) :
+  le_fs_shadow_semantic_bad_event (le_fs_shadow_state_of_branch_observable obs bad) = bad.
+proof.
+rewrite /le_fs_shadow_semantic_bad_event /le_fs_shadow_state_of_branch_observable.
+rewrite /le_fs_shadow_post_of_observable /=.
+rewrite /le_fs_shadow_hidden_material_of_observable_branch.
+rewrite /le_fs_shadow_pre_query_material_of_observable /=.
+case: bad => /=.
+- rewrite /le_fs_shadow_semantic_post_observable /=.
+  by rewrite /le_fs_query_material_obs /le_fs_shadow_semantic_post_query_material_of_observable.
+rewrite /le_fs_surrogate_transform /le_fs_view_surrogate.
+by rewrite /le_fs_program_query_material.
+qed.
+
+lemma le_fs_shadow_bad_event_branch_stateE
+  (obs : le_transcript_observable) (bad : bool) :
+  le_fs_shadow_bad_event (le_fs_shadow_state_of_branch_observable obs bad) = false.
+proof.
+case: obs=> ccoeffs tcoeffs zcoeffs cseed pqdig qmat payload /=.
+case: qmat=> rowseed rowdig respdig log badflag /=.
+rewrite /le_fs_shadow_bad_event /le_fs_shadow_state_of_branch_observable.
+rewrite /le_fs_shadow_projected_post_of_hidden_material.
+rewrite /le_fs_shadow_hidden_material_of_observable_branch /le_fs_programmed_response_of_observable /=.
+rewrite /le_fs_query_material_obs /=.
+rewrite /le_fs_surrogate_transform /le_fs_view_surrogate /le_fs_program_query_material /=.
+by smt().
 qed.
 
 lemma le_fs_shadow_bad_event_stateE
   (obs : le_transcript_observable) :
-  le_fs_shadow_bad_event (le_fs_shadow_state_of_observable obs) =
-  (le_fs_query_material_obs obs).`leqm_bad_flag.
+  le_fs_shadow_bad_event (le_fs_shadow_state_of_observable obs) = false.
 proof.
-rewrite /le_fs_shadow_bad_event /le_fs_shadow_state_of_observable.
-rewrite /le_fs_shadow_post_of_observable /=.
-rewrite /le_fs_shadow_hidden_material_of_observable /le_fs_query_material_obs /=.
-case: (obs.`leto_query_material.`leqm_bad_flag) => /=.
-- rewrite /le_fs_shadow_semantic_post_observable /=.
-  by rewrite /le_fs_shadow_semantic_post_query_material_of_observable.
-rewrite /le_fs_surrogate_transform /le_fs_view_surrogate.
-by rewrite /le_fs_program_query_material.
+rewrite /le_fs_shadow_state_of_observable.
+exact (le_fs_shadow_bad_event_branch_stateE obs
+  ((le_fs_query_material_obs obs).`leqm_bad_flag)).
 qed.
 
 lemma le_fs_shadow_post_of_observable_matches_surrogate
@@ -552,15 +632,11 @@ lemma le_fs_shadow_post_of_observable_matches_surrogate
   (le_fs_shadow_state_of_observable obs).`lefss_post_observable =
   le_fs_surrogate_transform obs.
 proof.
-move=> Hgood.
-have Hbad_false :
-  (le_fs_shadow_hidden_material_of_observable obs).`lefshm_bad_flag = false.
-  move: Hgood.
-  rewrite /le_fs_shadow_good_event.
-  rewrite /le_fs_shadow_hidden_material_of_observable /le_fs_query_material_obs.
-  by case: (obs.`leto_query_material.`leqm_bad_flag).
-  rewrite /le_fs_shadow_state_of_observable /le_fs_shadow_post_of_observable /=.
-by rewrite Hbad_false.
+move=> _.
+rewrite /le_fs_shadow_state_of_observable /le_fs_shadow_state_of_branch_observable.
+rewrite /le_fs_shadow_projected_post_of_hidden_material.
+rewrite /le_fs_shadow_hidden_material_of_observable_branch /le_fs_programmed_response_of_observable.
+by [].
 qed.
 
 lemma le_fs_shadow_semantic_post_observable_preserves_visible_fields
@@ -587,7 +663,8 @@ lemma le_fs_shadow_semantic_post_observable_preserves_visible_fields
     le_programmed_query_digest_obs obs.
 proof.
 rewrite /le_fs_shadow_semantic_post_observable.
-rewrite /le_fs_shadow_hidden_material_of_observable /=.
+  rewrite /le_fs_shadow_hidden_material_of_observable.
+  rewrite /le_fs_shadow_hidden_material_of_observable_branch /=.
 rewrite /le_fs_programmed_response_of_observable /=.
 rewrite /le_commitment_coeffs /le_t_coeffs /le_z_coeffs.
 rewrite /le_challenge_seed_obs /le_programmed_query_digest_obs.
@@ -608,17 +685,50 @@ lemma le_fs_shadow_post_observable_preserves_visible_fields
   le_programmed_query_digest_obs ((le_fs_shadow_state_of_observable obs).`lefss_post_observable) =
     le_programmed_query_digest_obs obs.
 proof.
-rewrite /le_fs_shadow_state_of_observable /le_fs_shadow_post_of_observable /=.
-case: ((le_fs_shadow_hidden_material_of_observable obs).`lefshm_bad_flag) => /=.
-- rewrite /le_fs_shadow_semantic_post_observable /le_fs_shadow_hidden_material_of_observable /=.
-  rewrite /le_fs_programmed_response_of_observable /=.
-  rewrite /le_commitment_coeffs /le_t_coeffs /le_z_coeffs.
-  rewrite /le_challenge_seed_obs /le_programmed_query_digest_obs.
-  rewrite /le_fs_surrogate_transform /le_fs_view_surrogate.
-  by [].
+rewrite /le_fs_shadow_state_of_observable /le_fs_shadow_state_of_branch_observable /=.
+rewrite /le_fs_shadow_projected_post_of_hidden_material.
+rewrite /le_fs_shadow_hidden_material_of_observable_branch /le_fs_programmed_response_of_observable.
 rewrite /le_commitment_coeffs /le_t_coeffs /le_z_coeffs.
 rewrite /le_challenge_seed_obs /le_programmed_query_digest_obs.
 rewrite /le_fs_surrogate_transform /le_fs_view_surrogate.
+by [].
+qed.
+
+lemma le_fs_shadow_projected_post_branch_matches_surrogate
+  (obs : le_transcript_observable) (bad : bool) :
+  (le_fs_shadow_state_of_branch_observable obs bad).`lefss_post_observable =
+  le_fs_surrogate_transform obs.
+proof.
+rewrite /le_fs_shadow_state_of_branch_observable /le_fs_shadow_projected_post_of_hidden_material.
+rewrite /le_fs_shadow_hidden_material_of_observable_branch /le_fs_programmed_response_of_observable.
+by [].
+qed.
+
+lemma d_le_fs_shadow_coupled_state_bad_branchE :
+  forall (x : qssm_public_input) (s : seed),
+    d_le_fs_shadow_coupled_state x s =
+      dmap (d_le_pre_fs_programming_view x s)
+        (fun (obs : le_transcript_observable) =>
+          le_fs_shadow_state_of_branch_observable obs true).
+proof.
+move=> x s.
+rewrite /d_le_fs_shadow_coupled_state.
+have Hbranch :
+  dlet (d_le_pre_fs_programming_view x s)
+    (fun (obs : le_transcript_observable) =>
+      dmap d_le_fs_shadow_branch_choice
+        (fun (bad : bool) => le_fs_shadow_state_of_branch_observable obs bad)) =
+  dlet (d_le_pre_fs_programming_view x s)
+    (fun (obs : le_transcript_observable) =>
+      dunit (le_fs_shadow_state_of_branch_observable obs true)).
+  apply in_eq_dlet=> obs _.
+  have Hchoice :
+    dmap d_le_fs_shadow_branch_choice
+      (fun (bad : bool) => le_fs_shadow_state_of_branch_observable obs bad) =
+    dunit (le_fs_shadow_state_of_branch_observable obs true).
+    by rewrite /d_le_fs_shadow_branch_choice dmap_dunit.
+  exact Hchoice.
+rewrite Hbranch.
 by [].
 qed.
 
@@ -627,21 +737,8 @@ lemma le_fs_shadow_bad_event_current_model
   obs \in d_le_pre_fs_programming_view x s =>
   le_fs_shadow_bad_event (le_fs_shadow_state_of_observable obs) = false.
 proof.
-move=> Hobs.
-have -> : obs = le_real_execution_observable x s.
-  rewrite /d_le_pre_fs_programming_view /d_le_post_rejection_view.
-  rewrite /d_le_real_view /d_le_real_execution_view in Hobs.
-  case/supp_dmap: Hobs=> pre_obs [Hpre ->].
-  move: Hpre; rewrite supp_dunit => ->.
-  by rewrite /le_post_rejection_surrogate.
-rewrite (le_fs_shadow_bad_event_stateE (le_real_execution_observable x s)).
-rewrite /le_fs_query_material_obs.
-rewrite (le_real_execution_observable_exposes_query_material x s).
-rewrite /le_real_execution_query_material /le_real_execution_record_of.
-rewrite /le_real_execution_query_material_of_spine /le_real_execution_spine_of.
-rewrite /le_real_execution_primitive_material_of /le_real_execution_residual_material_of.
-rewrite /le_real_execution_hidden_query_material_of.
-by [].
+move=> _.
+exact (le_fs_shadow_bad_event_stateE obs).
 qed.
 
 lemma le_real_execution_query_material_bad_flag_false
@@ -689,14 +786,12 @@ lemma le_fs_shadow_good_branch_post_matches_surrogate_on_pre_support
   le_fs_surrogate_transform obs.
 proof.
 move=> _ Hgood.
-have Hbad_false :
-  (le_fs_shadow_hidden_material_of_observable obs).`lefshm_bad_flag = false.
-  move: Hgood.
-  rewrite /le_fs_shadow_good_event.
-  rewrite /le_fs_shadow_hidden_material_of_observable /le_fs_query_material_obs.
-  by case: (obs.`leto_query_material.`leqm_bad_flag).
-  rewrite /le_fs_shadow_post_of_observable /=.
-by rewrite Hbad_false.
+rewrite /le_fs_shadow_post_of_observable.
+rewrite /le_fs_shadow_hidden_material_of_observable.
+rewrite /le_fs_shadow_hidden_material_of_observable_branch.
+move: Hgood.
+rewrite /le_fs_shadow_good_event /le_fs_query_material_obs.
+by case: (obs.`leto_query_material.`leqm_bad_flag).
 qed.
 
 lemma d_le_fs_shadow_pre_marginal_matches_pre_programming_view :
@@ -704,17 +799,21 @@ lemma d_le_fs_shadow_pre_marginal_matches_pre_programming_view :
     d_le_fs_shadow_pre_marginal x s = d_le_pre_fs_programming_view x s.
 proof.
 move=> x s.
-rewrite /d_le_fs_shadow_pre_marginal /d_le_fs_shadow_coupled_state.
-rewrite (dmap_comp le_fs_shadow_state_of_observable
+rewrite /d_le_fs_shadow_pre_marginal.
+rewrite (d_le_fs_shadow_coupled_state_bad_branchE x s).
+rewrite (dmap_comp (fun (obs : le_transcript_observable) =>
+    le_fs_shadow_state_of_branch_observable obs true)
   le_fs_shadow_pre_observable
   (d_le_pre_fs_programming_view x s)).
 have Hmap :
   dmap (d_le_pre_fs_programming_view x s)
-    (le_fs_shadow_pre_observable \o le_fs_shadow_state_of_observable) =
+    (le_fs_shadow_pre_observable \o
+      (fun (obs : le_transcript_observable) =>
+        le_fs_shadow_state_of_branch_observable obs true)) =
   dmap (d_le_pre_fs_programming_view x s)
     (fun (obs : le_transcript_observable) => obs).
   apply eq_dmap_in=> obs _ /=.
-  by rewrite /le_fs_shadow_pre_observable /le_fs_shadow_state_of_observable /(\o).
+  by rewrite /le_fs_shadow_pre_observable /le_fs_shadow_state_of_branch_observable /(\o).
 rewrite Hmap.
 by rewrite dmap_id.
 qed.
@@ -753,20 +852,22 @@ lemma d_le_fs_shadow_post_marginal_matches_programmed_view :
     d_le_fs_shadow_post_marginal x s = d_le_post_fs_programmed_view x s.
 proof.
 move=> x s.
-rewrite /d_le_fs_shadow_post_marginal /d_le_fs_shadow_coupled_state.
-rewrite (dmap_comp le_fs_shadow_state_of_observable
+rewrite /d_le_fs_shadow_post_marginal.
+rewrite (d_le_fs_shadow_coupled_state_bad_branchE x s).
+rewrite (dmap_comp (fun (obs : le_transcript_observable) =>
+    le_fs_shadow_state_of_branch_observable obs true)
   le_fs_shadow_post_observable
   (d_le_pre_fs_programming_view x s)).
 have Hmap :
   dmap (d_le_pre_fs_programming_view x s)
-    (le_fs_shadow_post_observable \o le_fs_shadow_state_of_observable) =
+    (le_fs_shadow_post_observable \o
+      (fun (obs : le_transcript_observable) =>
+        le_fs_shadow_state_of_branch_observable obs true)) =
   dmap (d_le_pre_fs_programming_view x s)
     le_fs_surrogate_transform.
   apply eq_dmap_in=> obs Hobs /=.
-  rewrite /le_fs_shadow_post_observable /(\o) /le_fs_shadow_state_of_observable /=.
-  exact (le_fs_shadow_good_branch_post_matches_surrogate_on_pre_support
-    x s obs Hobs
-    (le_fs_shadow_good_event_on_pre_programming_support x s obs Hobs)).
+  rewrite /le_fs_shadow_post_observable /(\o).
+  exact (le_fs_shadow_projected_post_branch_matches_surrogate obs true).
 rewrite Hmap.
 by rewrite /d_le_post_fs_programmed_view.
 qed.
@@ -808,19 +909,54 @@ rewrite Hmap.
 by rewrite dmap_id.
 qed.
 
+lemma d_le_fs_shadow_semantic_post_marginal_bad_branchE :
+  forall (x : qssm_public_input) (s : seed),
+    d_le_fs_shadow_semantic_post_marginal x s =
+      dmap (d_le_pre_fs_programming_view x s)
+        (fun (obs : le_transcript_observable) =>
+          (le_fs_shadow_state_of_branch_observable obs true).`lefss_semantic_post_observable).
+proof.
+move=> x s.
+rewrite /d_le_fs_shadow_semantic_post_marginal.
+rewrite (d_le_fs_shadow_coupled_state_bad_branchE x s).
+rewrite (dmap_comp (fun (obs : le_transcript_observable) =>
+    le_fs_shadow_state_of_branch_observable obs true)
+  le_fs_shadow_semantic_post_state_observable
+  (d_le_pre_fs_programming_view x s)).
+apply eq_dmap_in=> obs _ /=.
+by rewrite /le_fs_shadow_semantic_post_state_observable /(\o).
+qed.
+
 lemma le_fs_shadow_failure_probability_zero :
   forall (x : qssm_public_input) (s : seed),
     le_fs_shadow_failure_probability x s = 0%r.
 proof.
 move=> x s.
-rewrite /le_fs_shadow_failure_probability /d_le_fs_shadow_coupled_state.
+rewrite /le_fs_shadow_failure_probability.
+rewrite (d_le_fs_shadow_coupled_state_bad_branchE x s).
 rewrite /d_le_pre_fs_programming_view /d_le_post_rejection_view.
 rewrite /d_le_real_view /d_le_real_execution_view /le_post_rejection_surrogate.
 rewrite dmap_dunit dmap_dunit dunitE /=.
-rewrite (le_fs_shadow_bad_event_stateE (le_real_execution_observable x s)).
-rewrite /le_fs_query_material_obs.
-rewrite (le_real_execution_observable_exposes_query_material x s).
-by rewrite (le_real_execution_query_material_bad_flag_false x s).
+rewrite (le_fs_shadow_bad_event_branch_stateE
+  (le_real_execution_observable x s) true).
+by [].
+qed.
+
+lemma le_fs_shadow_semantic_failure_probability_exact_branch_mass :
+  forall (x : qssm_public_input) (s : seed),
+    le_fs_shadow_semantic_failure_probability x s =
+    le_fs_shadow_local_bad_branch_mass.
+proof.
+move=> x s.
+rewrite /le_fs_shadow_semantic_failure_probability.
+rewrite (d_le_fs_shadow_coupled_state_bad_branchE x s).
+rewrite /d_le_pre_fs_programming_view /d_le_post_rejection_view.
+rewrite /d_le_real_view /d_le_real_execution_view /le_post_rejection_surrogate.
+rewrite dmap_dunit dmap_dunit dunitE /=.
+rewrite (le_fs_shadow_semantic_bad_event_branch_stateE
+  (le_real_execution_observable x s) true).
+rewrite /le_fs_shadow_local_bad_branch_mass.
+by [].
 qed.
 
 lemma A_LE_fs_shadow_sdist_le_failure_probability :
@@ -833,6 +969,20 @@ move=> x s.
 rewrite (d_le_fs_shadow_pre_post_marginals_equal x s).
 rewrite sdistdd.
 rewrite (le_fs_shadow_failure_probability_zero x s).
+by [].
+qed.
+
+lemma A_LE_fs_shadow_sdist_le_semantic_failure_probability :
+  forall (x : qssm_public_input) (s : seed),
+    sdist (d_le_fs_shadow_pre_marginal x s)
+      (d_le_fs_shadow_post_marginal x s)
+      <= le_fs_shadow_semantic_failure_probability x s.
+proof.
+move=> x s.
+rewrite (d_le_fs_shadow_pre_post_marginals_equal x s).
+rewrite sdistdd.
+rewrite (le_fs_shadow_semantic_failure_probability_exact_branch_mass x s).
+rewrite /le_fs_shadow_local_bad_branch_mass.
 by [].
 qed.
 
