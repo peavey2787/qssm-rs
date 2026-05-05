@@ -1,5 +1,7 @@
 # Assumptions and Model Boundary
 
+Navigation: [EasyCrypt README](../README.md)
+
 ## Current In-Tree Assumption State
 
 At the current May 2026 checkpoint, the EasyCrypt `*.ec` files under this directory contain no named `axiom` declarations.
@@ -65,4 +67,3 @@ If nontrivial budgets or external assumptions are reintroduced later, they shoul
 - [PROOF_STATUS.md](PROOF_STATUS.md) for the current theorem-facing state
 - [ARCHITECTURE.md](ARCHITECTURE.md) for where each proof surface lives
 - [PROOF_HISTORY.md](PROOF_HISTORY.md) for the detailed closure log that led to the current zero-budget model
-- [LE_REFINEMENT_PLAN.md](LE_REFINEMENT_PLAN.md) for the next non-identity LE refinement work

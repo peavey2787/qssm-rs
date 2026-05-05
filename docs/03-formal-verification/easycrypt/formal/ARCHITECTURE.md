@@ -1,5 +1,7 @@
 # Architecture
 
+Navigation: [EasyCrypt README](../README.md)
+
 ## Purpose
 
 This document is the deep-structure companion to the root README. It explains how the EasyCrypt tree is split, which files act as stable facades, and where the lower proof surfaces live.
@@ -162,4 +164,3 @@ That pattern is what allowed the LE rejection and FS theorem-facing endpoints to
 - [PROOF_STATUS.md](PROOF_STATUS.md)
 - [ASSUMPTIONS.md](ASSUMPTIONS.md)
 - [PROOF_HISTORY.md](PROOF_HISTORY.md)
-- [LE_REFINEMENT_PLAN.md](LE_REFINEMENT_PLAN.md)

@@ -1,5 +1,7 @@
 # MS-3b Proof Plan (EasyCrypt)
 
+Navigation: [EasyCrypt README](../README.md)
+
 This note tracks the **true-clause / highest-differing-bit** characterization (MS v2 comparison). The checker-facing entry point is **`ms/TrueClause.ec`** (thin **`require export`** facade); definitions and proofs are split under **`ms/true_clause/TrueClauseTypes.ec`**, **`TrueClauseMSB.ec`**, **`TrueClauseTheorem.ec`** (imports still use theory **`TrueClause`**).
 
 ## Proof-debt checkpoint (current)

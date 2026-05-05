@@ -1,5 +1,7 @@
 # `ms/source/`
 
+Navigation: [EasyCrypt README](../../README.md)
+
 This directory holds the split MS-3a source layer: source-record types, payload/seed laws, coupling lemmas, execution/public-spine bridges, schedule obligations, and the packaged MS-3a theorem surface.
 
 Prefer these stable interfaces when importing from outside this directory:

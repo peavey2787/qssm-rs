@@ -13,6 +13,13 @@ The main live refinement track is the LE shadow lane. Rejection and FS theorem-f
 - Architecture, status, and proof-history documentation for the current May 2026 state
 - No direct Rust implementation changes; this tree is the formal model and proof development
 
+## Verification Boundary
+
+- The current proof closes on a concrete exact-zero model, not yet on a nonzero cryptographic reduction.
+- There is no machine-checked refinement link from these EasyCrypt theories to the Rust implementation today.
+- Correctness of the EasyCrypt checker, the imported foundations, and the human model-to-implementation correspondence remain external trust boundaries.
+- The exact meaning of the current `0 axioms` and `0%r` budget state is documented in [formal/PROOF_STATUS.md](formal/PROOF_STATUS.md) and [formal/ASSUMPTIONS.md](formal/ASSUMPTIONS.md).
+
 ## Install EasyCrypt
 
 If `easycrypt` is not already in `PATH`, install it with OPAM using the upstream instructions:
@@ -99,12 +106,18 @@ The deeper architecture and file-map material moved to [formal/ARCHITECTURE.md](
 - [formal/ASSUMPTIONS.md](formal/ASSUMPTIONS.md): current model boundary, budget semantics, and what remains intentionally exact-zero
 - [formal/ARCHITECTURE.md](formal/ARCHITECTURE.md): module breakdown, dependency flow, directory structure, and legacy file map
 - [formal/PROOF_HISTORY.md](formal/PROOF_HISTORY.md): preserved May 2026 audit log, closure notes, and long-form research history moved out of this entrypoint
-- [formal/LE_REFINEMENT_PLAN.md](formal/LE_REFINEMENT_PLAN.md): current shadow-lane plan for non-identity LE rejection / FS semantics and future budget restoration
 
-Related planning notes:
+## Plan Index
 
-- [plans/LE_HVZK_proof_plan.md](plans/LE_HVZK_proof_plan.md)
-- [plans/MS_3c_proof_plan.md](plans/MS_3c_proof_plan.md)
+- [plans/G0_G1_G2_game_plan.md](plans/G0_G1_G2_game_plan.md): top-level `G0 -> G1 -> G2` game-hop composition plan
+- [plans/LE_HVZK_proof_plan.md](plans/LE_HVZK_proof_plan.md): LE HVZK decomposition, obligation map, and theorem-path packaging notes
+- [plans/LE_REFINEMENT_PLAN.md](plans/LE_REFINEMENT_PLAN.md): next-stage LE rejection / FS shadow refinement plan
+- [plans/MS_3a_proof_plan.md](plans/MS_3a_proof_plan.md): MS-3a exact bitness-simulation plan and residual lower-layer debt
+- [plans/MS_3b_proof_plan.md](plans/MS_3b_proof_plan.md): MS-3b true-clause / highest-differing-bit characterization plan
+- [plans/MS_3c_proof_plan.md](plans/MS_3c_proof_plan.md): MS-3c comparison-lane plan and game-boundary closure history
+- [plans/MS_3d_proof_plan.md](plans/MS_3d_proof_plan.md): post-MS-3c MS game-layer cleanup and residual budget-facing work
+
+Every plan file and local subtree guide linked from this README includes a return link back here.
 
 ## Current Truth in One View
 

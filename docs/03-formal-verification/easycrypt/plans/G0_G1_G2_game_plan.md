@@ -1,5 +1,7 @@
 # G0 -> G1 -> G2 Game-Hop Plan
 
+Navigation: [EasyCrypt README](../README.md)
+
 ## Objective
 
 Replace vacuous game skeletons with explicit advantage-bound obligations so the

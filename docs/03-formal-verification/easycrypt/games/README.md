@@ -1,5 +1,7 @@
 # `games/`
 
+Navigation: [EasyCrypt README](../README.md)
+
 This directory holds the abstract game layer above the MS and LE theories: frozen views, advantage arithmetic, MS-hop transitions, the LE bridge, and the top-level game facade used by `theorem/MainTheorem.ec`.
 
 Prefer these stable interfaces when importing from outside this directory:

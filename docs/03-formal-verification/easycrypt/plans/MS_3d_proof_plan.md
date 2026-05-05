@@ -1,5 +1,7 @@
 # MS-3d Proof Plan (EasyCrypt)
 
+Navigation: [EasyCrypt README](../README.md)
+
 This note tracks the next MS-side game-layer phase after MS-3c. **MS-3c is now closed at the game boundary**: **`games/GameAdvantage.ec`** projects **`game_pr`** from the concrete **`game_view`** surface, **`games/GameMSHopTypes.ec`** proves the MS-3c AfterComparison/Sim collapse and zero-advantage bound as lemmas, and no MS-3c bridge axiom remains. MS-3d therefore starts from a stable comparison/public-observable boundary and focuses on the remaining MS game-hop assumption debt outside the comparison lane.
 
 **Initialization status:** the lower MS1/MS2 bridge installation is complete, and both halves are now discharged. **`games/GameAdvantage.ec`** defines **`game_pr_ms_core`** from **`ms_view_distinguish_pr (d_ms_game_stage_observable_v2 ...)`** and proves both **`A_MS1_hash_binding_game_pr_core_bound`** and **`A_MS2_rom_programming_game_pr_core_bound`** as lemmas. In **`games/GameMSHopTypes.ec`**, **`A_MS1_hash_binding_concrete_pair_advantage_bound`**, **`A_MS2_rom_programming_concrete_pair_advantage_bound`**, **`A_MS3a_canonical_bitness_exact_bound`**, **`A_MS3b_canonical_true_clause_bound`**, **`A_MS3c_comparison_bundle_implies_game_pr_equality`**, and **`A_MS3c_canonical_comparison_exact_bound`** are all proved lemmas. There is no remaining MS-specific game-layer axiom declaration.

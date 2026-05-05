@@ -1,5 +1,7 @@
 # `ms/comparison/`
 
+Navigation: [EasyCrypt README](../../README.md)
+
 This directory holds the split MS-3c comparison layer: comparison types and digests, payload construction, payload-support facts, coupling laws, and the packaged comparison theorem surface.
 
 External clients should normally import `../Comparison.ec`, which is the stable top-level facade for this subtree.

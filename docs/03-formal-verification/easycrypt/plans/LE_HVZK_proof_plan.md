@@ -1,5 +1,7 @@
 # LE HVZK Proof Plan
 
+Navigation: [EasyCrypt README](../README.md)
+
 ## Objective
 
 Refine the LE Set-B HVZK boundary into narrower, named obligations while keeping

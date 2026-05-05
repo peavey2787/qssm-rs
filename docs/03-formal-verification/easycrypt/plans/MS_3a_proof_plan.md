@@ -1,5 +1,7 @@
 # MS-3a Proof Plan (EasyCrypt)
 
+Navigation: [EasyCrypt README](../README.md)
+
 This note is **design + formal target tracking** for MS-3a. **`MS_3a_exact_bitness_simulation` is not vacuous**: it proves the predicate **`ms3a_bitness_real_sim_equiv`** (equality of abstract `ms_transcript_observable` distributions) via the layered lemma **`MS_3a_exact_bitness_simulation_from_layers`**. The skeleton admit is now discharged via a named packaging bridge lemma; remaining open obligations are listed in the checklist.
 
 **`ms/source/` organization note:** downstream theories should prefer the stable interfaces **`SourceDistributions.ec`** (distribution / coupling / observable surface), **`SourceScheduleObligations.ec`** (schedule chain), **`SourceObligations.ec`** (programmed/public-field/schedule bundle), and **`SourceTheorem.ec`** (packaged theorem surface). Leaf modules are still named below when a fact lives in a specific implementation file, but they are no longer the recommended import surface.

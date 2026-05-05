@@ -1,5 +1,7 @@
 # LE Refinement Plan
 
+Navigation: [EasyCrypt README](../README.md)
+
 ## Goal
 
 The current LE theorem path is checker-green, componentized, and stable, but it still closes on an exact-zero model. The next refinement objective is to make the lower LE rejection and FS semantics progressively less identity-shaped without destabilizing the theorem-facing path.
@@ -89,7 +91,7 @@ The likely order is:
 
 ## Detailed References
 
-- [../plans/LE_HVZK_proof_plan.md](../plans/LE_HVZK_proof_plan.md)
-- [PROOF_STATUS.md](PROOF_STATUS.md)
-- [ASSUMPTIONS.md](ASSUMPTIONS.md)
-- [PROOF_HISTORY.md](PROOF_HISTORY.md)
+- [LE_HVZK_proof_plan.md](LE_HVZK_proof_plan.md)
+- [../formal/PROOF_STATUS.md](../formal/PROOF_STATUS.md)
+- [../formal/ASSUMPTIONS.md](../formal/ASSUMPTIONS.md)
+- [../formal/PROOF_HISTORY.md](../formal/PROOF_HISTORY.md)

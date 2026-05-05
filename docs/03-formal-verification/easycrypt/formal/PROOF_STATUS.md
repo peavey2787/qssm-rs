@@ -1,5 +1,7 @@
 # Proof Status
 
+Navigation: [EasyCrypt README](../README.md)
+
 ## Snapshot
 
 As of May 2026, the EasyCrypt tree under this directory checks cleanly with `./check_easycrypt.sh`, and the repo-local named `axiom` count in `*.ec` files under this directory is `0`.
@@ -75,4 +77,4 @@ The next exact local target is the LE FS shadow refinement:
 - recover the refined `d_le_fs_shadow_post_marginal_matches_programmed_view` and `d_le_fs_shadow_pre_post_marginals_equal` lemmas
 - keep theorem-facing names and global LE arithmetic stable while the lower refinement lands
 
-For the longer-lived trail that led to the current state, see [PROOF_HISTORY.md](PROOF_HISTORY.md). For the forward plan, see [LE_REFINEMENT_PLAN.md](LE_REFINEMENT_PLAN.md).
+For the longer-lived trail that led to the current state, see [PROOF_HISTORY.md](PROOF_HISTORY.md).
