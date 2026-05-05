@@ -12,20 +12,24 @@ require import AllCore.
    - Shadow LE rejection component: `epsilon_le_rej` is installed as the
      future lower rejection budget, but it is intentionally kept at `0%r`
      until the shadow rejection lane is wired into the active LE theorem path.
-   - Shadow LE FS component: `epsilon_le_fs` is installed as the future lower
-     FS-programming budget, but it is intentionally kept at `0%r` until the
-     FS component lane replaces the current compatibility half-budget path in
-     the global LE arithmetic.
+   - Shadow LE FS component: `epsilon_le_fs` is still `0%r`, but now for a
+     semantic reason rather than only as a placeholder. The active
+     branch-sensitive shadow lane measures failure by the shadow bad-branch
+     condition on the post-constructor state, and that event is still proved
+     impossible on the current concrete support because
+     `d_le_pre_fs_programming_view x s` remains a `dunit` push-forward of
+     `le_real_execution_observable x s` and the concrete real query material
+     fixes `leqm_bad_flag = false`.
    - LE HVZK umbrella budget: `epsilon_le` is now defined as the sum of the
      lower component budgets `epsilon_le_rej + epsilon_le_fs`. In the current
      model both component lanes are still exact-zero, so the LE real and sim
      view distributions coincide and the umbrella bound is also identically 0.
 
-   Therefore each budget is defined as `0%r`. This is NOT a nonzero
-   cryptographic security bound; it records the exact-zero gap of the current
-   model. Any future refinement that introduces a non-identity rejection
-   sampler, FS programmer, or quantitative ROM model must restore a nonzero
-   budget formula here. *)
+  Therefore each budget is defined as `0%r`. This is NOT a nonzero
+  cryptographic security bound; it records the exact-zero gap of the current
+  model. Any future refinement that introduces a non-identity rejection
+  sampler, a genuinely supported FS bad branch, or a quantitative ROM model
+  must restore a nonzero budget formula here. *)
 
 op epsilon_ms_hash_binding : real = 0%r.
 

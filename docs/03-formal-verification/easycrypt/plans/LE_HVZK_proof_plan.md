@@ -277,10 +277,14 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     `A_LE_fs_shadow_sdist_le_failure_probability`, and
     `A_LE_fs_shadow_failure_probability_le_budget` remain proved, and the
     theorem-facing files `LEFsProgramming.ec`, `LEStatisticalDistance.ec`, and
-    `MainTheorem.ec` stay unchanged. The next local target is therefore no
-    longer constructor recovery; it is to give this shadow lane a nontrivial
-    failure-probability / budget interpretation beyond the current exact-zero
-    semantics.
+    `MainTheorem.ec` stay unchanged. The shadow bad event is now interpreted
+    semantically on the shadow state rather than as a raw hidden flag, but it
+    still closes to `0%r` in the current model because the active support is a
+    `dunit` image of `le_real_execution_observable x s` and the concrete real
+    query material fixes `leqm_bad_flag = false`. The next local target is
+    therefore no longer constructor recovery; it is to refine the lower FS
+    model until that semantic failure-probability / budget lane becomes
+    genuinely nonzero.
   - Design refinement, May 2026: `A_LE_rejection_sampler_sdist_bound` remains a
     proved lemma in `le/LERejection.ec`, but it is no longer a repackaging of a
     surrogate-side axiom. It now rests on the concrete identity rejection
