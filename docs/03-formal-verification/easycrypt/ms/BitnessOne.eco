@@ -53,6 +53,11 @@
       "kind": "ec",
       "digest": "71a66b712b2595af8e02fada3eaa0c67"
     },
+    "DInterval": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "41362165e3905f2796f95ff650ca17fe"
+    },
     "Discrete": {
       "direct": false,
       "kind": "ec",
@@ -82,6 +87,11 @@
       "direct": false,
       "kind": "ec",
       "digest": "b97d32983e1fb562a4ce3233cef9e7b6"
+    },
+    "Group": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "9154fe8bbcb35bd2460a28b8967cf431"
     },
     "Int": {
       "direct": false,
@@ -126,12 +136,12 @@
     "PointInterface": {
       "direct": false,
       "kind": "ec",
-      "digest": "be6f95153923b9ac879437876a110dcf"
+      "digest": "7cb0b0fa0de01f5001212c1235b474ac"
     },
     "QssmTypes": {
       "direct": true,
       "kind": "ec",
-      "digest": "acdddf0ccc3b22dbb84f115572766967"
+      "digest": "19aeb53ffcbcf79b96194d252f92bfc7"
     },
     "Real": {
       "direct": false,
@@ -193,6 +203,11 @@
       "kind": "ec",
       "digest": "86d8efe5a5c553697e271a3bbbfa51a2"
     },
+    "Subtype": {
+      "direct": false,
+      "kind": "eca",
+      "digest": "1c3c6bac42a4a1feb23376c7e09a5276"
+    },
     "Tactics": {
       "direct": true,
       "kind": "ec",
@@ -202,6 +217,11 @@
       "direct": false,
       "kind": "ec",
       "digest": "f8cdbe78777b5164dc57262d577911a4"
+    },
+    "ZModP": {
+      "direct": false,
+      "kind": "ec",
+      "digest": "62942415fdcd51f906ec59ac2bfcd4f9"
     }
   }
 }

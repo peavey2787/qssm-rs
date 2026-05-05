@@ -1,9 +1,12 @@
 require import AllCore List.
+require Group.
+
+clone Group.ComGroup as SchPointGroup.
 
 (* Core abstract data *)
 type digest.
 type scalar.
-type sch_point.
+type sch_point = SchPointGroup.group.
 type seed.
 type coeff_vector = int list.
 
