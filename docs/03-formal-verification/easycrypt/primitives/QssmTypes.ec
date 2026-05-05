@@ -40,6 +40,15 @@ type ms_comparison_query.
 type le_query_material = unit.
 
 (* Transcript observables *)
+type qssm_event_payload = {
+	qsep_statement_digest : digest;
+	qsep_result_bit : bool;
+	qsep_bitness_global_challenges : digest list;
+	qsep_comparison_global_challenge : digest;
+	qsep_comparison_openings : ms_comparison_openings;
+	qsep_transcript_digest : digest;
+}.
+
 type ms_transcript_observable = {
 	msv2_statement_digest : digest;
 	msv2_result_bit : bool;
@@ -47,6 +56,7 @@ type ms_transcript_observable = {
 	msv2_comparison_global_challenge : digest;
 	msv2_comparison_openings : ms_comparison_openings;
 	msv2_transcript_digest : digest;
+	msv2_qssm_event_payload : qssm_event_payload;
 }.
 type le_transcript_observable = {
 	leto_commitment_coeffs : coeff_vector;
@@ -55,6 +65,22 @@ type le_transcript_observable = {
 	leto_challenge_seed_obs : digest;
 	leto_programmed_query_digest_obs : digest;
 	leto_query_material : le_query_material;
+	leto_qssm_event_payload : qssm_event_payload;
+}.
+type qssm_public_view = {
+	qssmpv_statement_digest : digest;
+	qssmpv_result_bit : bool;
+	qssmpv_bitness_global_challenges : digest list;
+	qssmpv_comparison_global_challenge : digest;
+	qssmpv_comparison_openings : ms_comparison_openings;
+	qssmpv_transcript_digest : digest;
+	qssmpv_event_payload : qssm_event_payload;
+	qssmpv_commitment_coeffs : coeff_vector;
+	qssmpv_t_coeffs : coeff_vector;
+	qssmpv_z_coeffs : coeff_vector;
+	qssmpv_challenge_seed_obs : digest;
+	qssmpv_programmed_query_digest_obs : digest;
+	qssmpv_query_material : le_query_material;
 }.
 type qssm_transcript_observable.
 

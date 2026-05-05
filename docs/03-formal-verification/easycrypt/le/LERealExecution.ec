@@ -1,4 +1,4 @@
-require import QssmTypes Domains FS.
+require import QssmTypes Domains FS SourceModel.
 require import AllCore List Distr.
 
 (* Lower LE real-execution observable surface. The output carrier is concrete,
@@ -228,6 +228,10 @@ op le_real_execution_query_material
   (x : qssm_public_input) (s : seed) : le_query_material =
   (le_real_execution_record_of x s).`lerec_query_material.
 
+op le_real_execution_qssm_event_payload
+  (x : qssm_public_input) (s : seed) : qssm_event_payload =
+  qssm_event_payload_of_ms_public (extract_ms_public x).
+
 op le_real_execution_observable
   (x : qssm_public_input) (s : seed) : le_transcript_observable =
   {|
@@ -238,6 +242,7 @@ op le_real_execution_observable
     leto_programmed_query_digest_obs =
       (le_real_execution_record_of x s).`lerec_programmed_query_digest_obs;
     leto_query_material = (le_real_execution_record_of x s).`lerec_query_material;
+    leto_qssm_event_payload = le_real_execution_qssm_event_payload x s;
   |}.
 
 op d_le_real_execution_view
@@ -306,4 +311,12 @@ lemma le_real_execution_observable_exposes_query_material :
       le_real_execution_query_material x s.
 proof.
 by move=> x s; rewrite /le_real_execution_observable /le_real_execution_query_material.
+qed.
+
+lemma le_real_execution_observable_exposes_qssm_event_payload :
+  forall (x : qssm_public_input) (s : seed),
+    (le_real_execution_observable x s).`leto_qssm_event_payload =
+      le_real_execution_qssm_event_payload x s.
+proof.
+by move=> x s; rewrite /le_real_execution_observable /le_real_execution_qssm_event_payload.
 qed.

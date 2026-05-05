@@ -22,6 +22,7 @@ type le_fs_visible_shell = {
   lefsvs_z_coeffs : coeff_vector;
   lefsvs_challenge_seed_obs : digest;
   lefsvs_programmed_query_digest_obs : digest;
+  lefsvs_qssm_event_payload : qssm_event_payload;
 }.
 
 type le_fs_hidden_programming_state = {
@@ -47,6 +48,7 @@ op le_fs_visible_shell_of_observable
   lefsvs_z_coeffs = le_z_coeffs obs;
   lefsvs_challenge_seed_obs = le_challenge_seed_obs obs;
   lefsvs_programmed_query_digest_obs = le_programmed_query_digest_obs obs;
+  lefsvs_qssm_event_payload = le_qssm_event_payload obs;
 |}.
 
 op le_fs_hidden_programming_state_of_observable
@@ -77,6 +79,8 @@ op le_fs_observable_of_hidden_programming_state
     leto_programmed_query_digest_obs =
       (le_fs_visible_shell_of_hidden_programming_state st).`lefsvs_programmed_query_digest_obs;
     leto_query_material = le_fs_query_material_of_hidden_programming_state st;
+    leto_qssm_event_payload =
+      (le_fs_visible_shell_of_hidden_programming_state st).`lefsvs_qssm_event_payload;
   |}.
 
 op le_fs_hidden_programming_state_update

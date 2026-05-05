@@ -4,6 +4,8 @@ require import SchnorrBranch.
 require import BitnessOne BitnessVector TranscriptObservable.
 require import TrueClause Comparison ComparisonTypes ComparisonDigests ComparisonPayload ComparisonCoupling ComparisonTheorem.
 
+op extract_ms_public : qssm_public_input -> ms_public_input.
+
 (* MS v2 transcript observable surface, now concrete via the base observable record. *)
 op ms_statement_digest (obs : ms_transcript_observable) : digest =
   obs.`msv2_statement_digest.
@@ -22,6 +24,9 @@ op ms_comparison_openings (obs : ms_transcript_observable) : ms_comparison_openi
 
 op ms_transcript_digest (obs : ms_transcript_observable) : digest =
   obs.`msv2_transcript_digest.
+
+op ms_qssm_event_payload (obs : ms_transcript_observable) : qssm_event_payload =
+  obs.`msv2_qssm_event_payload.
 
 (* ------------------------------------------------------------------------- *)
 (* MS-3a public spine: concrete projections from the base-layer public record. *)
@@ -82,6 +87,26 @@ op ms3a_public_comparison_openings (x : ms_public_input) : ms_comparison_opening
 op ms3a_public_transcript_digest (x : ms_public_input) : digest =
   ms_public_transcript_digest_canonical x.
 
+op qssm_event_payload_of_ms_fields
+  (stmt : digest) (rbit : bool) (bitness_glob : digest list)
+  (comp_glob : digest) (comp_openings : ms_comparison_openings)
+  (td : digest) : qssm_event_payload =
+  {| qsep_statement_digest = stmt;
+     qsep_result_bit = rbit;
+     qsep_bitness_global_challenges = bitness_glob;
+     qsep_comparison_global_challenge = comp_glob;
+     qsep_comparison_openings = comp_openings;
+     qsep_transcript_digest = td |}.
+
+op qssm_event_payload_of_ms_public (x : ms_public_input) : qssm_event_payload =
+  qssm_event_payload_of_ms_fields
+    (ms3a_public_stmt_digest x)
+    (ms3a_public_result_bit x)
+    (ms3a_public_bitness_globals x)
+    (ms3a_public_comparison_global x)
+    (ms3a_public_comparison_openings x)
+    (ms3a_public_transcript_digest x).
+
 (* Abstract observable agrees with the canonical v2 record (linking layer).   *)
 pred ms_abstract_observable_aligns_v2
   (obs : ms_transcript_observable) (o : ms_v2_transcript_observable) =
@@ -108,8 +133,10 @@ op ms3a_pack_observable
      msv2_result_bit = rbit;
      msv2_bitness_global_challenges = bitness_glob;
      msv2_comparison_global_challenge = comp_glob;
-  msv2_comparison_openings = witness;
-     msv2_transcript_digest = td |}.
+    msv2_comparison_openings = witness;
+    msv2_transcript_digest = td;
+    msv2_qssm_event_payload =
+     qssm_event_payload_of_ms_fields stmt rbit bitness_glob comp_glob witness td |}.
 
 (* Length / digest-cell shape on the public spine (no ROM or per-bit programming). *)
 pred ms3a_public_bitness_shape_ok (x : ms_public_input) =
@@ -123,7 +150,8 @@ pred ms3a_public_transcript_shape_ok (x : ms_public_input) =
        msv2_bitness_global_challenges = ms3a_public_bitness_globals x;
        msv2_comparison_global_challenge = ms3a_public_comparison_global x;
        msv2_comparison_openings = ms3a_public_comparison_openings x;
-       msv2_transcript_digest = ms3a_public_transcript_digest x |}.
+       msv2_transcript_digest = ms3a_public_transcript_digest x;
+       msv2_qssm_event_payload = qssm_event_payload_of_ms_public x |}.
 
 op ms3a_public_v2_observable (x : ms_public_input) : ms_v2_transcript_observable =
   {| msv2_statement_digest = ms3a_public_stmt_digest x;
@@ -131,7 +159,31 @@ op ms3a_public_v2_observable (x : ms_public_input) : ms_v2_transcript_observable
      msv2_bitness_global_challenges = ms3a_public_bitness_globals x;
      msv2_comparison_global_challenge = ms3a_public_comparison_global x;
      msv2_comparison_openings = ms3a_public_comparison_openings x;
-     msv2_transcript_digest = ms3a_public_transcript_digest x |}.
+     msv2_transcript_digest = ms3a_public_transcript_digest x;
+     msv2_qssm_event_payload = qssm_event_payload_of_ms_public x |}.
+
+op qssm_view_to_ms_observable (v : qssm_public_view) : ms_v2_transcript_observable =
+  {| msv2_statement_digest = v.`qssmpv_statement_digest;
+     msv2_result_bit = v.`qssmpv_result_bit;
+     msv2_bitness_global_challenges = v.`qssmpv_bitness_global_challenges;
+     msv2_comparison_global_challenge = v.`qssmpv_comparison_global_challenge;
+     msv2_comparison_openings = v.`qssmpv_comparison_openings;
+     msv2_transcript_digest = v.`qssmpv_transcript_digest;
+     msv2_qssm_event_payload = v.`qssmpv_event_payload |}.
+
+lemma ms3a_public_v2_observable_preserves_event_payload (x : ms_public_input) :
+  ms_qssm_event_payload (ms3a_public_v2_observable x) =
+  qssm_event_payload_of_ms_public x.
+proof.
+by rewrite /ms_qssm_event_payload /ms3a_public_v2_observable.
+qed.
+
+lemma qssm_view_to_ms_observable_preserves_event_payload (v : qssm_public_view) :
+  ms_qssm_event_payload (qssm_view_to_ms_observable v) =
+  v.`qssmpv_event_payload.
+proof.
+by rewrite /ms_qssm_event_payload /qssm_view_to_ms_observable.
+qed.
 
 (* Projection from canonical v2 observable to the observable carrier. Since the
    carrier now uses the same concrete record, this is the identity map.        *)

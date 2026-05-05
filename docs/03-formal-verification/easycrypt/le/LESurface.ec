@@ -25,6 +25,25 @@ op le_programmed_query_digest_obs (obs : le_transcript_observable) : digest =
 op le_fs_query_material_obs (obs : le_transcript_observable) : le_query_material =
   obs.`leto_query_material.
 
+op le_qssm_event_payload (obs : le_transcript_observable) : qssm_event_payload =
+  obs.`leto_qssm_event_payload.
+
+op qssm_view_to_le_observable (v : qssm_public_view) : le_transcript_observable =
+  {| leto_commitment_coeffs = v.`qssmpv_commitment_coeffs;
+     leto_t_coeffs = v.`qssmpv_t_coeffs;
+     leto_z_coeffs = v.`qssmpv_z_coeffs;
+     leto_challenge_seed_obs = v.`qssmpv_challenge_seed_obs;
+     leto_programmed_query_digest_obs = v.`qssmpv_programmed_query_digest_obs;
+     leto_query_material = v.`qssmpv_query_material;
+     leto_qssm_event_payload = v.`qssmpv_event_payload |}.
+
+lemma qssm_view_to_le_observable_preserves_event_payload (v : qssm_public_view) :
+  le_qssm_event_payload (qssm_view_to_le_observable v) =
+  v.`qssmpv_event_payload.
+proof.
+by rewrite /le_qssm_event_payload /qssm_view_to_le_observable.
+qed.
+
 (* Set B parameter placeholders (concrete values live in qssm-le params.rs) *)
 op C_POLY_SIZE : int.
 op C_POLY_SPAN : int.
@@ -68,6 +87,7 @@ op le_fs_view_surrogate
     leto_challenge_seed_obs = le_challenge_seed_obs obs;
     leto_programmed_query_digest_obs = le_programmed_query_digest_obs obs;
     leto_query_material = le_fs_program_query_material (le_fs_query_material_obs obs);
+    leto_qssm_event_payload = le_qssm_event_payload obs;
   |}.
 
 (* Post-rejection marginal: push-forward of the real view after the rejection-sampling
