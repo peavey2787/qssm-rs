@@ -448,6 +448,40 @@ rewrite /d_le_fs_shadow_branch_choice /le_fs_shadow_branch_support.
 by rewrite supp_duniform.
 qed.
 
+lemma le_fs_shadow_branch_choice_mass_false :
+  mu1 d_le_fs_shadow_branch_choice false = 1%r / 2%r.
+proof.
+rewrite /d_le_fs_shadow_branch_choice /le_fs_shadow_branch_support duniform1E_uniq.
+  by [].
+by rewrite /le_fs_shadow_branch_support.
+qed.
+
+lemma le_fs_shadow_branch_choice_mass_true :
+  mu1 d_le_fs_shadow_branch_choice true = 1%r / 2%r.
+proof.
+rewrite /d_le_fs_shadow_branch_choice /le_fs_shadow_branch_support duniform1E_uniq.
+  by [].
+by rewrite /le_fs_shadow_branch_support.
+qed.
+
+lemma le_fs_shadow_local_bad_branch_mass_is_true_mass :
+  le_fs_shadow_local_bad_branch_mass = mu1 d_le_fs_shadow_branch_choice true.
+proof.
+rewrite /le_fs_shadow_local_bad_branch_mass.
+have Hmu1 : mu d_le_fs_shadow_branch_choice (fun (bad : bool) => bad) =
+    mu1 d_le_fs_shadow_branch_choice true.
+  apply/mu_eq=> bad /=.
+  by case: bad.
+exact Hmu1.
+qed.
+
+lemma le_fs_shadow_local_bad_branch_mass_closed_form :
+  le_fs_shadow_local_bad_branch_mass = 1%r / 2%r.
+proof.
+rewrite le_fs_shadow_local_bad_branch_mass_is_true_mass.
+exact le_fs_shadow_branch_choice_mass_true.
+qed.
+
 lemma le_fs_shadow_local_bad_branch_mass_nonneg :
   0%r <= le_fs_shadow_local_bad_branch_mass.
 proof.
@@ -803,6 +837,41 @@ proof.
 by move=> x s; rewrite /d_le_fs_shadow_coupled_state.
 qed.
 
+lemma le_fs_shadow_semantic_branch_state_has_support
+  (x : qssm_public_input) (s : seed)
+  (obs : le_transcript_observable) (bad : bool) :
+  obs \in d_le_pre_fs_programming_view x s =>
+  bad \in d_le_fs_shadow_branch_choice =>
+  le_fs_shadow_state_of_branch_observable obs bad \in d_le_fs_shadow_coupled_state x s.
+proof.
+move=> Hobs Hbad.
+rewrite (d_le_fs_shadow_coupled_state_pairE x s).
+rewrite supp_dmap.
+exists (obs, bad); split.
+  by rewrite supp_dprod Hobs Hbad.
+by [].
+qed.
+
+lemma le_fs_shadow_semantic_good_branch_support
+  (x : qssm_public_input) (s : seed) (obs : le_transcript_observable) :
+  obs \in d_le_pre_fs_programming_view x s =>
+  le_fs_shadow_state_of_branch_observable obs false \in d_le_fs_shadow_coupled_state x s.
+proof.
+move=> Hobs.
+exact (le_fs_shadow_semantic_branch_state_has_support x s obs false Hobs
+  le_fs_shadow_good_branch_has_support).
+qed.
+
+lemma le_fs_shadow_semantic_bad_branch_support
+  (x : qssm_public_input) (s : seed) (obs : le_transcript_observable) :
+  obs \in d_le_pre_fs_programming_view x s =>
+  le_fs_shadow_state_of_branch_observable obs true \in d_le_fs_shadow_coupled_state x s.
+proof.
+move=> Hobs.
+exact (le_fs_shadow_semantic_branch_state_has_support x s obs true Hobs
+  le_fs_shadow_bad_branch_has_support).
+qed.
+
 lemma le_fs_shadow_bad_event_current_model
   (x : qssm_public_input) (s : seed) (obs : le_transcript_observable) :
   obs \in d_le_pre_fs_programming_view x s =>
@@ -1008,6 +1077,74 @@ case: p=> obs bad /=.
 by rewrite /le_fs_shadow_semantic_post_state_observable /(\o).
 qed.
 
+lemma le_real_execution_observable_in_pre_fs_programming_view
+  (x : qssm_public_input) (s : seed) :
+  le_real_execution_observable x s \in d_le_pre_fs_programming_view x s.
+proof.
+rewrite (d_le_pre_fs_programming_view_dunit x s).
+by rewrite supp_dunit.
+qed.
+
+lemma le_fs_shadow_semantic_post_marginal_support
+  (x : qssm_public_input) (s : seed)
+  (obs : le_transcript_observable) (bad : bool) :
+  obs \in d_le_pre_fs_programming_view x s =>
+  bad \in d_le_fs_shadow_branch_choice =>
+  (le_fs_shadow_state_of_branch_observable obs bad).`lefss_semantic_post_observable
+    \in d_le_fs_shadow_semantic_post_marginal x s.
+proof.
+move=> Hobs Hbad.
+rewrite (d_le_fs_shadow_semantic_post_marginal_pairE x s).
+rewrite supp_dmap.
+exists (obs, bad); split.
+  by rewrite supp_dprod Hobs Hbad.
+by [].
+qed.
+
+lemma le_fs_shadow_semantic_post_good_branch_support
+  (x : qssm_public_input) (s : seed) :
+  (le_fs_shadow_state_of_branch_observable
+     (le_real_execution_observable x s) false).`lefss_semantic_post_observable
+    \in d_le_fs_shadow_semantic_post_marginal x s.
+proof.
+apply (le_fs_shadow_semantic_post_marginal_support x s
+  (le_real_execution_observable x s) false).
+  exact (le_real_execution_observable_in_pre_fs_programming_view x s).
+exact le_fs_shadow_good_branch_has_support.
+qed.
+
+lemma le_fs_shadow_semantic_post_bad_branch_support
+  (x : qssm_public_input) (s : seed) :
+  (le_fs_shadow_state_of_branch_observable
+     (le_real_execution_observable x s) true).`lefss_semantic_post_observable
+    \in d_le_fs_shadow_semantic_post_marginal x s.
+proof.
+apply (le_fs_shadow_semantic_post_marginal_support x s
+  (le_real_execution_observable x s) true).
+  exact (le_real_execution_observable_in_pre_fs_programming_view x s).
+exact le_fs_shadow_bad_branch_has_support.
+qed.
+
+lemma d_le_fs_shadow_semantic_post_marginal_supportE
+  (x : qssm_public_input) (s : seed) (obs : le_transcript_observable) :
+  obs \in d_le_fs_shadow_semantic_post_marginal x s =>
+  obs =
+    (le_fs_shadow_state_of_branch_observable
+       (le_real_execution_observable x s) false).`lefss_semantic_post_observable \/
+  obs =
+    (le_fs_shadow_state_of_branch_observable
+       (le_real_execution_observable x s) true).`lefss_semantic_post_observable.
+proof.
+move=> Hobs.
+rewrite (d_le_fs_shadow_semantic_post_marginal_pairE x s) in Hobs.
+case/supp_dmap: Hobs=> -[pre_obs bad] [Hp ->].
+move: Hp; rewrite supp_dprod => -[Hpre _].
+have -> : pre_obs = le_real_execution_observable x s.
+  exact (d_le_pre_fs_programming_view_supportE x s pre_obs Hpre).
+clear Hpre.
+by case: bad.
+qed.
+
 lemma d_le_fs_shadow_bad_event_image_zero :
   forall (x : qssm_public_input) (s : seed),
     dmap (d_le_fs_shadow_coupled_state x s) le_fs_shadow_bad_event = dunit false.
@@ -1083,6 +1220,15 @@ move=> x s.
 rewrite /le_fs_shadow_semantic_failure_probability /le_fs_shadow_local_bad_branch_mass.
 rewrite (d_le_fs_shadow_semantic_bad_event_image_branch_choice x s).
 by [].
+qed.
+
+lemma le_fs_shadow_semantic_failure_probability_closed_form :
+  forall (x : qssm_public_input) (s : seed),
+    le_fs_shadow_semantic_failure_probability x s = 1%r / 2%r.
+proof.
+move=> x s.
+rewrite le_fs_shadow_semantic_failure_probability_exact_branch_mass.
+exact le_fs_shadow_local_bad_branch_mass_closed_form.
 qed.
 
 lemma A_LE_fs_shadow_sdist_le_failure_probability :

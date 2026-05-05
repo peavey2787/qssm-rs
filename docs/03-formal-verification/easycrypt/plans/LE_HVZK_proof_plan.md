@@ -307,6 +307,29 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     stay `0%r`. The next migration step is to connect that local semantic mass
     to theorem-facing budget arithmetic only after the top-level exact-zero LE
     corollary is relaxed or replaced with a compatible component-budget bridge.
+    Follow-on local closure, May 2026: the shadow-local two-branch sampler now
+    also has closed-form mass and semantic-post support facts. The concrete
+    branch masses are proved by
+    `le_fs_shadow_branch_choice_mass_false` and
+    `le_fs_shadow_branch_choice_mass_true`, so
+    `le_fs_shadow_local_bad_branch_mass_closed_form` proves
+    `le_fs_shadow_local_bad_branch_mass = 1%r / 2%r` and
+    `le_fs_shadow_semantic_failure_probability_closed_form` proves the same
+    exact value for `le_fs_shadow_semantic_failure_probability x s`. The local
+    support layer is now explicit as well:
+    `le_fs_shadow_semantic_good_branch_support` and
+    `le_fs_shadow_semantic_bad_branch_support` prove coupled-state support for
+    the two sampled semantic branches,
+    `le_fs_shadow_semantic_post_marginal_support` lifts that support into the
+    semantic-post marginal,
+    `le_fs_shadow_semantic_post_good_branch_support` and
+    `le_fs_shadow_semantic_post_bad_branch_support` witness both concrete
+    semantic-post images on support, and
+    `d_le_fs_shadow_semantic_post_marginal_supportE` characterizes semantic-post
+    support as exactly those two branch images over
+    `le_real_execution_observable x s`. These remain purely local facts in
+    `LEFsProgrammingSurface.ec`; `BudgetParameters.ec`, `LEFsProgramming.ec`,
+    `LEStatisticalDistance.ec`, and `MainTheorem.ec` remain unchanged.
   - Design refinement, May 2026: `A_LE_rejection_sampler_sdist_bound` remains a
     proved lemma in `le/LERejection.ec`, but it is no longer a repackaging of a
     surrogate-side axiom. It now rests on the concrete identity rejection
