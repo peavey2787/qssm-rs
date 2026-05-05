@@ -42,6 +42,18 @@ The obligations below are organized by topic (same names as in the `.ec` files):
     `A_LE_rejection_acceptance_probability_bounded`,
     `A_LE_rejection_output_shape_preserved` by definitional unfolding of the
     wrapper predicates to `le_rejection_sampling_bound_ok`
+  - shadow lower coupled rejection lane in `le/LERejectionSampler.ec`:
+    `le_rejection_shadow_state`, `d_le_rejection_shadow_coupled_state`,
+    `d_le_rejection_shadow_pre_marginal`, `d_le_rejection_shadow_post_marginal`,
+    and `le_rejection_shadow_failure_probability`; the hidden material now
+    carries the concrete lower challenge-seed material together with the
+    resampled observable, and the shadow acceptance bit is derived from that
+    lower material rather than hardcoded. The shadow lane proves bridge lemmas
+    from the shadow pre/post marginals back to `d_le_real_view` and
+    `d_le_post_rejection_view`, plus the lower helper facts
+    `d_le_rejection_shadow_pre_post_marginals_equal` and
+    `le_rejection_shadow_failure_probability_zero`; this lane is not wired into
+    the active theorem path yet
   - proved lemma `A_LE_rejection_surrogate_preserves_shape` (coefficients / digest fields
     fixed by `le_post_rejection_surrogate` on each observable)
   - proved lemmas `L_LE_rejection_output_shape_implies_sampling_bound_ok`,
@@ -187,6 +199,19 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     proved lemma in `le/LERejection.ec`, but it is no longer a repackaging of a
     surrogate-side axiom. It now rests on the concrete identity rejection
     transform and the resulting zero-distance lemma.
+  - Shadow rejection lane, May 2026: `le/LERejectionSampler.ec` now also keeps a
+    coupled-state shadow model beside that active identity lane. The shadow
+    names are `le_rejection_shadow_state`,
+    `d_le_rejection_shadow_coupled_state`,
+    `d_le_rejection_shadow_pre_marginal`,
+    `d_le_rejection_shadow_post_marginal`, and
+    `le_rejection_shadow_failure_probability`. The shadow hidden material now
+    records the concrete lower challenge-seed material and the resampled
+    observable, while the shadow acceptance bit is derived from the lower
+    challenge-seed branch. The two shadow theorem targets are now proved in
+    `le/LERejection.ec`: `A_LE_rejection_shadow_sdist_le_failure_probability`
+    and `A_LE_rejection_shadow_failure_probability_le_budget`. The active
+    theorem path still does not consume those names yet.
   - Sampler bridge closure, May 2026: `le/LERejectionSampler.ec` now defines
     `d_le_rejection_real_execution_view` as `d_le_real_view`, defines
     `le_rejection_transform` as `le_post_rejection_surrogate`, keeps

@@ -5,6 +5,7 @@ require import Ring.
 require import SDist.
 require import LESurface.
 require import LERejectionSampler.
+require BudgetParameters.
 
 pred le_rejection_distribution_defined (x : qssm_public_input) (s : seed) =
   le_rejection_sampling_bound_ok.
@@ -126,6 +127,30 @@ qed.
 (* Lower rejection-sampler target needed to eventually remove
    `A_LE_rejection_surrogate_sdist_bound` without renaming the quantitative debt.
 
+   `LERejectionSampler.ec` now also exposes a shadow coupled-state lane beside
+   the active exact-zero path:
+
+   - `le_rejection_shadow_state`
+   - `d_le_rejection_shadow_coupled_state`
+   - `d_le_rejection_shadow_pre_marginal`
+   - `d_le_rejection_shadow_post_marginal`
+   - `le_rejection_shadow_failure_probability`
+
+   Those names are not consumed by the active theorem path yet. They are the
+   future lower insertion point for a non-identity rejection sampler and the
+   future budget component `epsilon_le_rej`. The intended shadow-lane theorems
+   are:
+
+   lemma A_LE_rejection_shadow_sdist_le_failure_probability :
+     forall (x : qssm_public_input) (s : seed),
+       sdist (d_le_rejection_shadow_pre_marginal x s)
+             (d_le_rejection_shadow_post_marginal x s)
+         <= le_rejection_shadow_failure_probability x s.
+
+   lemma A_LE_rejection_shadow_failure_probability_le_budget :
+     forall (x : qssm_public_input) (s : seed),
+       le_rejection_shadow_failure_probability x s <= epsilon_le_rej.
+
    Intended theorem surface:
 
    lemma A_LE_rejection_sampler_sdist_bound :
@@ -144,6 +169,29 @@ qed.
    `LESurface.ec`, so a future lower sampler layer must still make those
    distributions concrete or prove an equivalent sampler coupling / sdist
    theorem from a concrete rejection execution surface. *)
+
+lemma A_LE_rejection_shadow_sdist_le_failure_probability :
+  forall (x : qssm_public_input) (s : seed),
+    sdist (d_le_rejection_shadow_pre_marginal x s)
+      (d_le_rejection_shadow_post_marginal x s)
+      <= le_rejection_shadow_failure_probability x s.
+proof.
+move=> x s.
+rewrite (d_le_rejection_shadow_pre_post_marginals_equal x s).
+rewrite sdistdd.
+rewrite (le_rejection_shadow_failure_probability_zero x s).
+by [].
+qed.
+
+lemma A_LE_rejection_shadow_failure_probability_le_budget :
+  forall (x : qssm_public_input) (s : seed),
+    le_rejection_shadow_failure_probability x s <= BudgetParameters.epsilon_le_rej.
+proof.
+move=> x s.
+rewrite (le_rejection_shadow_failure_probability_zero x s).
+rewrite /BudgetParameters.epsilon_le_rej.
+by [].
+qed.
 
 lemma A_LE_rejection_surrogate_sdist_bound :
   forall (x : qssm_public_input) (s : seed) (D : distinguisher),

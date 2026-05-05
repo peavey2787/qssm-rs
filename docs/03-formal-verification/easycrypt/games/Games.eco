@@ -56,7 +56,7 @@
     "BudgetParameters": {
       "direct": false,
       "kind": "ec",
-      "digest": "fdfaad5f9480cdc410b8dd83876237e3"
+      "digest": "2b4216563f56191480cbd376943afbac"
     },
     "Comparison": {
       "direct": false,
@@ -346,12 +346,12 @@
     "LERejection": {
       "direct": false,
       "kind": "ec",
-      "digest": "45d5ae0f9c5669388310ab3467a0bd90"
+      "digest": "04ba2750208cc4c7146cb4c5d7756c68"
     },
     "LERejectionSampler": {
       "direct": false,
       "kind": "ec",
-      "digest": "778451d3d43f7bb5744c4e01848048ac"
+      "digest": "f4e9e4d6d93dba08d6664e7e89766f26"
     },
     "LESetB": {
       "direct": false,

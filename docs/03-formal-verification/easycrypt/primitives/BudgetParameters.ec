@@ -9,6 +9,9 @@ require import AllCore.
      AfterBinding observable distributions are equal.
    - MS2 ROM-programming: `L_ms2_rom_programming_transition_zero` proves the
      AfterBinding and AfterRom observable distributions are equal.
+   - Shadow LE rejection component: `epsilon_le_rej` is installed as the
+     future lower rejection budget, but it is intentionally kept at `0%r`
+     until the shadow rejection lane is wired into the active LE theorem path.
    - LE HVZK: `le_post_rejection_surrogate` and `le_fs_view_surrogate` are the
      identity on the modeled observable, so the LE real and sim view
      distributions coincide and the underlying sdist is identically 0.
@@ -30,6 +33,12 @@ op epsilon_ms_rom_programmability : real = 0%r.
 lemma A2_ms_rom_programmability_nonneg :
   0%r <= epsilon_ms_rom_programmability.
 proof. by rewrite /epsilon_ms_rom_programmability. qed.
+
+op epsilon_le_rej : real = 0%r.
+
+lemma A4_le_rejection_nonneg :
+  0%r <= epsilon_le_rej.
+proof. by rewrite /epsilon_le_rej. qed.
 
 op epsilon_le : real = 0%r.
 
