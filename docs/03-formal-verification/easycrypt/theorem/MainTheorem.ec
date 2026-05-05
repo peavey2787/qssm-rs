@@ -4,7 +4,8 @@ require import StdOrder.
 require import QssmTypes SourceTypes Algebra FS SchnorrBranch TrueClause Comparison ComparisonTypes ComparisonDigests ComparisonPayload ComparisonCoupling ComparisonTheorem MS.
 require import Simulator.
 require import SourceDistributions SourceTheorem.
-require import LESurface LEModel Games GameAdvantage GameMSHops GameMSHopComposition GameLEBridge.
+require BudgetParameters.
+require import LESurface LEModel LEFsProgrammingSurface Games GameAdvantage GameMSHops GameMSHopComposition GameLEBridge.
 
 (* Bridge to MS-3a/b/c placeholders (MS-3a via `ms/source/SourceTheorem.ec`). *)
 lemma use_MS_3a (x : ms_public_input) (s : seed) : ms3a_bitness_real_sim_equiv x s.
@@ -74,6 +75,29 @@ have Hadd : Adv_G0_G1_MS x xms s D + Adv_G1_MS_to_LE x xms s D + Adv_G1_G2_LE x 
     epsilon_ms_hash_binding + epsilon_ms_rom_programmability + epsilon_le by ring.
   exact Hsum012.
 by apply (ler_trans _ _ _ Htri Hadd).
+qed.
+
+lemma qssm_main_theorem_semantic_budget
+  (x : qssm_public_input) (s : seed) (D : distinguisher) :
+  set_b_parameter_well_formed =>
+  le_real_sim_transcript_equiv x s =>
+  Adv_G0_G2_QSSM x (extract_ms_public x) s D <=
+    epsilon_ms_hash_binding +
+    epsilon_ms_rom_programmability +
+    BudgetParameters.epsilon_le_rej +
+    le_fs_shadow_local_bad_branch_mass.
+proof.
+move=> Hsetb Hleeqv.
+have Hskel := qssm_main_theorem_skeleton x s D Hsetb Hleeqv.
+have Hmass_nonneg : 0%r <= le_fs_shadow_local_bad_branch_mass.
+  exact le_fs_shadow_local_bad_branch_mass_nonneg.
+have Hextend :
+  epsilon_ms_hash_binding + epsilon_ms_rom_programmability + epsilon_le <=
+  epsilon_ms_hash_binding + epsilon_ms_rom_programmability + BudgetParameters.epsilon_le_rej +
+  le_fs_shadow_local_bad_branch_mass.
+  rewrite /epsilon_le /BudgetParameters.epsilon_le_fs.
+  smt(le_fs_shadow_local_bad_branch_mass_nonneg).
+exact (ler_trans _ _ _ Hskel Hextend).
 qed.
 
 (* Concrete zero-budget corollary.

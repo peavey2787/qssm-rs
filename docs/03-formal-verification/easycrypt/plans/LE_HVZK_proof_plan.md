@@ -351,9 +351,27 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     `A_LE_fs_shadow_semantic_post_marginal_sdist_le_bad_branch_mass` is now
     proved locally: `sdist (d_le_fs_shadow_semantic_post_marginal x s)
     (d_le_post_fs_programmed_view x s) <= le_fs_shadow_local_bad_branch_mass`.
-    This still does not alter `epsilon_le_fs`, `epsilon_le`, or the theorem-
-    facing exact-zero corollary; it only prepares the lower semantic lane for a
-    later component-budget connection.
+    That local theorem still does not alter `epsilon_le_fs`, `epsilon_le`, or
+    the theorem-facing exact-zero corollary by itself; it is the lower semantic
+    bridge used by the parallel theorem-facing chain landed in the next step.
+  - Parallel semantic theorem chain, May 2026: `le/LEFsProgramming.ec` now
+    exports `A_LE_fs_semantic_programming_sampler_sdist_le_bad_branch_mass`,
+    which packages the local semantic-post/programmed-view distance as a
+    theorem-facing FS endpoint bounded by `le_fs_shadow_local_bad_branch_mass`.
+    `le/LEStatisticalDistance.ec` now adds
+    `A_LE_semantic_combined_hiding_bounds_sdist` and
+    `A_LE_semantic_view_advantage_bound_from_indistinguishability` over the new
+    semantic view quantity `le_semantic_view_distinguishing_adv`, so the
+    parallel semantic LE view chain now closes at
+    `epsilon_le_rej + le_fs_shadow_local_bad_branch_mass` without routing
+    through `epsilon_le_fs`. `le/LEHVZK.ec` packages that result as
+    `A_LE_HVZK_semantic_transition_bound`. At the top level,
+    `theorem/MainTheorem.ec` now adds `qssm_main_theorem_semantic_budget` with
+    bound `epsilon_ms_hash_binding + epsilon_ms_rom_programmability +
+    epsilon_le_rej + le_fs_shadow_local_bad_branch_mass`. This is currently a
+    conservative theorem beside, not instead of, the active exact-zero route:
+    `BudgetParameters.ec`, `A_G1_to_G2_le_transition_bound`,
+    `qssm_main_theorem_skeleton`, and `qssm_main_theorem` remain unchanged.
   - Design refinement, May 2026: `A_LE_rejection_sampler_sdist_bound` remains a
     proved lemma in `le/LERejection.ec`, but it is no longer a repackaging of a
     surrogate-side axiom. It now rests on the concrete identity rejection

@@ -130,3 +130,22 @@ proof.
 move=> x s D Hr Hs Hfs.
 exact (A_LE_fs_programming_sampler_sdist_le_budget x s D Hr Hs Hfs).
 qed.
+
+lemma A_LE_fs_semantic_programming_sampler_sdist_le_bad_branch_mass :
+  forall (x : qssm_public_input) (s : seed) (D : distinguisher),
+    le_real_view_distribution_defined x s =>
+    le_sim_view_distribution_defined x s =>
+    le_fs_programming_hiding_bound x s D =>
+    sdist (dmap (d_le_post_rejection_view x s) le_fs_view_surrogate)
+      (LEFsProgrammingSurface.d_le_fs_shadow_semantic_post_marginal x s)
+      <= LEFsProgrammingSurface.le_fs_shadow_local_bad_branch_mass.
+proof.
+move=> x s D _ _ _.
+have Hshadow :=
+  LEFsProgrammingSurface.A_LE_fs_shadow_semantic_post_marginal_sdist_le_bad_branch_mass x s.
+rewrite /LEFsProgrammingSurface.d_le_post_fs_programmed_view
+        /LEFsProgrammingSurface.d_le_pre_fs_programming_view
+        /LEFsProgrammingSurface.le_fs_surrogate_transform in Hshadow.
+rewrite sdistC.
+exact Hshadow.
+qed.
