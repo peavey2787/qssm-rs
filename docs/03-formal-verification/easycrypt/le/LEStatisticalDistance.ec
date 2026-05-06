@@ -6,6 +6,7 @@ require import QssmTypes FS.
 
 require BudgetParameters.
 require import LESurface.
+require import LERejectionSampler.
 require import LERejection.
 require import LEFsProgramming.
 require import LEViewIndist.
@@ -23,13 +24,13 @@ op le_semantic_view_distinguishing_adv
 pred le_semantic_view_advantage_bound_from_indistinguishability
   (x : qssm_public_input) (s : seed) (D : distinguisher) =
   le_semantic_view_distinguishing_adv x s D <=
-    BudgetParameters.epsilon_le_rej +
+    LERejectionSampler.le_rejection_shadow_failure_probability x s +
     LEFsProgrammingSurface.le_fs_shadow_local_bad_branch_mass.
 
 pred le_semantic_view_advantage_bound_from_owned_budget
   (x : qssm_public_input) (s : seed) (D : distinguisher) =
   le_semantic_view_distinguishing_adv x s D <=
-    BudgetParameters.epsilon_le_rej +
+    BudgetParameters.epsilon_le_rej_semantic +
     BudgetParameters.epsilon_le_fs_semantic.
 
 pred le_semantic_view_advantage_bound_from_umbrella_budget
@@ -54,6 +55,44 @@ have Hacc : le_rejection_acceptance_probability_bounded x s.
 have Hshape : le_rejection_output_shape_preserved x s.
   exact (A_LE_rejection_output_shape_preserved x s Hacc).
 exact (A_LE_rejection_sampler_sdist_bound x s Hr Hdef Hacc Hshape).
+qed.
+
+lemma A_LE_rejection_semantic_contributes_to_sdist :
+  forall (x : qssm_public_input) (s : seed) (D : distinguisher),
+    le_real_view_distribution_defined x s =>
+    le_sim_view_distribution_defined x s =>
+    le_rejection_sampling_hiding_bound x s D =>
+    0%r <= epsilon_le =>
+    sdist (d_le_real_view x s) (d_le_post_rejection_view x s)
+      <= LERejectionSampler.le_rejection_shadow_failure_probability x s.
+proof.
+move=> x s D Hr _ Hrej _.
+have Hdef : le_rejection_distribution_defined x s.
+  exact (A_LE_rejection_distribution_defined x s Hrej).
+have Hacc : le_rejection_acceptance_probability_bounded x s.
+  exact (A_LE_rejection_acceptance_probability_bounded x s Hdef).
+have Hshape : le_rejection_output_shape_preserved x s.
+  exact (A_LE_rejection_output_shape_preserved x s Hacc).
+exact (A_LE_rejection_sampler_semantic_sdist_le_failure_probability x s Hr Hdef Hacc Hshape).
+qed.
+
+lemma A_LE_rejection_semantic_contributes_to_sdist_owned_budget :
+  forall (x : qssm_public_input) (s : seed) (D : distinguisher),
+    le_real_view_distribution_defined x s =>
+    le_sim_view_distribution_defined x s =>
+    le_rejection_sampling_hiding_bound x s D =>
+    0%r <= epsilon_le =>
+    sdist (d_le_real_view x s) (d_le_post_rejection_view x s)
+      <= BudgetParameters.epsilon_le_rej_semantic.
+proof.
+move=> x s D Hr _ Hrej _.
+have Hdef : le_rejection_distribution_defined x s.
+  exact (A_LE_rejection_distribution_defined x s Hrej).
+have Hacc : le_rejection_acceptance_probability_bounded x s.
+  exact (A_LE_rejection_acceptance_probability_bounded x s Hdef).
+have Hshape : le_rejection_output_shape_preserved x s.
+  exact (A_LE_rejection_output_shape_preserved x s Hacc).
+exact (A_LE_rejection_sampler_semantic_sdist_bound x s Hr Hdef Hacc Hshape).
 qed.
 
 lemma A_LE_fs_contributes_to_sdist :
@@ -107,7 +146,7 @@ lemma A_LE_semantic_combined_hiding_bounds_sdist :
     0%r <= epsilon_le =>
     sdist (d_le_real_view x s)
       (LEFsProgrammingSurface.d_le_fs_shadow_semantic_post_marginal x s)
-      <= BudgetParameters.epsilon_le_rej +
+      <= LERejectionSampler.le_rejection_shadow_failure_probability x s +
          LEFsProgrammingSurface.le_fs_shadow_local_bad_branch_mass.
 proof.
 move=> x s D Hr Hs Hrej Hfs Heps.
@@ -115,8 +154,8 @@ pose dr := d_le_real_view x s.
 pose dmid := d_le_post_rejection_view x s.
 pose dprog := dmap (d_le_post_rejection_view x s) le_fs_view_surrogate.
 pose dsem := LEFsProgrammingSurface.d_le_fs_shadow_semantic_post_marginal x s.
-have Hrej' : sdist dr dmid <= BudgetParameters.epsilon_le_rej.
-  exact (A_LE_rejection_contributes_to_sdist x s D Hr Hs Hrej Heps).
+have Hrej' : sdist dr dmid <= LERejectionSampler.le_rejection_shadow_failure_probability x s.
+  exact (A_LE_rejection_semantic_contributes_to_sdist x s D Hr Hs Hrej Heps).
 have Hfs0 : sdist dmid dprog <= BudgetParameters.epsilon_le_fs.
   exact (A_LE_fs_contributes_to_sdist x s D Hr Hs Hfs Heps).
 have Hfssem : sdist dprog dsem <= LEFsProgrammingSurface.le_fs_shadow_local_bad_branch_mass.
@@ -130,14 +169,15 @@ have Hmid : sdist dmid dsem <=
   apply (ler_trans _ _ _ Htri2).
   exact (ler_add _ _ _ _ Hfs0 Hfssem).
 have Hstep : sdist dr dsem <=
-    BudgetParameters.epsilon_le_rej +
+    LERejectionSampler.le_rejection_shadow_failure_probability x s +
     (BudgetParameters.epsilon_le_fs + LEFsProgrammingSurface.le_fs_shadow_local_bad_branch_mass).
   apply (ler_trans _ _ _ Htri1).
   exact (ler_add _ _ _ _ Hrej' Hmid).
 rewrite /BudgetParameters.epsilon_le_fs in Hstep.
-have -> : BudgetParameters.epsilon_le_rej +
+have -> : LERejectionSampler.le_rejection_shadow_failure_probability x s +
     (0%r + LEFsProgrammingSurface.le_fs_shadow_local_bad_branch_mass) =
-  BudgetParameters.epsilon_le_rej + LEFsProgrammingSurface.le_fs_shadow_local_bad_branch_mass by ring.
+  LERejectionSampler.le_rejection_shadow_failure_probability x s +
+  LEFsProgrammingSurface.le_fs_shadow_local_bad_branch_mass by ring.
 exact Hstep.
 qed.
 
@@ -150,18 +190,18 @@ lemma A_LE_semantic_combined_hiding_bounds_sdist_owned_budget :
     0%r <= epsilon_le =>
     sdist (d_le_real_view x s)
       (LEFsProgrammingSurface.d_le_fs_shadow_semantic_post_marginal x s)
-      <= BudgetParameters.epsilon_le_rej +
+      <= BudgetParameters.epsilon_le_rej_semantic +
          BudgetParameters.epsilon_le_fs_semantic.
 proof.
 move=> x s D Hr Hs Hrej Hfs Heps.
 have Hmass :=
   A_LE_semantic_combined_hiding_bounds_sdist x s D Hr Hs Hrej Hfs Heps.
-have Hrefl : BudgetParameters.epsilon_le_rej <= BudgetParameters.epsilon_le_rej.
-  by [].
 have Hextend :
-    BudgetParameters.epsilon_le_rej + LEFsProgrammingSurface.le_fs_shadow_local_bad_branch_mass <=
-    BudgetParameters.epsilon_le_rej + BudgetParameters.epsilon_le_fs_semantic.
-  exact (ler_add _ _ _ _ Hrefl
+    LERejectionSampler.le_rejection_shadow_failure_probability x s +
+    LEFsProgrammingSurface.le_fs_shadow_local_bad_branch_mass <=
+    BudgetParameters.epsilon_le_rej_semantic + BudgetParameters.epsilon_le_fs_semantic.
+  exact (ler_add _ _ _ _
+    (LERejectionSampler.A_LE_rejection_shadow_failure_probability_le_semantic_budget x s)
     LEFsProgrammingSurface.le_fs_shadow_local_bad_branch_mass_le_epsilon_le_fs_semantic).
 exact (ler_trans _ _ _ Hmass Hextend).
 qed.
@@ -298,7 +338,7 @@ rewrite /le_semantic_view_distinguishing_adv /le_view_distinguish_pr.
 have Hstat :
   sdist (d_le_real_view x s)
     (LEFsProgrammingSurface.d_le_fs_shadow_semantic_post_marginal x s)
-    <= BudgetParameters.epsilon_le_rej +
+    <= LERejectionSampler.le_rejection_shadow_failure_probability x s +
        LEFsProgrammingSurface.le_fs_shadow_local_bad_branch_mass.
   exact (A_LE_semantic_combined_hiding_bounds_sdist x s D Hr Hs Hrej Hfs Heps).
 pose dr := d_le_real_view x s.
@@ -325,12 +365,12 @@ rewrite /le_semantic_view_advantage_bound_from_owned_budget.
 have Hmass :=
   A_LE_semantic_view_advantage_bound_from_indistinguishability x s D Hr Hs Hind Heps.
 rewrite /le_semantic_view_advantage_bound_from_indistinguishability in Hmass.
-have Hrefl : BudgetParameters.epsilon_le_rej <= BudgetParameters.epsilon_le_rej.
-  by [].
 have Hextend :
-    BudgetParameters.epsilon_le_rej + LEFsProgrammingSurface.le_fs_shadow_local_bad_branch_mass <=
-    BudgetParameters.epsilon_le_rej + BudgetParameters.epsilon_le_fs_semantic.
-  exact (ler_add _ _ _ _ Hrefl
+    LERejectionSampler.le_rejection_shadow_failure_probability x s +
+    LEFsProgrammingSurface.le_fs_shadow_local_bad_branch_mass <=
+    BudgetParameters.epsilon_le_rej_semantic + BudgetParameters.epsilon_le_fs_semantic.
+  exact (ler_add _ _ _ _
+    (LERejectionSampler.A_LE_rejection_shadow_failure_probability_le_semantic_budget x s)
     LEFsProgrammingSurface.le_fs_shadow_local_bad_branch_mass_le_epsilon_le_fs_semantic).
 exact (ler_trans _ _ _ Hmass Hextend).
 qed.

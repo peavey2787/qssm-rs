@@ -136,10 +136,9 @@ qed.
    - `d_le_rejection_shadow_post_marginal`
    - `le_rejection_shadow_failure_probability`
 
-   Those names are not consumed by the active theorem path yet. They are the
-   future lower insertion point for a non-identity rejection sampler and the
-   future budget component `epsilon_le_rej`. The intended shadow-lane theorems
-   are:
+  Those names are now the lower insertion point for both the exact-zero
+  rejection budget `epsilon_le_rej` and the parallel semantic rejection
+  budget `epsilon_le_rej_semantic`. The intended shadow-lane theorems are:
 
    lemma A_LE_rejection_shadow_sdist_le_failure_probability :
      forall (x : qssm_public_input) (s : seed),
@@ -151,7 +150,29 @@ qed.
      forall (x : qssm_public_input) (s : seed),
        le_rejection_shadow_failure_probability x s <= epsilon_le_rej.
 
+   lemma A_LE_rejection_shadow_failure_probability_le_semantic_budget :
+     forall (x : qssm_public_input) (s : seed),
+       le_rejection_shadow_failure_probability x s <= epsilon_le_rej_semantic.
+
    Intended theorem surface:
+
+   lemma A_LE_rejection_sampler_semantic_sdist_le_failure_probability :
+     forall (x : qssm_public_input) (s : seed),
+       le_real_view_distribution_defined x s =>
+       le_rejection_distribution_defined x s =>
+       le_rejection_acceptance_probability_bounded x s =>
+       le_rejection_output_shape_preserved x s =>
+       sdist (d_le_real_view x s) (d_le_post_rejection_view x s)
+         <= le_rejection_shadow_failure_probability x s.
+
+   lemma A_LE_rejection_sampler_semantic_sdist_bound :
+     forall (x : qssm_public_input) (s : seed),
+       le_real_view_distribution_defined x s =>
+       le_rejection_distribution_defined x s =>
+       le_rejection_acceptance_probability_bounded x s =>
+       le_rejection_output_shape_preserved x s =>
+       sdist (d_le_real_view x s) (d_le_post_rejection_view x s)
+         <= epsilon_le_rej_semantic.
 
    lemma A_LE_rejection_sampler_sdist_bound :
      forall (x : qssm_public_input) (s : seed),
@@ -193,6 +214,37 @@ rewrite /BudgetParameters.epsilon_le_rej.
 by [].
 qed.
 
+lemma A_LE_rejection_sampler_semantic_sdist_le_failure_probability :
+  forall (x : qssm_public_input) (s : seed),
+    le_real_view_distribution_defined x s =>
+    le_rejection_distribution_defined x s =>
+    le_rejection_acceptance_probability_bounded x s =>
+    le_rejection_output_shape_preserved x s =>
+    sdist (d_le_real_view x s) (d_le_post_rejection_view x s)
+      <= le_rejection_shadow_failure_probability x s.
+proof.
+move=> x s _ _ _ _.
+rewrite -(d_le_rejection_shadow_pre_marginal_matches_real_view x s).
+rewrite -(d_le_rejection_shadow_post_marginal_matches_post_rejection_view x s).
+exact (A_LE_rejection_shadow_sdist_le_failure_probability x s).
+qed.
+
+lemma A_LE_rejection_sampler_semantic_sdist_bound :
+  forall (x : qssm_public_input) (s : seed),
+    le_real_view_distribution_defined x s =>
+    le_rejection_distribution_defined x s =>
+    le_rejection_acceptance_probability_bounded x s =>
+    le_rejection_output_shape_preserved x s =>
+    sdist (d_le_real_view x s) (d_le_post_rejection_view x s)
+      <= BudgetParameters.epsilon_le_rej_semantic.
+proof.
+move=> x s Hr Hdef Hacc Hshape.
+have Hshadow :=
+  A_LE_rejection_sampler_semantic_sdist_le_failure_probability x s Hr Hdef Hacc Hshape.
+have Hbudget := A_LE_rejection_shadow_failure_probability_le_semantic_budget x s.
+by smt().
+qed.
+
 lemma A_LE_rejection_surrogate_sdist_bound :
   forall (x : qssm_public_input) (s : seed) (D : distinguisher),
     le_real_view_distribution_defined x s =>
@@ -217,10 +269,9 @@ lemma A_LE_rejection_sampler_sdist_bound :
     sdist (d_le_real_view x s) (d_le_post_rejection_view x s)
       <= BudgetParameters.epsilon_le_rej.
 proof.
-move=> x s _ _ _ _.
-rewrite -(d_le_rejection_shadow_pre_marginal_matches_real_view x s).
-rewrite -(d_le_rejection_shadow_post_marginal_matches_post_rejection_view x s).
-have Hshadow := A_LE_rejection_shadow_sdist_le_failure_probability x s.
+move=> x s Hr Hdef Hacc Hshape.
+have Hshadow :=
+  A_LE_rejection_sampler_semantic_sdist_le_failure_probability x s Hr Hdef Hacc Hshape.
 have Hbudget := A_LE_rejection_shadow_failure_probability_le_budget x s.
 by smt().
 qed.

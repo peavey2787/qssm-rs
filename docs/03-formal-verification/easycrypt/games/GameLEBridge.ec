@@ -1,7 +1,7 @@
 require import AllCore List Distr.
 require import QssmTypes Algebra Simulator FS TrueClause Comparison ComparisonTypes ComparisonDigests ComparisonPayload ComparisonCoupling ComparisonTheorem.
 require BudgetParameters.
-require import SourceDistributions SourceTheorem MS LERealExecution LESurface LEModel LEStatisticalDistance LEHVZK.
+require import SourceDistributions SourceTheorem MS LERealExecution LESurface LEModel LERejectionSampler LEStatisticalDistance LEHVZK.
 require import LEFsProgrammingSurface.
 require import GameTypes GameViews GameAdvantage.
 
@@ -337,7 +337,7 @@ lemma A_G1_to_G2_le_semantic_transition_bound :
     0%r <= epsilon_le =>
     le_real_sim_transcript_equiv x s =>
     Adv_G1_G2_LE x xms s D <=
-      BudgetParameters.epsilon_le_rej +
+      LERejectionSampler.le_rejection_shadow_failure_probability x s +
       LEFsProgrammingSurface.le_fs_shadow_local_bad_branch_mass.
 proof.
 move=> x xms s D Hsetb Heps Hleeqv.
@@ -352,7 +352,7 @@ lemma A_G1_to_G2_le_semantic_owned_budget_transition_bound :
     0%r <= epsilon_le =>
     le_real_sim_transcript_equiv x s =>
     Adv_G1_G2_LE x xms s D <=
-      BudgetParameters.epsilon_le_rej +
+      BudgetParameters.epsilon_le_rej_semantic +
       BudgetParameters.epsilon_le_fs_semantic.
 proof.
 move=> x xms s D Hsetb Heps Hleeqv.

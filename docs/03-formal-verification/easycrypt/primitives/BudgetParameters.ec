@@ -11,9 +11,13 @@ import Ring.IntID StdOrder.IntOrder Range.
      AfterBinding observable distributions are equal.
    - MS2 ROM-programming: `L_ms2_rom_programming_transition_zero` proves the
      AfterBinding and AfterRom observable distributions are equal.
-   - Shadow LE rejection component: `epsilon_le_rej` is installed as the
-     future lower rejection budget, but it is intentionally kept at `0%r`
-     until the shadow rejection lane is wired into the active LE theorem path.
+   - Shadow LE rejection component on the exact-zero route: `epsilon_le_rej`
+     remains the active exact-zero lower rejection budget and stays at `0%r`.
+   - Shadow LE rejection component on the semantic route:
+     `epsilon_le_rej_semantic` tracks the lower rejection failure quantity used
+     by the semantic theorem path. The current shadow rejection lane still
+     proves zero failure on the concrete carrier, so `epsilon_le_rej_semantic`
+     also closes to `0%r` today.
    - Shadow LE FS component: `epsilon_le_fs` is still `0%r`, but now for a
      semantic reason rather than only as a placeholder. The active
      branch-sensitive shadow lane measures failure by the shadow bad-branch
@@ -26,6 +30,11 @@ import Ring.IntID StdOrder.IntOrder Range.
      lower component budgets `epsilon_le_rej + epsilon_le_fs`. In the current
      model both component lanes are still exact-zero, so the LE real and sim
      view distributions coincide and the umbrella bound is also identically 0.
+   - Semantic LE umbrella budget: `epsilon_le_semantic` is defined as the sum
+     of the semantic rejection and semantic FS components
+     `epsilon_le_rej_semantic + epsilon_le_fs_semantic`. In the current model
+     the semantic rejection component still closes to `0%r`, so the semantic
+     umbrella currently agrees numerically with the semantic FS component.
 
   Therefore each active exact-zero budget is defined as `0%r`. This is NOT a
   nonzero cryptographic security bound; it records the exact-zero gap of the
@@ -52,6 +61,12 @@ op epsilon_le_rej : real = 0%r.
 lemma A4_le_rejection_nonneg :
   0%r <= epsilon_le_rej.
 proof. by rewrite /epsilon_le_rej. qed.
+
+op epsilon_le_rej_semantic : real = 0%r.
+
+lemma A4_le_rejection_semantic_nonneg :
+  0%r <= epsilon_le_rej_semantic.
+proof. by rewrite /epsilon_le_rej_semantic. qed.
 
 op epsilon_le_fs : real = 0%r.
 
@@ -196,16 +211,16 @@ rewrite epsilon_le_fs_semantic_closed_form.
 by smt().
 qed.
 
-op epsilon_le_semantic : real = epsilon_le_rej + epsilon_le_fs_semantic.
+op epsilon_le_semantic : real = epsilon_le_rej_semantic + epsilon_le_fs_semantic.
 
 lemma epsilon_le_semantic_component_sum :
-  epsilon_le_semantic = epsilon_le_rej + epsilon_le_fs_semantic.
+  epsilon_le_semantic = epsilon_le_rej_semantic + epsilon_le_fs_semantic.
 proof. by rewrite /epsilon_le_semantic. qed.
 
 lemma epsilon_le_semantic_nonneg :
   0%r <= epsilon_le_semantic.
 proof.
-rewrite /epsilon_le_semantic /epsilon_le_rej /epsilon_le_fs_semantic.
+rewrite /epsilon_le_semantic /epsilon_le_rej_semantic /epsilon_le_fs_semantic.
 by smt().
 qed.
 

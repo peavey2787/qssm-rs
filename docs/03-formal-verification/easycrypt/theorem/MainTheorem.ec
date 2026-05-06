@@ -5,7 +5,7 @@ require import QssmTypes SourceTypes Algebra FS SchnorrBranch TrueClause Compari
 require import Simulator.
 require import SourceDistributions SourceTheorem.
 require BudgetParameters.
-require import LESurface LEModel LEFsProgrammingSurface Games GameAdvantage GameMSHops GameMSHopComposition GameLEBridge.
+require import LESurface LEModel LERejectionSampler LEFsProgrammingSurface Games GameAdvantage GameMSHops GameMSHopComposition GameLEBridge.
 
 (* Bridge to MS-3a/b/c placeholders (MS-3a via `ms/source/SourceTheorem.ec`). *)
 lemma use_MS_3a (x : ms_public_input) (s : seed) : ms3a_bitness_real_sim_equiv x s.
@@ -84,7 +84,7 @@ lemma qssm_main_theorem_semantic_budget_local_mass
   Adv_G0_G2_QSSM x (extract_ms_public x) s D <=
     epsilon_ms_hash_binding +
     epsilon_ms_rom_programmability +
-    BudgetParameters.epsilon_le_rej +
+    LERejectionSampler.le_rejection_shadow_failure_probability x s +
     le_fs_shadow_local_bad_branch_mass.
 proof.
 move=> Hsetb Hleeqv.
@@ -100,7 +100,8 @@ have Hmid : Adv_G1_MS_to_LE x xms s D <= 0%r.
   exact (A_G1_MS_to_LE_transition_bound x s D).
 have H12sem :
     Adv_G1_G2_LE x xms s D <=
-      BudgetParameters.epsilon_le_rej + le_fs_shadow_local_bad_branch_mass.
+      LERejectionSampler.le_rejection_shadow_failure_probability x s +
+      le_fs_shadow_local_bad_branch_mass.
   exact (A_G1_to_G2_le_semantic_transition_bound x xms s D
     Hsetb A4_le_hvzk_bound_nonneg Hleeqv).
 have Htri : Adv_G0_G2_QSSM x xms s D <=
@@ -111,18 +112,22 @@ have H01mid : Adv_G0_G1_MS x xms s D + Adv_G1_MS_to_LE x xms s D <=
   by apply (ler_add _ _ _ _ H01p Hmid).
 have Hadd : Adv_G0_G1_MS x xms s D + Adv_G1_MS_to_LE x xms s D + Adv_G1_G2_LE x xms s D <=
   epsilon_ms_hash_binding + epsilon_ms_rom_programmability +
-  BudgetParameters.epsilon_le_rej + le_fs_shadow_local_bad_branch_mass.
+  LERejectionSampler.le_rejection_shadow_failure_probability x s +
+  le_fs_shadow_local_bad_branch_mass.
   have ->: Adv_G0_G1_MS x xms s D + Adv_G1_MS_to_LE x xms s D + Adv_G1_G2_LE x xms s D =
     (Adv_G0_G1_MS x xms s D + Adv_G1_MS_to_LE x xms s D) + Adv_G1_G2_LE x xms s D by ring.
   have Hsum012 :
       (Adv_G0_G1_MS x xms s D + Adv_G1_MS_to_LE x xms s D) + Adv_G1_G2_LE x xms s D <=
       ((epsilon_ms_hash_binding + epsilon_ms_rom_programmability) + 0%r) +
-      (BudgetParameters.epsilon_le_rej + le_fs_shadow_local_bad_branch_mass)
+      (LERejectionSampler.le_rejection_shadow_failure_probability x s +
+       le_fs_shadow_local_bad_branch_mass)
     by apply (ler_add _ _ _ _ H01mid H12sem).
   have -> : ((epsilon_ms_hash_binding + epsilon_ms_rom_programmability) + 0%r) +
-      (BudgetParameters.epsilon_le_rej + le_fs_shadow_local_bad_branch_mass) =
+      (LERejectionSampler.le_rejection_shadow_failure_probability x s +
+       le_fs_shadow_local_bad_branch_mass) =
     epsilon_ms_hash_binding + epsilon_ms_rom_programmability +
-    BudgetParameters.epsilon_le_rej + le_fs_shadow_local_bad_branch_mass by ring.
+    LERejectionSampler.le_rejection_shadow_failure_probability x s +
+    le_fs_shadow_local_bad_branch_mass by ring.
   exact Hsum012.
 by apply (ler_trans _ _ _ Htri Hadd).
 qed.
@@ -134,7 +139,7 @@ lemma qssm_main_theorem_semantic_budget_owned
   Adv_G0_G2_QSSM x (extract_ms_public x) s D <=
     epsilon_ms_hash_binding +
     epsilon_ms_rom_programmability +
-    BudgetParameters.epsilon_le_rej +
+    BudgetParameters.epsilon_le_rej_semantic +
     BudgetParameters.epsilon_le_fs_semantic.
 proof.
 move=> Hsetb Hleeqv.
@@ -150,7 +155,7 @@ have Hmid : Adv_G1_MS_to_LE x xms s D <= 0%r.
   exact (A_G1_MS_to_LE_transition_bound x s D).
 have H12owned :
     Adv_G1_G2_LE x xms s D <=
-      BudgetParameters.epsilon_le_rej + BudgetParameters.epsilon_le_fs_semantic.
+      BudgetParameters.epsilon_le_rej_semantic + BudgetParameters.epsilon_le_fs_semantic.
   exact (A_G1_to_G2_le_semantic_owned_budget_transition_bound x xms s D
     Hsetb A4_le_hvzk_bound_nonneg Hleeqv).
 have Htri : Adv_G0_G2_QSSM x xms s D <=
@@ -161,18 +166,18 @@ have H01mid : Adv_G0_G1_MS x xms s D + Adv_G1_MS_to_LE x xms s D <=
   by apply (ler_add _ _ _ _ H01p Hmid).
 have Hadd : Adv_G0_G1_MS x xms s D + Adv_G1_MS_to_LE x xms s D + Adv_G1_G2_LE x xms s D <=
   epsilon_ms_hash_binding + epsilon_ms_rom_programmability +
-  BudgetParameters.epsilon_le_rej + BudgetParameters.epsilon_le_fs_semantic.
+  BudgetParameters.epsilon_le_rej_semantic + BudgetParameters.epsilon_le_fs_semantic.
   have ->: Adv_G0_G1_MS x xms s D + Adv_G1_MS_to_LE x xms s D + Adv_G1_G2_LE x xms s D =
     (Adv_G0_G1_MS x xms s D + Adv_G1_MS_to_LE x xms s D) + Adv_G1_G2_LE x xms s D by ring.
   have Hsum012 :
       (Adv_G0_G1_MS x xms s D + Adv_G1_MS_to_LE x xms s D) + Adv_G1_G2_LE x xms s D <=
       ((epsilon_ms_hash_binding + epsilon_ms_rom_programmability) + 0%r) +
-      (BudgetParameters.epsilon_le_rej + BudgetParameters.epsilon_le_fs_semantic)
+      (BudgetParameters.epsilon_le_rej_semantic + BudgetParameters.epsilon_le_fs_semantic)
     by apply (ler_add _ _ _ _ H01mid H12owned).
   have -> : ((epsilon_ms_hash_binding + epsilon_ms_rom_programmability) + 0%r) +
-      (BudgetParameters.epsilon_le_rej + BudgetParameters.epsilon_le_fs_semantic) =
+      (BudgetParameters.epsilon_le_rej_semantic + BudgetParameters.epsilon_le_fs_semantic) =
     epsilon_ms_hash_binding + epsilon_ms_rom_programmability +
-    BudgetParameters.epsilon_le_rej + BudgetParameters.epsilon_le_fs_semantic by ring.
+    BudgetParameters.epsilon_le_rej_semantic + BudgetParameters.epsilon_le_fs_semantic by ring.
   exact Hsum012.
 by apply (ler_trans _ _ _ Htri Hadd).
 qed.

@@ -401,14 +401,31 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     `le/LEStatisticalDistance.ec`, and `le/LEHVZK.ec` each now add owned-budget
     semantic wrapper theorems ending in `epsilon_le_fs_semantic`; the game
     layer exposes `A_G1_to_G2_le_semantic_owned_budget_transition_bound` with
-    bound `epsilon_le_rej + epsilon_le_fs_semantic`; and
+    bound `epsilon_le_rej_semantic + epsilon_le_fs_semantic`; and
     `theorem/MainTheorem.ec` now adds `qssm_main_theorem_semantic_budget_owned`
     with bound `epsilon_ms_hash_binding + epsilon_ms_rom_programmability +
-    epsilon_le_rej + epsilon_le_fs_semantic`. The exact-zero route and the
+    epsilon_le_rej_semantic + epsilon_le_fs_semantic`. The exact-zero route and the
     existing local-mass semantic route both remain checked alongside that owned-
-    budget path.
+    budget path. These slot counts are intentionally concrete demo/proof
+    parameters for the current semantic FS lane, not a protocol-owned bundle;
+    any later move to `primitives/ProtocolParameters.ec` is deferred until a
+    real shared parameter surface exists.
+  - Semantic rejection budget, May 2026: `primitives/BudgetParameters.ec` now
+    also defines `epsilon_le_rej_semantic = 0%r` with proved nonnegativity
+    lemma `A4_le_rejection_semantic_nonneg`. `le/LERejectionSampler.ec` proves
+    the shadow rejection failure quantity
+    `le_rejection_shadow_failure_probability <= epsilon_le_rej_semantic`,
+    `le/LERejection.ec` adds theorem-facing semantic rejection endpoints ending
+    first in `le_rejection_shadow_failure_probability` and then in
+    `epsilon_le_rej_semantic`, and `le/LEStatisticalDistance.ec` uses that
+    semantic rejection lane in parallel with the semantic FS lane. The local
+    semantic comparison theorem now closes at
+    `le_rejection_shadow_failure_probability + le_fs_shadow_local_bad_branch_mass`,
+    the owned theorem closes at
+    `epsilon_le_rej_semantic + epsilon_le_fs_semantic`, and the semantic
+    umbrella still feeds `qssm_main_theorem_semantic_budget`.
   - Semantic umbrella LE budget, May 2026: `primitives/BudgetParameters.ec`
-    now also defines `epsilon_le_semantic = epsilon_le_rej +
+    now also defines `epsilon_le_semantic = epsilon_le_rej_semantic +
     epsilon_le_fs_semantic`, together with `epsilon_le_semantic_component_sum`
     and `epsilon_le_semantic_nonneg`. `le/LEStatisticalDistance.ec` adds
     umbrella wrappers that close directly at `epsilon_le_semantic` while
@@ -442,11 +459,20 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     observable, while the shadow acceptance bit is derived from the lower
     challenge-seed branch. The two shadow theorem targets are now proved in
     `le/LERejection.ec`: `A_LE_rejection_shadow_sdist_le_failure_probability`
-    and `A_LE_rejection_shadow_failure_probability_le_budget`. The theorem-facing
-    `A_LE_rejection_sampler_sdist_bound` now factors through those shadow
-    theorems directly to `epsilon_le_rej`, while
+    and `A_LE_rejection_shadow_failure_probability_le_budget`. In parallel,
+    `le/LERejectionSampler.ec` now proves the semantic-budget bridge to
+    `epsilon_le_rej_semantic`, and `le/LERejection.ec` adds semantic
+    theorem-facing endpoints that factor through the same shadow quantity.
+    The exact-zero theorem-facing `A_LE_rejection_sampler_sdist_bound` still
+    factors through those shadow theorems directly to `epsilon_le_rej`, while
     `A_LE_rejection_surrogate_sdist_bound` remains the current exact theorem on
     the identity surrogate surface.
+  - Cross-lane target selection, May 2026: freeze the semantic FS demo-count
+    owner as-is. With the semantic rejection owner now installed, the next
+    LE-side realism step should be to make that rejection lane nontrivial
+    rather than to churn the FS owner again, because the rejection lane already
+    has a coupled-state surface, theorem-facing budget plumbing, and no visible
+    import-cycle pressure.
   - LE budget decomposition audit, May 2026: do not treat that rejection-side
     bridge as the permanent replacement surface. The intended steady state is
     component arithmetic, with a new FS budget `epsilon_le_fs` beside

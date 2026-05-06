@@ -56,7 +56,7 @@
     "BudgetParameters": {
       "direct": false,
       "kind": "ec",
-      "digest": "853c11fb78cb12df85c5a3c363d3eb8b"
+      "digest": "339a800ae3632209d16239cbbe2470d0"
     },
     "Comparison": {
       "direct": false,
@@ -256,7 +256,7 @@
     "GameLEBridge": {
       "direct": true,
       "kind": "ec",
-      "digest": "1dd9d3af8e804ffe01dd9bf4cc79cf46"
+      "digest": "f6818a593ab24fc4a6e2aaeb74341294"
     },
     "GameMSHopComposition": {
       "direct": false,
@@ -346,12 +346,12 @@
     "LERejection": {
       "direct": false,
       "kind": "ec",
-      "digest": "4892cef4f98b57da92caec6884000fc6"
+      "digest": "aeb13e9799cfad98b99a2473f42eaa14"
     },
     "LERejectionSampler": {
       "direct": false,
       "kind": "ec",
-      "digest": "f4e9e4d6d93dba08d6664e7e89766f26"
+      "digest": "1cb7332555b71b8d909db75f88db276d"
     },
     "LESetB": {
       "direct": false,
@@ -361,7 +361,7 @@
     "LEStatisticalDistance": {
       "direct": false,
       "kind": "ec",
-      "digest": "71aa92678298173a5a423181d03ccb96"
+      "digest": "53e099bd6f97a6efc8537ac64386ff5a"
     },
     "LESurface": {
       "direct": false,

@@ -3,6 +3,7 @@ require import AllCore Distr.
 require import SDist.
 require import LESurface.
 require import LERealExecution.
+require BudgetParameters.
 
 (* Lower execution-facing rejection sampler boundary below `LERejection.ec`.
    This file introduces the sampler surface needed to eventually discharge the
@@ -205,6 +206,16 @@ rewrite /le_real_execution_challenge_seed_material_of /=.
 by [].
 qed.
 
+lemma A_LE_rejection_shadow_failure_probability_le_semantic_budget :
+  forall (x : qssm_public_input) (s : seed),
+    le_rejection_shadow_failure_probability x s <= BudgetParameters.epsilon_le_rej_semantic.
+proof.
+move=> x s.
+rewrite (le_rejection_shadow_failure_probability_zero x s).
+rewrite /BudgetParameters.epsilon_le_rej_semantic.
+by [].
+qed.
+
 lemma le_real_view_matches_rejection_execution :
   forall (x : qssm_public_input) (s : seed),
     d_le_real_view x s = d_le_rejection_real_execution_view x s.
@@ -265,6 +276,31 @@ qed.
      forall (x : qssm_public_input) (s : seed),
        le_rejection_shadow_failure_probability x s <= epsilon_le_rej.
 
+   lemma A_LE_rejection_shadow_failure_probability_le_semantic_budget :
+     forall (x : qssm_public_input) (s : seed),
+       le_rejection_shadow_failure_probability x s <= epsilon_le_rej_semantic.
+
+   The theorem-facing surfaces above this file now split into an exact-zero
+   route and a semantic route:
+
+   lemma A_LE_rejection_sampler_semantic_sdist_le_failure_probability :
+     forall (x : qssm_public_input) (s : seed),
+       le_real_view_distribution_defined x s =>
+       le_rejection_distribution_defined x s =>
+       le_rejection_acceptance_probability_bounded x s =>
+       le_rejection_output_shape_preserved x s =>
+       sdist (d_le_real_view x s) (d_le_post_rejection_view x s)
+         <= le_rejection_shadow_failure_probability x s.
+
+   lemma A_LE_rejection_sampler_semantic_sdist_bound :
+     forall (x : qssm_public_input) (s : seed),
+       le_real_view_distribution_defined x s =>
+       le_rejection_distribution_defined x s =>
+       le_rejection_acceptance_probability_bounded x s =>
+       le_rejection_output_shape_preserved x s =>
+       sdist (d_le_real_view x s) (d_le_post_rejection_view x s)
+         <= epsilon_le_rej_semantic.
+
    lemma A_LE_rejection_sampler_sdist_bound :
      forall (x : qssm_public_input) (s : seed),
        le_real_view_distribution_defined x s =>
@@ -272,7 +308,7 @@ qed.
        le_rejection_acceptance_probability_bounded x s =>
        le_rejection_output_shape_preserved x s =>
        sdist (d_le_real_view x s) (d_le_post_rejection_view x s)
-         <= (1%r / 2%r) * epsilon_le.
+         <= epsilon_le_rej.
 
    The two bridge lemmas keep the theorem-facing statement on the current
    facade, while the lower sampler surface here carries the concrete execution
