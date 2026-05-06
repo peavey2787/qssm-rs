@@ -433,6 +433,19 @@ op le_fs_shadow_branch_support : bool list =
 op d_le_fs_shadow_branch_choice : bool distr =
   BudgetParameters.d_le_fs_semantic_branch_choice.
 
+op d_le_fs_shadow_category_choice :
+  BudgetParameters.le_fs_semantic_branch_category distr =
+  BudgetParameters.d_le_fs_semantic_branch_category_choice.
+
+lemma d_le_fs_shadow_branch_choice_category_projectionE :
+  d_le_fs_shadow_branch_choice =
+  dmap d_le_fs_shadow_category_choice
+    BudgetParameters.le_fs_semantic_branch_category_is_failure.
+proof.
+rewrite /d_le_fs_shadow_branch_choice /d_le_fs_shadow_category_choice.
+by rewrite /BudgetParameters.d_le_fs_semantic_branch_choice.
+qed.
+
 op le_fs_shadow_local_bad_branch_mass : real =
   mu d_le_fs_shadow_branch_choice (fun (bad : bool) => bad).
 
@@ -631,6 +644,12 @@ op le_fs_shadow_state_of_observable
   le_fs_shadow_state_of_branch_observable obs
     ((le_fs_query_material_obs obs).`leqm_bad_flag).
 
+op le_fs_shadow_state_of_category_observable
+  (obs : le_transcript_observable)
+  (category : BudgetParameters.le_fs_semantic_branch_category) : le_fs_shadow_state =
+  le_fs_shadow_state_of_branch_observable obs
+    (BudgetParameters.le_fs_semantic_branch_category_is_failure category).
+
 op le_fs_shadow_pre_observable
   (st : le_fs_shadow_state) : le_transcript_observable =
   st.`lefss_pre_observable.
@@ -652,6 +671,49 @@ op le_fs_shadow_semantic_bad_event
   (st : le_fs_shadow_state) : bool =
   st.`lefss_hidden_material.`lefshm_pre_query_material.`leqm_bad_flag /\
   ! (le_fs_query_material_obs st.`lefss_semantic_post_observable).`leqm_bad_flag.
+
+op le_fs_shadow_clean_condition
+  (st : le_fs_shadow_state) : bool =
+  ! le_fs_shadow_semantic_bad_event st /\
+  st.`lefss_semantic_post_observable =
+    le_fs_surrogate_transform st.`lefss_pre_observable.
+
+op le_fs_shadow_query_collision_condition
+  (st : le_fs_shadow_state) : bool =
+  le_fs_shadow_semantic_bad_event st /\
+  st.`lefss_hidden_material.`lefshm_query_row.`lefsqr_challenge_seed =
+    st.`lefss_hidden_material.`lefshm_semantic_post_query_material.`leqm_row_challenge_seed /\
+  st.`lefss_hidden_material.`lefshm_query_row.`lefsqr_programmed_query_digest =
+    st.`lefss_hidden_material.`lefshm_semantic_post_query_material.`leqm_row_programmed_query_digest.
+
+op le_fs_shadow_programming_collision_condition
+  (st : le_fs_shadow_state) : bool =
+  le_fs_shadow_semantic_bad_event st /\
+  st.`lefss_hidden_material.`lefshm_semantic_post_query_material.`leqm_programmed_response_digest =
+    st.`lefss_hidden_material.`lefshm_query_row.`lefsqr_programmed_query_digest /\
+  st.`lefss_hidden_material.`lefshm_semantic_post_query_material.`leqm_programming_log =
+    [ st.`lefss_hidden_material.`lefshm_query_row.`lefsqr_challenge_seed;
+      st.`lefss_hidden_material.`lefshm_query_row.`lefsqr_programmed_query_digest ].
+
+op le_fs_shadow_transcript_mismatch_condition
+  (st : le_fs_shadow_state) : bool =
+  le_fs_shadow_semantic_bad_event st /\
+  le_challenge_seed_obs st.`lefss_semantic_post_observable =
+    le_challenge_seed_obs st.`lefss_post_observable /\
+  le_programmed_query_digest_obs st.`lefss_semantic_post_observable =
+    le_programmed_query_digest_obs st.`lefss_post_observable /\
+  ! (le_fs_query_material_obs st.`lefss_semantic_post_observable).`leqm_bad_flag.
+
+op le_fs_shadow_semantic_category_condition
+  (category : BudgetParameters.le_fs_semantic_branch_category)
+  (st : le_fs_shadow_state) : bool =
+  if pred1 BudgetParameters.LEFSSemanticBranchClean category then
+    le_fs_shadow_clean_condition st
+  else if pred1 BudgetParameters.LEFSSemanticBranchQueryCollision category then
+    le_fs_shadow_query_collision_condition st
+  else if pred1 BudgetParameters.LEFSSemanticBranchProgrammingCollision category then
+    le_fs_shadow_programming_collision_condition st
+  else le_fs_shadow_transcript_mismatch_condition st.
 
 pred le_fs_shadow_good_event
   (x : qssm_public_input) (s : seed) (obs : le_transcript_observable) =
@@ -896,6 +958,141 @@ proof.
 rewrite /le_fs_shadow_state_of_branch_observable /le_fs_shadow_projected_post_of_hidden_material.
 rewrite /le_fs_shadow_hidden_material_of_observable_branch /le_fs_programmed_response_of_observable.
 by [].
+qed.
+
+lemma le_fs_shadow_semantic_bad_event_category_stateE
+  (obs : le_transcript_observable)
+  (category : BudgetParameters.le_fs_semantic_branch_category) :
+  le_fs_shadow_semantic_bad_event
+    (le_fs_shadow_state_of_category_observable obs category) =
+  BudgetParameters.le_fs_semantic_branch_category_is_failure category.
+proof.
+rewrite /le_fs_shadow_state_of_category_observable.
+exact (le_fs_shadow_semantic_bad_event_branch_stateE obs
+  (BudgetParameters.le_fs_semantic_branch_category_is_failure category)).
+qed.
+
+lemma le_fs_shadow_clean_category_has_no_semantic_failure
+  (obs : le_transcript_observable) :
+  ! le_fs_shadow_semantic_bad_event
+      (le_fs_shadow_state_of_category_observable obs
+        BudgetParameters.LEFSSemanticBranchClean).
+proof.
+rewrite le_fs_shadow_semantic_bad_event_category_stateE.
+by rewrite /BudgetParameters.le_fs_semantic_branch_category_is_failure /pred1 /=.
+qed.
+
+lemma le_fs_shadow_query_collision_category_has_semantic_failure
+  (obs : le_transcript_observable) :
+  le_fs_shadow_semantic_bad_event
+    (le_fs_shadow_state_of_category_observable obs
+      BudgetParameters.LEFSSemanticBranchQueryCollision).
+proof.
+rewrite le_fs_shadow_semantic_bad_event_category_stateE.
+by rewrite /BudgetParameters.le_fs_semantic_branch_category_is_failure /pred1 /=.
+qed.
+
+lemma le_fs_shadow_programming_collision_category_has_semantic_failure
+  (obs : le_transcript_observable) :
+  le_fs_shadow_semantic_bad_event
+    (le_fs_shadow_state_of_category_observable obs
+      BudgetParameters.LEFSSemanticBranchProgrammingCollision).
+proof.
+rewrite le_fs_shadow_semantic_bad_event_category_stateE.
+by rewrite /BudgetParameters.le_fs_semantic_branch_category_is_failure /pred1 /=.
+qed.
+
+lemma le_fs_shadow_transcript_mismatch_category_has_semantic_failure
+  (obs : le_transcript_observable) :
+  le_fs_shadow_semantic_bad_event
+    (le_fs_shadow_state_of_category_observable obs
+      BudgetParameters.LEFSSemanticBranchTranscriptMismatch).
+proof.
+rewrite le_fs_shadow_semantic_bad_event_category_stateE.
+by rewrite /BudgetParameters.le_fs_semantic_branch_category_is_failure /pred1 /=.
+qed.
+
+lemma le_fs_shadow_clean_condition_clean_categoryE
+  (obs : le_transcript_observable) :
+  le_fs_shadow_clean_condition
+    (le_fs_shadow_state_of_category_observable obs
+      BudgetParameters.LEFSSemanticBranchClean).
+proof.
+rewrite /le_fs_shadow_clean_condition /le_fs_shadow_state_of_category_observable.
+rewrite /BudgetParameters.le_fs_semantic_branch_category_is_failure /pred1 /=.
+rewrite (le_fs_shadow_semantic_bad_event_branch_stateE obs false).
+rewrite /le_fs_shadow_state_of_branch_observable /=.
+rewrite /le_fs_shadow_post_of_observable /le_fs_shadow_hidden_material_of_observable_branch /=.
+by [].
+qed.
+
+lemma le_fs_shadow_query_collision_condition_query_collision_categoryE
+  (obs : le_transcript_observable) :
+  le_fs_shadow_query_collision_condition
+    (le_fs_shadow_state_of_category_observable obs
+      BudgetParameters.LEFSSemanticBranchQueryCollision).
+proof.
+rewrite /le_fs_shadow_query_collision_condition /le_fs_shadow_state_of_category_observable.
+rewrite /BudgetParameters.le_fs_semantic_branch_category_is_failure /pred1 /=.
+rewrite (le_fs_shadow_semantic_bad_event_branch_stateE obs true).
+rewrite /le_fs_shadow_state_of_branch_observable.
+rewrite /le_fs_shadow_hidden_material_of_observable_branch.
+rewrite /le_fs_query_row_of_observable.
+rewrite /le_fs_shadow_semantic_post_query_material_of_observable.
+rewrite /le_challenge_seed_obs /le_programmed_query_digest_obs /=.
+by [].
+qed.
+
+lemma le_fs_shadow_programming_collision_condition_programming_collision_categoryE
+  (obs : le_transcript_observable) :
+  le_fs_shadow_programming_collision_condition
+    (le_fs_shadow_state_of_category_observable obs
+      BudgetParameters.LEFSSemanticBranchProgrammingCollision).
+proof.
+rewrite /le_fs_shadow_programming_collision_condition /le_fs_shadow_state_of_category_observable.
+rewrite /BudgetParameters.le_fs_semantic_branch_category_is_failure /pred1 /=.
+rewrite (le_fs_shadow_semantic_bad_event_branch_stateE obs true).
+rewrite /le_fs_shadow_state_of_branch_observable.
+rewrite /le_fs_shadow_hidden_material_of_observable_branch.
+rewrite /le_fs_query_row_of_observable.
+rewrite /le_fs_shadow_semantic_post_query_material_of_observable.
+rewrite /le_fs_shadow_programming_log_of_observable.
+rewrite /le_challenge_seed_obs /le_programmed_query_digest_obs /=.
+by [].
+qed.
+
+lemma le_fs_shadow_transcript_mismatch_condition_transcript_mismatch_categoryE
+  (obs : le_transcript_observable) :
+  le_fs_shadow_transcript_mismatch_condition
+    (le_fs_shadow_state_of_category_observable obs
+      BudgetParameters.LEFSSemanticBranchTranscriptMismatch).
+proof.
+rewrite /le_fs_shadow_transcript_mismatch_condition /le_fs_shadow_state_of_category_observable.
+rewrite /BudgetParameters.le_fs_semantic_branch_category_is_failure /pred1 /=.
+rewrite (le_fs_shadow_semantic_bad_event_branch_stateE obs true).
+rewrite /le_fs_shadow_state_of_branch_observable.
+rewrite /le_fs_shadow_post_of_observable.
+rewrite /le_fs_shadow_projected_post_of_hidden_material.
+rewrite /le_fs_shadow_hidden_material_of_observable_branch.
+rewrite /le_fs_shadow_semantic_post_observable.
+rewrite /le_fs_programmed_response_of_observable.
+rewrite /le_fs_shadow_semantic_post_query_material_of_observable.
+rewrite /le_fs_surrogate_transform /le_fs_view_surrogate.
+rewrite /le_challenge_seed_obs /le_programmed_query_digest_obs /le_fs_query_material_obs /=.
+by [].
+qed.
+
+lemma le_fs_shadow_semantic_category_condition_stateE
+  (obs : le_transcript_observable)
+  (category : BudgetParameters.le_fs_semantic_branch_category) :
+  le_fs_shadow_semantic_category_condition category
+    (le_fs_shadow_state_of_category_observable obs category).
+proof.
+case: category=> /=.
+- exact (le_fs_shadow_clean_condition_clean_categoryE obs).
+- exact (le_fs_shadow_query_collision_condition_query_collision_categoryE obs).
+- exact (le_fs_shadow_programming_collision_condition_programming_collision_categoryE obs).
+exact (le_fs_shadow_transcript_mismatch_condition_transcript_mismatch_categoryE obs).
 qed.
 
 lemma le_fs_shadow_dmap_dprod_fst_lossless ['a 'b] (da : 'a distr) (db : 'b distr) :

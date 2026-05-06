@@ -391,10 +391,16 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     true` and nonnegativity lemma `A4_le_fs_semantic_nonneg`. The owned closed
     form is now `bad_slot_count%r / total_slot_count%r = 3%r / 6%r`, which
     still instantiates in the current model to `1%r / 2%r`. `le/LEFsProgrammingSurface.ec`
-    proves the local equality `le_fs_shadow_local_bad_branch_mass =
-    epsilon_le_fs_semantic` and the corresponding `<=` bridge, so the local
-    semantic mass is now connected to a primitive-owned structured budget without an
-    import-cycle inversion. `le/LEFsProgramming.ec`,
+    now interprets those primitive categories on a category-coupled shadow
+    state: `clean` is the no-failure/programmed-view branch,
+    `query_collision` is bad-branch query-row alignment,
+    `programming_collision` is bad-branch programmed-response digest/log
+    alignment, and `transcript_mismatch` is bad-branch visible-shell
+    agreement with a cleared semantic bad flag. It also proves the local
+    equality `le_fs_shadow_local_bad_branch_mass = epsilon_le_fs_semantic`
+    and the corresponding `<=` bridge, so the local semantic mass is now
+    connected to a primitive-owned structured budget without an import-cycle
+    inversion. `le/LEFsProgramming.ec`,
     `le/LEStatisticalDistance.ec`, and `le/LEHVZK.ec` each now add owned-budget
     semantic wrapper theorems ending in `epsilon_le_fs_semantic`; the game
     layer exposes `A_G1_to_G2_le_semantic_owned_budget_transition_bound` with
