@@ -59,6 +59,19 @@ type le_real_execution_record = {
   lerec_query_material : le_query_material;
 }.
 
+type le_real_execution_semantic_rejection_decision = {
+  leresd_reject : bool;
+  leresd_repairs_hidden_query_material : bool;
+}.
+
+type le_real_execution_semantic_rejection_ticket = {
+  lerest_decision : le_real_execution_semantic_rejection_decision;
+  lerest_challenge_seed_material : le_real_execution_challenge_seed_material;
+  lerest_programmed_query_digest_material :
+    le_real_execution_programmed_query_digest_material;
+  lerest_query_material : le_query_material;
+}.
+
 op le_real_execution_hidden_query_row_challenge_seed
   (s : seed) : digest =
   le_challenge_seed
@@ -127,30 +140,70 @@ op le_real_execution_challenge_seed_material_of
     lerecsm_digest_4 = le_real_execution_label_digest LABEL_CROSS_PROTOCOL_DIGEST_V1;
   |}.
 
+op le_real_execution_semantic_rejection_decision_of_slot
+  (slot : int) : le_real_execution_semantic_rejection_decision =
+  let reject = BudgetParameters.le_rejection_semantic_reject_branch_slot slot in
+  {|
+    leresd_reject = reject;
+    leresd_repairs_hidden_query_material = reject;
+  |}.
+
+op d_le_real_execution_semantic_rejection_decision_choice :
+  le_real_execution_semantic_rejection_decision distr =
+  dmap BudgetParameters.d_le_rejection_semantic_branch_slot_choice
+    le_real_execution_semantic_rejection_decision_of_slot.
+
+op le_real_execution_semantic_rejection_decision_reject
+  (decision : le_real_execution_semantic_rejection_decision) : bool =
+  decision.`leresd_reject.
+
 op le_real_execution_semantic_rejection_branch_support : bool list =
   BudgetParameters.le_rejection_semantic_branch_support.
 
 op d_le_real_execution_semantic_rejection_branch_choice : bool distr =
+  dmap d_le_real_execution_semantic_rejection_decision_choice
+    le_real_execution_semantic_rejection_decision_reject.
+
+lemma d_le_real_execution_semantic_rejection_branch_choiceE :
+  d_le_real_execution_semantic_rejection_branch_choice =
   BudgetParameters.d_le_rejection_semantic_branch_choice.
+proof.
+rewrite /d_le_real_execution_semantic_rejection_branch_choice.
+rewrite /d_le_real_execution_semantic_rejection_decision_choice.
+rewrite (dmap_comp le_real_execution_semantic_rejection_decision_of_slot
+  le_real_execution_semantic_rejection_decision_reject
+  BudgetParameters.d_le_rejection_semantic_branch_slot_choice).
+have Hmap :
+  dmap BudgetParameters.d_le_rejection_semantic_branch_slot_choice
+    (le_real_execution_semantic_rejection_decision_reject
+      \o le_real_execution_semantic_rejection_decision_of_slot) =
+  dmap BudgetParameters.d_le_rejection_semantic_branch_slot_choice
+    BudgetParameters.le_rejection_semantic_reject_branch_slot.
+  apply eq_dmap_in=> slot _ /=.
+  by rewrite /le_real_execution_semantic_rejection_decision_reject
+    /le_real_execution_semantic_rejection_decision_of_slot /(\o).
+rewrite Hmap.
+by rewrite /BudgetParameters.d_le_rejection_semantic_branch_choice.
+qed.
 
 lemma le_real_execution_semantic_rejection_branch_choice_lossless :
   is_lossless d_le_real_execution_semantic_rejection_branch_choice.
 proof.
-rewrite /d_le_real_execution_semantic_rejection_branch_choice.
+rewrite d_le_real_execution_semantic_rejection_branch_choiceE.
 exact BudgetParameters.le_rejection_semantic_branch_choice_lossless.
 qed.
 
 lemma le_real_execution_semantic_rejection_accept_branch_has_support :
   false \in d_le_real_execution_semantic_rejection_branch_choice.
 proof.
-rewrite /d_le_real_execution_semantic_rejection_branch_choice.
+rewrite d_le_real_execution_semantic_rejection_branch_choiceE.
 exact BudgetParameters.le_rejection_semantic_accept_branch_has_support.
 qed.
 
 lemma le_real_execution_semantic_rejection_reject_branch_has_support :
   true \in d_le_real_execution_semantic_rejection_branch_choice.
 proof.
-rewrite /d_le_real_execution_semantic_rejection_branch_choice.
+rewrite d_le_real_execution_semantic_rejection_branch_choiceE.
 exact BudgetParameters.le_rejection_semantic_reject_branch_has_support.
 qed.
 
@@ -160,7 +213,7 @@ lemma le_real_execution_semantic_rejection_branch_choice_mass_false :
    BudgetParameters.le_rejection_semantic_reject_slot_count)%r /
   BudgetParameters.le_rejection_semantic_total_slot_count%r.
 proof.
-rewrite /d_le_real_execution_semantic_rejection_branch_choice.
+rewrite d_le_real_execution_semantic_rejection_branch_choiceE.
 exact BudgetParameters.le_rejection_semantic_branch_choice_mass_false.
 qed.
 
@@ -169,7 +222,7 @@ lemma le_real_execution_semantic_rejection_branch_choice_mass_true :
   BudgetParameters.le_rejection_semantic_reject_slot_count%r /
   BudgetParameters.le_rejection_semantic_total_slot_count%r.
 proof.
-rewrite /d_le_real_execution_semantic_rejection_branch_choice.
+rewrite d_le_real_execution_semantic_rejection_branch_choiceE.
 exact BudgetParameters.le_rejection_semantic_branch_choice_mass_true.
 qed.
 
@@ -200,6 +253,11 @@ op le_real_execution_challenge_seed_obs_of_challenge_material
     mat.`lerecsm_digest_3
     mat.`lerecsm_digest_4.
 
+op le_real_execution_semantic_rejection_challenge_seed_obs_of_branch
+  (x : qssm_public_input) (s : seed) (reject : bool) : digest =
+  le_real_execution_challenge_seed_obs_of_challenge_material s
+    (le_real_execution_semantic_rejection_challenge_seed_material_of_branch x s reject).
+
 op le_real_execution_programmed_query_digest_material_of
   (x : qssm_public_input) (s : seed) : le_real_execution_programmed_query_digest_material =
   {|
@@ -217,8 +275,7 @@ op le_real_execution_semantic_rejection_programmed_query_digest_material_of_bran
   le_real_execution_programmed_query_digest_material =
   {|
     lerepqm_digest_1 =
-      le_real_execution_challenge_seed_obs_of_challenge_material s
-        (le_real_execution_semantic_rejection_challenge_seed_material_of_branch x s reject);
+      le_real_execution_semantic_rejection_challenge_seed_obs_of_branch x s reject;
     lerepqm_digest_2 =
       (le_real_execution_programmed_query_digest_material_of x s).`lerepqm_digest_2;
     lerepqm_digest_3 =
@@ -229,19 +286,71 @@ op le_real_execution_semantic_rejection_programmed_query_digest_material_of_bran
       (le_real_execution_programmed_query_digest_material_of x s).`lerepqm_digest_5;
   |}.
 
-op le_real_execution_semantic_rejection_primitive_material_of_observable_branch
+op le_real_execution_semantic_rejection_programmed_query_digest_obs_of_branch
+  (x : qssm_public_input) (s : seed) (reject : bool) : digest =
+  le_programmed_query_digest
+    LABEL_LE_PROGRAMMED_QUERY_DIGEST
+    (le_real_execution_semantic_rejection_programmed_query_digest_material_of_branch x s reject).`lerepqm_digest_1
+    (le_real_execution_semantic_rejection_programmed_query_digest_material_of_branch x s reject).`lerepqm_digest_2
+    (le_real_execution_semantic_rejection_programmed_query_digest_material_of_branch x s reject).`lerepqm_digest_3
+    (le_real_execution_semantic_rejection_programmed_query_digest_material_of_branch x s reject).`lerepqm_digest_4
+    (le_real_execution_semantic_rejection_programmed_query_digest_material_of_branch x s reject).`lerepqm_digest_5.
+
+op le_real_execution_semantic_rejection_repaired_query_material_of_observable_branch
   (x : qssm_public_input) (s : seed) (obs : le_transcript_observable)
-  (reject : bool) : le_real_execution_primitive_material =
+  (reject : bool) : le_query_material =
+  if reject then
+    let repaired_challenge_seed =
+      le_real_execution_semantic_rejection_challenge_seed_obs_of_branch x s reject in
+    let repaired_programmed_query_digest =
+      le_real_execution_semantic_rejection_programmed_query_digest_obs_of_branch x s reject in
+    {|
+      leqm_row_challenge_seed = repaired_challenge_seed;
+      leqm_row_programmed_query_digest = repaired_programmed_query_digest;
+      leqm_programmed_response_digest =
+        obs.`leto_query_material.`leqm_programmed_response_digest;
+      leqm_programming_log =
+        obs.`leto_query_material.`leqm_programming_log ++
+        [repaired_challenge_seed; repaired_programmed_query_digest];
+      leqm_bad_flag = obs.`leto_query_material.`leqm_bad_flag;
+    |}
+  else obs.`leto_query_material.
+
+op le_real_execution_semantic_rejection_ticket_of_observable_branch
+  (x : qssm_public_input) (s : seed) (obs : le_transcript_observable)
+  (reject : bool) : le_real_execution_semantic_rejection_ticket =
+  let decision =
+    {| leresd_reject = reject;
+       leresd_repairs_hidden_query_material = reject |} in
+  {|
+    lerest_decision = decision;
+    lerest_challenge_seed_material =
+      le_real_execution_semantic_rejection_challenge_seed_material_of_branch x s reject;
+    lerest_programmed_query_digest_material =
+      le_real_execution_semantic_rejection_programmed_query_digest_material_of_branch x s reject;
+    lerest_query_material =
+      le_real_execution_semantic_rejection_repaired_query_material_of_observable_branch x s obs reject;
+  |}.
+
+op le_real_execution_semantic_rejection_primitive_material_of_observable_ticket
+  (obs : le_transcript_observable)
+  (ticket : le_real_execution_semantic_rejection_ticket) :
+  le_real_execution_primitive_material =
   {|
     lerem_commitment_coeffs = obs.`leto_commitment_coeffs;
     lerem_t_coeffs = obs.`leto_t_coeffs;
     lerem_z_coeffs = obs.`leto_z_coeffs;
-    lerem_challenge_seed_material =
-      le_real_execution_semantic_rejection_challenge_seed_material_of_branch x s reject;
+    lerem_challenge_seed_material = ticket.`lerest_challenge_seed_material;
     lerem_programmed_query_digest_material =
-      le_real_execution_semantic_rejection_programmed_query_digest_material_of_branch x s reject;
-    lerem_query_material = obs.`leto_query_material;
+      ticket.`lerest_programmed_query_digest_material;
+    lerem_query_material = ticket.`lerest_query_material;
   |}.
+
+op le_real_execution_semantic_rejection_primitive_material_of_observable_branch
+  (x : qssm_public_input) (s : seed) (obs : le_transcript_observable)
+  (reject : bool) : le_real_execution_primitive_material =
+  le_real_execution_semantic_rejection_primitive_material_of_observable_ticket obs
+    (le_real_execution_semantic_rejection_ticket_of_observable_branch x s obs reject).
 
 op le_real_execution_primitive_material_of
   (x : qssm_public_input) (s : seed) : le_real_execution_primitive_material =
@@ -278,9 +387,11 @@ op le_real_execution_programmed_query_digest_obs_of_material
 op le_real_execution_semantic_rejection_observable_of_observable_branch
   (x : qssm_public_input) (s : seed) (obs : le_transcript_observable)
   (reject : bool) : le_transcript_observable =
-  if reject then
+  let ticket =
+    le_real_execution_semantic_rejection_ticket_of_observable_branch x s obs reject in
+  if ticket.`lerest_decision.`leresd_reject then
     let mat =
-      le_real_execution_semantic_rejection_primitive_material_of_observable_branch x s obs reject in
+      le_real_execution_semantic_rejection_primitive_material_of_observable_ticket obs ticket in
     {|
       leto_commitment_coeffs = obs.`leto_commitment_coeffs;
       leto_t_coeffs = obs.`leto_t_coeffs;
@@ -289,10 +400,92 @@ op le_real_execution_semantic_rejection_observable_of_observable_branch
         le_real_execution_challenge_seed_obs_of_material s mat;
       leto_programmed_query_digest_obs =
         le_real_execution_programmed_query_digest_obs_of_material mat;
-      leto_query_material = obs.`leto_query_material;
+      leto_query_material = ticket.`lerest_query_material;
       leto_qssm_event_payload = obs.`leto_qssm_event_payload;
     |}
   else obs.
+
+lemma le_real_execution_semantic_rejection_accept_branch_id
+  (x : qssm_public_input) (s : seed) (obs : le_transcript_observable) :
+  le_real_execution_semantic_rejection_observable_of_observable_branch x s obs false = obs.
+proof.
+by rewrite /le_real_execution_semantic_rejection_observable_of_observable_branch
+  /le_real_execution_semantic_rejection_ticket_of_observable_branch /=.
+qed.
+
+lemma le_real_execution_semantic_rejection_observable_preserves_commitment_coeffs
+  (x : qssm_public_input) (s : seed) (obs : le_transcript_observable) (reject : bool) :
+  (le_real_execution_semantic_rejection_observable_of_observable_branch x s obs reject).`leto_commitment_coeffs =
+  obs.`leto_commitment_coeffs.
+proof.
+case: reject=> /=.
+  by rewrite /le_real_execution_semantic_rejection_observable_of_observable_branch
+    /le_real_execution_semantic_rejection_ticket_of_observable_branch.
+by rewrite le_real_execution_semantic_rejection_accept_branch_id.
+qed.
+
+lemma le_real_execution_semantic_rejection_observable_preserves_t_coeffs
+  (x : qssm_public_input) (s : seed) (obs : le_transcript_observable) (reject : bool) :
+  (le_real_execution_semantic_rejection_observable_of_observable_branch x s obs reject).`leto_t_coeffs =
+  obs.`leto_t_coeffs.
+proof.
+case: reject=> /=.
+  by rewrite /le_real_execution_semantic_rejection_observable_of_observable_branch
+    /le_real_execution_semantic_rejection_ticket_of_observable_branch.
+by rewrite le_real_execution_semantic_rejection_accept_branch_id.
+qed.
+
+lemma le_real_execution_semantic_rejection_observable_preserves_z_coeffs
+  (x : qssm_public_input) (s : seed) (obs : le_transcript_observable) (reject : bool) :
+  (le_real_execution_semantic_rejection_observable_of_observable_branch x s obs reject).`leto_z_coeffs =
+  obs.`leto_z_coeffs.
+proof.
+case: reject=> /=.
+  by rewrite /le_real_execution_semantic_rejection_observable_of_observable_branch
+    /le_real_execution_semantic_rejection_ticket_of_observable_branch.
+by rewrite le_real_execution_semantic_rejection_accept_branch_id.
+qed.
+
+lemma le_real_execution_semantic_rejection_observable_preserves_qssm_event_payload
+  (x : qssm_public_input) (s : seed) (obs : le_transcript_observable) (reject : bool) :
+  (le_real_execution_semantic_rejection_observable_of_observable_branch x s obs reject).`leto_qssm_event_payload =
+  obs.`leto_qssm_event_payload.
+proof.
+case: reject=> /=.
+  by rewrite /le_real_execution_semantic_rejection_observable_of_observable_branch
+    /le_real_execution_semantic_rejection_ticket_of_observable_branch.
+by rewrite le_real_execution_semantic_rejection_accept_branch_id.
+qed.
+
+lemma le_real_execution_semantic_rejection_reject_query_material_matches_challenge_seed_obs
+  (x : qssm_public_input) (s : seed) (obs : le_transcript_observable) :
+  (le_real_execution_semantic_rejection_observable_of_observable_branch x s obs true).`leto_query_material.`leqm_row_challenge_seed =
+  (le_real_execution_semantic_rejection_observable_of_observable_branch x s obs true).`leto_challenge_seed_obs.
+proof.
+rewrite /le_real_execution_semantic_rejection_observable_of_observable_branch.
+rewrite /le_real_execution_semantic_rejection_ticket_of_observable_branch /=.
+rewrite /le_real_execution_semantic_rejection_primitive_material_of_observable_ticket.
+rewrite /le_real_execution_semantic_rejection_repaired_query_material_of_observable_branch /=.
+rewrite /le_real_execution_challenge_seed_obs_of_material.
+rewrite /le_real_execution_semantic_rejection_challenge_seed_obs_of_branch.
+rewrite /le_real_execution_semantic_rejection_programmed_query_digest_obs_of_branch /=.
+by [].
+qed.
+
+lemma le_real_execution_semantic_rejection_reject_query_material_matches_programmed_query_digest_obs
+  (x : qssm_public_input) (s : seed) (obs : le_transcript_observable) :
+  (le_real_execution_semantic_rejection_observable_of_observable_branch x s obs true).`leto_query_material.`leqm_row_programmed_query_digest =
+  (le_real_execution_semantic_rejection_observable_of_observable_branch x s obs true).`leto_programmed_query_digest_obs.
+proof.
+rewrite /le_real_execution_semantic_rejection_observable_of_observable_branch.
+rewrite /le_real_execution_semantic_rejection_ticket_of_observable_branch /=.
+rewrite /le_real_execution_semantic_rejection_primitive_material_of_observable_ticket.
+rewrite /le_real_execution_semantic_rejection_repaired_query_material_of_observable_branch /=.
+rewrite /le_real_execution_semantic_rejection_challenge_seed_obs_of_branch.
+rewrite /le_real_execution_programmed_query_digest_obs_of_material.
+rewrite /le_real_execution_semantic_rejection_programmed_query_digest_obs_of_branch /=.
+by [].
+qed.
 
 op le_real_execution_spine_of
   (x : qssm_public_input) (s : seed) : le_real_execution_spine =
@@ -389,6 +582,42 @@ op le_real_execution_observable
 op d_le_real_execution_view
   (x : qssm_public_input) (s : seed) : le_transcript_observable distr =
   dunit (le_real_execution_observable x s).
+
+op d_le_real_execution_semantic_rejection_ticket_choice
+  (x : qssm_public_input) (s : seed) :
+  le_real_execution_semantic_rejection_ticket distr =
+  dmap d_le_real_execution_semantic_rejection_decision_choice
+    (fun decision =>
+      le_real_execution_semantic_rejection_ticket_of_observable_branch x s
+        (le_real_execution_observable x s) decision.`leresd_reject).
+
+lemma d_le_real_execution_semantic_rejection_ticket_choice_projects_branch
+  (x : qssm_public_input) (s : seed) :
+  dmap (d_le_real_execution_semantic_rejection_ticket_choice x s)
+    (fun ticket => ticket.`lerest_decision.`leresd_reject) =
+  d_le_real_execution_semantic_rejection_branch_choice.
+proof.
+rewrite /d_le_real_execution_semantic_rejection_ticket_choice.
+rewrite (dmap_comp
+  (fun decision =>
+    le_real_execution_semantic_rejection_ticket_of_observable_branch x s
+      (le_real_execution_observable x s) decision.`leresd_reject)
+  (fun ticket => ticket.`lerest_decision.`leresd_reject)
+  d_le_real_execution_semantic_rejection_decision_choice).
+have Hmap :
+  dmap d_le_real_execution_semantic_rejection_decision_choice
+    ((fun ticket => ticket.`lerest_decision.`leresd_reject) \o
+      (fun decision =>
+        le_real_execution_semantic_rejection_ticket_of_observable_branch x s
+          (le_real_execution_observable x s) decision.`leresd_reject)) =
+  dmap d_le_real_execution_semantic_rejection_decision_choice
+    le_real_execution_semantic_rejection_decision_reject.
+  apply eq_dmap_in=> decision _ /=.
+  by rewrite /le_real_execution_semantic_rejection_decision_reject /(\o)
+    /le_real_execution_semantic_rejection_ticket_of_observable_branch.
+rewrite Hmap.
+by rewrite /d_le_real_execution_semantic_rejection_branch_choice.
+qed.
 
 lemma le_real_execution_primitive_material_exposes_challenge_seed_material :
   forall (x : qssm_public_input) (s : seed),

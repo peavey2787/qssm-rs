@@ -1422,8 +1422,14 @@ rewrite supp_dmap.
 exists false; split.
   exact LERejectionSampler.le_rejection_shadow_semantic_accept_branch_has_support.
 rewrite /LERejectionSampler.le_rejection_shadow_semantic_branch_image_of_observable.
-rewrite /LERealExecution.le_real_execution_semantic_rejection_observable_of_observable_branch.
-by [].
+have Hacc :
+    le_real_execution_observable x s =
+    LERealExecution.le_real_execution_semantic_rejection_observable_of_observable_branch
+      x s (le_real_execution_observable x s) false.
+  by rewrite eq_sym
+    (LERealExecution.le_real_execution_semantic_rejection_accept_branch_id
+      x s (le_real_execution_observable x s)).
+exact Hacc.
 qed.
 
 lemma le_fs_shadow_semantic_post_marginal_support

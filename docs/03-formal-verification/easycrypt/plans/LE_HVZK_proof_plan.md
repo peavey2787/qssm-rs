@@ -484,11 +484,16 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     the identity surrogate surface.
   - Cross-lane target selection, May 2026: the execution-owned rejection-owner
     handoff and semantic post-rejection to semantic-FS wiring are now done.
-    Freeze the semantic FS demo-count owner as-is for the moment; the next
-    LE-side realism step should be to keep this now-honest internal chain and
-    improve the realism of the semantic branch laws or parameter source,
-    rather than to rewire rejection ownership again or churn the FS owner
-    without adding model substance.
+    Freeze both semantic count owners in `primitives/BudgetParameters.ec` as-is
+    for the moment; any `primitives/ProtocolParameters.ec` move stays deferred
+    until a real shared protocol-owned source exists. That richer
+    execution-owned semantic rejection repair is now also landed: the reject
+    branch runs through an execution-owned ticket and repaired observable while
+    the exact-zero/public-theorem route stays fixed. The next LE-side realism
+    step should therefore be to replace the current semantic rejection
+    demo-count law with a semantically grounded failure law, rather than to
+    rewire rejection ownership again or churn the count owner without adding
+    model substance.
   - LE budget decomposition audit, May 2026: do not treat that rejection-side
     bridge as the permanent replacement surface. The intended steady state is
     component arithmetic, with a new FS budget `epsilon_le_fs` beside

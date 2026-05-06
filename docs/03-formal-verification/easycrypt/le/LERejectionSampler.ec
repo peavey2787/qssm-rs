@@ -189,6 +189,7 @@ lemma le_rejection_shadow_semantic_local_reject_branch_mass_eq_epsilon :
 proof.
 rewrite le_rejection_shadow_semantic_local_reject_branch_mass_is_true_mass.
 rewrite /d_le_rejection_shadow_semantic_branch_choice.
+rewrite LERealExecution.d_le_real_execution_semantic_rejection_branch_choiceE.
 rewrite /BudgetParameters.epsilon_le_rej_semantic.
 by [].
 qed.
@@ -310,6 +311,18 @@ lemma le_rejection_shadow_semantic_post_branch_imageE
   (le_rejection_shadow_semantic_state_of_branch_execution x s obs reject).`lers_post_observable =
   le_rejection_shadow_semantic_branch_image_of_observable x s obs reject.
 proof.
+case: reject=> /=.
+  rewrite /le_rejection_shadow_semantic_state_of_branch_execution.
+  rewrite /le_rejection_shadow_post_of_execution.
+  rewrite /le_rejection_shadow_semantic_hidden_material_of_execution_branch.
+  rewrite /le_rejection_shadow_accepts_from_hidden_material.
+  rewrite /le_rejection_shadow_semantic_challenge_seed_material_of_execution /=.
+  rewrite /LERealExecution.le_real_execution_semantic_rejection_challenge_seed_material_of_branch.
+  rewrite /le_rejection_shadow_semantic_branch_image_of_observable.
+  rewrite /LERealExecution.le_real_execution_semantic_rejection_observable_of_observable_branch /=.
+  by [].
+case: obs=> ccoeffs tcoeffs zcoeffs cseed pqdig qmat payload /=.
+case: qmat=> rowseed rowdig respdig log badflag /=.
 rewrite /le_rejection_shadow_semantic_state_of_branch_execution.
 rewrite /le_rejection_shadow_post_of_execution.
 rewrite /le_rejection_shadow_semantic_hidden_material_of_execution_branch.
@@ -318,7 +331,14 @@ rewrite /le_rejection_shadow_semantic_challenge_seed_material_of_execution /=.
 rewrite /LERealExecution.le_real_execution_semantic_rejection_challenge_seed_material_of_branch.
 rewrite /le_rejection_shadow_semantic_branch_image_of_observable.
 rewrite /LERealExecution.le_real_execution_semantic_rejection_observable_of_observable_branch /=.
-by case: reject.
+rewrite /LERealExecution.le_real_execution_semantic_rejection_ticket_of_observable_branch /=.
+rewrite /LERealExecution.le_real_execution_semantic_rejection_primitive_material_of_observable_ticket /=.
+rewrite /LERealExecution.le_real_execution_challenge_seed_obs_of_material.
+rewrite /LERealExecution.le_real_execution_programmed_query_digest_obs_of_material.
+rewrite /LERealExecution.le_real_execution_semantic_rejection_repaired_query_material_of_observable_branch /=.
+rewrite /LERealExecution.le_real_execution_semantic_rejection_challenge_seed_obs_of_branch.
+rewrite /LERealExecution.le_real_execution_semantic_rejection_programmed_query_digest_obs_of_branch /=.
+by [].
 qed.
 
 lemma le_rejection_shadow_semantic_reject_event_branch_stateE
@@ -327,13 +347,21 @@ lemma le_rejection_shadow_semantic_reject_event_branch_stateE
   le_rejection_shadow_reject_event
     (le_rejection_shadow_semantic_state_of_branch_execution x s obs reject) = reject.
 proof.
+case: reject.
+  rewrite /le_rejection_shadow_reject_event.
+  rewrite /le_rejection_shadow_semantic_state_of_branch_execution /=.
+  rewrite /le_rejection_shadow_accepts_from_hidden_material.
+  rewrite /le_rejection_shadow_semantic_hidden_material_of_execution_branch /=.
+  rewrite /le_rejection_shadow_semantic_challenge_seed_material_of_execution /=.
+  rewrite /LERealExecution.le_real_execution_semantic_rejection_challenge_seed_material_of_branch /=.
+  by [].
 rewrite /le_rejection_shadow_reject_event.
-rewrite /le_rejection_shadow_semantic_state_of_branch_execution.
+rewrite /le_rejection_shadow_semantic_state_of_branch_execution /=.
 rewrite /le_rejection_shadow_accepts_from_hidden_material.
-rewrite /le_rejection_shadow_semantic_hidden_material_of_execution_branch.
+rewrite /le_rejection_shadow_semantic_hidden_material_of_execution_branch /=.
 rewrite /le_rejection_shadow_semantic_challenge_seed_material_of_execution /=.
 rewrite /LERealExecution.le_real_execution_semantic_rejection_challenge_seed_material_of_branch /=.
-by case: reject.
+by [].
 qed.
 
 lemma d_le_rejection_shadow_semantic_coupled_state_pairE :
@@ -476,7 +504,10 @@ move=> x s.
 rewrite d_le_rejection_shadow_semantic_pre_marginal_matches_execution_view.
 rewrite /d_le_rejection_real_execution_view /d_le_real_view /d_le_real_execution_view.
 rewrite dmap_dunit /=.
-by rewrite /le_rejection_shadow_semantic_branch_image_of_observable.
+rewrite /le_rejection_shadow_semantic_branch_image_of_observable.
+rewrite (LERealExecution.le_real_execution_semantic_rejection_accept_branch_id
+  x s (le_real_execution_observable x s)).
+by [].
 qed.
 
 lemma d_le_rejection_shadow_semantic_post_marginal_fixed_branch_imageE :

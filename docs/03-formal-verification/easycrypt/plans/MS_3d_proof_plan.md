@@ -19,6 +19,14 @@ are now gone. The theorem consumes `A1_ms_hash_binding_nonneg` from `ms/MS.ec`
 and `A2_ms_rom_programmability_nonneg` from `primitives/FS.ec` directly, so the
 remaining MS assumption surface is no longer duplicated at the theorem layer.
 
+Priority note, May 2026: although MS1/MS2 now sit on proved lower game-layer
+bridges with no remaining MS-specific game-layer axioms, the next realism phase
+for the EasyCrypt tree is not an MS budget-owner or semantic-budget expansion.
+The current semantic LE count owners stay frozen in `primitives/BudgetParameters.ec`,
+the richer execution-owned LE rejection repair is now landed on the already-installed
+semantic rejection-to-FS chain, and the next targeted refinement is to replace the
+current semantic rejection demo-count law with a semantically grounded failure law.
+
 ## MS-3c handoff status
 
 - **Stable projection layer:** **`games/GameAdvantage.ec`** now owns **`ms3a_game_pr_stage`**, **`ms3b_game_pr_stage`**, **`ms3c_game_pr_stage`**, **`game_pr`**, **`Adv`**, **`A_adv_ms_hop_telescope`**, the concrete MS probability core **`game_pr_ms_core`**, and the proved lower bridge lemmas **`A_MS1_hash_binding_game_pr_core_bound`** and **`A_MS2_rom_programming_game_pr_core_bound`**.

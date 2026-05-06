@@ -259,13 +259,11 @@ lemma le_distinguisher_event_on_semantic_rejection_branch_image_matches_base
       x s obs reject) =
   le_distinguisher_event D obs.
 proof.
-case: reject.
-- rewrite /LERejectionSampler.le_rejection_shadow_semantic_branch_image_of_observable.
-  rewrite /LERealExecution.le_real_execution_semantic_rejection_observable_of_observable_branch.
-  rewrite /le_distinguisher_event /le_qssm_event_payload /=.
-  by [].
-by rewrite /LERejectionSampler.le_rejection_shadow_semantic_branch_image_of_observable
-  /LERealExecution.le_real_execution_semantic_rejection_observable_of_observable_branch.
+rewrite /LERejectionSampler.le_rejection_shadow_semantic_branch_image_of_observable.
+rewrite /le_distinguisher_event /le_qssm_event_payload.
+rewrite (LERealExecution.le_real_execution_semantic_rejection_observable_preserves_qssm_event_payload
+  x s obs reject).
+by [].
 qed.
 
 lemma A_LE_semantic_projected_sim_adv_layout :

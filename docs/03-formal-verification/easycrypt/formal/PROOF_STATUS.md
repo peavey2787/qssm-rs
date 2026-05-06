@@ -92,13 +92,15 @@ The following items remain outside the current exact-zero theorem path:
 
 The execution-owned semantic rejection-to-FS handoff is now landed and checker-green. `LERealExecution.ec` owns the semantic rejection support/material, `LERejectionSampler.d_le_semantic_post_rejection_view` is the semantic midpoint, `LEFsProgrammingSurface.d_le_pre_fs_semantic_programming_view` feeds that midpoint into the semantic FS lane, and `games/GameLEBridge.ec` now packages the resulting semantic projected-simulation advantage without changing the exact-zero theorem path.
 
-The next exact local target is therefore no longer the rejection-owner handoff. The next realism step is to keep the now-honest internal semantic chain in place while replacing the current concrete semantic demo/proof counts with a more protocol-owned or otherwise richer source:
+The richer execution-owned semantic rejection repair is now also landed and checker-green. `LERealExecution.ec` now carries a semantic rejection decision/ticket together with a repaired reject-branch observable whose hidden query material is brought back into alignment with the repaired visible challenge/programmed-query digests, and the downstream semantic sampler, FS surface, and bridge proofs have all been replayed against that richer surface.
+
+The next exact local target is therefore no longer the rejection-owner handoff or the richer repair plumbing itself. Semantic count ownership remains intentionally frozen: the current rejection and FS demo/proof counts stay in `primitives/BudgetParameters.ec`, and any `primitives/ProtocolParameters.ec` move remains deferred until there is a real shared protocol-owned source worth centralizing. The next realism step is to use this now-richer execution-owned rejection surface to replace the current `1%r / 4%r` semantic rejection demo-count law with a semantically grounded lower failure quantity:
 
 - keep `qssm_main_theorem` as the exact-zero abstraction theorem and `qssm_main_theorem_semantic_budget` as the preferred nonzero citation target
 - keep the axiom count at `0`
-- keep the current exact-zero theorem path unchanged while refining only the semantic budget owners or lower semantic laws
+- keep the current exact-zero theorem path unchanged while refining only the rejection-side lower semantic law, not the current budget owner
 - defer any future `primitives/ProtocolParameters.ec` move until there is a real shared parameter source worth centralizing
 
-This is the best next realism step because the semantic rejection owner, semantic post-rejection midpoint, semantic FS pre-image, bridge packaging, and semantic umbrella plumbing are now all installed and checker-green; the remaining work is to improve the realism of the semantic branch laws rather than to rewire their ownership again.
+This is the best next realism step because the semantic rejection owner, semantic post-rejection midpoint, repaired rejection ticket/observable, semantic FS pre-image, bridge packaging, and semantic umbrella plumbing are now all installed and checker-green; the highest-value local refinement is to replace the current `1%r / 4%r` rejection demo law with a failure quantity derived from that richer surface before attempting a richer FS law, MS-side nonzero budgets, or any owner reshuffle.
 
 For the longer-lived trail that led to the current state, see [PROOF_HISTORY.md](PROOF_HISTORY.md).
