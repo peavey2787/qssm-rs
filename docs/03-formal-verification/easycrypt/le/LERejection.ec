@@ -270,15 +270,12 @@ lemma A_LE_rejection_sampler_semantic_sdist_le_failure_probability :
     le_rejection_distribution_defined x s =>
     le_rejection_acceptance_probability_bounded x s =>
     le_rejection_output_shape_preserved x s =>
-    sdist (d_le_real_view x s) (d_le_post_rejection_view x s)
+    sdist (d_le_real_view x s) (LERejectionSampler.d_le_semantic_post_rejection_view x s)
       <= le_rejection_shadow_semantic_failure_probability x s.
 proof.
-move=> x s _ _ _ _.
-rewrite /d_le_post_rejection_view /d_le_rejection_real_execution_view.
-rewrite /le_rejection_transform /le_post_rejection_surrogate dmap_id.
-rewrite sdistdd.
-rewrite (le_rejection_shadow_semantic_failure_probability_eq_epsilon_le_rej_semantic x s).
-exact BudgetParameters.A4_le_rejection_semantic_nonneg.
+move=> x s Hr Hdef Hacc Hshape.
+exact (A_LE_rejection_sampler_semantic_experiment_sdist_le_failure_probability
+  x s Hr Hdef Hacc Hshape).
 qed.
 
 lemma A_LE_rejection_sampler_semantic_sdist_bound :
@@ -287,14 +284,12 @@ lemma A_LE_rejection_sampler_semantic_sdist_bound :
     le_rejection_distribution_defined x s =>
     le_rejection_acceptance_probability_bounded x s =>
     le_rejection_output_shape_preserved x s =>
-    sdist (d_le_real_view x s) (d_le_post_rejection_view x s)
+    sdist (d_le_real_view x s) (LERejectionSampler.d_le_semantic_post_rejection_view x s)
       <= BudgetParameters.epsilon_le_rej_semantic.
 proof.
 move=> x s Hr Hdef Hacc Hshape.
-have Hshadow :=
-  A_LE_rejection_sampler_semantic_sdist_le_failure_probability x s Hr Hdef Hacc Hshape.
-have Hbudget := A_LE_rejection_shadow_semantic_failure_probability_le_budget x s.
-by smt().
+exact (A_LE_rejection_sampler_semantic_experiment_sdist_bound
+  x s Hr Hdef Hacc Hshape).
 qed.
 
 lemma A_LE_rejection_surrogate_sdist_bound :

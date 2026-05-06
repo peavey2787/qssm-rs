@@ -410,23 +410,25 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     parameters for the current semantic FS lane, not a protocol-owned bundle;
     any later move to `primitives/ProtocolParameters.ec` is deferred until a
     real shared parameter surface exists.
-  - Semantic rejection budget, May 2026: `primitives/BudgetParameters.ec` now
-    also defines a primitive-owned semantic rejection branch law with
+  - Semantic rejection budget, May 2026: `primitives/BudgetParameters.ec`
+    still defines the theorem-facing semantic rejection branch weight with
     `le_rejection_semantic_total_slot_count = 4`,
     `le_rejection_semantic_reject_slot_count = 1`, and
     `epsilon_le_rej_semantic = mu1 d_le_rejection_semantic_branch_choice true = 1%r / 4%r`,
     together with proved nonnegativity lemma
-    `A4_le_rejection_semantic_nonneg`. `le/LERejectionSampler.ec` proves the
-    semantic rejection experiment quantity
-    `le_rejection_shadow_semantic_failure_probability = epsilon_le_rej_semantic`,
-    `le/LERejection.ec` adds theorem-facing semantic rejection endpoints on
-    both the experiment post marginal and the existing theorem-facing
-    post-rejection view ending in `epsilon_le_rej_semantic`, and
-    `le/LEStatisticalDistance.ec` uses that semantic rejection lane in
-    parallel with the semantic FS lane. The local semantic comparison theorem
-    now closes at
+    `A4_le_rejection_semantic_nonneg`. The lower semantic rejection owner is
+    now execution-owned: `le/LERealExecution.ec` defines the semantic rejection
+    support and branch-dependent material, `le/LERejectionSampler.ec` exports
+    `d_le_semantic_post_rejection_view`, `le/LERejection.ec` re-exports the
+    theorem-facing semantic rejection endpoints on that execution-owned post
+    marginal, `le/LEFsProgrammingSurface.ec` feeds that midpoint into
+    `d_le_pre_fs_semantic_programming_view` /
+    `d_le_post_fs_semantic_programmed_view`, and
+    `le/LEStatisticalDistance.ec` plus `games/GameLEBridge.ec` now route the
+    semantic comparison path over that honest internal chain. The local
+    semantic comparison theorem still closes at
     `le_rejection_shadow_semantic_failure_probability + le_fs_shadow_local_bad_branch_mass`,
-    the owned theorem closes at
+    the owned theorem still closes at
     `epsilon_le_rej_semantic + epsilon_le_fs_semantic`, and the semantic
     umbrella still feeds `qssm_main_theorem_semantic_budget`.
   - Semantic umbrella LE budget, May 2026: `primitives/BudgetParameters.ec`
@@ -480,14 +482,13 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     theorems directly to `epsilon_le_rej`, while
     `A_LE_rejection_surrogate_sdist_bound` remains the current exact theorem on
     the identity surrogate surface.
-  - Cross-lane target selection, May 2026: freeze the semantic FS demo-count
-    owner as-is. With the semantic rejection branch experiment now installed,
-    the next LE-side realism step should be to replace that primitive-owned
-    rejection owner with lower execution-owned support and thread the semantic
-    rejection post image more directly into the semantic comparison path,
-    rather than to churn the FS owner again, because the rejection lane
-    already has a coupled-state surface, theorem-facing budget plumbing, and
-    no visible import-cycle pressure.
+  - Cross-lane target selection, May 2026: the execution-owned rejection-owner
+    handoff and semantic post-rejection to semantic-FS wiring are now done.
+    Freeze the semantic FS demo-count owner as-is for the moment; the next
+    LE-side realism step should be to keep this now-honest internal chain and
+    improve the realism of the semantic branch laws or parameter source,
+    rather than to rewire rejection ownership again or churn the FS owner
+    without adding model substance.
   - LE budget decomposition audit, May 2026: do not treat that rejection-side
     bridge as the permanent replacement surface. The intended steady state is
     component arithmetic, with a new FS budget `epsilon_le_fs` beside

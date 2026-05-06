@@ -19,13 +19,13 @@ The budget surface currently lives in `primitives/BudgetParameters.ec` and is co
 | `epsilon_ms_hash_binding` | `0%r` | MS1 hash-binding gap on the current stage law |
 | `epsilon_ms_rom_programmability` | `0%r` | MS2 ROM-programming gap on the current stage law |
 | `epsilon_le_rej` | `0%r` | LE rejection component gap on the current shadow lane |
-| `epsilon_le_rej_semantic` | `mu1 d_le_rejection_semantic_branch_choice true = le_rejection_semantic_reject_slot_count%r / le_rejection_semantic_total_slot_count%r = 1%r / 4%r` | Owned semantic rejection budget on the semantic rejection branch experiment |
+| `epsilon_le_rej_semantic` | `mu1 d_le_rejection_semantic_branch_choice true = le_rejection_semantic_reject_slot_count%r / le_rejection_semantic_total_slot_count%r = 1%r / 4%r` | Owned semantic rejection budget on the execution-owned semantic rejection lane |
 | `epsilon_le_fs` | `0%r` | LE FS component gap on the current shadow lane |
 | `epsilon_le` | `epsilon_le_rej + epsilon_le_fs` | Umbrella LE budget consumed by theorem-facing arithmetic |
 | `epsilon_le_fs_semantic` | `mu1 d_le_fs_semantic_branch_choice true = bad_slot_count%r / total_slot_count%r = 1%r / 2%r` | Primitive-owned semantic FS bad-branch weight on the branch-sensitive shadow lane |
 | `epsilon_le_semantic` | `epsilon_le_rej_semantic + epsilon_le_fs_semantic` | Preferred semantic umbrella LE budget consumed by `qssm_main_theorem_semantic_budget` |
 
-These are exact values in the current model, not placeholders. The caution is that the exact-zero theorem path is still structurally simplified enough that its active MS and LE component values are all zero, while the semantic-budget theorem path now uses a primitive-owned semantic rejection branch law with `le_rejection_semantic_total_slot_count = 4` and `le_rejection_semantic_reject_slot_count = 1`, giving `epsilon_le_rej_semantic = 1%r / 4%r`, together with the primitive-owned FS bad-branch weight with `total_slot_count = 4` and `bad_slot_count = 2`, giving `epsilon_le_fs_semantic = 1%r / 2%r`, so the present semantic umbrella evaluates to `3%r / 4%r`.
+These are exact values in the current model, not placeholders. The caution is that the exact-zero theorem path is still structurally simplified enough that its active MS and LE component values are all zero, while the semantic-budget theorem path now uses an execution-owned lower semantic rejection lane with `le_rejection_semantic_total_slot_count = 4` and `le_rejection_semantic_reject_slot_count = 1`, giving `epsilon_le_rej_semantic = 1%r / 4%r`, together with the primitive-owned FS bad-branch weight with `total_slot_count = 4` and `bad_slot_count = 2`, giving `epsilon_le_fs_semantic = 1%r / 2%r`, so the present semantic umbrella evaluates to `3%r / 4%r`. `BudgetParameters.ec` still owns those concrete branch weights, but the semantic rejection support and branch-dependent material now live below that budget surface in `LERealExecution.ec`.
 
 Those slot counts should currently be read as concrete demo/proof parameters for the semantic FS lane. They are not yet sourced from a protocol-parameter bundle, and any move to a dedicated `primitives/ProtocolParameters.ec` leaf is deferred until there is a real shared protocol parameter surface to centralize.
 
@@ -38,7 +38,7 @@ The exact-zero path depends on the present semantics of the lower surfaces.
 - The theorem-facing LE FS endpoint also routes through a semantic shadow lane whose failure quantity is currently zero on the active carrier.
 - The umbrella LE theorem path is therefore the additive composition of two exact-zero component endpoints.
 
-The semantic-budget path depends on parallel semantic rejection and FS lanes.
+The semantic-budget path depends on an execution-owned semantic rejection lane feeding a semantic FS lane.
 
 - `LERejectionSampler.ec` proves both the exact-zero shadow rejection failure quantity `le_rejection_shadow_failure_probability` and the parallel semantic experiment quantity `le_rejection_shadow_semantic_failure_probability`; the exact-zero quantity still closes to `0%r`, while the semantic experiment closes to `epsilon_le_rej_semantic = 1%r / 4%r`.
 - `LEFsProgrammingSurface.ec` proves the local bad-branch mass and semantic failure probability in closed form on that shadow lane.
@@ -53,11 +53,11 @@ The MS theorem path is currently modeled with a concrete exact-zero budget surfa
 
 ### LE Rejection
 
-The theorem-facing rejection endpoint is already routed through a lower shadow lane. On the active exact-zero carrier, that route still collapses to zero failure probability, so the exact-zero rejection component budget stays at `0%r`. In parallel, the semantic theorem path now exposes `epsilon_le_rej_semantic` as the owned budget for a separate semantic rejection branch experiment; its current closed form is `1%r / 4%r`, and the semantic local-mass theorem path now uses `le_rejection_shadow_semantic_failure_probability` beside the unchanged exact-zero route.
+The theorem-facing rejection endpoint is already routed through a lower shadow lane. On the active exact-zero carrier, that route still collapses to zero failure probability, so the exact-zero rejection component budget stays at `0%r`. In parallel, the semantic theorem path now exposes `epsilon_le_rej_semantic` as the owned budget for an execution-owned semantic rejection lane. `LERealExecution.ec` owns the semantic rejection branch support and branch-dependent material, `LERejectionSampler.ec` exports `d_le_semantic_post_rejection_view`, and the semantic local-mass theorem path now uses `le_rejection_shadow_semantic_failure_probability` beside the unchanged exact-zero route; its current closed form is still `1%r / 4%r`.
 
 ### LE FS Programming
 
-The exact-zero theorem-facing FS endpoint is already routed through a lower semantic shadow lane and still collapses to `0%r` on the active carrier. In parallel, the proof tree now exports a separate semantic-budget theorem path that uses the primitive-owned branch-weight budget `epsilon_le_fs_semantic = mu1 d_le_fs_semantic_branch_choice true` together with the semantic rejection budget `epsilon_le_rej_semantic`, and packages them through the umbrella budget `epsilon_le_semantic = epsilon_le_rej_semantic + epsilon_le_fs_semantic`. That semantic path is the intended citation target when a nonzero LE theorem is needed today.
+The exact-zero theorem-facing FS endpoint is already routed through a lower semantic shadow lane and still collapses to `0%r` on the active carrier. In parallel, the proof tree now exports a separate semantic-budget theorem path whose FS lane starts from `d_le_pre_fs_semantic_programming_view = LERejectionSampler.d_le_semantic_post_rejection_view`, then packages the primitive-owned branch-weight budget `epsilon_le_fs_semantic = mu1 d_le_fs_semantic_branch_choice true` together with the semantic rejection budget `epsilon_le_rej_semantic` through the umbrella budget `epsilon_le_semantic = epsilon_le_rej_semantic + epsilon_le_fs_semantic`. That semantic path is the intended citation target when a nonzero LE theorem is needed today.
 
 ## What Is Still Assumed Outside the Formal Tree
 

@@ -242,6 +242,32 @@ by rewrite /LEFsProgrammingSurface.le_fs_shadow_semantic_branch_image_of_observa
   /LEFsProgrammingSurface.le_fs_surrogate_transform.
 qed.
 
+lemma dmap_const_ll ['a 'b] (d : 'a distr) (v : 'b) :
+  is_lossless d =>
+  dmap d (fun _ : 'a => v) = dunit v.
+proof.
+move=> ll_d.
+rewrite /dmap dlet_cst_weight (is_losslessP _ ll_d).
+by rewrite dscalar1.
+qed.
+
+lemma le_distinguisher_event_on_semantic_rejection_branch_image_matches_base
+  (x : qssm_public_input) (s : seed) (obs : le_transcript_observable)
+  (reject : bool) (D : distinguisher) :
+  le_distinguisher_event D
+    (LERejectionSampler.le_rejection_shadow_semantic_branch_image_of_observable
+      x s obs reject) =
+  le_distinguisher_event D obs.
+proof.
+case: reject.
+- rewrite /LERejectionSampler.le_rejection_shadow_semantic_branch_image_of_observable.
+  rewrite /LERealExecution.le_real_execution_semantic_rejection_observable_of_observable_branch.
+  rewrite /le_distinguisher_event /le_qssm_event_payload /=.
+  by [].
+by rewrite /LERejectionSampler.le_rejection_shadow_semantic_branch_image_of_observable
+  /LERealExecution.le_real_execution_semantic_rejection_observable_of_observable_branch.
+qed.
+
 lemma A_LE_semantic_projected_sim_adv_layout :
   forall (x : qssm_public_input) (s : seed) (D : distinguisher),
     le_projected_sim_adv x s D =
@@ -249,60 +275,105 @@ lemma A_LE_semantic_projected_sim_adv_layout :
         (LEFsProgrammingSurface.d_le_fs_shadow_semantic_post_marginal x s) D.
 proof.
 move=> x s D.
+pose E := le_distinguisher_event D.
+have Hfs :
+    dmap (LEFsProgrammingSurface.d_le_fs_shadow_semantic_post_marginal x s) E =
+    dmap (LEFsProgrammingSurface.d_le_post_fs_semantic_programmed_view x s) E.
+- rewrite (LEFsProgrammingSurface.d_le_fs_shadow_semantic_post_marginal_branch_split_pairE x s).
+  rewrite (LEFsProgrammingSurface.d_le_post_fs_semantic_programmed_view_pairE x s).
+  rewrite !dmap_comp.
+  rewrite !dmap_dprodE.
+  apply (in_eq_dlet
+    (fun obs =>
+      dmap LEFsProgrammingSurface.d_le_fs_shadow_branch_choice
+        (fun bad =>
+          E (LEFsProgrammingSurface.le_fs_shadow_semantic_branch_image_of_observable obs bad)))
+    (fun obs =>
+      dmap (dunit false)
+        (fun bad =>
+          E (LEFsProgrammingSurface.le_fs_shadow_semantic_branch_image_of_observable obs bad)))
+    (LEFsProgrammingSurface.d_le_pre_fs_semantic_programming_view x s)).
+  move=> obs _ /=.
+  have Hconst : forall bad,
+      E (LEFsProgrammingSurface.le_fs_shadow_semantic_branch_image_of_observable obs bad) =
+      E (LEFsProgrammingSurface.le_fs_shadow_semantic_branch_image_of_observable obs false).
+  - move=> bad.
+    rewrite /E.
+    by rewrite (le_distinguisher_event_on_semantic_branch_image_matches_surrogate obs bad D)
+      (le_distinguisher_event_on_semantic_branch_image_matches_surrogate obs false D).
+  have -> :
+      dmap LEFsProgrammingSurface.d_le_fs_shadow_branch_choice
+        (fun bad =>
+          E (LEFsProgrammingSurface.le_fs_shadow_semantic_branch_image_of_observable obs bad)) =
+      dmap LEFsProgrammingSurface.d_le_fs_shadow_branch_choice
+        (fun _ =>
+          E (LEFsProgrammingSurface.le_fs_shadow_semantic_branch_image_of_observable obs false)).
+  - apply eq_dmap => bad /=.
+    exact (Hconst bad).
+  rewrite (dmap_const_ll LEFsProgrammingSurface.d_le_fs_shadow_branch_choice
+    (E (LEFsProgrammingSurface.le_fs_shadow_semantic_branch_image_of_observable obs false))
+    LEFsProgrammingSurface.le_fs_shadow_branch_choice_lossless).
+  by rewrite dmap_dunit.
+have Hcollapse :
+    dmap (LEFsProgrammingSurface.d_le_post_fs_semantic_programmed_view x s) E =
+    dmap (LERejectionSampler.d_le_semantic_post_rejection_view x s) E.
+- rewrite /LEFsProgrammingSurface.d_le_post_fs_semantic_programmed_view.
+  rewrite /LEFsProgrammingSurface.d_le_pre_fs_semantic_programming_view.
+  rewrite dmap_comp /(\o).
+  apply eq_dmap_in=> obs _ /=.
+  rewrite /E.
+  by rewrite (LEFsProgrammingSurface.le_fs_surrogate_transform_id obs).
+have Hrej :
+    dmap (LERejectionSampler.d_le_semantic_post_rejection_view x s) E =
+    dmap (dunit (le_real_execution_observable x s)) E.
+- rewrite /LERejectionSampler.d_le_semantic_post_rejection_view.
+  rewrite (LERejectionSampler.d_le_rejection_shadow_semantic_post_marginal_fixed_branch_imageE x s).
+  rewrite dmap_comp /(\o).
+  have -> :
+      dmap LERejectionSampler.d_le_rejection_shadow_semantic_branch_choice
+        (fun reject =>
+          E (LERejectionSampler.le_rejection_shadow_semantic_branch_image_of_observable
+            x s (le_real_execution_observable x s) reject)) =
+      dmap LERejectionSampler.d_le_rejection_shadow_semantic_branch_choice
+        (fun _ => E (le_real_execution_observable x s)).
+  - apply eq_dmap => reject /=.
+    rewrite /E.
+    by rewrite
+      (le_distinguisher_event_on_semantic_rejection_branch_image_matches_base
+        x s (le_real_execution_observable x s) reject D).
+  rewrite (dmap_const_ll LERejectionSampler.d_le_rejection_shadow_semantic_branch_choice
+    (E (le_real_execution_observable x s))
+    LERejectionSampler.le_rejection_shadow_semantic_branch_choice_lossless).
+  by rewrite dmap_dunit.
+have Hpre_sim :
+    dmap (dunit (le_real_execution_observable x s)) E =
+    dmap (d_le_sim_view x s) E.
+- have -> : d_le_sim_view x s = LEFsProgrammingSurface.d_le_post_fs_programmed_view x s.
+    by rewrite /d_le_sim_view /LEFsProgrammingSurface.d_le_post_fs_programmed_view
+      /LEFsProgrammingSurface.d_le_pre_fs_programming_view
+      /LEFsProgrammingSurface.le_fs_surrogate_transform.
+  rewrite /LEFsProgrammingSurface.d_le_post_fs_programmed_view.
+  rewrite (LEFsProgrammingSurface.d_le_pre_fs_programming_view_dunit x s).
+  rewrite dmap_comp /(\o).
+  apply eq_dmap_in=> obs _ /=.
+  rewrite /E.
+  by rewrite (LEFsProgrammingSurface.le_fs_surrogate_transform_id obs).
+have Hmapped :
+    dmap (LEFsProgrammingSurface.d_le_fs_shadow_semantic_post_marginal x s) E =
+    dmap (d_le_sim_view x s) E.
+  by rewrite Hfs Hcollapse Hrej Hpre_sim.
 rewrite /le_projected_sim_adv /le_projected_sim_adv_base /le_view_distinguish_pr.
-have -> : d_le_sim_view x s = LEFsProgrammingSurface.d_le_post_fs_programmed_view x s.
-  by rewrite /d_le_sim_view /LEFsProgrammingSurface.d_le_post_fs_programmed_view
-    /LEFsProgrammingSurface.d_le_pre_fs_programming_view
-    /LEFsProgrammingSurface.le_fs_surrogate_transform.
-rewrite (LEFsProgrammingSurface.d_le_post_fs_programmed_view_fixed_branch_imageE x s).
-rewrite (LEFsProgrammingSurface.d_le_fs_shadow_semantic_post_marginal_fixed_branch_imageE x s).
-pose F := fun bad =>
-  LEFsProgrammingSurface.le_fs_shadow_semantic_branch_image_of_observable
-    (le_real_execution_observable x s) bad.
-pose P := fun bad => le_distinguisher_event D (F bad).
-rewrite dmapE.
-rewrite dmapE.
-have Hconst : forall bad, P bad = P false.
-  move=> bad.
-  rewrite /P /F.
-  by rewrite (le_distinguisher_event_on_semantic_branch_image_matches_surrogate
-    (le_real_execution_observable x s) bad D)
-    (le_distinguisher_event_on_semantic_branch_image_matches_surrogate
-    (le_real_execution_observable x s) false D).
-have Hleft :
-    mu (dunit false) P = mu (dunit false) (fun (_ : bool) => P false).
-  apply/mu_eq=> bad /=.
-  exact (Hconst bad).
-have Hright :
-    mu LEFsProgrammingSurface.d_le_fs_shadow_branch_choice P =
-    mu LEFsProgrammingSurface.d_le_fs_shadow_branch_choice (fun (_ : bool) => P false).
-  apply/mu_eq=> bad /=.
-  exact (Hconst bad).
-rewrite Hleft Hright.
-case: (P false).
-- have HleftT :
-      mu (dunit false) (fun (_ : bool) => true) = mu (dunit false) predT.
-    apply/mu_eq=> bad /=.
-    by [].
-  have HrightT :
-      mu LEFsProgrammingSurface.d_le_fs_shadow_branch_choice (fun (_ : bool) => true) =
-      mu LEFsProgrammingSurface.d_le_fs_shadow_branch_choice predT.
-    apply/mu_eq=> bad /=.
-    by [].
-  have Hw : weight LEFsProgrammingSurface.d_le_fs_shadow_branch_choice = 1%r.
-    exact (is_losslessP _ LEFsProgrammingSurface.le_fs_shadow_branch_choice_lossless).
-  rewrite HleftT HrightT.
-  by rewrite dunit_ll /weight Hw.
-have Hleft0 :
-    mu (dunit false) (fun (_ : bool) => false) = mu (dunit false) pred0.
-  apply/mu_eq=> bad /=.
-  by [].
-have Hright0 :
-    mu LEFsProgrammingSurface.d_le_fs_shadow_branch_choice (fun (_ : bool) => false) =
-    mu LEFsProgrammingSurface.d_le_fs_shadow_branch_choice pred0.
-  apply/mu_eq=> bad /=.
-  by [].
-by rewrite Hleft0 Hright0 !mu0.
+  have Hmu :
+    mu1 (dmap (d_le_sim_view x s) E) true =
+    mu1 (dmap (LEFsProgrammingSurface.d_le_fs_shadow_semantic_post_marginal x s) E) true.
+  - by rewrite Hmapped.
+  have Hpred : ((pred1 true) \o E) = E.
+  - apply fun_ext=> obs /=.
+    rewrite /pred1 /(\o).
+    by case: (E obs).
+  move: Hmu.
+  rewrite !dmap1E.
+  by rewrite !Hpred.
 qed.
 
 lemma A_LE_semantic_projected_adv_matches_game_adv :
