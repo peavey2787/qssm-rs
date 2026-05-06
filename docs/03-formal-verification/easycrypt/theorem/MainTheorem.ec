@@ -84,7 +84,7 @@ lemma qssm_main_theorem_semantic_budget_local_mass
   Adv_G0_G2_QSSM x (extract_ms_public x) s D <=
     epsilon_ms_hash_binding +
     epsilon_ms_rom_programmability +
-    LERejectionSampler.le_rejection_shadow_failure_probability x s +
+    LERejectionSampler.le_rejection_shadow_semantic_failure_probability x s +
     le_fs_shadow_local_bad_branch_mass.
 proof.
 move=> Hsetb Hleeqv.
@@ -100,7 +100,7 @@ have Hmid : Adv_G1_MS_to_LE x xms s D <= 0%r.
   exact (A_G1_MS_to_LE_transition_bound x s D).
 have H12sem :
     Adv_G1_G2_LE x xms s D <=
-      LERejectionSampler.le_rejection_shadow_failure_probability x s +
+      LERejectionSampler.le_rejection_shadow_semantic_failure_probability x s +
       le_fs_shadow_local_bad_branch_mass.
   exact (A_G1_to_G2_le_semantic_transition_bound x xms s D
     Hsetb A4_le_hvzk_bound_nonneg Hleeqv).
@@ -112,21 +112,21 @@ have H01mid : Adv_G0_G1_MS x xms s D + Adv_G1_MS_to_LE x xms s D <=
   by apply (ler_add _ _ _ _ H01p Hmid).
 have Hadd : Adv_G0_G1_MS x xms s D + Adv_G1_MS_to_LE x xms s D + Adv_G1_G2_LE x xms s D <=
   epsilon_ms_hash_binding + epsilon_ms_rom_programmability +
-  LERejectionSampler.le_rejection_shadow_failure_probability x s +
+  LERejectionSampler.le_rejection_shadow_semantic_failure_probability x s +
   le_fs_shadow_local_bad_branch_mass.
   have ->: Adv_G0_G1_MS x xms s D + Adv_G1_MS_to_LE x xms s D + Adv_G1_G2_LE x xms s D =
     (Adv_G0_G1_MS x xms s D + Adv_G1_MS_to_LE x xms s D) + Adv_G1_G2_LE x xms s D by ring.
   have Hsum012 :
       (Adv_G0_G1_MS x xms s D + Adv_G1_MS_to_LE x xms s D) + Adv_G1_G2_LE x xms s D <=
       ((epsilon_ms_hash_binding + epsilon_ms_rom_programmability) + 0%r) +
-      (LERejectionSampler.le_rejection_shadow_failure_probability x s +
+      (LERejectionSampler.le_rejection_shadow_semantic_failure_probability x s +
        le_fs_shadow_local_bad_branch_mass)
     by apply (ler_add _ _ _ _ H01mid H12sem).
   have -> : ((epsilon_ms_hash_binding + epsilon_ms_rom_programmability) + 0%r) +
-      (LERejectionSampler.le_rejection_shadow_failure_probability x s +
+      (LERejectionSampler.le_rejection_shadow_semantic_failure_probability x s +
        le_fs_shadow_local_bad_branch_mass) =
     epsilon_ms_hash_binding + epsilon_ms_rom_programmability +
-    LERejectionSampler.le_rejection_shadow_failure_probability x s +
+    LERejectionSampler.le_rejection_shadow_semantic_failure_probability x s +
     le_fs_shadow_local_bad_branch_mass by ring.
   exact Hsum012.
 by apply (ler_trans _ _ _ Htri Hadd).

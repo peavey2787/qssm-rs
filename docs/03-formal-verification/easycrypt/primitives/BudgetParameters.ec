@@ -15,9 +15,11 @@ import Ring.IntID StdOrder.IntOrder Range.
      remains the active exact-zero lower rejection budget and stays at `0%r`.
    - Shadow LE rejection component on the semantic route:
      `epsilon_le_rej_semantic` tracks the lower rejection failure quantity used
-     by the semantic theorem path. The current shadow rejection lane still
-     proves zero failure on the concrete carrier, so `epsilon_le_rej_semantic`
-     also closes to `0%r` today.
+     by the semantic theorem path. The current semantic-only rejection branch
+     experiment is owned by the primitive counts
+     `le_rejection_semantic_total_slot_count = 4` and
+     `le_rejection_semantic_reject_slot_count = 1`, so
+     `epsilon_le_rej_semantic` now closes to `1%r / 4%r`.
    - Shadow LE FS component: `epsilon_le_fs` is still `0%r`, but now for a
      semantic reason rather than only as a placeholder. The active
      branch-sensitive shadow lane measures failure by the shadow bad-branch
@@ -33,8 +35,8 @@ import Ring.IntID StdOrder.IntOrder Range.
    - Semantic LE umbrella budget: `epsilon_le_semantic` is defined as the sum
      of the semantic rejection and semantic FS components
      `epsilon_le_rej_semantic + epsilon_le_fs_semantic`. In the current model
-     the semantic rejection component still closes to `0%r`, so the semantic
-     umbrella currently agrees numerically with the semantic FS component.
+     the semantic rejection component closes to `1%r / 4%r`, so the semantic
+     umbrella currently evaluates to `3%r / 4%r`.
 
   Therefore each active exact-zero budget is defined as `0%r`. This is NOT a
   nonzero cryptographic security bound; it records the exact-zero gap of the
@@ -62,11 +64,167 @@ lemma A4_le_rejection_nonneg :
   0%r <= epsilon_le_rej.
 proof. by rewrite /epsilon_le_rej. qed.
 
-op epsilon_le_rej_semantic : real = 0%r.
+op le_rejection_semantic_total_slot_count : int = 4.
+
+op le_rejection_semantic_reject_slot_count : int = 1.
+
+lemma le_rejection_semantic_total_slot_count_pos :
+  0 < le_rejection_semantic_total_slot_count.
+proof. by rewrite /le_rejection_semantic_total_slot_count. qed.
+
+lemma le_rejection_semantic_reject_slot_count_pos :
+  0 < le_rejection_semantic_reject_slot_count.
+proof. by rewrite /le_rejection_semantic_reject_slot_count. qed.
+
+lemma le_rejection_semantic_reject_slot_count_lt_total_slot_count :
+  le_rejection_semantic_reject_slot_count < le_rejection_semantic_total_slot_count.
+proof.
+by rewrite /le_rejection_semantic_reject_slot_count /le_rejection_semantic_total_slot_count.
+qed.
+
+op le_rejection_semantic_branch_slot_support : int list =
+  range 0 le_rejection_semantic_total_slot_count.
+
+lemma le_rejection_semantic_branch_slot_supportE :
+  le_rejection_semantic_branch_slot_support = [0; 1; 2; 3].
+proof.
+rewrite /le_rejection_semantic_branch_slot_support /le_rejection_semantic_total_slot_count.
+rewrite (range_ltn 0 4) 1:/# /=.
+rewrite (range_ltn 1 4) 1:/# /=.
+rewrite (range_ltn 2 4) 1:/# /=.
+rewrite (range_ltn 3 4) 1:/# /=.
+by rewrite range_geq /=.
+qed.
+
+lemma le_rejection_semantic_branch_slot_support_uniq :
+  uniq le_rejection_semantic_branch_slot_support.
+proof.
+by rewrite /le_rejection_semantic_branch_slot_support range_uniq.
+qed.
+
+op le_rejection_semantic_reject_branch_slot (slot : int) : bool =
+  slot < le_rejection_semantic_reject_slot_count.
+
+op d_le_rejection_semantic_branch_slot_choice : int distr =
+  duniform le_rejection_semantic_branch_slot_support.
+
+lemma le_rejection_semantic_branch_slot_choice_lossless :
+  is_lossless d_le_rejection_semantic_branch_slot_choice.
+proof.
+rewrite /d_le_rejection_semantic_branch_slot_choice.
+rewrite /le_rejection_semantic_branch_slot_support.
+by apply duniform_ll; rewrite range_ltn /le_rejection_semantic_total_slot_count.
+qed.
+
+op le_rejection_semantic_branch_support : bool list = [false; true].
+
+lemma le_rejection_semantic_branch_support_uniq :
+  uniq le_rejection_semantic_branch_support.
+proof. by rewrite /le_rejection_semantic_branch_support. qed.
+
+op d_le_rejection_semantic_branch_choice : bool distr =
+  dmap d_le_rejection_semantic_branch_slot_choice
+    le_rejection_semantic_reject_branch_slot.
+
+lemma le_rejection_semantic_branch_choice_lossless :
+  is_lossless d_le_rejection_semantic_branch_choice.
+proof.
+rewrite /d_le_rejection_semantic_branch_choice.
+by apply dmap_ll; exact le_rejection_semantic_branch_slot_choice_lossless.
+qed.
+
+lemma le_rejection_semantic_accept_branch_has_support :
+  false \in d_le_rejection_semantic_branch_choice.
+proof.
+rewrite /d_le_rejection_semantic_branch_choice.
+apply/supp_dmap.
+exists le_rejection_semantic_reject_slot_count; split.
+  rewrite /d_le_rejection_semantic_branch_slot_choice.
+  rewrite /le_rejection_semantic_branch_slot_support.
+  rewrite supp_duniform mem_range.
+  split; first smt(le_rejection_semantic_reject_slot_count_pos).
+  smt(le_rejection_semantic_reject_slot_count_lt_total_slot_count).
+by rewrite /le_rejection_semantic_reject_branch_slot ltrr.
+qed.
+
+lemma le_rejection_semantic_reject_branch_has_support :
+  true \in d_le_rejection_semantic_branch_choice.
+proof.
+rewrite /d_le_rejection_semantic_branch_choice.
+apply/supp_dmap.
+exists 0; split.
+  rewrite /d_le_rejection_semantic_branch_slot_choice.
+  rewrite /le_rejection_semantic_branch_slot_support.
+  by rewrite supp_duniform mem_range /le_rejection_semantic_total_slot_count.
+by rewrite /le_rejection_semantic_reject_branch_slot /le_rejection_semantic_reject_slot_count.
+qed.
+
+lemma le_rejection_semantic_branch_choice_mass_false :
+  mu1 d_le_rejection_semantic_branch_choice false =
+  (le_rejection_semantic_total_slot_count -
+   le_rejection_semantic_reject_slot_count)%r /
+  le_rejection_semantic_total_slot_count%r.
+proof.
+rewrite /mu1 /d_le_rejection_semantic_branch_choice dmapE /=.
+rewrite /d_le_rejection_semantic_branch_slot_choice duniformE.
+rewrite undup_id ?le_rejection_semantic_branch_slot_support_uniq /=.
+have Hcount :
+    count (pred1 false \o le_rejection_semantic_reject_branch_slot)
+      le_rejection_semantic_branch_slot_support = 3.
+  by rewrite le_rejection_semantic_branch_slot_supportE
+             /le_rejection_semantic_reject_branch_slot
+             /le_rejection_semantic_reject_slot_count /pred1 /(\o) /=.
+rewrite Hcount le_rejection_semantic_branch_slot_supportE /=.
+have -> :
+    (le_rejection_semantic_total_slot_count -
+     le_rejection_semantic_reject_slot_count)%r /
+    le_rejection_semantic_total_slot_count%r = 3%r / 4%r.
+  by rewrite /le_rejection_semantic_total_slot_count
+             /le_rejection_semantic_reject_slot_count /=.
+by smt().
+qed.
+
+lemma le_rejection_semantic_branch_choice_mass_true :
+  mu1 d_le_rejection_semantic_branch_choice true =
+  le_rejection_semantic_reject_slot_count%r /
+  le_rejection_semantic_total_slot_count%r.
+proof.
+rewrite /mu1 /d_le_rejection_semantic_branch_choice dmapE /=.
+rewrite /d_le_rejection_semantic_branch_slot_choice duniformE.
+rewrite undup_id ?le_rejection_semantic_branch_slot_support_uniq /=.
+have Hcount :
+    count (pred1 true \o le_rejection_semantic_reject_branch_slot)
+      le_rejection_semantic_branch_slot_support = 1.
+  by rewrite le_rejection_semantic_branch_slot_supportE
+             /le_rejection_semantic_reject_branch_slot
+             /le_rejection_semantic_reject_slot_count /pred1 /(\o) /=.
+rewrite Hcount le_rejection_semantic_branch_slot_supportE /=.
+have -> :
+    le_rejection_semantic_reject_slot_count%r /
+    le_rejection_semantic_total_slot_count%r = 1%r / 4%r.
+  by rewrite /le_rejection_semantic_total_slot_count
+             /le_rejection_semantic_reject_slot_count /=.
+by smt().
+qed.
+
+op epsilon_le_rej_semantic : real =
+  mu1 d_le_rejection_semantic_branch_choice true.
+
+lemma epsilon_le_rej_semantic_closed_form :
+  epsilon_le_rej_semantic =
+  le_rejection_semantic_reject_slot_count%r /
+  le_rejection_semantic_total_slot_count%r.
+proof.
+rewrite /epsilon_le_rej_semantic.
+exact le_rejection_semantic_branch_choice_mass_true.
+qed.
 
 lemma A4_le_rejection_semantic_nonneg :
   0%r <= epsilon_le_rej_semantic.
-proof. by rewrite /epsilon_le_rej_semantic. qed.
+proof.
+rewrite epsilon_le_rej_semantic_closed_form.
+by smt().
+qed.
 
 op epsilon_le_fs : real = 0%r.
 

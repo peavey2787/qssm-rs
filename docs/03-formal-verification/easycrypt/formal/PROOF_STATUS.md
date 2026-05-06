@@ -53,15 +53,19 @@ The exact-zero theorem path uses these values:
 
 The parallel semantic-budget theorem path adds these LE-side values:
 
-- `epsilon_le_rej_semantic = 0%r`
+- `le_rejection_semantic_total_slot_count = 4`
+- `le_rejection_semantic_reject_slot_count = 1`
+- `d_le_rejection_semantic_branch_slot_choice = duniform (range 0 le_rejection_semantic_total_slot_count)`
+- `d_le_rejection_semantic_branch_choice = dmap d_le_rejection_semantic_branch_slot_choice le_rejection_semantic_reject_branch_slot`
+- `epsilon_le_rej_semantic = mu1 d_le_rejection_semantic_branch_choice true = le_rejection_semantic_reject_slot_count%r / le_rejection_semantic_total_slot_count%r = 1%r / 4%r`
 - `total_slot_count = 4`
 - `bad_slot_count = 2`
 - `d_le_fs_semantic_branch_slot_choice = duniform (range 0 total_slot_count)`
 - `d_le_fs_semantic_branch_choice = dmap d_le_fs_semantic_branch_slot_choice le_fs_semantic_bad_branch_slot`
 - `epsilon_le_fs_semantic = mu1 d_le_fs_semantic_branch_choice true = bad_slot_count%r / total_slot_count%r = 1%r / 2%r`
-- `epsilon_le_semantic = epsilon_le_rej_semantic + epsilon_le_fs_semantic = bad_slot_count%r / total_slot_count%r = 1%r / 2%r`
+- `epsilon_le_semantic = epsilon_le_rej_semantic + epsilon_le_fs_semantic = 3%r / 4%r`
 
-The current theorem-facing results therefore split into two checked modes: an exact-zero bound on the active abstraction theorem path, and a separate semantic-budget theorem path that packages the present semantic rejection plus semantic FS modeling through `epsilon_le_semantic`. The semantic rejection component is now owned separately from the exact-zero rejection budget, although its current concrete instantiation is still `0%r`. The semantic FS component is likewise primitive-owned as a count-parameterized slot law, even though its current concrete instantiation still evaluates to `1%r / 2%r`. Neither statement should be confused with a final realistic cryptographic reduction for the deployed implementation.
+The current theorem-facing results therefore split into two checked modes: an exact-zero bound on the active abstraction theorem path, and a separate semantic-budget theorem path that packages the present semantic rejection plus semantic FS modeling through `epsilon_le_semantic`. The semantic rejection component is now owned separately from the exact-zero rejection budget as a primitive-owned branch experiment with current concrete instantiation `1%r / 4%r`. The semantic FS component is likewise primitive-owned as a count-parameterized slot law with current concrete instantiation `1%r / 2%r`. Neither statement should be confused with a final realistic cryptographic reduction for the deployed implementation.
 
 The current semantic FS slot counts are therefore frozen as concrete demo/proof parameters in `primitives/BudgetParameters.ec`. They are not yet sourced from a protocol-parameter bundle, and any future extraction to `primitives/ProtocolParameters.ec` is deferred until there is a real shared protocol parameter surface to centralize.
 
@@ -69,7 +73,7 @@ The current semantic FS slot counts are therefore frozen as concrete demo/proof 
 
 - MS1 hash-binding closes through the current lower probability surface and exact stage equalities.
 - MS2 ROM programming closes through the current lower stage equality between the AfterBinding and AfterRom observable laws.
-- LE rejection closes through the semantic shadow rejection lane, whose current failure probability collapses to zero on the active carrier.
+- LE rejection closes on two parallel lower lanes: the active exact-zero rejection lane still collapses to zero on the theorem-facing carrier, while the semantic rejection branch experiment now closes to the owned failure quantity `epsilon_le_rej_semantic = 1%r / 4%r`.
 - LE FS closes through the semantic shadow FS lane, whose current failure probability also collapses to zero on the active carrier.
 - `LEStatisticalDistance.ec` consumes the rejection and FS component endpoints additively through `epsilon_le = epsilon_le_rej + epsilon_le_fs`.
 - `MainTheorem.ec` packages the resulting MS and LE bounds into the final theorem-facing statement, and its semantic theorem path now uses local rejection failure plus local FS bad-branch mass at the comparison level, the owned component sum `epsilon_le_rej_semantic + epsilon_le_fs_semantic`, and the umbrella budget `epsilon_le_semantic`.
@@ -88,13 +92,14 @@ The following items remain outside the current exact-zero theorem path:
 
 The semantic FS demo-count owner is intentionally frozen as-is. Moving `total_slot_count` and `bad_slot_count` now would mostly reshuffle ownership without increasing model realism.
 
-The next exact local target is to make the new semantic rejection lane nontrivial below the now-stable public theorem API:
+The next exact local target is to replace the current primitive-owned semantic rejection branch experiment with a lower execution-owned model and thread that semantic post image more directly into the semantic comparison path below the now-stable public theorem API:
 
-- replace the current zero closed form for `epsilon_le_rej_semantic` with a genuine rejection-side failure model derived from the shadow rejection sampler
+- replace the current primitive rejection-slot owner for `epsilon_le_rej_semantic` with lower execution-owned rejection support and semantic post-image data
+- align the semantic rejection experiment more tightly with the pre-FS semantic comparison path so the local semantic rejection mass is no longer only a parallel experiment term
 - keep `qssm_main_theorem` as the exact-zero abstraction theorem and `qssm_main_theorem_semantic_budget` as the preferred nonzero citation target
 - keep the axiom count at `0`
 - defer any future `primitives/ProtocolParameters.ec` move until there is a real shared parameter source worth centralizing
 
-This is the best next realism step because the semantic rejection owner, local failure quantity, theorem-facing endpoint, and semantic umbrella plumbing are now all installed; the remaining work is to enrich that lower rejection model rather than widen the theorem surface or relocate the FS demo counts.
+This is the best next realism step because the semantic rejection owner, local failure quantity, theorem-facing endpoint, and semantic umbrella plumbing are now all installed and checker-green; the remaining work is to replace the primitive experiment with a more execution-owned lower rejection model rather than widen the theorem surface or relocate the FS demo counts.
 
 For the longer-lived trail that led to the current state, see [PROOF_HISTORY.md](PROOF_HISTORY.md).

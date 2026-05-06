@@ -337,7 +337,7 @@ lemma A_G1_to_G2_le_semantic_transition_bound :
     0%r <= epsilon_le =>
     le_real_sim_transcript_equiv x s =>
     Adv_G1_G2_LE x xms s D <=
-      LERejectionSampler.le_rejection_shadow_failure_probability x s +
+      LERejectionSampler.le_rejection_shadow_semantic_failure_probability x s +
       LEFsProgrammingSurface.le_fs_shadow_local_bad_branch_mass.
 proof.
 move=> x xms s D Hsetb Heps Hleeqv.

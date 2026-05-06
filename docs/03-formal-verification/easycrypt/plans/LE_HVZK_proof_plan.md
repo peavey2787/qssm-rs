@@ -411,16 +411,21 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     any later move to `primitives/ProtocolParameters.ec` is deferred until a
     real shared parameter surface exists.
   - Semantic rejection budget, May 2026: `primitives/BudgetParameters.ec` now
-    also defines `epsilon_le_rej_semantic = 0%r` with proved nonnegativity
-    lemma `A4_le_rejection_semantic_nonneg`. `le/LERejectionSampler.ec` proves
-    the shadow rejection failure quantity
-    `le_rejection_shadow_failure_probability <= epsilon_le_rej_semantic`,
-    `le/LERejection.ec` adds theorem-facing semantic rejection endpoints ending
-    first in `le_rejection_shadow_failure_probability` and then in
-    `epsilon_le_rej_semantic`, and `le/LEStatisticalDistance.ec` uses that
-    semantic rejection lane in parallel with the semantic FS lane. The local
-    semantic comparison theorem now closes at
-    `le_rejection_shadow_failure_probability + le_fs_shadow_local_bad_branch_mass`,
+    also defines a primitive-owned semantic rejection branch law with
+    `le_rejection_semantic_total_slot_count = 4`,
+    `le_rejection_semantic_reject_slot_count = 1`, and
+    `epsilon_le_rej_semantic = mu1 d_le_rejection_semantic_branch_choice true = 1%r / 4%r`,
+    together with proved nonnegativity lemma
+    `A4_le_rejection_semantic_nonneg`. `le/LERejectionSampler.ec` proves the
+    semantic rejection experiment quantity
+    `le_rejection_shadow_semantic_failure_probability = epsilon_le_rej_semantic`,
+    `le/LERejection.ec` adds theorem-facing semantic rejection endpoints on
+    both the experiment post marginal and the existing theorem-facing
+    post-rejection view ending in `epsilon_le_rej_semantic`, and
+    `le/LEStatisticalDistance.ec` uses that semantic rejection lane in
+    parallel with the semantic FS lane. The local semantic comparison theorem
+    now closes at
+    `le_rejection_shadow_semantic_failure_probability + le_fs_shadow_local_bad_branch_mass`,
     the owned theorem closes at
     `epsilon_le_rej_semantic + epsilon_le_fs_semantic`, and the semantic
     umbrella still feeds `qssm_main_theorem_semantic_budget`.
@@ -460,19 +465,29 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     challenge-seed branch. The two shadow theorem targets are now proved in
     `le/LERejection.ec`: `A_LE_rejection_shadow_sdist_le_failure_probability`
     and `A_LE_rejection_shadow_failure_probability_le_budget`. In parallel,
-    `le/LERejectionSampler.ec` now proves the semantic-budget bridge to
-    `epsilon_le_rej_semantic`, and `le/LERejection.ec` adds semantic
-    theorem-facing endpoints that factor through the same shadow quantity.
-    The exact-zero theorem-facing `A_LE_rejection_sampler_sdist_bound` still
-    factors through those shadow theorems directly to `epsilon_le_rej`, while
+    `le/LERejectionSampler.ec` now also defines the semantic experiment names
+    `d_le_rejection_shadow_semantic_coupled_state`,
+    `d_le_rejection_shadow_semantic_pre_marginal`,
+    `d_le_rejection_shadow_semantic_post_marginal`, and
+    `le_rejection_shadow_semantic_failure_probability`, together with support
+    lemmas for both semantic branches, the local experiment theorem
+    `A_LE_rejection_shadow_semantic_post_marginal_sdist_le_failure_probability`,
+    and the budget closure
+    `le_rejection_shadow_semantic_failure_probability = epsilon_le_rej_semantic`.
+    `le/LERejection.ec` re-exports semantic experiment endpoints beside the
+    existing theorem-facing semantic wrapper. The exact-zero theorem-facing
+    `A_LE_rejection_sampler_sdist_bound` still factors through the zero shadow
+    theorems directly to `epsilon_le_rej`, while
     `A_LE_rejection_surrogate_sdist_bound` remains the current exact theorem on
     the identity surrogate surface.
   - Cross-lane target selection, May 2026: freeze the semantic FS demo-count
-    owner as-is. With the semantic rejection owner now installed, the next
-    LE-side realism step should be to make that rejection lane nontrivial
-    rather than to churn the FS owner again, because the rejection lane already
-    has a coupled-state surface, theorem-facing budget plumbing, and no visible
-    import-cycle pressure.
+    owner as-is. With the semantic rejection branch experiment now installed,
+    the next LE-side realism step should be to replace that primitive-owned
+    rejection owner with lower execution-owned support and thread the semantic
+    rejection post image more directly into the semantic comparison path,
+    rather than to churn the FS owner again, because the rejection lane
+    already has a coupled-state surface, theorem-facing budget plumbing, and
+    no visible import-cycle pressure.
   - LE budget decomposition audit, May 2026: do not treat that rejection-side
     bridge as the permanent replacement surface. The intended steady state is
     component arithmetic, with a new FS budget `epsilon_le_fs` beside
