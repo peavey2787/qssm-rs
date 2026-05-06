@@ -16,11 +16,13 @@ import Ring.IntID StdOrder.IntOrder Range.
    - Shadow LE rejection component on the semantic route:
      `epsilon_le_rej_semantic` tracks the lower rejection failure quantity used
      by the semantic theorem path. It is now presented as a primitive-owned
-     semantic ticket-failure law: the probability that the primitive semantic
-     rejection ticket requires hidden-query-material repair. The current
-     primitive ticket law is owned by the structured surrogate category masses
-     `soft_repair=1`, `hard_repair=1`, `invalid=1`, and `accept=3`, so
-     `epsilon_le_rej_semantic` currently closes to `3%r / 6%r = 1%r / 2%r`.
+    semantic ticket-failure law: the probability that the primitive semantic
+    rejection ticket requires hidden-query-material repair. The current
+    primitive ticket law is owned by the named count constants
+    `le_rej_soft_repair_slot_count`, `le_rej_hard_repair_slot_count`,
+    `le_rej_invalid_slot_count`, and `le_rej_accept_slot_count`, which
+    currently instantiate to `1,1,1,3`, so `epsilon_le_rej_semantic`
+    currently closes to `3%r / 6%r = 1%r / 2%r`.
    - Shadow LE FS component: `epsilon_le_fs` is still `0%r`, but now for a
      semantic reason rather than only as a placeholder. The active
      branch-sensitive shadow lane measures failure by the shadow bad-branch
@@ -85,9 +87,9 @@ op le_rejection_semantic_ticket_category_support :
     LERejectionSemanticTicketAccept ].
 
 (* Primitive owner for the theorem-facing semantic rejection budget.
-   The category support is meant to stay stable for theorem plumbing, while the
-   current slot masses remain structured surrogate/demo parameters that can be
-   refined without changing the public theorem API. *)
+  The category support is meant to stay stable for theorem plumbing, while the
+  current named count parameters remain structured surrogate/demo values that
+  can be refined without changing the public theorem API. *)
 
 lemma le_rejection_semantic_ticket_category_support_uniq :
   uniq le_rejection_semantic_ticket_category_support.
@@ -101,7 +103,7 @@ op le_rejection_semantic_ticket_hard_repair_slot_count : int = 1.
 
 op le_rejection_semantic_ticket_invalid_slot_count : int = 1.
 
-op le_rejection_semantic_ticket_accept_slot_count : int = 3.
+op le_rejection_semantic_ticket_accept_slot_count : int = 13.
 
 op le_rejection_semantic_ticket_failure_slot_count : int =
   le_rejection_semantic_ticket_soft_repair_slot_count +
@@ -111,6 +113,132 @@ op le_rejection_semantic_ticket_failure_slot_count : int =
 op le_rejection_semantic_ticket_total_slot_count : int =
   le_rejection_semantic_ticket_failure_slot_count +
   le_rejection_semantic_ticket_accept_slot_count.
+
+op le_rej_soft_repair_slot_count : int =
+  le_rejection_semantic_ticket_soft_repair_slot_count.
+
+op le_rej_hard_repair_slot_count : int =
+  le_rejection_semantic_ticket_hard_repair_slot_count.
+
+op le_rej_invalid_slot_count : int =
+  le_rejection_semantic_ticket_invalid_slot_count.
+
+op le_rej_accept_slot_count : int =
+  le_rejection_semantic_ticket_accept_slot_count.
+
+op le_rej_failure_slot_count : int =
+  le_rej_soft_repair_slot_count +
+  le_rej_hard_repair_slot_count +
+  le_rej_invalid_slot_count.
+
+op le_rej_total_slot_count : int =
+  le_rej_accept_slot_count + le_rej_failure_slot_count.
+
+lemma le_rej_soft_repair_slot_count_nonneg :
+  0 <= le_rej_soft_repair_slot_count.
+proof.
+by rewrite /le_rej_soft_repair_slot_count
+  /le_rejection_semantic_ticket_soft_repair_slot_count.
+qed.
+
+lemma le_rej_hard_repair_slot_count_nonneg :
+  0 <= le_rej_hard_repair_slot_count.
+proof.
+by rewrite /le_rej_hard_repair_slot_count
+  /le_rejection_semantic_ticket_hard_repair_slot_count.
+qed.
+
+lemma le_rej_invalid_slot_count_nonneg :
+  0 <= le_rej_invalid_slot_count.
+proof.
+by rewrite /le_rej_invalid_slot_count
+  /le_rejection_semantic_ticket_invalid_slot_count.
+qed.
+
+lemma le_rej_accept_slot_count_nonneg :
+  0 <= le_rej_accept_slot_count.
+proof.
+by rewrite /le_rej_accept_slot_count
+  /le_rejection_semantic_ticket_accept_slot_count.
+qed.
+
+lemma le_rej_accept_slot_count_pos :
+  0 < le_rej_accept_slot_count.
+proof.
+by rewrite /le_rej_accept_slot_count
+  /le_rejection_semantic_ticket_accept_slot_count.
+qed.
+
+lemma le_rej_failure_slot_count_nonneg :
+  0 <= le_rej_failure_slot_count.
+proof.
+rewrite /le_rej_failure_slot_count.
+by smt(le_rej_soft_repair_slot_count_nonneg
+       le_rej_hard_repair_slot_count_nonneg
+       le_rej_invalid_slot_count_nonneg).
+qed.
+
+lemma le_rej_total_slot_count_nonneg :
+  0 <= le_rej_total_slot_count.
+proof.
+rewrite /le_rej_total_slot_count.
+by smt(le_rej_accept_slot_count_nonneg le_rej_failure_slot_count_nonneg).
+qed.
+
+lemma le_rej_total_slot_count_pos :
+  0 < le_rej_total_slot_count.
+proof.
+rewrite /le_rej_total_slot_count.
+by smt(le_rej_accept_slot_count_pos le_rej_failure_slot_count_nonneg).
+qed.
+
+lemma le_rej_failure_slot_count_pos :
+  0 < le_rej_failure_slot_count.
+proof.
+rewrite /le_rej_failure_slot_count
+  /le_rej_soft_repair_slot_count
+  /le_rej_hard_repair_slot_count
+  /le_rej_invalid_slot_count
+  /le_rejection_semantic_ticket_soft_repair_slot_count
+  /le_rejection_semantic_ticket_hard_repair_slot_count
+  /le_rejection_semantic_ticket_invalid_slot_count.
+by [].
+qed.
+
+lemma le_rej_failure_slot_count_le_total_slot_count :
+  le_rej_failure_slot_count <= le_rej_total_slot_count.
+proof.
+rewrite /le_rej_total_slot_count.
+by smt(le_rej_accept_slot_count_nonneg).
+qed.
+
+lemma le_rej_failure_slot_count_lt_total_slot_count :
+  le_rej_failure_slot_count < le_rej_total_slot_count.
+proof.
+rewrite /le_rej_total_slot_count.
+by smt(le_rej_accept_slot_count_pos).
+qed.
+
+lemma le_rej_failure_slot_count_demo_closed_form :
+  le_rej_failure_slot_count = 3.
+proof.
+rewrite /le_rej_failure_slot_count
+  /le_rej_soft_repair_slot_count
+  /le_rej_hard_repair_slot_count
+  /le_rej_invalid_slot_count
+  /le_rejection_semantic_ticket_soft_repair_slot_count
+  /le_rejection_semantic_ticket_hard_repair_slot_count
+  /le_rejection_semantic_ticket_invalid_slot_count.
+by [].
+qed.
+
+lemma le_rej_total_slot_count_demo_closed_form :
+  le_rej_total_slot_count = 16.
+proof.
+rewrite /le_rej_total_slot_count /le_rej_accept_slot_count.
+rewrite /le_rejection_semantic_ticket_accept_slot_count.
+by rewrite le_rej_failure_slot_count_demo_closed_form.
+qed.
 
 lemma le_rejection_semantic_ticket_total_slot_count_pos :
   0 < le_rejection_semantic_ticket_total_slot_count.
@@ -145,37 +273,38 @@ by rewrite /le_rejection_semantic_ticket_total_slot_count
 qed.
 
 op le_rejection_semantic_total_slot_count : int =
-  le_rejection_semantic_ticket_total_slot_count.
+  le_rej_total_slot_count.
 
 op le_rejection_semantic_reject_slot_count : int =
-  le_rejection_semantic_ticket_failure_slot_count.
+  le_rej_failure_slot_count.
 
 lemma le_rejection_semantic_total_slot_count_pos :
   0 < le_rejection_semantic_total_slot_count.
 proof.
 rewrite /le_rejection_semantic_total_slot_count.
-exact le_rejection_semantic_ticket_total_slot_count_pos.
+exact le_rej_total_slot_count_pos.
 qed.
 
 lemma le_rejection_semantic_reject_slot_count_pos :
   0 < le_rejection_semantic_reject_slot_count.
 proof.
 rewrite /le_rejection_semantic_reject_slot_count.
-exact le_rejection_semantic_ticket_failure_slot_count_pos.
+exact le_rej_failure_slot_count_pos.
 qed.
 
 lemma le_rejection_semantic_reject_slot_count_lt_total_slot_count :
   le_rejection_semantic_reject_slot_count < le_rejection_semantic_total_slot_count.
 proof.
 rewrite /le_rejection_semantic_reject_slot_count /le_rejection_semantic_total_slot_count.
-exact le_rejection_semantic_ticket_failure_slot_count_lt_total_slot_count.
+exact le_rej_failure_slot_count_lt_total_slot_count.
 qed.
 
 op le_rejection_semantic_ticket_slot_support : int list =
   range 0 le_rejection_semantic_ticket_total_slot_count.
 
 lemma le_rejection_semantic_ticket_slot_supportE :
-  le_rejection_semantic_ticket_slot_support = [0; 1; 2; 3; 4; 5].
+  le_rejection_semantic_ticket_slot_support =
+  [0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15].
 proof.
 rewrite /le_rejection_semantic_ticket_slot_support
   /le_rejection_semantic_ticket_total_slot_count
@@ -184,12 +313,22 @@ rewrite /le_rejection_semantic_ticket_slot_support
   /le_rejection_semantic_ticket_hard_repair_slot_count
   /le_rejection_semantic_ticket_invalid_slot_count
   /le_rejection_semantic_ticket_accept_slot_count.
-rewrite (range_ltn 0 6) 1:/# /=.
-rewrite (range_ltn 1 6) 1:/# /=.
-rewrite (range_ltn 2 6) 1:/# /=.
-rewrite (range_ltn 3 6) 1:/# /=.
-rewrite (range_ltn 4 6) 1:/# /=.
-rewrite (range_ltn 5 6) 1:/# /=.
+rewrite (range_ltn 0 16) 1:/# /=.
+rewrite (range_ltn 1 16) 1:/# /=.
+rewrite (range_ltn 2 16) 1:/# /=.
+rewrite (range_ltn 3 16) 1:/# /=.
+rewrite (range_ltn 4 16) 1:/# /=.
+rewrite (range_ltn 5 16) 1:/# /=.
+rewrite (range_ltn 6 16) 1:/# /=.
+rewrite (range_ltn 7 16) 1:/# /=.
+rewrite (range_ltn 8 16) 1:/# /=.
+rewrite (range_ltn 9 16) 1:/# /=.
+rewrite (range_ltn 10 16) 1:/# /=.
+rewrite (range_ltn 11 16) 1:/# /=.
+rewrite (range_ltn 12 16) 1:/# /=.
+rewrite (range_ltn 13 16) 1:/# /=.
+rewrite (range_ltn 14 16) 1:/# /=.
+rewrite (range_ltn 15 16) 1:/# /=.
 by rewrite range_geq /=.
 qed.
 
@@ -203,7 +342,8 @@ op le_rejection_semantic_branch_slot_support : int list =
   le_rejection_semantic_ticket_slot_support.
 
 lemma le_rejection_semantic_branch_slot_supportE :
-  le_rejection_semantic_branch_slot_support = [0; 1; 2; 3; 4; 5].
+  le_rejection_semantic_branch_slot_support =
+  [0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15].
 proof.
 exact le_rejection_semantic_ticket_slot_supportE.
 qed.
@@ -360,7 +500,7 @@ rewrite undup_id ?le_rejection_semantic_ticket_slot_support_uniq /=.
 have Hcount :
     count (pred1 LERejectionSemanticTicketAccept \o
       le_rejection_semantic_ticket_category_of_slot)
-      le_rejection_semantic_ticket_slot_support = 3.
+      le_rejection_semantic_ticket_slot_support = 13.
   by rewrite le_rejection_semantic_ticket_slot_supportE
     /le_rejection_semantic_ticket_category_of_slot
     /le_rejection_semantic_ticket_soft_repair_slot_count
@@ -472,7 +612,7 @@ rewrite /d_le_rejection_semantic_ticket_slot_choice duniformE.
 rewrite undup_id ?le_rejection_semantic_ticket_slot_support_uniq /=.
 have Hcount :
     count (pred1 false \o le_rejection_semantic_ticket_requires_repair_slot)
-      le_rejection_semantic_ticket_slot_support = 3.
+      le_rejection_semantic_ticket_slot_support = 13.
   by rewrite le_rejection_semantic_ticket_slot_supportE
     /le_rejection_semantic_ticket_requires_repair_slot
     /le_rejection_semantic_reject_branch_slot
@@ -532,23 +672,25 @@ op le_rejection_semantic_ticket_failure_probability : real =
 
 lemma le_rejection_semantic_ticket_failure_probability_category_mass_sum :
   le_rejection_semantic_ticket_failure_probability =
-  (le_rejection_semantic_ticket_soft_repair_slot_count +
-   le_rejection_semantic_ticket_hard_repair_slot_count +
-   le_rejection_semantic_ticket_invalid_slot_count)%r /
-  le_rejection_semantic_ticket_total_slot_count%r.
+  (le_rej_soft_repair_slot_count +
+   le_rej_hard_repair_slot_count +
+   le_rej_invalid_slot_count)%r /
+  le_rej_total_slot_count%r.
 proof.
 rewrite /le_rejection_semantic_ticket_failure_probability.
-rewrite /le_rejection_semantic_ticket_failure_slot_count.
-exact le_rejection_semantic_branch_choice_mass_true.
+rewrite le_rejection_semantic_branch_choice_mass_true.
+rewrite /le_rejection_semantic_reject_slot_count /le_rejection_semantic_total_slot_count.
+by rewrite /le_rej_failure_slot_count.
 qed.
 
 lemma le_rejection_semantic_ticket_failure_probability_closed_form :
   le_rejection_semantic_ticket_failure_probability =
-  le_rejection_semantic_reject_slot_count%r /
-  le_rejection_semantic_total_slot_count%r.
+  le_rej_failure_slot_count%r /
+  le_rej_total_slot_count%r.
 proof.
 rewrite /le_rejection_semantic_ticket_failure_probability.
-exact le_rejection_semantic_branch_choice_mass_true.
+rewrite le_rejection_semantic_branch_choice_mass_true.
+by rewrite /le_rejection_semantic_reject_slot_count /le_rejection_semantic_total_slot_count.
 qed.
 
 op epsilon_le_rej_semantic : real =
@@ -561,11 +703,20 @@ proof. by rewrite /epsilon_le_rej_semantic. qed.
 
 lemma epsilon_le_rej_semantic_closed_form :
   epsilon_le_rej_semantic =
-  le_rejection_semantic_reject_slot_count%r /
-  le_rejection_semantic_total_slot_count%r.
+  le_rej_failure_slot_count%r /
+  le_rej_total_slot_count%r.
 proof.
 rewrite /epsilon_le_rej_semantic.
 exact le_rejection_semantic_ticket_failure_probability_closed_form.
+qed.
+
+lemma epsilon_le_rej_semantic_demo_closed_form :
+  epsilon_le_rej_semantic = 3%r / 16%r.
+proof.
+rewrite epsilon_le_rej_semantic_closed_form.
+rewrite le_rej_failure_slot_count_demo_closed_form.
+rewrite le_rej_total_slot_count_demo_closed_form.
+by smt().
 qed.
 
 lemma A4_le_rejection_semantic_nonneg :
@@ -606,57 +757,149 @@ proof.
 by rewrite /le_fs_semantic_branch_category_support.
 qed.
 
-op le_fs_semantic_query_collision_slot_count : int = 1.
+op le_fs_query_collision_slot_count : int = 1.
 
-op le_fs_semantic_programming_collision_slot_count : int = 1.
+op le_fs_programming_collision_slot_count : int = 1.
 
-op le_fs_semantic_transcript_mismatch_slot_count : int = 1.
+op le_fs_transcript_mismatch_slot_count : int = 1.
 
-op le_fs_semantic_clean_slot_count : int = 3.
+op le_fs_clean_slot_count : int = 13.
+
+op le_fs_failure_slot_count : int =
+  le_fs_query_collision_slot_count +
+  le_fs_programming_collision_slot_count +
+  le_fs_transcript_mismatch_slot_count.
+
+op le_fs_total_slot_count : int =
+  le_fs_clean_slot_count + le_fs_failure_slot_count.
+
+op le_fs_semantic_query_collision_slot_count : int =
+  le_fs_query_collision_slot_count.
+
+op le_fs_semantic_programming_collision_slot_count : int =
+  le_fs_programming_collision_slot_count.
+
+op le_fs_semantic_transcript_mismatch_slot_count : int =
+  le_fs_transcript_mismatch_slot_count.
+
+op le_fs_semantic_clean_slot_count : int =
+  le_fs_clean_slot_count.
 
 op le_fs_semantic_failure_slot_count : int =
-  le_fs_semantic_query_collision_slot_count +
-  le_fs_semantic_programming_collision_slot_count +
-  le_fs_semantic_transcript_mismatch_slot_count.
+  le_fs_failure_slot_count.
 
 op le_fs_semantic_total_slot_count : int =
-  le_fs_semantic_failure_slot_count +
-  le_fs_semantic_clean_slot_count.
+  le_fs_total_slot_count.
+
+lemma le_fs_query_collision_slot_count_nonneg :
+  0 <= le_fs_query_collision_slot_count.
+proof. by rewrite /le_fs_query_collision_slot_count. qed.
+
+lemma le_fs_programming_collision_slot_count_nonneg :
+  0 <= le_fs_programming_collision_slot_count.
+proof. by rewrite /le_fs_programming_collision_slot_count. qed.
+
+lemma le_fs_transcript_mismatch_slot_count_nonneg :
+  0 <= le_fs_transcript_mismatch_slot_count.
+proof. by rewrite /le_fs_transcript_mismatch_slot_count. qed.
+
+lemma le_fs_clean_slot_count_nonneg :
+  0 <= le_fs_clean_slot_count.
+proof. by rewrite /le_fs_clean_slot_count. qed.
+
+lemma le_fs_clean_slot_count_pos :
+  0 < le_fs_clean_slot_count.
+proof. by rewrite /le_fs_clean_slot_count. qed.
+
+lemma le_fs_failure_slot_count_nonneg :
+  0 <= le_fs_failure_slot_count.
+proof.
+rewrite /le_fs_failure_slot_count
+  /le_fs_query_collision_slot_count
+  /le_fs_programming_collision_slot_count
+  /le_fs_transcript_mismatch_slot_count.
+by smt().
+qed.
+
+lemma le_fs_total_slot_count_nonneg :
+  0 <= le_fs_total_slot_count.
+proof.
+rewrite /le_fs_total_slot_count.
+by smt(le_fs_clean_slot_count_nonneg le_fs_failure_slot_count_nonneg).
+qed.
+
+lemma le_fs_total_slot_count_pos :
+  0 < le_fs_total_slot_count.
+proof.
+rewrite /le_fs_total_slot_count.
+by smt(le_fs_clean_slot_count_pos le_fs_failure_slot_count_nonneg).
+qed.
+
+lemma le_fs_failure_slot_count_pos :
+  0 < le_fs_failure_slot_count.
+proof.
+rewrite /le_fs_failure_slot_count
+  /le_fs_query_collision_slot_count
+  /le_fs_programming_collision_slot_count
+  /le_fs_transcript_mismatch_slot_count.
+by smt().
+qed.
+
+lemma le_fs_failure_slot_count_le_total_slot_count :
+  le_fs_failure_slot_count <= le_fs_total_slot_count.
+proof.
+rewrite /le_fs_total_slot_count.
+by smt(le_fs_clean_slot_count_nonneg).
+qed.
+
+lemma le_fs_failure_slot_count_lt_total_slot_count :
+  le_fs_failure_slot_count < le_fs_total_slot_count.
+proof.
+rewrite /le_fs_total_slot_count.
+by smt(le_fs_clean_slot_count_pos).
+qed.
+
+lemma le_fs_failure_slot_count_demo_closed_form :
+  le_fs_failure_slot_count = 3.
+proof.
+rewrite /le_fs_failure_slot_count
+  /le_fs_query_collision_slot_count
+  /le_fs_programming_collision_slot_count
+  /le_fs_transcript_mismatch_slot_count.
+by [].
+qed.
+
+lemma le_fs_total_slot_count_demo_closed_form :
+  le_fs_total_slot_count = 16.
+proof.
+rewrite /le_fs_total_slot_count /le_fs_clean_slot_count.
+by rewrite le_fs_failure_slot_count_demo_closed_form.
+qed.
 
 lemma le_fs_semantic_total_slot_count_pos :
   0 < le_fs_semantic_total_slot_count.
 proof.
-by rewrite /le_fs_semantic_total_slot_count
-  /le_fs_semantic_failure_slot_count
-  /le_fs_semantic_query_collision_slot_count
-  /le_fs_semantic_programming_collision_slot_count
-  /le_fs_semantic_transcript_mismatch_slot_count
-  /le_fs_semantic_clean_slot_count.
+rewrite /le_fs_semantic_total_slot_count.
+exact le_fs_total_slot_count_pos.
 qed.
 
 lemma le_fs_semantic_failure_slot_count_pos :
   0 < le_fs_semantic_failure_slot_count.
 proof.
-by rewrite /le_fs_semantic_failure_slot_count
-  /le_fs_semantic_query_collision_slot_count
-  /le_fs_semantic_programming_collision_slot_count
-  /le_fs_semantic_transcript_mismatch_slot_count.
+rewrite /le_fs_semantic_failure_slot_count.
+exact le_fs_failure_slot_count_pos.
 qed.
 
 lemma le_fs_semantic_failure_slot_count_lt_total_slot_count :
   le_fs_semantic_failure_slot_count < le_fs_semantic_total_slot_count.
 proof.
-by rewrite /le_fs_semantic_total_slot_count
-  /le_fs_semantic_failure_slot_count
-  /le_fs_semantic_query_collision_slot_count
-  /le_fs_semantic_programming_collision_slot_count
-  /le_fs_semantic_transcript_mismatch_slot_count
-  /le_fs_semantic_clean_slot_count.
+rewrite /le_fs_semantic_failure_slot_count /le_fs_semantic_total_slot_count.
+exact le_fs_failure_slot_count_lt_total_slot_count.
 qed.
 
-op total_slot_count : int = le_fs_semantic_total_slot_count.
+op total_slot_count : int = le_fs_total_slot_count.
 
-op bad_slot_count : int = le_fs_semantic_failure_slot_count.
+op bad_slot_count : int = le_fs_failure_slot_count.
 
 lemma total_slot_count_pos :
   0 < total_slot_count.
@@ -682,20 +925,27 @@ qed.
 op le_fs_semantic_branch_slot_support : int list = range 0 total_slot_count.
 
 lemma le_fs_semantic_branch_slot_supportE :
-  le_fs_semantic_branch_slot_support = [0; 1; 2; 3; 4; 5].
+  le_fs_semantic_branch_slot_support =
+  [0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15].
 proof.
 rewrite /le_fs_semantic_branch_slot_support /total_slot_count.
-rewrite /le_fs_semantic_total_slot_count /le_fs_semantic_failure_slot_count.
-rewrite /le_fs_semantic_query_collision_slot_count
-  /le_fs_semantic_programming_collision_slot_count
-  /le_fs_semantic_transcript_mismatch_slot_count
-  /le_fs_semantic_clean_slot_count.
-rewrite (range_ltn 0 6) 1:/# /=.
-rewrite (range_ltn 1 6) 1:/# /=.
-rewrite (range_ltn 2 6) 1:/# /=.
-rewrite (range_ltn 3 6) 1:/# /=.
-rewrite (range_ltn 4 6) 1:/# /=.
-rewrite (range_ltn 5 6) 1:/# /=.
+rewrite le_fs_total_slot_count_demo_closed_form.
+rewrite (range_ltn 0 16) 1:/# /=.
+rewrite (range_ltn 1 16) 1:/# /=.
+rewrite (range_ltn 2 16) 1:/# /=.
+rewrite (range_ltn 3 16) 1:/# /=.
+rewrite (range_ltn 4 16) 1:/# /=.
+rewrite (range_ltn 5 16) 1:/# /=.
+rewrite (range_ltn 6 16) 1:/# /=.
+rewrite (range_ltn 7 16) 1:/# /=.
+rewrite (range_ltn 8 16) 1:/# /=.
+rewrite (range_ltn 9 16) 1:/# /=.
+rewrite (range_ltn 10 16) 1:/# /=.
+rewrite (range_ltn 11 16) 1:/# /=.
+rewrite (range_ltn 12 16) 1:/# /=.
+rewrite (range_ltn 13 16) 1:/# /=.
+rewrite (range_ltn 14 16) 1:/# /=.
+rewrite (range_ltn 15 16) 1:/# /=.
 by rewrite range_geq /=.
 qed.
 
@@ -705,13 +955,13 @@ proof. by rewrite /le_fs_semantic_branch_slot_support range_uniq. qed.
 
 op le_fs_semantic_branch_category_of_slot
   (slot : int) : le_fs_semantic_branch_category =
-  if slot < le_fs_semantic_query_collision_slot_count then
+  if slot < le_fs_query_collision_slot_count then
     LEFSSemanticBranchQueryCollision
   else if slot <
-      le_fs_semantic_query_collision_slot_count +
-      le_fs_semantic_programming_collision_slot_count then
+      le_fs_query_collision_slot_count +
+      le_fs_programming_collision_slot_count then
     LEFSSemanticBranchProgrammingCollision
-  else if slot < le_fs_semantic_failure_slot_count then
+  else if slot < le_fs_failure_slot_count then
     LEFSSemanticBranchTranscriptMismatch
   else LEFSSemanticBranchClean.
 
@@ -747,8 +997,8 @@ qed.
 
 lemma le_fs_semantic_branch_category_choice_mass_clean :
   mu1 d_le_fs_semantic_branch_category_choice LEFSSemanticBranchClean =
-  le_fs_semantic_clean_slot_count%r /
-  le_fs_semantic_total_slot_count%r.
+  le_fs_clean_slot_count%r /
+  le_fs_total_slot_count%r.
 proof.
 rewrite /mu1 /d_le_fs_semantic_branch_category_choice dmapE /=.
 rewrite /d_le_fs_semantic_branch_slot_choice duniformE.
@@ -756,27 +1006,23 @@ rewrite undup_id ?le_fs_semantic_branch_slot_support_uniq /=.
 have Hcount :
     count (pred1 LEFSSemanticBranchClean \o
       le_fs_semantic_branch_category_of_slot)
-      le_fs_semantic_branch_slot_support = 3.
+      le_fs_semantic_branch_slot_support = 13.
   by rewrite le_fs_semantic_branch_slot_supportE
     /le_fs_semantic_branch_category_of_slot
-    /le_fs_semantic_query_collision_slot_count
-    /le_fs_semantic_programming_collision_slot_count
-    /le_fs_semantic_transcript_mismatch_slot_count
-    /le_fs_semantic_failure_slot_count /pred1 /(\o) /=.
+    /le_fs_query_collision_slot_count
+    /le_fs_programming_collision_slot_count
+    /le_fs_transcript_mismatch_slot_count
+    /le_fs_failure_slot_count /pred1 /(\o) /=.
 rewrite Hcount le_fs_semantic_branch_slot_supportE /=.
-rewrite /le_fs_semantic_clean_slot_count
-  /le_fs_semantic_total_slot_count
-  /le_fs_semantic_failure_slot_count
-  /le_fs_semantic_query_collision_slot_count
-  /le_fs_semantic_programming_collision_slot_count
-  /le_fs_semantic_transcript_mismatch_slot_count /=.
+rewrite /le_fs_clean_slot_count.
+rewrite le_fs_total_slot_count_demo_closed_form /=.
 by smt().
 qed.
 
 lemma le_fs_semantic_branch_category_choice_mass_query_collision :
   mu1 d_le_fs_semantic_branch_category_choice LEFSSemanticBranchQueryCollision =
-  le_fs_semantic_query_collision_slot_count%r /
-  le_fs_semantic_total_slot_count%r.
+  le_fs_query_collision_slot_count%r /
+  le_fs_total_slot_count%r.
 proof.
 rewrite /mu1 /d_le_fs_semantic_branch_category_choice dmapE /=.
 rewrite /d_le_fs_semantic_branch_slot_choice duniformE.
@@ -787,24 +1033,20 @@ have Hcount :
       le_fs_semantic_branch_slot_support = 1.
   by rewrite le_fs_semantic_branch_slot_supportE
     /le_fs_semantic_branch_category_of_slot
-    /le_fs_semantic_query_collision_slot_count
-    /le_fs_semantic_programming_collision_slot_count
-    /le_fs_semantic_transcript_mismatch_slot_count
-    /le_fs_semantic_failure_slot_count /pred1 /(\o) /=.
+    /le_fs_query_collision_slot_count
+    /le_fs_programming_collision_slot_count
+    /le_fs_transcript_mismatch_slot_count
+    /le_fs_failure_slot_count /pred1 /(\o) /=.
 rewrite Hcount le_fs_semantic_branch_slot_supportE /=.
-rewrite /le_fs_semantic_query_collision_slot_count
-  /le_fs_semantic_total_slot_count
-  /le_fs_semantic_failure_slot_count
-  /le_fs_semantic_programming_collision_slot_count
-  /le_fs_semantic_transcript_mismatch_slot_count
-  /le_fs_semantic_clean_slot_count /=.
+rewrite /le_fs_query_collision_slot_count.
+rewrite le_fs_total_slot_count_demo_closed_form /=.
 by smt().
 qed.
 
 lemma le_fs_semantic_branch_category_choice_mass_programming_collision :
   mu1 d_le_fs_semantic_branch_category_choice LEFSSemanticBranchProgrammingCollision =
-  le_fs_semantic_programming_collision_slot_count%r /
-  le_fs_semantic_total_slot_count%r.
+  le_fs_programming_collision_slot_count%r /
+  le_fs_total_slot_count%r.
 proof.
 rewrite /mu1 /d_le_fs_semantic_branch_category_choice dmapE /=.
 rewrite /d_le_fs_semantic_branch_slot_choice duniformE.
@@ -815,24 +1057,20 @@ have Hcount :
       le_fs_semantic_branch_slot_support = 1.
   by rewrite le_fs_semantic_branch_slot_supportE
     /le_fs_semantic_branch_category_of_slot
-    /le_fs_semantic_query_collision_slot_count
-    /le_fs_semantic_programming_collision_slot_count
-    /le_fs_semantic_transcript_mismatch_slot_count
-    /le_fs_semantic_failure_slot_count /pred1 /(\o) /=.
+    /le_fs_query_collision_slot_count
+    /le_fs_programming_collision_slot_count
+    /le_fs_transcript_mismatch_slot_count
+    /le_fs_failure_slot_count /pred1 /(\o) /=.
 rewrite Hcount le_fs_semantic_branch_slot_supportE /=.
-rewrite /le_fs_semantic_programming_collision_slot_count
-  /le_fs_semantic_total_slot_count
-  /le_fs_semantic_failure_slot_count
-  /le_fs_semantic_query_collision_slot_count
-  /le_fs_semantic_transcript_mismatch_slot_count
-  /le_fs_semantic_clean_slot_count /=.
+rewrite /le_fs_programming_collision_slot_count.
+rewrite le_fs_total_slot_count_demo_closed_form /=.
 by smt().
 qed.
 
 lemma le_fs_semantic_branch_category_choice_mass_transcript_mismatch :
   mu1 d_le_fs_semantic_branch_category_choice LEFSSemanticBranchTranscriptMismatch =
-  le_fs_semantic_transcript_mismatch_slot_count%r /
-  le_fs_semantic_total_slot_count%r.
+  le_fs_transcript_mismatch_slot_count%r /
+  le_fs_total_slot_count%r.
 proof.
 rewrite /mu1 /d_le_fs_semantic_branch_category_choice dmapE /=.
 rewrite /d_le_fs_semantic_branch_slot_choice duniformE.
@@ -843,17 +1081,13 @@ have Hcount :
       le_fs_semantic_branch_slot_support = 1.
   by rewrite le_fs_semantic_branch_slot_supportE
     /le_fs_semantic_branch_category_of_slot
-    /le_fs_semantic_query_collision_slot_count
-    /le_fs_semantic_programming_collision_slot_count
-    /le_fs_semantic_transcript_mismatch_slot_count
-    /le_fs_semantic_failure_slot_count /pred1 /(\o) /=.
+    /le_fs_query_collision_slot_count
+    /le_fs_programming_collision_slot_count
+    /le_fs_transcript_mismatch_slot_count
+    /le_fs_failure_slot_count /pred1 /(\o) /=.
 rewrite Hcount le_fs_semantic_branch_slot_supportE /=.
-rewrite /le_fs_semantic_transcript_mismatch_slot_count
-  /le_fs_semantic_total_slot_count
-  /le_fs_semantic_failure_slot_count
-  /le_fs_semantic_query_collision_slot_count
-  /le_fs_semantic_programming_collision_slot_count
-  /le_fs_semantic_clean_slot_count /=.
+rewrite /le_fs_transcript_mismatch_slot_count.
+rewrite le_fs_total_slot_count_demo_closed_form /=.
 by smt().
 qed.
 
@@ -907,10 +1141,10 @@ exists bad_slot_count; split.
 rewrite /le_fs_semantic_bad_branch_slot
   /le_fs_semantic_branch_category_is_failure
   /le_fs_semantic_branch_category_of_slot
-  /le_fs_semantic_query_collision_slot_count
-  /le_fs_semantic_programming_collision_slot_count
-  /le_fs_semantic_transcript_mismatch_slot_count
-  /le_fs_semantic_failure_slot_count /pred1 /=.
+  /le_fs_query_collision_slot_count
+  /le_fs_programming_collision_slot_count
+  /le_fs_transcript_mismatch_slot_count
+  /le_fs_failure_slot_count /pred1 /=.
 by [].
 qed.
 
@@ -925,10 +1159,10 @@ exists 0; split.
 rewrite /le_fs_semantic_bad_branch_slot
   /le_fs_semantic_branch_category_is_failure
   /le_fs_semantic_branch_category_of_slot
-  /le_fs_semantic_query_collision_slot_count
-  /le_fs_semantic_programming_collision_slot_count
-  /le_fs_semantic_transcript_mismatch_slot_count
-  /le_fs_semantic_failure_slot_count /pred1 /=.
+  /le_fs_query_collision_slot_count
+  /le_fs_programming_collision_slot_count
+  /le_fs_transcript_mismatch_slot_count
+  /le_fs_failure_slot_count /pred1 /=.
 by [].
 qed.
 
@@ -942,22 +1176,19 @@ rewrite /d_le_fs_semantic_branch_slot_choice duniformE.
 rewrite undup_id ?le_fs_semantic_branch_slot_support_uniq /=.
 have Hcount :
     count (pred1 false \o le_fs_semantic_bad_branch_slot)
-      le_fs_semantic_branch_slot_support = 3.
+      le_fs_semantic_branch_slot_support = 13.
   by rewrite le_fs_semantic_branch_slot_supportE
     /le_fs_semantic_bad_branch_slot
     /le_fs_semantic_branch_category_is_failure
     /le_fs_semantic_branch_category_of_slot /pred1 /(\o)
-    /le_fs_semantic_query_collision_slot_count
-    /le_fs_semantic_programming_collision_slot_count
-    /le_fs_semantic_transcript_mismatch_slot_count
-    /le_fs_semantic_failure_slot_count /=.
+    /le_fs_query_collision_slot_count
+    /le_fs_programming_collision_slot_count
+    /le_fs_transcript_mismatch_slot_count
+    /le_fs_failure_slot_count /=.
 rewrite Hcount le_fs_semantic_branch_slot_supportE /=.
 rewrite /total_slot_count /bad_slot_count.
-rewrite /le_fs_semantic_total_slot_count /le_fs_semantic_failure_slot_count.
-rewrite /le_fs_semantic_query_collision_slot_count
-  /le_fs_semantic_programming_collision_slot_count
-  /le_fs_semantic_transcript_mismatch_slot_count
-  /le_fs_semantic_clean_slot_count /=.
+rewrite le_fs_total_slot_count_demo_closed_form.
+rewrite le_fs_failure_slot_count_demo_closed_form /=.
 by smt().
 qed.
 
@@ -979,17 +1210,13 @@ have Hcount :
   by rewrite le_fs_semantic_branch_slot_supportE
     /le_fs_semantic_branch_category_is_failure
     /le_fs_semantic_branch_category_of_slot
-    /le_fs_semantic_query_collision_slot_count
-    /le_fs_semantic_programming_collision_slot_count
-    /le_fs_semantic_transcript_mismatch_slot_count
-    /le_fs_semantic_failure_slot_count /pred1 /(\o) /=.
+    /le_fs_query_collision_slot_count
+    /le_fs_programming_collision_slot_count
+    /le_fs_transcript_mismatch_slot_count
+    /le_fs_failure_slot_count /pred1 /(\o) /=.
 rewrite Hcount le_fs_semantic_branch_slot_supportE /=.
-rewrite /le_fs_semantic_failure_slot_count
-  /le_fs_semantic_total_slot_count
-  /le_fs_semantic_query_collision_slot_count
-  /le_fs_semantic_programming_collision_slot_count
-  /le_fs_semantic_transcript_mismatch_slot_count
-  /le_fs_semantic_clean_slot_count /=.
+rewrite le_fs_failure_slot_count_demo_closed_form.
+rewrite le_fs_total_slot_count_demo_closed_form /=.
 by smt().
 qed.
 
@@ -998,22 +1225,20 @@ op le_fs_semantic_failure_probability : real =
 
 lemma le_fs_semantic_failure_probability_category_mass_sum :
   le_fs_semantic_failure_probability =
-  (le_fs_semantic_query_collision_slot_count +
-   le_fs_semantic_programming_collision_slot_count +
-   le_fs_semantic_transcript_mismatch_slot_count)%r /
-  le_fs_semantic_total_slot_count%r.
+  le_fs_failure_slot_count%r / le_fs_total_slot_count%r.
 proof.
 rewrite /le_fs_semantic_failure_probability.
-rewrite /le_fs_semantic_failure_slot_count.
 rewrite /bad_slot_count /total_slot_count.
+rewrite /le_fs_failure_slot_count /le_fs_total_slot_count.
 exact le_fs_semantic_branch_choice_mass_true.
 qed.
 
 lemma le_fs_semantic_failure_probability_closed_form :
   le_fs_semantic_failure_probability =
-  bad_slot_count%r / total_slot_count%r.
+  le_fs_failure_slot_count%r / le_fs_total_slot_count%r.
 proof.
 rewrite /le_fs_semantic_failure_probability.
+rewrite /bad_slot_count /total_slot_count.
 exact le_fs_semantic_branch_choice_mass_true.
 qed.
 
@@ -1024,10 +1249,19 @@ lemma epsilon_le_fs_semantic_is_failure_probability :
 proof. by rewrite /epsilon_le_fs_semantic. qed.
 
 lemma epsilon_le_fs_semantic_closed_form :
-  epsilon_le_fs_semantic = bad_slot_count%r / total_slot_count%r.
+  epsilon_le_fs_semantic = le_fs_failure_slot_count%r / le_fs_total_slot_count%r.
 proof.
 rewrite /epsilon_le_fs_semantic.
 exact le_fs_semantic_failure_probability_closed_form.
+qed.
+
+lemma epsilon_le_fs_semantic_demo_closed_form :
+  epsilon_le_fs_semantic = 3%r / 16%r.
+proof.
+rewrite epsilon_le_fs_semantic_closed_form.
+rewrite le_fs_failure_slot_count_demo_closed_form.
+rewrite le_fs_total_slot_count_demo_closed_form.
+by smt().
 qed.
 
 lemma A4_le_fs_semantic_nonneg :

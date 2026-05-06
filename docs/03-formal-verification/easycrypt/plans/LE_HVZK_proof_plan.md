@@ -316,7 +316,7 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     `le_fs_shadow_branch_choice_mass_false` and
     `le_fs_shadow_branch_choice_mass_true`, so
     `le_fs_shadow_local_bad_branch_mass_closed_form` proves
-    `le_fs_shadow_local_bad_branch_mass = 1%r / 2%r` and
+    `le_fs_shadow_local_bad_branch_mass = 3%r / 16%r` and
     `le_fs_shadow_semantic_failure_probability_closed_form` proves the same
     exact value for `le_fs_shadow_semantic_failure_probability x s`. The local
     support layer is now explicit as well:
@@ -385,14 +385,25 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     now defines the primitive branch law via the primitive FS category support
     `clean`, `query_collision`,
     `programming_collision`, `transcript_mismatch`, failure predicate
-    “non-clean”, provisional slot masses `3,1,1,1`, the derived compatibility
+    “non-clean”, the named count constants `le_fs_clean_slot_count`,
+    `le_fs_query_collision_slot_count`,
+    `le_fs_programming_collision_slot_count`,
+    `le_fs_transcript_mismatch_slot_count`, `le_fs_failure_slot_count`, and
+    `le_fs_total_slot_count`, the derived compatibility
     sampler `d_le_fs_semantic_branch_choice`, together with the owned semantic
     FS budget `epsilon_le_fs_semantic = mu1 d_le_fs_semantic_branch_choice
     true` and nonnegativity lemma `A4_le_fs_semantic_nonneg`. The owned closed
-    form is now `bad_slot_count%r / total_slot_count%r = 3%r / 6%r`, which
-    still instantiates in the current model to `1%r / 2%r`. `le/LEFsProgrammingSurface.ec`
+    form is now `le_fs_failure_slot_count%r / le_fs_total_slot_count%r`; with
+    `le_fs_clean_slot_count = 13` and the three failure categories still at one
+    slot each, it instantiates in the current model to `3%r / 16%r`. `le/LEFsProgrammingSurface.ec`
     now interprets those primitive categories on a category-coupled shadow
-    state: `clean` is the no-failure/programmed-view branch,
+    state through the exact lower names `d_le_fs_shadow_category_choice`,
+    `le_fs_shadow_state_of_category_observable`,
+    `le_fs_shadow_clean_condition`,
+    `le_fs_shadow_query_collision_condition`,
+    `le_fs_shadow_programming_collision_condition`,
+    `le_fs_shadow_transcript_mismatch_condition`, and
+    `le_fs_shadow_semantic_category_condition_stateE`: `clean` is the no-failure/programmed-view branch,
     `query_collision` is bad-branch query-row alignment,
     `programming_collision` is bad-branch programmed-response digest/log
     alignment, and `transcript_mismatch` is bad-branch visible-shell
@@ -416,9 +427,11 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
   - Semantic rejection budget, May 2026: `primitives/BudgetParameters.ec`
     still defines the theorem-facing semantic rejection branch weight with the
     primitive category support `soft_repair`, `hard_repair`, `invalid`,
-    `accept`, the failure predicate “non-accept”, provisional slot masses
-    `1,1,1,3`, and
-    `epsilon_le_rej_semantic = mu1 d_le_rejection_semantic_branch_choice true = 3%r / 6%r = 1%r / 2%r`,
+    `accept`, the failure predicate “non-accept”, the named count constants
+    `le_rej_soft_repair_slot_count`, `le_rej_hard_repair_slot_count`,
+    `le_rej_invalid_slot_count`, `le_rej_accept_slot_count`,
+    `le_rej_failure_slot_count`, and `le_rej_total_slot_count`, and
+    `epsilon_le_rej_semantic = mu1 d_le_rejection_semantic_branch_choice true = le_rej_failure_slot_count%r / le_rej_total_slot_count%r = 3%r / 16%r`,
     together with proved nonnegativity lemma
     `A4_le_rejection_semantic_nonneg`. The lower semantic rejection owner is
     now execution-owned: `le/LERealExecution.ec` defines the semantic rejection
@@ -496,11 +509,14 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     the exact-zero/public-theorem route stays fixed. The semantic rejection
     budget grounding is now landed as well: the public budget is a primitive
     multi-category ticket-failure law with categories `soft_repair`,
-    `hard_repair`, `invalid`, and `accept`, and the concrete execution-owned
-    ticket failure probability is proved equal to it. The next LE-side realism
-    step should therefore be to make those primitive categories less surrogate-
-    like than the current `1,1,1,3` slot law rather than to rewire rejection
-    ownership again or churn the count owner without adding model substance.
+    `hard_repair`, `invalid`, and `accept`, owned through the named counts
+    `le_rej_soft_repair_slot_count`, `le_rej_hard_repair_slot_count`,
+    `le_rej_invalid_slot_count`, `le_rej_accept_slot_count`,
+    `le_rej_failure_slot_count`, and `le_rej_total_slot_count`, and the
+    concrete execution-owned ticket failure probability is proved equal to it.
+    The next LE-side realism step should therefore be to tighten or protocol-
+    source those rejection counts rather than to rewire rejection ownership
+    again or churn the theorem API without adding model substance.
   - LE budget decomposition audit, May 2026: do not treat that rejection-side
     bridge as the permanent replacement surface. The intended steady state is
     component arithmetic, with a new FS budget `epsilon_le_fs` beside
