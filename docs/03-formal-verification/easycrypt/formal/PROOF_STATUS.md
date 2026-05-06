@@ -53,11 +53,14 @@ The exact-zero theorem path uses these values:
 
 The parallel semantic-budget theorem path adds these LE-side values:
 
-- `d_le_fs_semantic_branch_choice = duniform [false; true]`
-- `epsilon_le_fs_semantic = mu1 d_le_fs_semantic_branch_choice true = 1%r / 2%r`
-- `epsilon_le_semantic = epsilon_le_rej + epsilon_le_fs_semantic = 1%r / 2%r`
+- `total_slot_count = 4`
+- `bad_slot_count = 2`
+- `d_le_fs_semantic_branch_slot_choice = duniform (range 0 total_slot_count)`
+- `d_le_fs_semantic_branch_choice = dmap d_le_fs_semantic_branch_slot_choice le_fs_semantic_bad_branch_slot`
+- `epsilon_le_fs_semantic = mu1 d_le_fs_semantic_branch_choice true = bad_slot_count%r / total_slot_count%r = 1%r / 2%r`
+- `epsilon_le_semantic = epsilon_le_rej + epsilon_le_fs_semantic = bad_slot_count%r / total_slot_count%r = 1%r / 2%r`
 
-The current theorem-facing results therefore split into two checked modes: an exact-zero bound on the active abstraction theorem path, and a separate semantic-budget theorem path that packages the present nonzero LE FS modeling through `epsilon_le_semantic`. The semantic FS component is now primitive-owned as a branch-weight formula rather than a bare literal, even though it still evaluates in the current model to `1%r / 2%r`. Neither statement should be confused with a final realistic cryptographic reduction for the deployed implementation.
+The current theorem-facing results therefore split into two checked modes: an exact-zero bound on the active abstraction theorem path, and a separate semantic-budget theorem path that packages the present nonzero LE FS modeling through `epsilon_le_semantic`. The semantic FS component is now primitive-owned as a count-parameterized slot law rather than a bare literal, even though its current concrete instantiation still evaluates to `1%r / 2%r`. Neither statement should be confused with a final realistic cryptographic reduction for the deployed implementation.
 
 ## What Is Proved on the Live Path
 

@@ -260,7 +260,8 @@ pose F := fun bad =>
   LEFsProgrammingSurface.le_fs_shadow_semantic_branch_image_of_observable
     (le_real_execution_observable x s) bad.
 pose P := fun bad => le_distinguisher_event D (F bad).
-rewrite !dmapE.
+rewrite dmapE.
+rewrite dmapE.
 have Hconst : forall bad, P bad = P false.
   move=> bad.
   rewrite /P /F.

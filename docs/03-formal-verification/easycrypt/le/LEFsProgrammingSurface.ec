@@ -453,14 +453,17 @@ exact BudgetParameters.le_fs_semantic_bad_branch_has_support.
 qed.
 
 lemma le_fs_shadow_branch_choice_mass_false :
-  mu1 d_le_fs_shadow_branch_choice false = 1%r / 2%r.
+  mu1 d_le_fs_shadow_branch_choice false =
+  (BudgetParameters.total_slot_count - BudgetParameters.bad_slot_count)%r /
+  BudgetParameters.total_slot_count%r.
 proof.
 rewrite /d_le_fs_shadow_branch_choice.
 exact BudgetParameters.le_fs_semantic_branch_choice_mass_false.
 qed.
 
 lemma le_fs_shadow_branch_choice_mass_true :
-  mu1 d_le_fs_shadow_branch_choice true = 1%r / 2%r.
+  mu1 d_le_fs_shadow_branch_choice true =
+  BudgetParameters.bad_slot_count%r / BudgetParameters.total_slot_count%r.
 proof.
 rewrite /d_le_fs_shadow_branch_choice.
 exact BudgetParameters.le_fs_semantic_branch_choice_mass_true.
@@ -478,7 +481,8 @@ exact Hmu1.
 qed.
 
 lemma le_fs_shadow_local_bad_branch_mass_closed_form :
-  le_fs_shadow_local_bad_branch_mass = 1%r / 2%r.
+  le_fs_shadow_local_bad_branch_mass =
+  BudgetParameters.bad_slot_count%r / BudgetParameters.total_slot_count%r.
 proof.
 rewrite le_fs_shadow_local_bad_branch_mass_is_true_mass.
 exact le_fs_shadow_branch_choice_mass_true.
@@ -1241,11 +1245,34 @@ lemma le_fs_shadow_branch_choice_sdist_dunit_false_le_bad_branch_mass :
   le_fs_shadow_local_bad_branch_mass.
 proof.
 apply sdist_le_ub=> E.
-rewrite /d_le_fs_shadow_branch_choice /BudgetParameters.d_le_fs_semantic_branch_choice.
-rewrite /BudgetParameters.le_fs_semantic_branch_support duniformE /=.
 rewrite dunitE.
-case: (E false); case: (E true) => /=;
-rewrite le_fs_shadow_local_bad_branch_mass_closed_form;
+case (E false) => [Ef|Ef] /=.
+  case (E true) => [Et|Et] /=.
+    have HE : mu d_le_fs_shadow_branch_choice E = mu d_le_fs_shadow_branch_choice predT.
+      apply/mu_eq=> bad /=.
+      by case: bad=> /=; rewrite ?Ef ?Et.
+    have Hw : weight d_le_fs_shadow_branch_choice = 1%r.
+      exact (is_losslessP _ le_fs_shadow_branch_choice_lossless).
+    rewrite HE /weight Hw.
+    by smt().
+  have HE : mu d_le_fs_shadow_branch_choice E = mu1 d_le_fs_shadow_branch_choice false.
+    apply/mu_eq=> bad /=.
+    by case: bad=> /=; rewrite ?Ef ?Et.
+  rewrite HE le_fs_shadow_branch_choice_mass_false.
+  rewrite le_fs_shadow_local_bad_branch_mass_closed_form.
+  by smt().
+case (E true) => [Et|Et] /=.
+  have HE : mu d_le_fs_shadow_branch_choice E = mu1 d_le_fs_shadow_branch_choice true.
+    apply/mu_eq=> bad /=.
+    by case: bad=> /=; rewrite ?Ef ?Et.
+  rewrite HE le_fs_shadow_branch_choice_mass_true.
+  rewrite le_fs_shadow_local_bad_branch_mass_closed_form.
+  by smt().
+have HE : mu d_le_fs_shadow_branch_choice E = mu d_le_fs_shadow_branch_choice pred0.
+  apply/mu_eq=> bad /=.
+  by case: bad=> /=; rewrite ?Ef ?Et.
+rewrite HE mu0.
+rewrite le_fs_shadow_local_bad_branch_mass_closed_form.
 by smt().
 qed.
 
@@ -1416,7 +1443,8 @@ qed.
 
 lemma le_fs_shadow_semantic_failure_probability_closed_form :
   forall (x : qssm_public_input) (s : seed),
-    le_fs_shadow_semantic_failure_probability x s = 1%r / 2%r.
+    le_fs_shadow_semantic_failure_probability x s =
+    BudgetParameters.bad_slot_count%r / BudgetParameters.total_slot_count%r.
 proof.
 move=> x s.
 rewrite le_fs_shadow_semantic_failure_probability_exact_branch_mass.

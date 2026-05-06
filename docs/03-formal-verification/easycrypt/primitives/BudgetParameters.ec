@@ -1,4 +1,6 @@
-require import AllCore Distr List.
+require import AllCore Distr List IntDiv.
+
+import Ring.IntID StdOrder.IntOrder Range.
 
 (* Concrete zero-budget model.
 
@@ -57,6 +59,52 @@ lemma A4_le_fs_nonneg :
   0%r <= epsilon_le_fs.
 proof. by rewrite /epsilon_le_fs. qed.
 
+op total_slot_count : int = 4.
+
+op bad_slot_count : int = 2.
+
+lemma total_slot_count_pos :
+  0 < total_slot_count.
+proof. by rewrite /total_slot_count. qed.
+
+lemma bad_slot_count_pos :
+  0 < bad_slot_count.
+proof. by rewrite /bad_slot_count. qed.
+
+lemma bad_slot_count_lt_total_slot_count :
+  bad_slot_count < total_slot_count.
+proof. by rewrite /bad_slot_count /total_slot_count. qed.
+
+op le_fs_semantic_branch_slot_support : int list = range 0 total_slot_count.
+
+lemma le_fs_semantic_branch_slot_supportE :
+  le_fs_semantic_branch_slot_support = [0; 1; 2; 3].
+proof.
+rewrite /le_fs_semantic_branch_slot_support /total_slot_count.
+rewrite (range_ltn 0 4) 1:/# /=.
+rewrite (range_ltn 1 4) 1:/# /=.
+rewrite (range_ltn 2 4) 1:/# /=.
+rewrite (range_ltn 3 4) 1:/# /=.
+by rewrite range_geq /=.
+qed.
+
+lemma le_fs_semantic_branch_slot_support_uniq :
+  uniq le_fs_semantic_branch_slot_support.
+proof. by rewrite /le_fs_semantic_branch_slot_support range_uniq. qed.
+
+op le_fs_semantic_bad_branch_slot (slot : int) : bool =
+  slot < bad_slot_count.
+
+op d_le_fs_semantic_branch_slot_choice : int distr =
+  duniform le_fs_semantic_branch_slot_support.
+
+lemma le_fs_semantic_branch_slot_choice_lossless :
+  is_lossless d_le_fs_semantic_branch_slot_choice.
+proof.
+rewrite /d_le_fs_semantic_branch_slot_choice /le_fs_semantic_branch_slot_support.
+by apply duniform_ll; rewrite range_ltn /total_slot_count.
+qed.
+
 op le_fs_semantic_branch_support : bool list = [false; true].
 
 lemma le_fs_semantic_branch_support_uniq :
@@ -64,49 +112,78 @@ lemma le_fs_semantic_branch_support_uniq :
 proof. by rewrite /le_fs_semantic_branch_support. qed.
 
 op d_le_fs_semantic_branch_choice : bool distr =
-  duniform le_fs_semantic_branch_support.
+  dmap d_le_fs_semantic_branch_slot_choice le_fs_semantic_bad_branch_slot.
 
 lemma le_fs_semantic_branch_choice_lossless :
   is_lossless d_le_fs_semantic_branch_choice.
 proof.
-rewrite /d_le_fs_semantic_branch_choice /le_fs_semantic_branch_support.
-by apply duniform_ll.
+rewrite /d_le_fs_semantic_branch_choice.
+by apply dmap_ll; exact le_fs_semantic_branch_slot_choice_lossless.
 qed.
 
 lemma le_fs_semantic_good_branch_has_support :
   false \in d_le_fs_semantic_branch_choice.
 proof.
-rewrite /d_le_fs_semantic_branch_choice /le_fs_semantic_branch_support.
-by rewrite supp_duniform.
+rewrite /d_le_fs_semantic_branch_choice.
+apply/supp_dmap.
+exists bad_slot_count; split.
+  rewrite /d_le_fs_semantic_branch_slot_choice /le_fs_semantic_branch_slot_support.
+  rewrite supp_duniform mem_range.
+  by split; first smt(bad_slot_count_pos); smt(bad_slot_count_lt_total_slot_count).
+by rewrite /le_fs_semantic_bad_branch_slot ltrr.
 qed.
 
 lemma le_fs_semantic_bad_branch_has_support :
   true \in d_le_fs_semantic_branch_choice.
 proof.
-rewrite /d_le_fs_semantic_branch_choice /le_fs_semantic_branch_support.
-by rewrite supp_duniform.
+rewrite /d_le_fs_semantic_branch_choice.
+apply/supp_dmap.
+exists 0; split.
+  rewrite /d_le_fs_semantic_branch_slot_choice /le_fs_semantic_branch_slot_support.
+  by rewrite supp_duniform mem_range /total_slot_count.
+by rewrite /le_fs_semantic_bad_branch_slot /bad_slot_count.
 qed.
 
 lemma le_fs_semantic_branch_choice_mass_false :
-  mu1 d_le_fs_semantic_branch_choice false = 1%r / 2%r.
+  mu1 d_le_fs_semantic_branch_choice false =
+  (total_slot_count - bad_slot_count)%r / total_slot_count%r.
 proof.
-rewrite /d_le_fs_semantic_branch_choice /le_fs_semantic_branch_support duniform1E_uniq.
-  by [].
-by rewrite /le_fs_semantic_branch_support.
+rewrite /mu1 /d_le_fs_semantic_branch_choice dmapE /=.
+rewrite /d_le_fs_semantic_branch_slot_choice duniformE.
+rewrite undup_id ?le_fs_semantic_branch_slot_support_uniq /=.
+have Hcount :
+    count (pred1 false \o le_fs_semantic_bad_branch_slot)
+      le_fs_semantic_branch_slot_support = 2.
+  by rewrite le_fs_semantic_branch_slot_supportE /le_fs_semantic_bad_branch_slot
+             /bad_slot_count /pred1 /(\o) /=.
+rewrite Hcount le_fs_semantic_branch_slot_supportE /=.
+have -> : (total_slot_count - bad_slot_count)%r / total_slot_count%r = 1%r / 2%r.
+  by rewrite /total_slot_count /bad_slot_count /=.
+by smt().
 qed.
 
 lemma le_fs_semantic_branch_choice_mass_true :
-  mu1 d_le_fs_semantic_branch_choice true = 1%r / 2%r.
+  mu1 d_le_fs_semantic_branch_choice true =
+  bad_slot_count%r / total_slot_count%r.
 proof.
-rewrite /d_le_fs_semantic_branch_choice /le_fs_semantic_branch_support duniform1E_uniq.
-  by [].
-by rewrite /le_fs_semantic_branch_support.
+rewrite /mu1 /d_le_fs_semantic_branch_choice dmapE /=.
+rewrite /d_le_fs_semantic_branch_slot_choice duniformE.
+rewrite undup_id ?le_fs_semantic_branch_slot_support_uniq /=.
+have Hcount :
+    count (pred1 true \o le_fs_semantic_bad_branch_slot)
+      le_fs_semantic_branch_slot_support = 2.
+  by rewrite le_fs_semantic_branch_slot_supportE /le_fs_semantic_bad_branch_slot
+             /bad_slot_count /pred1 /(\o) /=.
+rewrite Hcount le_fs_semantic_branch_slot_supportE /=.
+have -> : bad_slot_count%r / total_slot_count%r = 1%r / 2%r.
+  by rewrite /total_slot_count /bad_slot_count /=.
+by smt().
 qed.
 
 op epsilon_le_fs_semantic : real = mu1 d_le_fs_semantic_branch_choice true.
 
 lemma epsilon_le_fs_semantic_closed_form :
-  epsilon_le_fs_semantic = 1%r / 2%r.
+  epsilon_le_fs_semantic = bad_slot_count%r / total_slot_count%r.
 proof.
 rewrite /epsilon_le_fs_semantic.
 exact le_fs_semantic_branch_choice_mass_true.

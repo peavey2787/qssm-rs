@@ -21,10 +21,10 @@ The budget surface currently lives in `primitives/BudgetParameters.ec` and is co
 | `epsilon_le_rej` | `0%r` | LE rejection component gap on the current shadow lane |
 | `epsilon_le_fs` | `0%r` | LE FS component gap on the current shadow lane |
 | `epsilon_le` | `epsilon_le_rej + epsilon_le_fs` | Umbrella LE budget consumed by theorem-facing arithmetic |
-| `epsilon_le_fs_semantic` | `mu1 d_le_fs_semantic_branch_choice true = 1%r / 2%r` | Primitive-owned semantic FS bad-branch weight on the branch-sensitive shadow lane |
+| `epsilon_le_fs_semantic` | `mu1 d_le_fs_semantic_branch_choice true = bad_slot_count%r / total_slot_count%r = 1%r / 2%r` | Primitive-owned semantic FS bad-branch weight on the branch-sensitive shadow lane |
 | `epsilon_le_semantic` | `epsilon_le_rej + epsilon_le_fs_semantic` | Preferred nonzero umbrella LE budget consumed by `qssm_main_theorem_semantic_budget` |
 
-These are exact values in the current model, not placeholders. The caution is that the exact-zero theorem path is still structurally simplified enough that its active MS and LE component values are all zero, while the semantic-budget theorem path currently uses a primitive-owned two-branch FS bad-branch weight that still evaluates to `1%r / 2%r` on the present branch law.
+These are exact values in the current model, not placeholders. The caution is that the exact-zero theorem path is still structurally simplified enough that its active MS and LE component values are all zero, while the semantic-budget theorem path currently uses a primitive-owned count-parameterized FS bad-branch weight with `total_slot_count = 4` and `bad_slot_count = 2`, so the present bool-image law still evaluates to `1%r / 2%r`.
 
 ## What the Zero Budgets Depend On
 
@@ -38,7 +38,7 @@ The exact-zero path depends on the present semantics of the lower surfaces.
 The semantic-budget path depends on the parallel semantic FS lane.
 
 - `LEFsProgrammingSurface.ec` proves the local bad-branch mass and semantic failure probability in closed form on that shadow lane.
-- `BudgetParameters.ec` owns the semantic branch sampler `d_le_fs_semantic_branch_choice = duniform [false; true]` and defines `epsilon_le_fs_semantic` as its bad-branch mass `mu1 d_le_fs_semantic_branch_choice true`.
+- `BudgetParameters.ec` owns the semantic branch sampler via the concrete counts `total_slot_count = 4` and `bad_slot_count = 2`, the support `le_fs_semantic_branch_slot_support = range 0 total_slot_count`, the predicate `le_fs_semantic_bad_branch_slot slot = slot < bad_slot_count`, and the sampler `d_le_fs_semantic_branch_slot_choice = duniform le_fs_semantic_branch_slot_support`, then defines `d_le_fs_semantic_branch_choice = dmap d_le_fs_semantic_branch_slot_choice le_fs_semantic_bad_branch_slot` and the owned bad-branch mass `epsilon_le_fs_semantic = mu1 d_le_fs_semantic_branch_choice true`.
 - `epsilon_le_semantic` is the preferred nonzero umbrella LE budget consumed by the top-level semantic theorem.
 
 ## ROM, Rejection, and FS Semantics

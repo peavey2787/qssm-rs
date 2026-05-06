@@ -382,12 +382,18 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     parallel: `BudgetParameters.ec`, `A_G1_to_G2_le_transition_bound`,
     `qssm_main_theorem_skeleton`, and `qssm_main_theorem` remain unchanged.
   - Primitive-owned semantic FS budget, May 2026: `primitives/BudgetParameters.ec`
-    now defines the primitive branch law
-    `d_le_fs_semantic_branch_choice = duniform [false; true]` and the owned
-    semantic FS budget `epsilon_le_fs_semantic = mu1
-    d_le_fs_semantic_branch_choice true`, together with nonnegativity lemma
-    `A4_le_fs_semantic_nonneg`. That owned formula still closes in the current
-    model to `1%r / 2%r`. `le/LEFsProgrammingSurface.ec` proves both
+    now defines the primitive branch law via the concrete counts
+    `total_slot_count = 4` and `bad_slot_count = 2`, the support
+    `le_fs_semantic_branch_slot_support = range 0 total_slot_count`, the
+    predicate `le_fs_semantic_bad_branch_slot slot = slot < bad_slot_count`,
+    the sampler `d_le_fs_semantic_branch_slot_choice = duniform
+    le_fs_semantic_branch_slot_support`, and the image law
+    `d_le_fs_semantic_branch_choice = dmap d_le_fs_semantic_branch_slot_choice
+    le_fs_semantic_bad_branch_slot`, together with the owned semantic FS budget
+    `epsilon_le_fs_semantic = mu1 d_le_fs_semantic_branch_choice true` and
+    nonnegativity lemma `A4_le_fs_semantic_nonneg`. The owned closed form is
+    now `bad_slot_count%r / total_slot_count%r`, which still instantiates in
+    the current model to `1%r / 2%r`. `le/LEFsProgrammingSurface.ec` proves both
     `le_fs_shadow_local_bad_branch_mass = epsilon_le_fs_semantic` and
     `le_fs_shadow_local_bad_branch_mass <= epsilon_le_fs_semantic`, so the
     local semantic mass is now connected to a primitive-owned budget without an
