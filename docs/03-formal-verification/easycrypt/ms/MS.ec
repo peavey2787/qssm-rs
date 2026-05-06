@@ -31,10 +31,17 @@ op ms_sim_transcript (xms : ms_public_input) (s : seed) : game_view =
 op epsilon_ms_hash_binding : real =
   BudgetParameters.epsilon_ms_hash_binding.
 
+op epsilon_ms_hash_binding_semantic : real =
+  BudgetParameters.epsilon_ms_hash_binding_semantic.
+
 (* Primitive MS hash-binding budget assumption on the abstract error budget. *)
 lemma A1_ms_hash_binding_nonneg :
   0%r <= epsilon_ms_hash_binding.
 proof. exact BudgetParameters.A1_ms_hash_binding_nonneg. qed.
+
+lemma A1_ms_hash_binding_semantic_nonneg :
+  0%r <= epsilon_ms_hash_binding_semantic.
+proof. exact BudgetParameters.A1_ms_hash_binding_semantic_nonneg. qed.
 
 (* MS1 (hash-binding) hop interface: only the stage tag moves Real -> AfterBinding;
    QSSM/MS public slices, seed, LE placeholder, and MS transcript observable stay fixed.

@@ -372,14 +372,16 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     the fact that the game distinguisher reads only `qssm_event_payload` to
     prove `A_LE_semantic_projected_adv_matches_game_adv`, then exports the
     direct semantic bridge theorem `A_G1_to_G2_le_semantic_transition_bound`
-    with bound `epsilon_le_rej + le_fs_shadow_local_bad_branch_mass` on
+    with bound `LERejectionSampler.le_rejection_shadow_semantic_failure_probability + le_fs_shadow_local_bad_branch_mass` on
     `Adv_G1_G2_LE`. At the top level, `theorem/MainTheorem.ec` now adds
     `qssm_main_theorem_semantic_budget_local_mass` with bound
-    `epsilon_ms_hash_binding + epsilon_ms_rom_programmability +
-    epsilon_le_rej + le_fs_shadow_local_bad_branch_mass`, and that theorem now
-    uses the semantic G1->G2 bridge directly rather than widening through the
-    exact-zero skeleton. The exact-zero route still remains checked in
-    parallel: `BudgetParameters.ec`, `A_G1_to_G2_le_transition_bound`,
+    `epsilon_ms_hash_binding_semantic + epsilon_ms_rom_programmability_semantic +
+    LERejectionSampler.le_rejection_shadow_semantic_failure_probability +
+    le_fs_shadow_local_bad_branch_mass`, and that theorem now uses the
+    semantic G1->G2 bridge directly together with the semantic MS G0->G1
+    sibling bound rather than widening through the exact-zero skeleton. The
+    exact-zero route still remains checked in parallel:
+    `BudgetParameters.ec`, `A_G1_to_G2_le_transition_bound`,
     `qssm_main_theorem_skeleton`, and `qssm_main_theorem` remain unchanged.
   - Primitive-owned semantic FS budget, May 2026: `primitives/BudgetParameters.ec`
     now defines the primitive branch law via the primitive FS category support
@@ -417,7 +419,7 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     layer exposes `A_G1_to_G2_le_semantic_owned_budget_transition_bound` with
     bound `epsilon_le_rej_semantic + epsilon_le_fs_semantic`; and
     `theorem/MainTheorem.ec` now adds `qssm_main_theorem_semantic_budget_owned`
-    with bound `epsilon_ms_hash_binding + epsilon_ms_rom_programmability +
+    with bound `epsilon_ms_hash_binding_semantic + epsilon_ms_rom_programmability_semantic +
     epsilon_le_rej_semantic + epsilon_le_fs_semantic`. The exact-zero route and the
     existing local-mass semantic route both remain checked alongside that owned-
     budget path. These slot counts are intentionally concrete demo/proof
@@ -458,7 +460,7 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     adds `A_G1_to_G2_le_semantic_umbrella_transition_bound`; and
     `theorem/MainTheorem.ec` now adds
     `qssm_main_theorem_semantic_budget` with bound
-    `epsilon_ms_hash_binding + epsilon_ms_rom_programmability +
+    `epsilon_ms_hash_binding_semantic + epsilon_ms_rom_programmability_semantic +
     epsilon_le_semantic`. `qssm_main_theorem_nonzero_budget` is now a façade
     alias to that same public umbrella theorem, while
     `qssm_main_theorem_semantic_budget_umbrella` is retained only as a
@@ -468,6 +470,173 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     and `qssm_main_theorem_semantic_budget` the preferred nonzero top-level
     theorem name to cite, while the exact-zero route still remains checked in
     parallel.
+  - Parallel MS ROM semantic owner, May 2026:
+    `primitives/BudgetParameters.ec` now also defines the parallel owner term
+    `epsilon_ms_rom_programmability_semantic =
+    ms_rom_failure_slot_count%r / ms_rom_total_slot_count%r` together with the
+    primitive category support
+    `MSROMSemanticClean`, `MSROMSemanticQueryCollision`,
+    `MSROMSemanticProgrammingCollision`, and
+    `MSROMSemanticTranscriptMismatch`, failure predicate “non-clean”, the named
+    counts `ms_rom_clean_slot_count`,
+    `ms_rom_query_collision_slot_count`,
+    `ms_rom_programming_collision_slot_count`,
+    `ms_rom_transcript_mismatch_slot_count`, `ms_rom_failure_slot_count`, and
+    `ms_rom_total_slot_count`, and the current demo instance `13,1,1,1`, which
+    closes to `3%r / 16%r`. The exact-zero theorem-facing MS2 hop still
+    consumes `epsilon_ms_rom_programmability = 0%r` through the existing
+    exact-equality route in `ms/MSProbabilitySurface.ec`, `ms/MS.ec`, the game
+    layer, and the exact-zero theorems in `theorem/MainTheorem.ec`, because
+    there is not yet an execution-owned MS semantic bridge surface honest
+    enough to replay that path. The first split step is now landed at the
+    alias surface: `primitives/FS.ec` re-exports
+    `epsilon_ms_rom_programmability_semantic` together with
+    `A2_ms_rom_programmability_semantic_nonneg`. The next split step is now
+    also landed through game-hop composition: `ms/MSProbabilitySurface.ec`,
+    `games/GameAdvantage.ec`, `games/GameMSHopTypes.ec`,
+    `games/GameMSHopTransitions.ec`, and `games/GameMSHopComposition.ec` now
+    export the semantic sibling chain from
+    `A_MS2_rom_programming_semantic_transition_bound` through
+    `A_G0_to_G1_ms_semantic_transition_bound`, all closing against
+    `epsilon_ms_rom_programmability_semantic`. The semantic MainTheorem
+    variants now consume that sibling chain, and after the later semantic MS1
+    retarget the current semantic umbrella theorem closes at
+    `epsilon_ms_hash_binding_semantic +
+    epsilon_ms_rom_programmability_semantic + epsilon_le_semantic =
+    3%r / 16%r + 3%r / 16%r + 3%r / 8%r = 3%r / 4%r`, while the exact-zero
+    theorem route and the public theorem API remain unchanged.
+  - MS ROM routing split design, May 2026:
+    the live dependency path should be split by adding parallel semantic
+    siblings rather than by redefining any active theorem-facing symbol in
+    place. The exact-zero budget still starts at
+    `primitives/BudgetParameters.ec : epsilon_ms_rom_programmability`, is
+    re-exported through `primitives/FS.ec` with
+    `A2_ms_rom_programmability_nonneg`, enters the lower MS2 theorem surface at
+    `ms/MSProbabilitySurface.ec : A_MS2_rom_programming_transition_bound`
+    (proved today from `L_ms2_rom_programming_transition_zero` plus that
+    nonnegativity lemma), is lifted by
+    `games/GameAdvantage.ec : A_MS2_rom_programming_game_pr_core_bound`, then
+    by `games/GameMSHopTypes.ec :
+    A_MS2_rom_programming_concrete_pair_advantage_bound` and
+    `A_MS2_canonical_rom_programming_bound`, then by
+    `games/GameMSHopTransitions.ec : A_MS2_rom_programming_transition`, then by
+    `games/GameMSHopComposition.ec : A_G0_to_G1_ms_transition_bound`, and is
+    finally consumed on the exact-zero public route in `theorem/MainTheorem.ec`
+    by `qssm_main_theorem_skeleton` and `qssm_main_theorem`. In parallel, the
+    semantic sibling route now starts from
+    `primitives/BudgetParameters.ec : epsilon_ms_rom_programmability_semantic`,
+    is re-exported through `primitives/FS.ec` with
+    `A2_ms_rom_programmability_semantic_nonneg`, is lifted by
+    `games/GameMSHopComposition.ec : A_G0_to_G1_ms_semantic_transition_bound`,
+    and is now consumed in `theorem/MainTheorem.ec` by
+    `qssm_main_theorem_semantic_budget_local_mass`,
+    `qssm_main_theorem_semantic_budget_owned`,
+    `qssm_main_theorem_semantic_budget`, and the façade alias
+    `qssm_main_theorem_nonzero_budget`. `ms/MS.ec` is currently only the hop
+    shape / comment façade for this route via `ms2_rom_programming_step`; it is
+    not the proof owner of the budget theorem. The checker-safe split design is
+    therefore: keep `epsilon_ms_rom_programmability = 0%r` and all current
+    exact-zero theorem names unchanged. The checker-safe split steps through the
+    alias surface, the composed G0->G1 semantic sibling chain, the semantic
+    MainTheorem retarget, the execution-owned MS ROM bridge below
+    `A_G0_to_G1_ms_semantic_transition_bound`, and the semantic AfterRom
+    endpoint below `ms/MSProbabilitySurface.ec` are now done while
+    `qssm_main_theorem_skeleton` / `qssm_main_theorem` stay on the current
+    exact-zero route. The public MS2 stage pair still collapses locally by
+    exact distribution equality, but `ms/MSProbabilitySurface.ec` now also
+    carries `d_ms_after_rom_semantic_observable_v2` and
+    `L_ms2_rom_programming_transition_le_execution_owned_semantic_failure`, so
+    the next step is no longer lower-surface ownership; it is deciding whether
+    the public AfterRom stage should be retargeted away from that exact-equality
+    carrier while the game-level sibling chain above it remains unchanged.
+  - Parallel MS hash-binding semantic owner, May 2026:
+    `primitives/BudgetParameters.ec` now also defines the parallel owner term
+    `epsilon_ms_hash_binding_semantic =
+    ms_hash_binding_failure_slot_count%r /
+    ms_hash_binding_total_slot_count%r` together with the primitive category
+    support `MSHashBindingSemanticClean`,
+    `MSHashBindingSemanticCollision`,
+    `MSHashBindingSemanticMalformedBinding`, and
+    `MSHashBindingSemanticTranscriptMismatch`, failure predicate “non-clean”,
+    the named counts `ms_hash_binding_clean_slot_count`,
+    `ms_hash_binding_collision_slot_count`,
+    `ms_hash_binding_malformed_binding_slot_count`,
+    `ms_hash_binding_transcript_mismatch_slot_count`,
+    `ms_hash_binding_failure_slot_count`, and
+    `ms_hash_binding_total_slot_count`, and the current demo instance
+    `13,1,1,1`, which closes to `3%r / 16%r`. `primitives/FS.ec` now
+    re-exports that owner as `epsilon_ms_hash_binding_semantic` together with
+    `A1_ms_hash_binding_semantic_nonneg`. That owner is now staged below the
+    live theorem route: `ms/MS.ec` carries the MS-side alias/nonneg surface,
+    `ms/source/SourceHashBindingSemanticBridge.ec` lands the source-local
+    execution-owned bridge, `ms/MSProbabilitySurface.ec` and the MS game-hop
+    files carry the staged sibling chain through
+    `A_G0_to_G1_ms_hash_binding_semantic_transition_bound`, and
+    `theorem/MainTheorem.ec` now consumes the semantic owner through the
+    retargeted live theorem `A_G0_to_G1_ms_semantic_transition_bound`, while
+    the exact-zero route still consumes `epsilon_ms_hash_binding = 0%r`.
+    The current live semantic umbrella theorem therefore closes at
+    `epsilon_ms_hash_binding_semantic +
+    epsilon_ms_rom_programmability_semantic + epsilon_le_semantic =
+    3%r / 16%r + 3%r / 16%r + 3%r / 8%r = 3%r / 4%r`, and the staged sibling
+    remains as a parallel bisectable theorem.
+  - Comparison-local MS ROM semantic bridge, May 2026:
+    `ms/comparison/ComparisonPayloadSemanticBridge.ec` now lands the first
+    execution-owned bridge surface below `ms/MSProbabilitySurface.ec` without
+    changing the live routing. The new file defines
+    `ms_rom_semantic_state_of_category_execution_seed`, carrying the real
+    comparison execution seed package together with canonical query/row data,
+    programmed challenge/response data, transcript reconstruction data, and
+    explicit query/programming collision witnesses; the predicates
+    `ms_rom_clean_condition`, `ms_rom_query_collision_condition`,
+    `ms_rom_programming_collision_condition`,
+    `ms_rom_transcript_mismatch_condition`, and
+    `ms_rom_semantic_category_condition`; the local mass
+    `ms_rom_local_failure_mass` with
+    `ms_rom_local_failure_mass_eq_epsilon_ms_rom_programmability_semantic`; and
+    the lower bound `A_MS2_rom_programming_execution_owned_semantic_bound`.
+    `check_easycrypt.sh` now includes that new theory in dependency order. This
+    bridge step has now been followed by the targeted lower retarget in
+    `ms/MSProbabilitySurface.ec`: that file now maps the bridge projection
+    `ms_rom_semantic_after_rom_observable_of_state` over
+    `d_ms_rom_semantic_coupled_state` as
+    `d_ms_after_rom_semantic_observable_v2`, proves the non-identity local law
+    `L_ms2_rom_programming_transition_le_execution_owned_semantic_failure`, and
+    keeps `A_MS2_rom_programming_semantic_transition_bound` on the same theorem
+    name while `games/GameMSHopComposition.ec`, `theorem/MainTheorem.ec`, the
+    exact-zero theorem `A_MS2_rom_programming_transition_bound`, and all public
+    theorem names stay unchanged. The next patch is therefore no longer lower-
+    surface retargeting; it is to decide whether the public MS2 AfterRom stage
+    should remain on the current exact-equality carrier or be retargeted to a
+    more deployment-meaningful lower ROM-programming
+  - Source-local MS1 hash-binding semantic bridge and staged sibling chain,
+    May 2026: `ms/MS.ec` now stages the MS-facing alias/nonneg surface for
+    `epsilon_ms_hash_binding_semantic`, and
+    `ms/source/SourceHashBindingSemanticBridge.ec` now lands the source-local
+    execution-owned bridge for the parallel semantic MS1 owner. The new file
+    defines `ms_hash_binding_semantic_state_of_category_source`, the category
+    predicates `ms_hash_binding_clean_condition`,
+    `ms_hash_binding_collision_condition`,
+    `ms_hash_binding_malformed_binding_condition`,
+    `ms_hash_binding_transcript_mismatch_condition`, the local mass
+    `ms_hash_binding_local_failure_mass`, and the lower bound
+    `A_MS1_hash_binding_execution_owned_semantic_bound`. `ms/MSProbabilitySurface.ec`,
+    `games/GameAdvantage.ec`, `games/GameMSHopTypes.ec`, and
+    `games/GameMSHopTransitions.ec` now carry the staged semantic MS1 sibling
+    chain through `A_MS1_hash_binding_semantic_bad_event_bound`,
+    `A_MS1_hash_binding_semantic_game_pr_core_bound`,
+    `A_MS1_hash_binding_semantic_concrete_pair_advantage_bound`,
+    `A_MS1_canonical_hash_binding_semantic_bound`, and
+    `A_MS1_hash_binding_semantic_transition`, and
+    `games/GameMSHopComposition.ec` now adds the staged sibling
+    `A_G0_to_G1_ms_hash_binding_semantic_transition_bound`. The live semantic
+    theorem `A_G0_to_G1_ms_semantic_transition_bound` and the semantic route in
+    `theorem/MainTheorem.ec` now also consume semantic MS1, so the current
+    semantic umbrella theorem closes at
+    `epsilon_ms_hash_binding_semantic +
+    epsilon_ms_rom_programmability_semantic + epsilon_le_semantic = 3%r / 4%r`.
+    The exact-zero route remains unchanged.
+    law.
   - Design refinement, May 2026: `A_LE_rejection_sampler_sdist_bound` remains a
     proved lemma in `le/LERejection.ec`, but it is no longer a repackaging of a
     surrogate-side axiom. It now rests on the concrete identity rejection

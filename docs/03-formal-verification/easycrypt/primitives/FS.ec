@@ -36,13 +36,27 @@ op le_programmed_query_digest :
   domain_label -> digest -> digest -> digest -> digest -> digest -> digest.
 
 (* ROM programmability placeholders *)
+op epsilon_ms_hash_binding_semantic : real =
+  BudgetParameters.epsilon_ms_hash_binding_semantic.
+
 op epsilon_ms_rom_programmability : real =
   BudgetParameters.epsilon_ms_rom_programmability.
+
+op epsilon_ms_rom_programmability_semantic : real =
+  BudgetParameters.epsilon_ms_rom_programmability_semantic.
+
+lemma A1_ms_hash_binding_semantic_nonneg :
+  0%r <= epsilon_ms_hash_binding_semantic.
+proof. exact BudgetParameters.A1_ms_hash_binding_semantic_nonneg. qed.
 
 (* Primitive ROM-programmability budget assumption on the abstract MS2 error budget. *)
 lemma A2_ms_rom_programmability_nonneg :
   0%r <= epsilon_ms_rom_programmability.
 proof. exact BudgetParameters.A2_ms_rom_programmability_nonneg. qed.
+
+lemma A2_ms_rom_programmability_semantic_nonneg :
+  0%r <= epsilon_ms_rom_programmability_semantic.
+proof. exact BudgetParameters.A2_ms_rom_programmability_semantic_nonneg. qed.
 
 (* Bitness query digest is a valid ROM query point: `ms_query_to_scalar` is already
    total, so existence follows by choosing its value directly. *)

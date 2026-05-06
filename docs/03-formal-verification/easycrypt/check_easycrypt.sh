@@ -39,6 +39,7 @@ FILES=(
   ms/comparison/ComparisonPayloadTypes.ec
   ms/comparison/ComparisonPayloadSeedTypes.ec
   ms/comparison/ComparisonPayloadFromSeed.ec
+  ms/comparison/ComparisonPayloadSemanticBridge.ec
   ms/comparison/ComparisonPayloadSeedAnchors.ec
   ms/comparison/ComparisonPayloadSeeds.ec
   ms/comparison/ComparisonPayloadSupportTypes.ec
@@ -64,6 +65,7 @@ FILES=(
   ms/source/SourceBitnessDistributions.ec
   ms/source/SourceDistributionLemmas.ec
   ms/source/SourceObservableDistributions.ec
+  ms/source/SourceHashBindingSemanticBridge.ec
   ms/source/SourceDistributions.ec
   ms/source/SourceExecutionLink.ec
   ms/source/SourcePublicBitnessConstructors.ec

@@ -9,20 +9,35 @@ import Ring.IntID StdOrder.IntOrder Range.
 
    - MS1 hash-binding: `L_ms1_hash_binding_stage_zero` proves the Real and
      AfterBinding observable distributions are equal.
+   - Parallel semantic MS1 hash-binding owner:
+     `epsilon_ms_hash_binding_semantic` now records a primitive-owned semantic
+     hash-binding surrogate law with categories `clean`, `collision`,
+     `malformed_binding`, and `transcript_mismatch`, failure predicate
+     “non-clean”, and demo slot counts `13,1,1,1`, so it currently closes to
+     `3%r / 16%r`. The active theorem-facing MS1 budget remains
+     `epsilon_ms_hash_binding = 0%r` until an execution-owned MS1 semantic
+     bridge exists.
    - MS2 ROM-programming: `L_ms2_rom_programming_transition_zero` proves the
      AfterBinding and AfterRom observable distributions are equal.
+   - Parallel semantic MS ROM owner: `epsilon_ms_rom_programmability_semantic`
+     now records a primitive-owned semantic ROM-programming surrogate law with
+     categories `clean`, `query_collision`, `programming_collision`, and
+     `transcript_mismatch`, failure predicate “non-clean”, and demo slot
+     counts `13,1,1,1`, so it currently closes to `3%r / 16%r`. The active
+     theorem-facing MS budget remains `epsilon_ms_rom_programmability = 0%r`
+     until an execution-owned MS2 semantic bridge exists.
    - Shadow LE rejection component on the exact-zero route: `epsilon_le_rej`
      remains the active exact-zero lower rejection budget and stays at `0%r`.
    - Shadow LE rejection component on the semantic route:
      `epsilon_le_rej_semantic` tracks the lower rejection failure quantity used
      by the semantic theorem path. It is now presented as a primitive-owned
-    semantic ticket-failure law: the probability that the primitive semantic
-    rejection ticket requires hidden-query-material repair. The current
-    primitive ticket law is owned by the named count constants
-    `le_rej_soft_repair_slot_count`, `le_rej_hard_repair_slot_count`,
-    `le_rej_invalid_slot_count`, and `le_rej_accept_slot_count`, which
-    currently instantiate to `1,1,1,3`, so `epsilon_le_rej_semantic`
-    currently closes to `3%r / 6%r = 1%r / 2%r`.
+     semantic ticket-failure law: the probability that the primitive semantic
+     rejection ticket requires hidden-query-material repair. The current
+     primitive ticket law is owned by the named count constants
+     `le_rej_soft_repair_slot_count`, `le_rej_hard_repair_slot_count`,
+     `le_rej_invalid_slot_count`, and `le_rej_accept_slot_count`, which
+     currently instantiate to `1,1,1,13`, so `epsilon_le_rej_semantic`
+     currently closes to `3%r / 16%r`.
    - Shadow LE FS component: `epsilon_le_fs` is still `0%r`, but now for a
      semantic reason rather than only as a placeholder. The active
      branch-sensitive shadow lane measures failure by the shadow bad-branch
@@ -33,8 +48,8 @@ import Ring.IntID StdOrder.IntOrder Range.
      fixes `leqm_bad_flag = false`. In parallel, `epsilon_le_fs_semantic` is
      now presented as a primitive-owned structured branch/programming law with
      categories `clean`, `query_collision`, `programming_collision`, and
-     `transcript_mismatch`, failure predicate “non-clean”, and provisional
-     slot masses `3,1,1,1`, so it currently closes to `3%r / 6%r = 1%r / 2%r`.
+    `transcript_mismatch`, failure predicate “non-clean”, and demo slot
+    counts `13,1,1,1`, so it currently closes to `3%r / 16%r`.
    - LE HVZK umbrella budget: `epsilon_le` is now defined as the sum of the
      lower component budgets `epsilon_le_rej + epsilon_le_fs`. In the current
      model both component lanes are still exact-zero, so the LE real and sim
@@ -42,17 +57,19 @@ import Ring.IntID StdOrder.IntOrder Range.
    - Semantic LE umbrella budget: `epsilon_le_semantic` is defined as the sum
      of the semantic rejection and semantic FS components
      `epsilon_le_rej_semantic + epsilon_le_fs_semantic`. In the current model
-     both semantic components currently close to `1%r / 2%r`, so the semantic
-     umbrella currently evaluates to `1%r`. This is a structured surrogate
-     theorem budget, not a final cryptographic tightness claim.
+     both semantic components currently close to `3%r / 16%r`, so the semantic
+     umbrella currently evaluates to `3%r / 8%r`. This is a structured
+     surrogate theorem budget, not a final cryptographic tightness claim.
 
   Therefore each active exact-zero budget is defined as `0%r`. This is NOT a
   nonzero cryptographic security bound; it records the exact-zero gap of the
-  current model. Parallel semantic-owned LE budgets may coexist beside that
-  exact-zero route without changing it. Any future refinement that introduces a
-  non-identity rejection sampler, a genuinely supported FS bad branch, or a
-  quantitative ROM model on the active route must restore a nonzero budget
-  formula here. *)
+  current model. Parallel semantic-owned LE budgets, a parallel semantic MS
+  hash-binding owner, and a parallel semantic MS ROM owner may coexist beside
+  that exact-zero route without changing it. Any future refinement that
+  introduces a non-identity rejection sampler, a genuinely supported FS bad
+  branch, a semantic MS1 bad-event model, or a quantitative ROM model on the
+  active route must bridge those semantic owners into the theorem-facing path
+  rather than redefining the exact-zero route in place. *)
 
 op epsilon_ms_hash_binding : real = 0%r.
 
@@ -60,11 +77,321 @@ lemma A1_ms_hash_binding_nonneg :
   0%r <= epsilon_ms_hash_binding.
 proof. by rewrite /epsilon_ms_hash_binding. qed.
 
+type ms_hash_binding_semantic_category = [
+  | MSHashBindingSemanticClean
+  | MSHashBindingSemanticCollision
+  | MSHashBindingSemanticMalformedBinding
+  | MSHashBindingSemanticTranscriptMismatch
+].
+
+op ms_hash_binding_semantic_category_support :
+  ms_hash_binding_semantic_category list =
+  [ MSHashBindingSemanticClean;
+    MSHashBindingSemanticCollision;
+    MSHashBindingSemanticMalformedBinding;
+    MSHashBindingSemanticTranscriptMismatch ].
+
+(* Primitive owner for a future semantic MS hash-binding budget.
+   The active theorem-facing MS1 budget remains the exact-zero
+   `epsilon_ms_hash_binding` on the current route. This parallel semantic
+   skeleton records a structured category law without changing the theorem
+   surface until an execution-owned MS1 semantic bridge exists. *)
+
+lemma ms_hash_binding_semantic_category_support_uniq :
+  uniq ms_hash_binding_semantic_category_support.
+proof.
+by rewrite /ms_hash_binding_semantic_category_support.
+qed.
+
+op ms_hash_binding_collision_slot_count : int = 1.
+
+op ms_hash_binding_malformed_binding_slot_count : int = 1.
+
+op ms_hash_binding_transcript_mismatch_slot_count : int = 1.
+
+op ms_hash_binding_clean_slot_count : int = 13.
+
+op ms_hash_binding_failure_slot_count : int =
+  ms_hash_binding_collision_slot_count +
+  ms_hash_binding_malformed_binding_slot_count +
+  ms_hash_binding_transcript_mismatch_slot_count.
+
+op ms_hash_binding_total_slot_count : int =
+  ms_hash_binding_clean_slot_count + ms_hash_binding_failure_slot_count.
+
+op ms_hash_binding_semantic_category_is_failure
+  (category : ms_hash_binding_semantic_category) : bool =
+  if pred1 MSHashBindingSemanticClean category then false else true.
+
+lemma ms_hash_binding_collision_slot_count_nonneg :
+  0 <= ms_hash_binding_collision_slot_count.
+proof. by rewrite /ms_hash_binding_collision_slot_count. qed.
+
+lemma ms_hash_binding_malformed_binding_slot_count_nonneg :
+  0 <= ms_hash_binding_malformed_binding_slot_count.
+proof. by rewrite /ms_hash_binding_malformed_binding_slot_count. qed.
+
+lemma ms_hash_binding_transcript_mismatch_slot_count_nonneg :
+  0 <= ms_hash_binding_transcript_mismatch_slot_count.
+proof. by rewrite /ms_hash_binding_transcript_mismatch_slot_count. qed.
+
+lemma ms_hash_binding_clean_slot_count_nonneg :
+  0 <= ms_hash_binding_clean_slot_count.
+proof. by rewrite /ms_hash_binding_clean_slot_count. qed.
+
+lemma ms_hash_binding_clean_slot_count_pos :
+  0 < ms_hash_binding_clean_slot_count.
+proof. by rewrite /ms_hash_binding_clean_slot_count. qed.
+
+lemma ms_hash_binding_failure_slot_count_nonneg :
+  0 <= ms_hash_binding_failure_slot_count.
+proof.
+rewrite /ms_hash_binding_failure_slot_count.
+by smt(ms_hash_binding_collision_slot_count_nonneg
+       ms_hash_binding_malformed_binding_slot_count_nonneg
+       ms_hash_binding_transcript_mismatch_slot_count_nonneg).
+qed.
+
+lemma ms_hash_binding_total_slot_count_nonneg :
+  0 <= ms_hash_binding_total_slot_count.
+proof.
+rewrite /ms_hash_binding_total_slot_count.
+by smt(ms_hash_binding_clean_slot_count_nonneg
+       ms_hash_binding_failure_slot_count_nonneg).
+qed.
+
+lemma ms_hash_binding_total_slot_count_pos :
+  0 < ms_hash_binding_total_slot_count.
+proof.
+rewrite /ms_hash_binding_total_slot_count.
+by smt(ms_hash_binding_clean_slot_count_pos
+       ms_hash_binding_failure_slot_count_nonneg).
+qed.
+
+lemma ms_hash_binding_failure_slot_count_pos :
+  0 < ms_hash_binding_failure_slot_count.
+proof.
+rewrite /ms_hash_binding_failure_slot_count
+  /ms_hash_binding_collision_slot_count
+  /ms_hash_binding_malformed_binding_slot_count
+  /ms_hash_binding_transcript_mismatch_slot_count.
+by smt().
+qed.
+
+lemma ms_hash_binding_failure_slot_count_le_total_slot_count :
+  ms_hash_binding_failure_slot_count <= ms_hash_binding_total_slot_count.
+proof.
+rewrite /ms_hash_binding_total_slot_count.
+by smt(ms_hash_binding_clean_slot_count_nonneg).
+qed.
+
+lemma ms_hash_binding_failure_slot_count_lt_total_slot_count :
+  ms_hash_binding_failure_slot_count < ms_hash_binding_total_slot_count.
+proof.
+rewrite /ms_hash_binding_total_slot_count.
+by smt(ms_hash_binding_clean_slot_count_pos).
+qed.
+
+lemma ms_hash_binding_failure_slot_count_demo_closed_form :
+  ms_hash_binding_failure_slot_count = 3.
+proof.
+rewrite /ms_hash_binding_failure_slot_count
+  /ms_hash_binding_collision_slot_count
+  /ms_hash_binding_malformed_binding_slot_count
+  /ms_hash_binding_transcript_mismatch_slot_count.
+by [].
+qed.
+
+lemma ms_hash_binding_total_slot_count_demo_closed_form :
+  ms_hash_binding_total_slot_count = 16.
+proof.
+rewrite /ms_hash_binding_total_slot_count /ms_hash_binding_clean_slot_count.
+by rewrite ms_hash_binding_failure_slot_count_demo_closed_form.
+qed.
+
+op epsilon_ms_hash_binding_semantic : real =
+  ms_hash_binding_failure_slot_count%r / ms_hash_binding_total_slot_count%r.
+
+lemma epsilon_ms_hash_binding_semantic_closed_form :
+  epsilon_ms_hash_binding_semantic =
+  ms_hash_binding_failure_slot_count%r / ms_hash_binding_total_slot_count%r.
+proof. by rewrite /epsilon_ms_hash_binding_semantic. qed.
+
+lemma epsilon_ms_hash_binding_semantic_demo_closed_form :
+  epsilon_ms_hash_binding_semantic = 3%r / 16%r.
+proof.
+rewrite epsilon_ms_hash_binding_semantic_closed_form.
+rewrite ms_hash_binding_failure_slot_count_demo_closed_form.
+rewrite ms_hash_binding_total_slot_count_demo_closed_form.
+by smt().
+qed.
+
+lemma A1_ms_hash_binding_semantic_nonneg :
+  0%r <= epsilon_ms_hash_binding_semantic.
+proof.
+rewrite epsilon_ms_hash_binding_semantic_closed_form.
+by smt().
+qed.
+
 op epsilon_ms_rom_programmability : real = 0%r.
 
 lemma A2_ms_rom_programmability_nonneg :
   0%r <= epsilon_ms_rom_programmability.
 proof. by rewrite /epsilon_ms_rom_programmability. qed.
+
+type ms_rom_semantic_category = [
+  | MSROMSemanticClean
+  | MSROMSemanticQueryCollision
+  | MSROMSemanticProgrammingCollision
+  | MSROMSemanticTranscriptMismatch
+].
+
+op ms_rom_semantic_category_support :
+  ms_rom_semantic_category list =
+  [ MSROMSemanticClean;
+    MSROMSemanticQueryCollision;
+    MSROMSemanticProgrammingCollision;
+    MSROMSemanticTranscriptMismatch ].
+
+(* Primitive owner for a future semantic MS ROM-programmability budget.
+   The active theorem-facing MS2 budget remains the exact-zero
+   `epsilon_ms_rom_programmability` on the current route. This parallel
+   semantic skeleton records a structured category law without changing the
+   theorem surface until an execution-owned MS2 semantic bridge exists. *)
+
+lemma ms_rom_semantic_category_support_uniq :
+  uniq ms_rom_semantic_category_support.
+proof.
+by rewrite /ms_rom_semantic_category_support.
+qed.
+
+op ms_rom_query_collision_slot_count : int = 1.
+
+op ms_rom_programming_collision_slot_count : int = 1.
+
+op ms_rom_transcript_mismatch_slot_count : int = 1.
+
+op ms_rom_clean_slot_count : int = 13.
+
+op ms_rom_failure_slot_count : int =
+  ms_rom_query_collision_slot_count +
+  ms_rom_programming_collision_slot_count +
+  ms_rom_transcript_mismatch_slot_count.
+
+op ms_rom_total_slot_count : int =
+  ms_rom_clean_slot_count + ms_rom_failure_slot_count.
+
+op ms_rom_semantic_category_is_failure
+  (category : ms_rom_semantic_category) : bool =
+  if pred1 MSROMSemanticClean category then false else true.
+
+lemma ms_rom_query_collision_slot_count_nonneg :
+  0 <= ms_rom_query_collision_slot_count.
+proof. by rewrite /ms_rom_query_collision_slot_count. qed.
+
+lemma ms_rom_programming_collision_slot_count_nonneg :
+  0 <= ms_rom_programming_collision_slot_count.
+proof. by rewrite /ms_rom_programming_collision_slot_count. qed.
+
+lemma ms_rom_transcript_mismatch_slot_count_nonneg :
+  0 <= ms_rom_transcript_mismatch_slot_count.
+proof. by rewrite /ms_rom_transcript_mismatch_slot_count. qed.
+
+lemma ms_rom_clean_slot_count_nonneg :
+  0 <= ms_rom_clean_slot_count.
+proof. by rewrite /ms_rom_clean_slot_count. qed.
+
+lemma ms_rom_clean_slot_count_pos :
+  0 < ms_rom_clean_slot_count.
+proof. by rewrite /ms_rom_clean_slot_count. qed.
+
+lemma ms_rom_failure_slot_count_nonneg :
+  0 <= ms_rom_failure_slot_count.
+proof.
+rewrite /ms_rom_failure_slot_count.
+by smt(ms_rom_query_collision_slot_count_nonneg
+       ms_rom_programming_collision_slot_count_nonneg
+       ms_rom_transcript_mismatch_slot_count_nonneg).
+qed.
+
+lemma ms_rom_total_slot_count_nonneg :
+  0 <= ms_rom_total_slot_count.
+proof.
+rewrite /ms_rom_total_slot_count.
+by smt(ms_rom_clean_slot_count_nonneg ms_rom_failure_slot_count_nonneg).
+qed.
+
+lemma ms_rom_total_slot_count_pos :
+  0 < ms_rom_total_slot_count.
+proof.
+rewrite /ms_rom_total_slot_count.
+by smt(ms_rom_clean_slot_count_pos ms_rom_failure_slot_count_nonneg).
+qed.
+
+lemma ms_rom_failure_slot_count_pos :
+  0 < ms_rom_failure_slot_count.
+proof.
+rewrite /ms_rom_failure_slot_count
+  /ms_rom_query_collision_slot_count
+  /ms_rom_programming_collision_slot_count
+  /ms_rom_transcript_mismatch_slot_count.
+by smt().
+qed.
+
+lemma ms_rom_failure_slot_count_le_total_slot_count :
+  ms_rom_failure_slot_count <= ms_rom_total_slot_count.
+proof.
+rewrite /ms_rom_total_slot_count.
+by smt(ms_rom_clean_slot_count_nonneg).
+qed.
+
+lemma ms_rom_failure_slot_count_lt_total_slot_count :
+  ms_rom_failure_slot_count < ms_rom_total_slot_count.
+proof.
+rewrite /ms_rom_total_slot_count.
+by smt(ms_rom_clean_slot_count_pos).
+qed.
+
+lemma ms_rom_failure_slot_count_demo_closed_form :
+  ms_rom_failure_slot_count = 3.
+proof.
+rewrite /ms_rom_failure_slot_count
+  /ms_rom_query_collision_slot_count
+  /ms_rom_programming_collision_slot_count
+  /ms_rom_transcript_mismatch_slot_count.
+by [].
+qed.
+
+lemma ms_rom_total_slot_count_demo_closed_form :
+  ms_rom_total_slot_count = 16.
+proof.
+rewrite /ms_rom_total_slot_count /ms_rom_clean_slot_count.
+by rewrite ms_rom_failure_slot_count_demo_closed_form.
+qed.
+
+op epsilon_ms_rom_programmability_semantic : real =
+  ms_rom_failure_slot_count%r / ms_rom_total_slot_count%r.
+
+lemma epsilon_ms_rom_programmability_semantic_closed_form :
+  epsilon_ms_rom_programmability_semantic =
+  ms_rom_failure_slot_count%r / ms_rom_total_slot_count%r.
+proof. by rewrite /epsilon_ms_rom_programmability_semantic. qed.
+
+lemma epsilon_ms_rom_programmability_semantic_demo_closed_form :
+  epsilon_ms_rom_programmability_semantic = 3%r / 16%r.
+proof.
+rewrite epsilon_ms_rom_programmability_semantic_closed_form.
+rewrite ms_rom_failure_slot_count_demo_closed_form.
+rewrite ms_rom_total_slot_count_demo_closed_form.
+by smt().
+qed.
+
+lemma A2_ms_rom_programmability_semantic_nonneg :
+  0%r <= epsilon_ms_rom_programmability_semantic.
+proof.
+rewrite epsilon_ms_rom_programmability_semantic_closed_form.
+by smt().
+qed.
 
 op epsilon_le_rej : real = 0%r.
 

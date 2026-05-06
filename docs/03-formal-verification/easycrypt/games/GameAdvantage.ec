@@ -230,6 +230,20 @@ rewrite /game_pr_ms_core.
 exact (A_MS1_hash_binding_bad_event_bound x s xms D).
 qed.
 
+lemma A_MS1_hash_binding_semantic_game_pr_core_bound :
+  forall (x : qssm_public_input) (s : seed) (xms : ms_public_input)
+         (obs : ms_v2_transcript_observable)
+         (lep : le_transcript_observable option) (D : distinguisher),
+  0%r <= MS.epsilon_ms_hash_binding_semantic =>
+    game_pr_ms_core x s xms obs MSGameStageReal lep D -
+    game_pr_ms_core x s xms obs MSGameStageAfterBinding lep D <=
+  MS.epsilon_ms_hash_binding_semantic.
+proof.
+move=> x s xms obs lep D Hnonneg.
+rewrite /game_pr_ms_core.
+exact (A_MS1_hash_binding_semantic_bad_event_bound x s xms D).
+qed.
+
 lemma A_MS2_rom_programming_game_pr_core_bound :
   forall (x : qssm_public_input) (s : seed) (xms : ms_public_input)
          (obs : ms_v2_transcript_observable)
@@ -242,6 +256,20 @@ proof.
 move=> x s xms obs lep D Hnonneg.
 rewrite /game_pr_ms_core.
 exact (A_MS2_rom_programming_transition_bound x s xms D).
+qed.
+
+lemma A_MS2_rom_programming_semantic_game_pr_core_bound :
+  forall (x : qssm_public_input) (s : seed) (xms : ms_public_input)
+         (obs : ms_v2_transcript_observable)
+         (lep : le_transcript_observable option) (D : distinguisher),
+    0%r <= epsilon_ms_rom_programmability_semantic =>
+    game_pr_ms_core x s xms obs MSGameStageAfterBinding lep D -
+    game_pr_ms_core x s xms obs MSGameStageAfterRom lep D <=
+    epsilon_ms_rom_programmability_semantic.
+proof.
+move=> x s xms obs lep D Hnonneg.
+rewrite /game_pr_ms_core.
+exact (A_MS2_rom_programming_semantic_transition_bound x s xms D).
 qed.
 
 op game_pr_g2_core

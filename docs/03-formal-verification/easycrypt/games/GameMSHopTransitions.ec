@@ -33,6 +33,21 @@ move=> x xms s D Hh _ _ _ _ _ _.
 exact (A_MS1_canonical_hash_binding_bound x xms s D Hh).
 qed.
 
+lemma A_MS1_hash_binding_semantic_transition :
+  forall (x : qssm_public_input) (xms : ms_public_input) (s : seed) (D : distinguisher),
+    0%r <= MS.epsilon_ms_hash_binding_semantic =>
+    ms_game_real_stage (G_MS_real x xms s) =>
+    ms_game_after_binding_stage (G_MS_after_binding x xms s) =>
+    ms_game_view_ms_pub (G_MS_real x xms s) xms =>
+    ms_game_view_ms_pub (G_MS_after_binding x xms s) xms =>
+    ms_game_view_qssm_seed (G_MS_real x xms s) x s =>
+    ms_game_view_qssm_seed (G_MS_after_binding x xms s) x s =>
+    Adv (G_MS_real x xms s) (G_MS_after_binding x xms s) D <= MS.epsilon_ms_hash_binding_semantic.
+proof.
+move=> x xms s D Hh _ _ _ _ _ _.
+exact (A_MS1_canonical_hash_binding_semantic_bound x xms s D Hh).
+qed.
+
 lemma L_ms2_rom_programming_step_canonical (x : qssm_public_input) (xms : ms_public_input) (s : seed) :
   ms2_rom_programming_step (G_MS_after_binding x xms s) (G_MS_after_rom x xms s) xms.
 proof.
@@ -61,6 +76,21 @@ lemma A_MS2_rom_programming_transition :
 proof.
 move=> x xms s D Hr _ _ _ _ _ _.
 exact (A_MS2_canonical_rom_programming_bound x xms s D Hr).
+qed.
+
+lemma A_MS2_rom_programming_semantic_transition :
+  forall (x : qssm_public_input) (xms : ms_public_input) (s : seed) (D : distinguisher),
+    0%r <= epsilon_ms_rom_programmability_semantic =>
+    ms_game_after_binding_stage (G_MS_after_binding x xms s) =>
+    ms_game_after_rom_stage (G_MS_after_rom x xms s) =>
+    ms_game_view_ms_pub (G_MS_after_binding x xms s) xms =>
+    ms_game_view_ms_pub (G_MS_after_rom x xms s) xms =>
+    ms_game_view_qssm_seed (G_MS_after_binding x xms s) x s =>
+    ms_game_view_qssm_seed (G_MS_after_rom x xms s) x s =>
+    Adv (G_MS_after_binding x xms s) (G_MS_after_rom x xms s) D <= epsilon_ms_rom_programmability_semantic.
+proof.
+move=> x xms s D Hr _ _ _ _ _ _.
+exact (A_MS2_canonical_rom_programming_semantic_bound x xms s D Hr).
 qed.
 
 lemma L_ms3a_bitness_exact_step_canonical (x : qssm_public_input) (xms : ms_public_input) (s : seed) :
