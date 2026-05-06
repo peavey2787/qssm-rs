@@ -157,12 +157,20 @@ op le_real_execution_semantic_rejection_decision_reject
   (decision : le_real_execution_semantic_rejection_decision) : bool =
   decision.`leresd_reject.
 
+op le_real_execution_semantic_rejection_decision_repairs_hidden_query_material
+  (decision : le_real_execution_semantic_rejection_decision) : bool =
+  decision.`leresd_repairs_hidden_query_material.
+
 op le_real_execution_semantic_rejection_branch_support : bool list =
   BudgetParameters.le_rejection_semantic_branch_support.
 
 op d_le_real_execution_semantic_rejection_branch_choice : bool distr =
   dmap d_le_real_execution_semantic_rejection_decision_choice
     le_real_execution_semantic_rejection_decision_reject.
+
+op d_le_real_execution_semantic_rejection_decision_repair_choice : bool distr =
+  dmap d_le_real_execution_semantic_rejection_decision_choice
+    le_real_execution_semantic_rejection_decision_repairs_hidden_query_material.
 
 lemma d_le_real_execution_semantic_rejection_branch_choiceE :
   d_le_real_execution_semantic_rejection_branch_choice =
@@ -184,6 +192,41 @@ have Hmap :
     /le_real_execution_semantic_rejection_decision_of_slot /(\o).
 rewrite Hmap.
 by rewrite /BudgetParameters.d_le_rejection_semantic_branch_choice.
+qed.
+
+lemma d_le_real_execution_semantic_rejection_decision_repair_choiceE :
+  d_le_real_execution_semantic_rejection_decision_repair_choice =
+  BudgetParameters.d_le_rejection_semantic_ticket_repair_choice.
+proof.
+rewrite /d_le_real_execution_semantic_rejection_decision_repair_choice.
+rewrite /d_le_real_execution_semantic_rejection_decision_choice.
+rewrite (dmap_comp le_real_execution_semantic_rejection_decision_of_slot
+  le_real_execution_semantic_rejection_decision_repairs_hidden_query_material
+  BudgetParameters.d_le_rejection_semantic_branch_slot_choice).
+have Hmap :
+  dmap BudgetParameters.d_le_rejection_semantic_branch_slot_choice
+    (le_real_execution_semantic_rejection_decision_repairs_hidden_query_material
+      \o le_real_execution_semantic_rejection_decision_of_slot) =
+  dmap BudgetParameters.d_le_rejection_semantic_branch_slot_choice
+    BudgetParameters.le_rejection_semantic_ticket_requires_repair_slot.
+  apply eq_dmap_in=> slot _ /=.
+  by rewrite /le_real_execution_semantic_rejection_decision_repairs_hidden_query_material
+    /le_real_execution_semantic_rejection_decision_of_slot /(\o)
+    /BudgetParameters.le_rejection_semantic_ticket_requires_repair_slot.
+rewrite Hmap.
+by rewrite /BudgetParameters.d_le_rejection_semantic_ticket_repair_choice.
+qed.
+
+lemma le_real_execution_semantic_rejection_decision_choice_support_repairs_hidden_query_materialE
+  (decision : le_real_execution_semantic_rejection_decision) :
+  decision \in d_le_real_execution_semantic_rejection_decision_choice =>
+  decision.`leresd_repairs_hidden_query_material = decision.`leresd_reject.
+proof.
+move=> Hdecision.
+rewrite /d_le_real_execution_semantic_rejection_decision_choice in Hdecision.
+rewrite supp_dmap in Hdecision.
+elim Hdecision=> slot [Hslot ->].
+by rewrite /le_real_execution_semantic_rejection_decision_of_slot.
 qed.
 
 lemma le_real_execution_semantic_rejection_branch_choice_lossless :
@@ -591,6 +634,15 @@ op d_le_real_execution_semantic_rejection_ticket_choice
       le_real_execution_semantic_rejection_ticket_of_observable_branch x s
         (le_real_execution_observable x s) decision.`leresd_reject).
 
+op le_real_execution_semantic_rejection_ticket_requires_repair
+  (ticket : le_real_execution_semantic_rejection_ticket) : bool =
+  ticket.`lerest_decision.`leresd_repairs_hidden_query_material.
+
+op d_le_real_execution_semantic_rejection_ticket_repair_choice
+  (x : qssm_public_input) (s : seed) : bool distr =
+  dmap (d_le_real_execution_semantic_rejection_ticket_choice x s)
+    le_real_execution_semantic_rejection_ticket_requires_repair.
+
 lemma d_le_real_execution_semantic_rejection_ticket_choice_projects_branch
   (x : qssm_public_input) (s : seed) :
   dmap (d_le_real_execution_semantic_rejection_ticket_choice x s)
@@ -617,6 +669,73 @@ have Hmap :
     /le_real_execution_semantic_rejection_ticket_of_observable_branch.
 rewrite Hmap.
 by rewrite /d_le_real_execution_semantic_rejection_branch_choice.
+qed.
+
+lemma d_le_real_execution_semantic_rejection_ticket_choice_projects_repair
+  (x : qssm_public_input) (s : seed) :
+  d_le_real_execution_semantic_rejection_ticket_repair_choice x s =
+  d_le_real_execution_semantic_rejection_decision_repair_choice.
+proof.
+rewrite /d_le_real_execution_semantic_rejection_ticket_repair_choice.
+rewrite /d_le_real_execution_semantic_rejection_ticket_choice.
+rewrite (dmap_comp
+  (fun decision =>
+    le_real_execution_semantic_rejection_ticket_of_observable_branch x s
+      (le_real_execution_observable x s) decision.`leresd_reject)
+  le_real_execution_semantic_rejection_ticket_requires_repair
+  d_le_real_execution_semantic_rejection_decision_choice).
+have Hmap :
+  dmap d_le_real_execution_semantic_rejection_decision_choice
+    (le_real_execution_semantic_rejection_ticket_requires_repair \o
+      (fun decision =>
+        le_real_execution_semantic_rejection_ticket_of_observable_branch x s
+          (le_real_execution_observable x s) decision.`leresd_reject)) =
+  dmap d_le_real_execution_semantic_rejection_decision_choice
+    le_real_execution_semantic_rejection_decision_repairs_hidden_query_material.
+  apply eq_dmap_in=> decision Hdecision /=.
+  rewrite /le_real_execution_semantic_rejection_ticket_requires_repair /(\o)
+    /le_real_execution_semantic_rejection_ticket_of_observable_branch
+    /le_real_execution_semantic_rejection_decision_repairs_hidden_query_material.
+  have Hrepair :
+      decision.`leresd_repairs_hidden_query_material = decision.`leresd_reject.
+    exact
+      (le_real_execution_semantic_rejection_decision_choice_support_repairs_hidden_query_materialE
+        decision Hdecision).
+  by rewrite eq_sym Hrepair.
+rewrite Hmap.
+by [].
+qed.
+
+lemma d_le_real_execution_semantic_rejection_ticket_repair_choiceE
+  (x : qssm_public_input) (s : seed) :
+  d_le_real_execution_semantic_rejection_ticket_repair_choice x s =
+  BudgetParameters.d_le_rejection_semantic_ticket_repair_choice.
+proof.
+rewrite (d_le_real_execution_semantic_rejection_ticket_choice_projects_repair x s).
+exact d_le_real_execution_semantic_rejection_decision_repair_choiceE.
+qed.
+
+op le_real_execution_semantic_rejection_ticket_failure_probability
+  (x : qssm_public_input) (s : seed) : real =
+  mu1 (d_le_real_execution_semantic_rejection_ticket_repair_choice x s) true.
+
+lemma le_real_execution_semantic_rejection_ticket_failure_probability_eq_ticket_failure_law
+  (x : qssm_public_input) (s : seed) :
+  le_real_execution_semantic_rejection_ticket_failure_probability x s =
+  BudgetParameters.le_rejection_semantic_ticket_failure_probability.
+proof.
+rewrite /le_real_execution_semantic_rejection_ticket_failure_probability.
+rewrite (d_le_real_execution_semantic_rejection_ticket_repair_choiceE x s).
+by rewrite /BudgetParameters.le_rejection_semantic_ticket_failure_probability.
+qed.
+
+lemma le_real_execution_semantic_rejection_ticket_failure_probability_eq_epsilon_le_rej_semantic
+  (x : qssm_public_input) (s : seed) :
+  le_real_execution_semantic_rejection_ticket_failure_probability x s =
+  BudgetParameters.epsilon_le_rej_semantic.
+proof.
+rewrite le_real_execution_semantic_rejection_ticket_failure_probability_eq_ticket_failure_law.
+exact BudgetParameters.epsilon_le_rej_semantic_is_ticket_failure_probability.
 qed.
 
 lemma le_real_execution_primitive_material_exposes_challenge_seed_material :

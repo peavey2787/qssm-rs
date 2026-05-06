@@ -15,11 +15,13 @@ import Ring.IntID StdOrder.IntOrder Range.
      remains the active exact-zero lower rejection budget and stays at `0%r`.
    - Shadow LE rejection component on the semantic route:
      `epsilon_le_rej_semantic` tracks the lower rejection failure quantity used
-     by the semantic theorem path. The current semantic-only rejection branch
-     experiment is owned by the primitive counts
+     by the semantic theorem path. It is now presented as a primitive-owned
+     semantic ticket-failure law: the probability that the primitive semantic
+     rejection ticket requires hidden-query-material repair. The current
+     primitive ticket law is still owned by the counts
      `le_rejection_semantic_total_slot_count = 4` and
      `le_rejection_semantic_reject_slot_count = 1`, so
-     `epsilon_le_rej_semantic` now closes to `1%r / 4%r`.
+     `epsilon_le_rej_semantic` still closes to `1%r / 4%r`.
    - Shadow LE FS component: `epsilon_le_fs` is still `0%r`, but now for a
      semantic reason rather than only as a placeholder. The active
      branch-sensitive shadow lane measures failure by the shadow bad-branch
@@ -126,6 +128,21 @@ op d_le_rejection_semantic_branch_choice : bool distr =
   dmap d_le_rejection_semantic_branch_slot_choice
     le_rejection_semantic_reject_branch_slot.
 
+op le_rejection_semantic_ticket_requires_repair_slot (slot : int) : bool =
+  le_rejection_semantic_reject_branch_slot slot.
+
+op d_le_rejection_semantic_ticket_repair_choice : bool distr =
+  dmap d_le_rejection_semantic_branch_slot_choice
+    le_rejection_semantic_ticket_requires_repair_slot.
+
+lemma d_le_rejection_semantic_ticket_repair_choiceE :
+  d_le_rejection_semantic_ticket_repair_choice =
+  d_le_rejection_semantic_branch_choice.
+proof.
+by rewrite /d_le_rejection_semantic_ticket_repair_choice
+  /d_le_rejection_semantic_branch_choice.
+qed.
+
 lemma le_rejection_semantic_branch_choice_lossless :
   is_lossless d_le_rejection_semantic_branch_choice.
 proof.
@@ -207,8 +224,26 @@ have -> :
 by smt().
 qed.
 
+op le_rejection_semantic_ticket_failure_probability : real =
+  mu1 d_le_rejection_semantic_ticket_repair_choice true.
+
+lemma le_rejection_semantic_ticket_failure_probability_closed_form :
+  le_rejection_semantic_ticket_failure_probability =
+  le_rejection_semantic_reject_slot_count%r /
+  le_rejection_semantic_total_slot_count%r.
+proof.
+rewrite /le_rejection_semantic_ticket_failure_probability.
+rewrite d_le_rejection_semantic_ticket_repair_choiceE.
+exact le_rejection_semantic_branch_choice_mass_true.
+qed.
+
 op epsilon_le_rej_semantic : real =
-  mu1 d_le_rejection_semantic_branch_choice true.
+  le_rejection_semantic_ticket_failure_probability.
+
+lemma epsilon_le_rej_semantic_is_ticket_failure_probability :
+  epsilon_le_rej_semantic =
+  le_rejection_semantic_ticket_failure_probability.
+proof. by rewrite /epsilon_le_rej_semantic. qed.
 
 lemma epsilon_le_rej_semantic_closed_form :
   epsilon_le_rej_semantic =
@@ -216,7 +251,7 @@ lemma epsilon_le_rej_semantic_closed_form :
   le_rejection_semantic_total_slot_count%r.
 proof.
 rewrite /epsilon_le_rej_semantic.
-exact le_rejection_semantic_branch_choice_mass_true.
+exact le_rejection_semantic_ticket_failure_probability_closed_form.
 qed.
 
 lemma A4_le_rejection_semantic_nonneg :

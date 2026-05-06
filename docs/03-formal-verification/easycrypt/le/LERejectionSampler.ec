@@ -191,6 +191,8 @@ rewrite le_rejection_shadow_semantic_local_reject_branch_mass_is_true_mass.
 rewrite /d_le_rejection_shadow_semantic_branch_choice.
 rewrite LERealExecution.d_le_real_execution_semantic_rejection_branch_choiceE.
 rewrite /BudgetParameters.epsilon_le_rej_semantic.
+rewrite /BudgetParameters.le_rejection_semantic_ticket_failure_probability.
+rewrite BudgetParameters.d_le_rejection_semantic_ticket_repair_choiceE.
 by [].
 qed.
 
@@ -262,6 +264,10 @@ op le_rejection_shadow_semantic_failure_probability
   mu (dmap (d_le_rejection_shadow_semantic_coupled_state x s)
        le_rejection_shadow_reject_event)
     (fun (reject : bool) => reject).
+
+op le_rejection_shadow_semantic_ticket_failure_probability
+  (x : qssm_public_input) (s : seed) : real =
+  LERealExecution.le_real_execution_semantic_rejection_ticket_failure_probability x s.
 
 lemma le_rejection_shadow_dmap_dprod_fst_lossless ['a 'b]
   (da : 'a distr) (db : 'b distr) :
@@ -637,14 +643,36 @@ rewrite (d_le_rejection_shadow_semantic_reject_event_image_branch_choice x s).
 by [].
 qed.
 
+lemma le_rejection_shadow_semantic_ticket_failure_probability_eq_epsilon_le_rej_semantic :
+  forall (x : qssm_public_input) (s : seed),
+    le_rejection_shadow_semantic_ticket_failure_probability x s =
+    BudgetParameters.epsilon_le_rej_semantic.
+proof.
+move=> x s.
+rewrite /le_rejection_shadow_semantic_ticket_failure_probability.
+exact (LERealExecution.le_real_execution_semantic_rejection_ticket_failure_probability_eq_epsilon_le_rej_semantic x s).
+qed.
+
+lemma le_rejection_shadow_semantic_failure_probability_eq_ticket_failure_probability :
+  forall (x : qssm_public_input) (s : seed),
+    le_rejection_shadow_semantic_failure_probability x s =
+    le_rejection_shadow_semantic_ticket_failure_probability x s.
+proof.
+move=> x s.
+rewrite le_rejection_shadow_semantic_failure_probability_exact_branch_mass.
+rewrite le_rejection_shadow_semantic_local_reject_branch_mass_eq_epsilon.
+rewrite -(le_rejection_shadow_semantic_ticket_failure_probability_eq_epsilon_le_rej_semantic x s).
+by [].
+qed.
+
 lemma le_rejection_shadow_semantic_failure_probability_eq_epsilon_le_rej_semantic :
   forall (x : qssm_public_input) (s : seed),
     le_rejection_shadow_semantic_failure_probability x s =
     BudgetParameters.epsilon_le_rej_semantic.
 proof.
 move=> x s.
-rewrite le_rejection_shadow_semantic_failure_probability_exact_branch_mass.
-exact le_rejection_shadow_semantic_local_reject_branch_mass_eq_epsilon.
+rewrite (le_rejection_shadow_semantic_failure_probability_eq_ticket_failure_probability x s).
+exact (le_rejection_shadow_semantic_ticket_failure_probability_eq_epsilon_le_rej_semantic x s).
 qed.
 
 lemma A_LE_rejection_shadow_semantic_failure_probability_le_semantic_budget :

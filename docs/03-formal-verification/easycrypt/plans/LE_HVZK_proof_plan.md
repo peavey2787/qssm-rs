@@ -489,11 +489,13 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     until a real shared protocol-owned source exists. That richer
     execution-owned semantic rejection repair is now also landed: the reject
     branch runs through an execution-owned ticket and repaired observable while
-    the exact-zero/public-theorem route stays fixed. The next LE-side realism
-    step should therefore be to replace the current semantic rejection
-    demo-count law with a semantically grounded failure law, rather than to
-    rewire rejection ownership again or churn the count owner without adding
-    model substance.
+    the exact-zero/public-theorem route stays fixed. The semantic rejection
+    budget grounding is now landed as well: the public budget is the primitive
+    ticket-failure law and the concrete execution-owned ticket failure
+    probability is proved equal to it. The next LE-side realism step should
+    therefore be to enrich that current primitive `1%r / 4%r` ticket-failure
+    law rather than to rewire rejection ownership again or churn the count
+    owner without adding model substance.
   - LE budget decomposition audit, May 2026: do not treat that rejection-side
     bridge as the permanent replacement surface. The intended steady state is
     component arithmetic, with a new FS budget `epsilon_le_fs` beside
