@@ -140,18 +140,27 @@ op le_real_execution_challenge_seed_material_of
     lerecsm_digest_4 = le_real_execution_label_digest LABEL_CROSS_PROTOCOL_DIGEST_V1;
   |}.
 
-op le_real_execution_semantic_rejection_decision_of_slot
-  (slot : int) : le_real_execution_semantic_rejection_decision =
-  let reject = BudgetParameters.le_rejection_semantic_reject_branch_slot slot in
+op le_real_execution_semantic_rejection_category_is_failure
+  (category : BudgetParameters.le_rejection_semantic_ticket_category) : bool =
+  BudgetParameters.le_rejection_semantic_ticket_category_is_failure category.
+
+op le_real_execution_semantic_rejection_decision_of_category
+  (category : BudgetParameters.le_rejection_semantic_ticket_category) :
+  le_real_execution_semantic_rejection_decision =
+  let reject = le_real_execution_semantic_rejection_category_is_failure category in
   {|
     leresd_reject = reject;
     leresd_repairs_hidden_query_material = reject;
   |}.
 
+op d_le_real_execution_semantic_rejection_category_choice :
+  BudgetParameters.le_rejection_semantic_ticket_category distr =
+  BudgetParameters.d_le_rejection_semantic_ticket_category_choice.
+
 op d_le_real_execution_semantic_rejection_decision_choice :
   le_real_execution_semantic_rejection_decision distr =
-  dmap BudgetParameters.d_le_rejection_semantic_branch_slot_choice
-    le_real_execution_semantic_rejection_decision_of_slot.
+  dmap d_le_real_execution_semantic_rejection_category_choice
+    le_real_execution_semantic_rejection_decision_of_category.
 
 op le_real_execution_semantic_rejection_decision_reject
   (decision : le_real_execution_semantic_rejection_decision) : bool =
@@ -178,20 +187,23 @@ lemma d_le_real_execution_semantic_rejection_branch_choiceE :
 proof.
 rewrite /d_le_real_execution_semantic_rejection_branch_choice.
 rewrite /d_le_real_execution_semantic_rejection_decision_choice.
-rewrite (dmap_comp le_real_execution_semantic_rejection_decision_of_slot
+rewrite /d_le_real_execution_semantic_rejection_category_choice.
+rewrite (dmap_comp le_real_execution_semantic_rejection_decision_of_category
   le_real_execution_semantic_rejection_decision_reject
-  BudgetParameters.d_le_rejection_semantic_branch_slot_choice).
+  BudgetParameters.d_le_rejection_semantic_ticket_category_choice).
 have Hmap :
-  dmap BudgetParameters.d_le_rejection_semantic_branch_slot_choice
+  dmap BudgetParameters.d_le_rejection_semantic_ticket_category_choice
     (le_real_execution_semantic_rejection_decision_reject
-      \o le_real_execution_semantic_rejection_decision_of_slot) =
-  dmap BudgetParameters.d_le_rejection_semantic_branch_slot_choice
-    BudgetParameters.le_rejection_semantic_reject_branch_slot.
-  apply eq_dmap_in=> slot _ /=.
+      \o le_real_execution_semantic_rejection_decision_of_category) =
+  dmap BudgetParameters.d_le_rejection_semantic_ticket_category_choice
+    BudgetParameters.le_rejection_semantic_ticket_category_is_failure.
+  apply eq_dmap_in=> category _ /=.
   by rewrite /le_real_execution_semantic_rejection_decision_reject
-    /le_real_execution_semantic_rejection_decision_of_slot /(\o).
+    /le_real_execution_semantic_rejection_decision_of_category
+    /le_real_execution_semantic_rejection_category_is_failure /(\o).
 rewrite Hmap.
-by rewrite /BudgetParameters.d_le_rejection_semantic_branch_choice.
+by rewrite /BudgetParameters.d_le_rejection_semantic_branch_choice
+  /BudgetParameters.d_le_rejection_semantic_ticket_repair_choice.
 qed.
 
 lemma d_le_real_execution_semantic_rejection_decision_repair_choiceE :
@@ -200,19 +212,20 @@ lemma d_le_real_execution_semantic_rejection_decision_repair_choiceE :
 proof.
 rewrite /d_le_real_execution_semantic_rejection_decision_repair_choice.
 rewrite /d_le_real_execution_semantic_rejection_decision_choice.
-rewrite (dmap_comp le_real_execution_semantic_rejection_decision_of_slot
+rewrite /d_le_real_execution_semantic_rejection_category_choice.
+rewrite (dmap_comp le_real_execution_semantic_rejection_decision_of_category
   le_real_execution_semantic_rejection_decision_repairs_hidden_query_material
-  BudgetParameters.d_le_rejection_semantic_branch_slot_choice).
+  BudgetParameters.d_le_rejection_semantic_ticket_category_choice).
 have Hmap :
-  dmap BudgetParameters.d_le_rejection_semantic_branch_slot_choice
+  dmap BudgetParameters.d_le_rejection_semantic_ticket_category_choice
     (le_real_execution_semantic_rejection_decision_repairs_hidden_query_material
-      \o le_real_execution_semantic_rejection_decision_of_slot) =
-  dmap BudgetParameters.d_le_rejection_semantic_branch_slot_choice
-    BudgetParameters.le_rejection_semantic_ticket_requires_repair_slot.
-  apply eq_dmap_in=> slot _ /=.
+      \o le_real_execution_semantic_rejection_decision_of_category) =
+  dmap BudgetParameters.d_le_rejection_semantic_ticket_category_choice
+    BudgetParameters.le_rejection_semantic_ticket_category_is_failure.
+  apply eq_dmap_in=> category _ /=.
   by rewrite /le_real_execution_semantic_rejection_decision_repairs_hidden_query_material
-    /le_real_execution_semantic_rejection_decision_of_slot /(\o)
-    /BudgetParameters.le_rejection_semantic_ticket_requires_repair_slot.
+    /le_real_execution_semantic_rejection_decision_of_category /(\o)
+    /le_real_execution_semantic_rejection_category_is_failure.
 rewrite Hmap.
 by rewrite /BudgetParameters.d_le_rejection_semantic_ticket_repair_choice.
 qed.
@@ -224,9 +237,10 @@ lemma le_real_execution_semantic_rejection_decision_choice_support_repairs_hidde
 proof.
 move=> Hdecision.
 rewrite /d_le_real_execution_semantic_rejection_decision_choice in Hdecision.
+rewrite /d_le_real_execution_semantic_rejection_category_choice in Hdecision.
 rewrite supp_dmap in Hdecision.
-elim Hdecision=> slot [Hslot ->].
-by rewrite /le_real_execution_semantic_rejection_decision_of_slot.
+elim Hdecision=> category [Hcategory ->].
+by rewrite /le_real_execution_semantic_rejection_decision_of_category.
 qed.
 
 lemma le_real_execution_semantic_rejection_branch_choice_lossless :

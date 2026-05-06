@@ -66,56 +66,306 @@ lemma A4_le_rejection_nonneg :
   0%r <= epsilon_le_rej.
 proof. by rewrite /epsilon_le_rej. qed.
 
-op le_rejection_semantic_total_slot_count : int = 4.
+type le_rejection_semantic_ticket_category = [
+  | LERejectionSemanticTicketSoftRepair
+  | LERejectionSemanticTicketHardRepair
+  | LERejectionSemanticTicketInvalid
+  | LERejectionSemanticTicketAccept
+].
 
-op le_rejection_semantic_reject_slot_count : int = 1.
+op le_rejection_semantic_ticket_category_support :
+  le_rejection_semantic_ticket_category list =
+  [ LERejectionSemanticTicketSoftRepair;
+    LERejectionSemanticTicketHardRepair;
+    LERejectionSemanticTicketInvalid;
+    LERejectionSemanticTicketAccept ].
+
+lemma le_rejection_semantic_ticket_category_support_uniq :
+  uniq le_rejection_semantic_ticket_category_support.
+proof.
+by rewrite /le_rejection_semantic_ticket_category_support.
+qed.
+
+op le_rejection_semantic_ticket_soft_repair_slot_count : int = 1.
+
+op le_rejection_semantic_ticket_hard_repair_slot_count : int = 1.
+
+op le_rejection_semantic_ticket_invalid_slot_count : int = 1.
+
+op le_rejection_semantic_ticket_accept_slot_count : int = 3.
+
+op le_rejection_semantic_ticket_failure_slot_count : int =
+  le_rejection_semantic_ticket_soft_repair_slot_count +
+  le_rejection_semantic_ticket_hard_repair_slot_count +
+  le_rejection_semantic_ticket_invalid_slot_count.
+
+op le_rejection_semantic_ticket_total_slot_count : int =
+  le_rejection_semantic_ticket_failure_slot_count +
+  le_rejection_semantic_ticket_accept_slot_count.
+
+lemma le_rejection_semantic_ticket_total_slot_count_pos :
+  0 < le_rejection_semantic_ticket_total_slot_count.
+proof.
+by rewrite /le_rejection_semantic_ticket_total_slot_count
+  /le_rejection_semantic_ticket_failure_slot_count
+  /le_rejection_semantic_ticket_soft_repair_slot_count
+  /le_rejection_semantic_ticket_hard_repair_slot_count
+  /le_rejection_semantic_ticket_invalid_slot_count
+  /le_rejection_semantic_ticket_accept_slot_count.
+qed.
+
+lemma le_rejection_semantic_ticket_failure_slot_count_pos :
+  0 < le_rejection_semantic_ticket_failure_slot_count.
+proof.
+by rewrite /le_rejection_semantic_ticket_failure_slot_count
+  /le_rejection_semantic_ticket_soft_repair_slot_count
+  /le_rejection_semantic_ticket_hard_repair_slot_count
+  /le_rejection_semantic_ticket_invalid_slot_count.
+qed.
+
+lemma le_rejection_semantic_ticket_failure_slot_count_lt_total_slot_count :
+  le_rejection_semantic_ticket_failure_slot_count <
+  le_rejection_semantic_ticket_total_slot_count.
+proof.
+by rewrite /le_rejection_semantic_ticket_total_slot_count
+  /le_rejection_semantic_ticket_failure_slot_count
+  /le_rejection_semantic_ticket_soft_repair_slot_count
+  /le_rejection_semantic_ticket_hard_repair_slot_count
+  /le_rejection_semantic_ticket_invalid_slot_count
+  /le_rejection_semantic_ticket_accept_slot_count.
+qed.
+
+op le_rejection_semantic_total_slot_count : int =
+  le_rejection_semantic_ticket_total_slot_count.
+
+op le_rejection_semantic_reject_slot_count : int =
+  le_rejection_semantic_ticket_failure_slot_count.
 
 lemma le_rejection_semantic_total_slot_count_pos :
   0 < le_rejection_semantic_total_slot_count.
-proof. by rewrite /le_rejection_semantic_total_slot_count. qed.
+proof.
+rewrite /le_rejection_semantic_total_slot_count.
+exact le_rejection_semantic_ticket_total_slot_count_pos.
+qed.
 
 lemma le_rejection_semantic_reject_slot_count_pos :
   0 < le_rejection_semantic_reject_slot_count.
-proof. by rewrite /le_rejection_semantic_reject_slot_count. qed.
+proof.
+rewrite /le_rejection_semantic_reject_slot_count.
+exact le_rejection_semantic_ticket_failure_slot_count_pos.
+qed.
 
 lemma le_rejection_semantic_reject_slot_count_lt_total_slot_count :
   le_rejection_semantic_reject_slot_count < le_rejection_semantic_total_slot_count.
 proof.
-by rewrite /le_rejection_semantic_reject_slot_count /le_rejection_semantic_total_slot_count.
+rewrite /le_rejection_semantic_reject_slot_count /le_rejection_semantic_total_slot_count.
+exact le_rejection_semantic_ticket_failure_slot_count_lt_total_slot_count.
+qed.
+
+op le_rejection_semantic_ticket_slot_support : int list =
+  range 0 le_rejection_semantic_ticket_total_slot_count.
+
+lemma le_rejection_semantic_ticket_slot_supportE :
+  le_rejection_semantic_ticket_slot_support = [0; 1; 2; 3; 4; 5].
+proof.
+rewrite /le_rejection_semantic_ticket_slot_support
+  /le_rejection_semantic_ticket_total_slot_count
+  /le_rejection_semantic_ticket_failure_slot_count
+  /le_rejection_semantic_ticket_soft_repair_slot_count
+  /le_rejection_semantic_ticket_hard_repair_slot_count
+  /le_rejection_semantic_ticket_invalid_slot_count
+  /le_rejection_semantic_ticket_accept_slot_count.
+rewrite (range_ltn 0 6) 1:/# /=.
+rewrite (range_ltn 1 6) 1:/# /=.
+rewrite (range_ltn 2 6) 1:/# /=.
+rewrite (range_ltn 3 6) 1:/# /=.
+rewrite (range_ltn 4 6) 1:/# /=.
+rewrite (range_ltn 5 6) 1:/# /=.
+by rewrite range_geq /=.
+qed.
+
+lemma le_rejection_semantic_ticket_slot_support_uniq :
+  uniq le_rejection_semantic_ticket_slot_support.
+proof.
+by rewrite /le_rejection_semantic_ticket_slot_support range_uniq.
 qed.
 
 op le_rejection_semantic_branch_slot_support : int list =
-  range 0 le_rejection_semantic_total_slot_count.
+  le_rejection_semantic_ticket_slot_support.
 
 lemma le_rejection_semantic_branch_slot_supportE :
-  le_rejection_semantic_branch_slot_support = [0; 1; 2; 3].
+  le_rejection_semantic_branch_slot_support = [0; 1; 2; 3; 4; 5].
 proof.
-rewrite /le_rejection_semantic_branch_slot_support /le_rejection_semantic_total_slot_count.
-rewrite (range_ltn 0 4) 1:/# /=.
-rewrite (range_ltn 1 4) 1:/# /=.
-rewrite (range_ltn 2 4) 1:/# /=.
-rewrite (range_ltn 3 4) 1:/# /=.
-by rewrite range_geq /=.
+exact le_rejection_semantic_ticket_slot_supportE.
 qed.
 
 lemma le_rejection_semantic_branch_slot_support_uniq :
   uniq le_rejection_semantic_branch_slot_support.
 proof.
-by rewrite /le_rejection_semantic_branch_slot_support range_uniq.
+rewrite /le_rejection_semantic_branch_slot_support.
+exact le_rejection_semantic_ticket_slot_support_uniq.
 qed.
 
+op le_rejection_semantic_ticket_category_of_slot
+  (slot : int) : le_rejection_semantic_ticket_category =
+  if slot < le_rejection_semantic_ticket_soft_repair_slot_count then
+    LERejectionSemanticTicketSoftRepair
+  else if slot <
+      le_rejection_semantic_ticket_soft_repair_slot_count +
+      le_rejection_semantic_ticket_hard_repair_slot_count then
+    LERejectionSemanticTicketHardRepair
+  else if slot < le_rejection_semantic_ticket_failure_slot_count then
+    LERejectionSemanticTicketInvalid
+  else LERejectionSemanticTicketAccept.
+
+op le_rejection_semantic_ticket_category_is_failure
+  (category : le_rejection_semantic_ticket_category) : bool =
+  if pred1 LERejectionSemanticTicketAccept category then false else true.
+
 op le_rejection_semantic_reject_branch_slot (slot : int) : bool =
-  slot < le_rejection_semantic_reject_slot_count.
+  le_rejection_semantic_ticket_category_is_failure
+    (le_rejection_semantic_ticket_category_of_slot slot).
+
+op le_rejection_semantic_ticket_requires_repair_slot (slot : int) : bool =
+  le_rejection_semantic_reject_branch_slot slot.
+
+op d_le_rejection_semantic_ticket_slot_choice : int distr =
+  duniform le_rejection_semantic_ticket_slot_support.
 
 op d_le_rejection_semantic_branch_slot_choice : int distr =
-  duniform le_rejection_semantic_branch_slot_support.
+  d_le_rejection_semantic_ticket_slot_choice.
 
 lemma le_rejection_semantic_branch_slot_choice_lossless :
   is_lossless d_le_rejection_semantic_branch_slot_choice.
 proof.
 rewrite /d_le_rejection_semantic_branch_slot_choice.
-rewrite /le_rejection_semantic_branch_slot_support.
-by apply duniform_ll; rewrite range_ltn /le_rejection_semantic_total_slot_count.
+rewrite /d_le_rejection_semantic_ticket_slot_choice.
+rewrite /le_rejection_semantic_ticket_slot_support.
+by apply duniform_ll; rewrite range_ltn /le_rejection_semantic_ticket_total_slot_count.
+qed.
+
+op d_le_rejection_semantic_ticket_category_choice :
+  le_rejection_semantic_ticket_category distr =
+  dmap d_le_rejection_semantic_ticket_slot_choice
+    le_rejection_semantic_ticket_category_of_slot.
+
+lemma le_rejection_semantic_ticket_category_choice_lossless :
+  is_lossless d_le_rejection_semantic_ticket_category_choice.
+proof.
+rewrite /d_le_rejection_semantic_ticket_category_choice.
+by apply dmap_ll; exact le_rejection_semantic_branch_slot_choice_lossless.
+qed.
+
+lemma le_rejection_semantic_ticket_category_choice_mass_soft_repair :
+  mu1 d_le_rejection_semantic_ticket_category_choice LERejectionSemanticTicketSoftRepair =
+  le_rejection_semantic_ticket_soft_repair_slot_count%r /
+  le_rejection_semantic_ticket_total_slot_count%r.
+proof.
+rewrite /mu1 /d_le_rejection_semantic_ticket_category_choice dmapE /=.
+rewrite /d_le_rejection_semantic_ticket_slot_choice duniformE.
+rewrite undup_id ?le_rejection_semantic_ticket_slot_support_uniq /=.
+have Hcount :
+    count (pred1 LERejectionSemanticTicketSoftRepair \o
+      le_rejection_semantic_ticket_category_of_slot)
+      le_rejection_semantic_ticket_slot_support = 1.
+  by rewrite le_rejection_semantic_ticket_slot_supportE
+    /le_rejection_semantic_ticket_category_of_slot
+    /le_rejection_semantic_ticket_soft_repair_slot_count
+    /le_rejection_semantic_ticket_hard_repair_slot_count
+    /le_rejection_semantic_ticket_invalid_slot_count
+    /le_rejection_semantic_ticket_failure_slot_count /pred1 /(\o) /=.
+rewrite Hcount le_rejection_semantic_ticket_slot_supportE /=.
+rewrite /le_rejection_semantic_ticket_soft_repair_slot_count
+  /le_rejection_semantic_ticket_total_slot_count
+  /le_rejection_semantic_ticket_failure_slot_count
+  /le_rejection_semantic_ticket_hard_repair_slot_count
+  /le_rejection_semantic_ticket_invalid_slot_count
+  /le_rejection_semantic_ticket_accept_slot_count /=.
+by smt().
+qed.
+
+lemma le_rejection_semantic_ticket_category_choice_mass_hard_repair :
+  mu1 d_le_rejection_semantic_ticket_category_choice LERejectionSemanticTicketHardRepair =
+  le_rejection_semantic_ticket_hard_repair_slot_count%r /
+  le_rejection_semantic_ticket_total_slot_count%r.
+proof.
+rewrite /mu1 /d_le_rejection_semantic_ticket_category_choice dmapE /=.
+rewrite /d_le_rejection_semantic_ticket_slot_choice duniformE.
+rewrite undup_id ?le_rejection_semantic_ticket_slot_support_uniq /=.
+have Hcount :
+    count (pred1 LERejectionSemanticTicketHardRepair \o
+      le_rejection_semantic_ticket_category_of_slot)
+      le_rejection_semantic_ticket_slot_support = 1.
+  by rewrite le_rejection_semantic_ticket_slot_supportE
+    /le_rejection_semantic_ticket_category_of_slot
+    /le_rejection_semantic_ticket_soft_repair_slot_count
+    /le_rejection_semantic_ticket_hard_repair_slot_count
+    /le_rejection_semantic_ticket_invalid_slot_count
+    /le_rejection_semantic_ticket_failure_slot_count /pred1 /(\o) /=.
+rewrite Hcount le_rejection_semantic_ticket_slot_supportE /=.
+rewrite /le_rejection_semantic_ticket_hard_repair_slot_count
+  /le_rejection_semantic_ticket_total_slot_count
+  /le_rejection_semantic_ticket_failure_slot_count
+  /le_rejection_semantic_ticket_soft_repair_slot_count
+  /le_rejection_semantic_ticket_invalid_slot_count
+  /le_rejection_semantic_ticket_accept_slot_count /=.
+by smt().
+qed.
+
+lemma le_rejection_semantic_ticket_category_choice_mass_invalid :
+  mu1 d_le_rejection_semantic_ticket_category_choice LERejectionSemanticTicketInvalid =
+  le_rejection_semantic_ticket_invalid_slot_count%r /
+  le_rejection_semantic_ticket_total_slot_count%r.
+proof.
+rewrite /mu1 /d_le_rejection_semantic_ticket_category_choice dmapE /=.
+rewrite /d_le_rejection_semantic_ticket_slot_choice duniformE.
+rewrite undup_id ?le_rejection_semantic_ticket_slot_support_uniq /=.
+have Hcount :
+    count (pred1 LERejectionSemanticTicketInvalid \o
+      le_rejection_semantic_ticket_category_of_slot)
+      le_rejection_semantic_ticket_slot_support = 1.
+  by rewrite le_rejection_semantic_ticket_slot_supportE
+    /le_rejection_semantic_ticket_category_of_slot
+    /le_rejection_semantic_ticket_soft_repair_slot_count
+    /le_rejection_semantic_ticket_hard_repair_slot_count
+    /le_rejection_semantic_ticket_invalid_slot_count
+    /le_rejection_semantic_ticket_failure_slot_count /pred1 /(\o) /=.
+rewrite Hcount le_rejection_semantic_ticket_slot_supportE /=.
+rewrite /le_rejection_semantic_ticket_invalid_slot_count
+  /le_rejection_semantic_ticket_total_slot_count
+  /le_rejection_semantic_ticket_failure_slot_count
+  /le_rejection_semantic_ticket_soft_repair_slot_count
+  /le_rejection_semantic_ticket_hard_repair_slot_count
+  /le_rejection_semantic_ticket_accept_slot_count /=.
+by smt().
+qed.
+
+lemma le_rejection_semantic_ticket_category_choice_mass_accept :
+  mu1 d_le_rejection_semantic_ticket_category_choice LERejectionSemanticTicketAccept =
+  le_rejection_semantic_ticket_accept_slot_count%r /
+  le_rejection_semantic_ticket_total_slot_count%r.
+proof.
+rewrite /mu1 /d_le_rejection_semantic_ticket_category_choice dmapE /=.
+rewrite /d_le_rejection_semantic_ticket_slot_choice duniformE.
+rewrite undup_id ?le_rejection_semantic_ticket_slot_support_uniq /=.
+have Hcount :
+    count (pred1 LERejectionSemanticTicketAccept \o
+      le_rejection_semantic_ticket_category_of_slot)
+      le_rejection_semantic_ticket_slot_support = 3.
+  by rewrite le_rejection_semantic_ticket_slot_supportE
+    /le_rejection_semantic_ticket_category_of_slot
+    /le_rejection_semantic_ticket_soft_repair_slot_count
+    /le_rejection_semantic_ticket_hard_repair_slot_count
+    /le_rejection_semantic_ticket_invalid_slot_count
+    /le_rejection_semantic_ticket_failure_slot_count /pred1 /(\o) /=.
+rewrite Hcount le_rejection_semantic_ticket_slot_supportE /=.
+rewrite /le_rejection_semantic_ticket_accept_slot_count
+  /le_rejection_semantic_ticket_total_slot_count
+  /le_rejection_semantic_ticket_failure_slot_count
+  /le_rejection_semantic_ticket_soft_repair_slot_count
+  /le_rejection_semantic_ticket_hard_repair_slot_count
+  /le_rejection_semantic_ticket_invalid_slot_count /=.
+by smt().
 qed.
 
 op le_rejection_semantic_branch_support : bool list = [false; true].
@@ -124,29 +374,40 @@ lemma le_rejection_semantic_branch_support_uniq :
   uniq le_rejection_semantic_branch_support.
 proof. by rewrite /le_rejection_semantic_branch_support. qed.
 
-op d_le_rejection_semantic_branch_choice : bool distr =
-  dmap d_le_rejection_semantic_branch_slot_choice
-    le_rejection_semantic_reject_branch_slot.
-
-op le_rejection_semantic_ticket_requires_repair_slot (slot : int) : bool =
-  le_rejection_semantic_reject_branch_slot slot.
-
 op d_le_rejection_semantic_ticket_repair_choice : bool distr =
-  dmap d_le_rejection_semantic_branch_slot_choice
-    le_rejection_semantic_ticket_requires_repair_slot.
+  dmap d_le_rejection_semantic_ticket_category_choice
+    le_rejection_semantic_ticket_category_is_failure.
 
 lemma d_le_rejection_semantic_ticket_repair_choiceE :
   d_le_rejection_semantic_ticket_repair_choice =
-  d_le_rejection_semantic_branch_choice.
+  dmap d_le_rejection_semantic_ticket_slot_choice
+    le_rejection_semantic_ticket_requires_repair_slot.
 proof.
-by rewrite /d_le_rejection_semantic_ticket_repair_choice
-  /d_le_rejection_semantic_branch_choice.
+rewrite /d_le_rejection_semantic_ticket_repair_choice.
+rewrite /d_le_rejection_semantic_ticket_category_choice.
+rewrite (dmap_comp le_rejection_semantic_ticket_category_of_slot
+  le_rejection_semantic_ticket_category_is_failure
+  d_le_rejection_semantic_ticket_slot_choice).
+have Hmap :
+  dmap d_le_rejection_semantic_ticket_slot_choice
+    (le_rejection_semantic_ticket_category_is_failure \o
+      le_rejection_semantic_ticket_category_of_slot) =
+  dmap d_le_rejection_semantic_ticket_slot_choice
+    le_rejection_semantic_ticket_requires_repair_slot.
+  apply eq_dmap_in=> slot _ /=.
+  by rewrite /le_rejection_semantic_ticket_requires_repair_slot /(\o).
+rewrite Hmap.
+by [].
 qed.
+
+op d_le_rejection_semantic_branch_choice : bool distr =
+  d_le_rejection_semantic_ticket_repair_choice.
 
 lemma le_rejection_semantic_branch_choice_lossless :
   is_lossless d_le_rejection_semantic_branch_choice.
 proof.
 rewrite /d_le_rejection_semantic_branch_choice.
+rewrite d_le_rejection_semantic_ticket_repair_choiceE.
 by apply dmap_ll; exact le_rejection_semantic_branch_slot_choice_lossless.
 qed.
 
@@ -154,26 +415,40 @@ lemma le_rejection_semantic_accept_branch_has_support :
   false \in d_le_rejection_semantic_branch_choice.
 proof.
 rewrite /d_le_rejection_semantic_branch_choice.
+rewrite d_le_rejection_semantic_ticket_repair_choiceE.
 apply/supp_dmap.
 exists le_rejection_semantic_reject_slot_count; split.
-  rewrite /d_le_rejection_semantic_branch_slot_choice.
-  rewrite /le_rejection_semantic_branch_slot_support.
+  rewrite /d_le_rejection_semantic_ticket_slot_choice.
+  rewrite /le_rejection_semantic_ticket_slot_support.
   rewrite supp_duniform mem_range.
   split; first smt(le_rejection_semantic_reject_slot_count_pos).
   smt(le_rejection_semantic_reject_slot_count_lt_total_slot_count).
-by rewrite /le_rejection_semantic_reject_branch_slot ltrr.
+by rewrite /le_rejection_semantic_ticket_requires_repair_slot
+  /le_rejection_semantic_reject_branch_slot
+  /le_rejection_semantic_ticket_category_is_failure
+  /le_rejection_semantic_ticket_category_of_slot
+  /le_rejection_semantic_reject_slot_count
+  /le_rejection_semantic_ticket_failure_slot_count
+  /le_rejection_semantic_ticket_soft_repair_slot_count
+  /le_rejection_semantic_ticket_hard_repair_slot_count
+  /le_rejection_semantic_ticket_invalid_slot_count /pred1 ltrr.
 qed.
 
 lemma le_rejection_semantic_reject_branch_has_support :
   true \in d_le_rejection_semantic_branch_choice.
 proof.
 rewrite /d_le_rejection_semantic_branch_choice.
+rewrite d_le_rejection_semantic_ticket_repair_choiceE.
 apply/supp_dmap.
 exists 0; split.
-  rewrite /d_le_rejection_semantic_branch_slot_choice.
-  rewrite /le_rejection_semantic_branch_slot_support.
-  by rewrite supp_duniform mem_range /le_rejection_semantic_total_slot_count.
-by rewrite /le_rejection_semantic_reject_branch_slot /le_rejection_semantic_reject_slot_count.
+  rewrite /d_le_rejection_semantic_ticket_slot_choice.
+  rewrite /le_rejection_semantic_ticket_slot_support.
+  by rewrite supp_duniform mem_range /le_rejection_semantic_ticket_total_slot_count.
+by rewrite /le_rejection_semantic_ticket_requires_repair_slot
+  /le_rejection_semantic_reject_branch_slot
+  /le_rejection_semantic_ticket_category_is_failure
+  /le_rejection_semantic_ticket_category_of_slot
+  /le_rejection_semantic_ticket_soft_repair_slot_count /pred1.
 qed.
 
 lemma le_rejection_semantic_branch_choice_mass_false :
@@ -182,22 +457,30 @@ lemma le_rejection_semantic_branch_choice_mass_false :
    le_rejection_semantic_reject_slot_count)%r /
   le_rejection_semantic_total_slot_count%r.
 proof.
-rewrite /mu1 /d_le_rejection_semantic_branch_choice dmapE /=.
-rewrite /d_le_rejection_semantic_branch_slot_choice duniformE.
-rewrite undup_id ?le_rejection_semantic_branch_slot_support_uniq /=.
+rewrite /mu1 /d_le_rejection_semantic_branch_choice.
+rewrite d_le_rejection_semantic_ticket_repair_choiceE dmapE /=.
+rewrite /d_le_rejection_semantic_ticket_slot_choice duniformE.
+rewrite undup_id ?le_rejection_semantic_ticket_slot_support_uniq /=.
 have Hcount :
-    count (pred1 false \o le_rejection_semantic_reject_branch_slot)
-      le_rejection_semantic_branch_slot_support = 3.
-  by rewrite le_rejection_semantic_branch_slot_supportE
-             /le_rejection_semantic_reject_branch_slot
-             /le_rejection_semantic_reject_slot_count /pred1 /(\o) /=.
-rewrite Hcount le_rejection_semantic_branch_slot_supportE /=.
-have -> :
-    (le_rejection_semantic_total_slot_count -
-     le_rejection_semantic_reject_slot_count)%r /
-    le_rejection_semantic_total_slot_count%r = 3%r / 4%r.
-  by rewrite /le_rejection_semantic_total_slot_count
-             /le_rejection_semantic_reject_slot_count /=.
+    count (pred1 false \o le_rejection_semantic_ticket_requires_repair_slot)
+      le_rejection_semantic_ticket_slot_support = 3.
+  by rewrite le_rejection_semantic_ticket_slot_supportE
+    /le_rejection_semantic_ticket_requires_repair_slot
+    /le_rejection_semantic_reject_branch_slot
+    /le_rejection_semantic_ticket_category_is_failure
+    /le_rejection_semantic_ticket_category_of_slot /pred1 /(\o)
+    /le_rejection_semantic_ticket_soft_repair_slot_count
+    /le_rejection_semantic_ticket_hard_repair_slot_count
+    /le_rejection_semantic_ticket_invalid_slot_count
+    /le_rejection_semantic_ticket_failure_slot_count /=.
+rewrite Hcount le_rejection_semantic_ticket_slot_supportE /=.
+rewrite /le_rejection_semantic_total_slot_count /le_rejection_semantic_reject_slot_count.
+rewrite /le_rejection_semantic_ticket_total_slot_count
+  /le_rejection_semantic_ticket_failure_slot_count
+  /le_rejection_semantic_ticket_soft_repair_slot_count
+  /le_rejection_semantic_ticket_hard_repair_slot_count
+  /le_rejection_semantic_ticket_invalid_slot_count
+  /le_rejection_semantic_ticket_accept_slot_count /=.
 by smt().
 qed.
 
@@ -206,26 +489,49 @@ lemma le_rejection_semantic_branch_choice_mass_true :
   le_rejection_semantic_reject_slot_count%r /
   le_rejection_semantic_total_slot_count%r.
 proof.
-rewrite /mu1 /d_le_rejection_semantic_branch_choice dmapE /=.
-rewrite /d_le_rejection_semantic_branch_slot_choice duniformE.
-rewrite undup_id ?le_rejection_semantic_branch_slot_support_uniq /=.
+rewrite /d_le_rejection_semantic_branch_choice.
+rewrite /le_rejection_semantic_reject_slot_count /le_rejection_semantic_total_slot_count.
+rewrite /d_le_rejection_semantic_ticket_repair_choice.
+rewrite /mu1 dmapE /=.
+rewrite /d_le_rejection_semantic_ticket_category_choice dmapE /=.
+rewrite /d_le_rejection_semantic_ticket_slot_choice duniformE.
+rewrite undup_id ?le_rejection_semantic_ticket_slot_support_uniq /=.
 have Hcount :
-    count (pred1 true \o le_rejection_semantic_reject_branch_slot)
-      le_rejection_semantic_branch_slot_support = 1.
-  by rewrite le_rejection_semantic_branch_slot_supportE
-             /le_rejection_semantic_reject_branch_slot
-             /le_rejection_semantic_reject_slot_count /pred1 /(\o) /=.
-rewrite Hcount le_rejection_semantic_branch_slot_supportE /=.
-have -> :
-    le_rejection_semantic_reject_slot_count%r /
-    le_rejection_semantic_total_slot_count%r = 1%r / 4%r.
-  by rewrite /le_rejection_semantic_total_slot_count
-             /le_rejection_semantic_reject_slot_count /=.
+    count (pred1 true \o
+      (le_rejection_semantic_ticket_category_is_failure \o
+        le_rejection_semantic_ticket_category_of_slot))
+      le_rejection_semantic_ticket_slot_support = 3.
+  by rewrite le_rejection_semantic_ticket_slot_supportE
+    /le_rejection_semantic_ticket_category_is_failure
+    /le_rejection_semantic_ticket_category_of_slot
+    /le_rejection_semantic_ticket_soft_repair_slot_count
+    /le_rejection_semantic_ticket_hard_repair_slot_count
+    /le_rejection_semantic_ticket_invalid_slot_count
+    /le_rejection_semantic_ticket_failure_slot_count /pred1 /(\o) /=.
+rewrite Hcount le_rejection_semantic_ticket_slot_supportE /=.
+rewrite /le_rejection_semantic_ticket_failure_slot_count
+  /le_rejection_semantic_ticket_total_slot_count
+  /le_rejection_semantic_ticket_soft_repair_slot_count
+  /le_rejection_semantic_ticket_hard_repair_slot_count
+  /le_rejection_semantic_ticket_invalid_slot_count
+  /le_rejection_semantic_ticket_accept_slot_count /=.
 by smt().
 qed.
 
 op le_rejection_semantic_ticket_failure_probability : real =
   mu1 d_le_rejection_semantic_ticket_repair_choice true.
+
+lemma le_rejection_semantic_ticket_failure_probability_category_mass_sum :
+  le_rejection_semantic_ticket_failure_probability =
+  (le_rejection_semantic_ticket_soft_repair_slot_count +
+   le_rejection_semantic_ticket_hard_repair_slot_count +
+   le_rejection_semantic_ticket_invalid_slot_count)%r /
+  le_rejection_semantic_ticket_total_slot_count%r.
+proof.
+rewrite /le_rejection_semantic_ticket_failure_probability.
+rewrite /le_rejection_semantic_ticket_failure_slot_count.
+exact le_rejection_semantic_branch_choice_mass_true.
+qed.
 
 lemma le_rejection_semantic_ticket_failure_probability_closed_form :
   le_rejection_semantic_ticket_failure_probability =
@@ -233,7 +539,6 @@ lemma le_rejection_semantic_ticket_failure_probability_closed_form :
   le_rejection_semantic_total_slot_count%r.
 proof.
 rewrite /le_rejection_semantic_ticket_failure_probability.
-rewrite d_le_rejection_semantic_ticket_repair_choiceE.
 exact le_rejection_semantic_branch_choice_mass_true.
 qed.
 

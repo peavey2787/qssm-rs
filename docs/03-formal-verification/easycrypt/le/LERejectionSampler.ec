@@ -187,12 +187,8 @@ lemma le_rejection_shadow_semantic_local_reject_branch_mass_eq_epsilon :
   le_rejection_shadow_semantic_local_reject_branch_mass =
   BudgetParameters.epsilon_le_rej_semantic.
 proof.
-rewrite le_rejection_shadow_semantic_local_reject_branch_mass_is_true_mass.
-rewrite /d_le_rejection_shadow_semantic_branch_choice.
-rewrite LERealExecution.d_le_real_execution_semantic_rejection_branch_choiceE.
-rewrite /BudgetParameters.epsilon_le_rej_semantic.
-rewrite /BudgetParameters.le_rejection_semantic_ticket_failure_probability.
-rewrite BudgetParameters.d_le_rejection_semantic_ticket_repair_choiceE.
+rewrite le_rejection_shadow_semantic_local_reject_branch_mass_closed_form.
+rewrite BudgetParameters.epsilon_le_rej_semantic_closed_form.
 by [].
 qed.
 
