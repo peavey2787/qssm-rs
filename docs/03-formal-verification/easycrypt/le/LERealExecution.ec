@@ -144,6 +144,9 @@ op le_real_execution_semantic_rejection_category_is_failure
   (category : BudgetParameters.le_rejection_semantic_ticket_category) : bool =
   BudgetParameters.le_rejection_semantic_ticket_category_is_failure category.
 
+(* Execution only interprets the primitive category law into the existing
+   reject/repair decision surface; category probabilities remain owned by
+   BudgetParameters. *)
 op le_real_execution_semantic_rejection_decision_of_category
   (category : BudgetParameters.le_rejection_semantic_ticket_category) :
   le_real_execution_semantic_rejection_decision =

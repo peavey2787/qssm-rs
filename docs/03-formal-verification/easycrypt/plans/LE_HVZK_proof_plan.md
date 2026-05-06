@@ -382,21 +382,18 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     parallel: `BudgetParameters.ec`, `A_G1_to_G2_le_transition_bound`,
     `qssm_main_theorem_skeleton`, and `qssm_main_theorem` remain unchanged.
   - Primitive-owned semantic FS budget, May 2026: `primitives/BudgetParameters.ec`
-    now defines the primitive branch law via the concrete counts
-    `total_slot_count = 4` and `bad_slot_count = 2`, the support
-    `le_fs_semantic_branch_slot_support = range 0 total_slot_count`, the
-    predicate `le_fs_semantic_bad_branch_slot slot = slot < bad_slot_count`,
-    the sampler `d_le_fs_semantic_branch_slot_choice = duniform
-    le_fs_semantic_branch_slot_support`, and the image law
-    `d_le_fs_semantic_branch_choice = dmap d_le_fs_semantic_branch_slot_choice
-    le_fs_semantic_bad_branch_slot`, together with the owned semantic FS budget
-    `epsilon_le_fs_semantic = mu1 d_le_fs_semantic_branch_choice true` and
-    nonnegativity lemma `A4_le_fs_semantic_nonneg`. The owned closed form is
-    now `bad_slot_count%r / total_slot_count%r`, which still instantiates in
-    the current model to `1%r / 2%r`. `le/LEFsProgrammingSurface.ec` proves both
-    `le_fs_shadow_local_bad_branch_mass = epsilon_le_fs_semantic` and
-    `le_fs_shadow_local_bad_branch_mass <= epsilon_le_fs_semantic`, so the
-    local semantic mass is now connected to a primitive-owned budget without an
+    now defines the primitive branch law via the primitive FS category support
+    `clean`, `query_collision`,
+    `programming_collision`, `transcript_mismatch`, failure predicate
+    “non-clean”, provisional slot masses `3,1,1,1`, the derived compatibility
+    sampler `d_le_fs_semantic_branch_choice`, together with the owned semantic
+    FS budget `epsilon_le_fs_semantic = mu1 d_le_fs_semantic_branch_choice
+    true` and nonnegativity lemma `A4_le_fs_semantic_nonneg`. The owned closed
+    form is now `bad_slot_count%r / total_slot_count%r = 3%r / 6%r`, which
+    still instantiates in the current model to `1%r / 2%r`. `le/LEFsProgrammingSurface.ec`
+    proves the local equality `le_fs_shadow_local_bad_branch_mass =
+    epsilon_le_fs_semantic` and the corresponding `<=` bridge, so the local
+    semantic mass is now connected to a primitive-owned structured budget without an
     import-cycle inversion. `le/LEFsProgramming.ec`,
     `le/LEStatisticalDistance.ec`, and `le/LEHVZK.ec` each now add owned-budget
     semantic wrapper theorems ending in `epsilon_le_fs_semantic`; the game
@@ -411,10 +408,11 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     any later move to `primitives/ProtocolParameters.ec` is deferred until a
     real shared parameter surface exists.
   - Semantic rejection budget, May 2026: `primitives/BudgetParameters.ec`
-    still defines the theorem-facing semantic rejection branch weight with
-    `le_rejection_semantic_total_slot_count = 4`,
-    `le_rejection_semantic_reject_slot_count = 1`, and
-    `epsilon_le_rej_semantic = mu1 d_le_rejection_semantic_branch_choice true = 1%r / 4%r`,
+    still defines the theorem-facing semantic rejection branch weight with the
+    primitive category support `soft_repair`, `hard_repair`, `invalid`,
+    `accept`, the failure predicate “non-accept”, provisional slot masses
+    `1,1,1,3`, and
+    `epsilon_le_rej_semantic = mu1 d_le_rejection_semantic_branch_choice true = 3%r / 6%r = 1%r / 2%r`,
     together with proved nonnegativity lemma
     `A4_le_rejection_semantic_nonneg`. The lower semantic rejection owner is
     now execution-owned: `le/LERealExecution.ec` defines the semantic rejection

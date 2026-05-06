@@ -53,19 +53,23 @@ The exact-zero theorem path uses these values:
 
 The parallel semantic-budget theorem path adds these LE-side values:
 
-- `le_rejection_semantic_total_slot_count = 4`
-- `le_rejection_semantic_reject_slot_count = 1`
+- `le_rejection_semantic_ticket_category_support = [soft_repair; hard_repair; invalid; accept]`
+- `le_rejection_semantic_ticket_category_is_failure category = (category <> accept)`
+- primitive rejection slot masses are `soft=1`, `hard=1`, `invalid=1`, `accept=3`
 - `d_le_rejection_semantic_branch_slot_choice = duniform (range 0 le_rejection_semantic_total_slot_count)`
 - `d_le_rejection_semantic_branch_choice = dmap d_le_rejection_semantic_branch_slot_choice le_rejection_semantic_reject_branch_slot`
-- `epsilon_le_rej_semantic = mu1 d_le_rejection_semantic_branch_choice true = le_rejection_semantic_reject_slot_count%r / le_rejection_semantic_total_slot_count%r = 1%r / 4%r`
-- `total_slot_count = 4`
-- `bad_slot_count = 2`
+- `epsilon_le_rej_semantic = mu1 d_le_rejection_semantic_branch_choice true = le_rejection_semantic_reject_slot_count%r / le_rejection_semantic_total_slot_count%r = 3%r / 6%r = 1%r / 2%r`
+- `le_fs_semantic_branch_category_support = [clean; query_collision; programming_collision; transcript_mismatch]`
+- `le_fs_semantic_branch_category_is_failure category = (category <> clean)`
+- primitive FS slot masses are `clean=3`, `query_collision=1`, `programming_collision=1`, `transcript_mismatch=1`
+- `total_slot_count = 6`
+- `bad_slot_count = 3`
 - `d_le_fs_semantic_branch_slot_choice = duniform (range 0 total_slot_count)`
-- `d_le_fs_semantic_branch_choice = dmap d_le_fs_semantic_branch_slot_choice le_fs_semantic_bad_branch_slot`
-- `epsilon_le_fs_semantic = mu1 d_le_fs_semantic_branch_choice true = bad_slot_count%r / total_slot_count%r = 1%r / 2%r`
-- `epsilon_le_semantic = epsilon_le_rej_semantic + epsilon_le_fs_semantic = 3%r / 4%r`
+- `d_le_fs_semantic_branch_choice = dmap d_le_fs_semantic_branch_category_choice le_fs_semantic_branch_category_is_failure`
+- `epsilon_le_fs_semantic = mu1 d_le_fs_semantic_branch_choice true = bad_slot_count%r / total_slot_count%r = 3%r / 6%r = 1%r / 2%r`
+- `epsilon_le_semantic = epsilon_le_rej_semantic + epsilon_le_fs_semantic = 1%r`
 
-The current theorem-facing results therefore split into two checked modes: an exact-zero bound on the active abstraction theorem path, and a separate semantic-budget theorem path that packages the present semantic rejection plus semantic FS modeling through `epsilon_le_semantic`. The semantic rejection component is now execution-owned below the theorem-facing budget surface: `LERealExecution.ec` owns the rejection branch support and branch-dependent material, while `BudgetParameters.ec` still owns its concrete weight with current instantiation `1%r / 4%r`. The semantic FS component is likewise primitive-owned as a count-parameterized slot law with current concrete instantiation `1%r / 2%r`, and it now consumes `LERejectionSampler.d_le_semantic_post_rejection_view` through `LEFsProgrammingSurface.d_le_pre_fs_semantic_programming_view`. Neither statement should be confused with a final realistic cryptographic reduction for the deployed implementation.
+The current theorem-facing results therefore split into two checked modes: an exact-zero bound on the active abstraction theorem path, and a separate semantic-budget theorem path that packages the present semantic rejection plus semantic FS modeling through `epsilon_le_semantic`. The semantic rejection component is now execution-owned below the theorem-facing budget surface, but its probability law remains primitive-owned in `BudgetParameters.ec` with current structured surrogate instantiation `1,1,1,3`, giving `epsilon_le_rej_semantic = 1%r / 2%r`. The semantic FS component is likewise primitive-owned in `BudgetParameters.ec`, but it is now expressed as a structured branch/programming category law rather than a toy two-slot predicate; the local FS bridge in `LEFsProgrammingSurface.ec` still proves equality `le_fs_shadow_local_bad_branch_mass = epsilon_le_fs_semantic`, and theorem-facing wrappers then consume the corresponding `<=` bound. The present umbrella therefore evaluates to `1%r` only because both semantic LE subterms are still intentionally loose demo/surrogate laws; neither statement should be confused with a final realistic cryptographic reduction for the deployed implementation.
 
 The current semantic FS slot counts are therefore frozen as concrete demo/proof parameters in `primitives/BudgetParameters.ec`. They are not yet sourced from a protocol-parameter bundle, and any future extraction to `primitives/ProtocolParameters.ec` is deferred until there is a real shared protocol parameter surface to centralize.
 
@@ -73,7 +77,7 @@ The current semantic FS slot counts are therefore frozen as concrete demo/proof 
 
 - MS1 hash-binding closes through the current lower probability surface and exact stage equalities.
 - MS2 ROM programming closes through the current lower stage equality between the AfterBinding and AfterRom observable laws.
-- LE rejection closes on two lower lanes: the active exact-zero rejection lane still collapses to zero on the theorem-facing carrier, while the semantic rejection lane is now execution-owned below the theorem surface and still closes to the owned failure quantity `epsilon_le_rej_semantic = 1%r / 4%r`.
+- LE rejection closes on two lower lanes: the active exact-zero rejection lane still collapses to zero on the theorem-facing carrier, while the semantic rejection lane is now execution-owned below the theorem surface and still closes to the owned failure quantity `epsilon_le_rej_semantic = 1%r / 2%r`.
 - LE FS closes through the semantic shadow FS lane, whose current failure probability also collapses to zero on the active carrier.
 - `LEStatisticalDistance.ec` consumes the rejection and FS component endpoints additively through `epsilon_le = epsilon_le_rej + epsilon_le_fs`.
 - `MainTheorem.ec` packages the resulting MS and LE bounds into the final theorem-facing statement, and its semantic theorem path now uses local rejection failure plus local FS bad-branch mass at the comparison level, the owned component sum `epsilon_le_rej_semantic + epsilon_le_fs_semantic`, and the umbrella budget `epsilon_le_semantic`.

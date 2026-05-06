@@ -427,6 +427,9 @@ type le_fs_shadow_state = {
 op le_fs_shadow_branch_support : bool list =
   BudgetParameters.le_fs_semantic_branch_support.
 
+(* The FS layer consumes the primitive category law through its derived
+   boolean bad-branch view so the theorem-facing branch/programming bridge can
+   stay stable while the primitive category masses evolve. *)
 op d_le_fs_shadow_branch_choice : bool distr =
   BudgetParameters.d_le_fs_semantic_branch_choice.
 
