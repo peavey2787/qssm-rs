@@ -375,6 +375,33 @@ case: Hbad=> Hcat.
   exact Hdiv.
 qed.
 
+lemma ms_hash_binding_public_observable_divergence_malformed_binding_consequenceE
+  (src : ms3a_bitness_layer_source)
+  (category : BudgetParameters.ms_hash_binding_semantic_category) :
+  ms_hash_binding_public_observable_divergence_condition
+    (ms_hash_binding_semantic_state_of_category_source src category) =>
+  category = BudgetParameters.MSHashBindingSemanticMalformedBinding =>
+  ms_hash_binding_expected_transcript_digest_of_source src <> src.`ms3s_stmt.
+proof.
+move=> Hdiv Hcat.
+have Hmal := ms_hash_binding_public_observable_divergence_malformed_binding_categoryE src.
+by smt().
+qed.
+
+lemma ms_hash_binding_public_observable_divergence_transcript_mismatch_consequenceE
+  (src : ms3a_bitness_layer_source)
+  (category : BudgetParameters.ms_hash_binding_semantic_category) :
+  ms_hash_binding_public_observable_divergence_condition
+    (ms_hash_binding_semantic_state_of_category_source src category) =>
+  category = BudgetParameters.MSHashBindingSemanticTranscriptMismatch =>
+  ms_hash_binding_expected_transcript_digest_of_source src <>
+    src.`ms3s_comparison_global_challenge.
+proof.
+move=> Hdiv Hcat.
+have Htm := ms_hash_binding_public_observable_divergence_transcript_mismatch_categoryE src.
+by smt().
+qed.
+
 lemma ms_hash_binding_semantic_category_condition_stateE
   (src : ms3a_bitness_layer_source)
   (category : BudgetParameters.ms_hash_binding_semantic_category) :
