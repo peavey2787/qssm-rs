@@ -735,6 +735,22 @@ have [Hprog _] :=
 by rewrite Hprog.
 qed.
 
+lemma ms_rom_public_divergence_collision_categories_share_global_digest_flag
+  (x : ms_public_input) (sigma : ms3c_real_execution_seed) :
+  sigma \in d_ms3c_real_execution_seed x =>
+  ms_rom_public_observable_divergence_condition x
+    (ms_rom_semantic_state_of_category_execution_seed x sigma
+      BudgetParameters.MSROMSemanticQueryCollision) =
+  ms_rom_public_observable_divergence_condition x
+    (ms_rom_semantic_state_of_category_execution_seed x sigma
+      BudgetParameters.MSROMSemanticProgrammingCollision).
+proof.
+move=> Hsigma.
+rewrite (ms_rom_public_divergence_query_collision_iff x sigma Hsigma).
+rewrite (ms_rom_public_divergence_programming_collision_iff x sigma Hsigma).
+by [].
+qed.
+
 lemma ms_rom_public_observable_divergence_condition_transcript_mismatch_categoryE
   (x : ms_public_input) (sigma : ms3c_real_execution_seed) :
   ms_rom_public_observable_divergence_condition x
@@ -767,6 +783,56 @@ rewrite /ms_rom_public_divergence_query_digest_flag.
 have [_ Hquery] :=
   L_ms3c_real_execution_seed_on_support_public_challenge_fields x sigma Hsigma.
 by rewrite Hquery.
+qed.
+
+lemma ms_rom_public_divergence_failure_categories_decompose_flags
+  (x : ms_public_input) (sigma : ms3c_real_execution_seed) :
+  sigma \in d_ms3c_real_execution_seed x =>
+  ms_rom_public_observable_divergence_condition x
+    (ms_rom_semantic_state_of_category_execution_seed x sigma
+      BudgetParameters.MSROMSemanticQueryCollision) =
+    ms_rom_public_divergence_global_digest_flag x /\
+  ms_rom_public_observable_divergence_condition x
+    (ms_rom_semantic_state_of_category_execution_seed x sigma
+      BudgetParameters.MSROMSemanticProgrammingCollision) =
+    ms_rom_public_divergence_global_digest_flag x /\
+  ms_rom_public_observable_divergence_condition x
+    (ms_rom_semantic_state_of_category_execution_seed x sigma
+      BudgetParameters.MSROMSemanticTranscriptMismatch) =
+    ms_rom_public_divergence_query_digest_flag x.
+proof.
+move=> Hsigma.
+split.
+- exact (ms_rom_public_divergence_query_collision_iff x sigma Hsigma).
+split.
+- exact (ms_rom_public_divergence_programming_collision_iff x sigma Hsigma).
+exact (ms_rom_public_divergence_transcript_mismatch_iff x sigma Hsigma).
+qed.
+
+lemma ms_rom_public_divergence_failure_slots_decompose
+  (x : ms_public_input) (sigma : ms3c_real_execution_seed) :
+  sigma \in d_ms3c_real_execution_seed x =>
+  ms_rom_public_observable_divergence_condition x
+    (ms_rom_semantic_state_of_category_execution_seed x sigma
+      (ms_rom_semantic_category_of_slot 0)) =
+    ms_rom_public_divergence_global_digest_flag x /\
+  ms_rom_public_observable_divergence_condition x
+    (ms_rom_semantic_state_of_category_execution_seed x sigma
+      (ms_rom_semantic_category_of_slot 1)) =
+    ms_rom_public_divergence_global_digest_flag x /\
+  ms_rom_public_observable_divergence_condition x
+    (ms_rom_semantic_state_of_category_execution_seed x sigma
+      (ms_rom_semantic_category_of_slot 2)) =
+    ms_rom_public_divergence_query_digest_flag x.
+proof.
+move=> Hsigma.
+have [Hquery [Hprog Hmismatch]] :=
+  ms_rom_public_divergence_failure_categories_decompose_flags x sigma Hsigma.
+rewrite /ms_rom_semantic_category_of_slot.
+rewrite /BudgetParameters.ms_rom_query_collision_slot_count.
+rewrite /BudgetParameters.ms_rom_programming_collision_slot_count.
+rewrite /BudgetParameters.ms_rom_failure_slot_count /=.
+by split; [exact Hquery | split; [exact Hprog | exact Hmismatch]].
 qed.
 
 lemma ms_rom_public_observable_divergence_condition_implies_semantic_failure
