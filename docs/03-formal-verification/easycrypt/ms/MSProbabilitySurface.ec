@@ -54,6 +54,61 @@ lemma ms_view_distinguish_pr_respects_distribution_equality
   d = d' => ms_view_distinguish_pr d D = ms_view_distinguish_pr d' D.
 proof. by move=> ->. qed.
 
+lemma dmap_const_ll ['a 'b] (d : 'a distr) (v : 'b) :
+  is_lossless d =>
+  dmap d (fun _ : 'a => v) = dunit v.
+proof.
+move=> ll_d.
+rewrite /dmap dlet_cst_weight (is_losslessP _ ll_d).
+by rewrite dscalar1.
+qed.
+
+lemma ms_same_source_distinguisher_gap_le_bad_mass ['a]
+  (d : 'a distr)
+  (f g : 'a -> ms_v2_transcript_observable)
+  (bad : 'a -> bool) (D : distinguisher) :
+  (forall x, ! bad x => f x = g x) =>
+  `|ms_view_distinguish_pr (dmap d f) D -
+    ms_view_distinguish_pr (dmap d g) D| <=
+  mu d bad.
+proof.
+move=> Hagree.
+rewrite /ms_view_distinguish_pr !dmapE /=.
+have Hf_split :
+    mu d (fun x => ms_distinguisher_event D (f x)) =
+    mu d (fun x => ms_distinguisher_event D (f x) /\ bad x) +
+    mu d (fun x => ms_distinguisher_event D (f x) /\ ! bad x).
+  by rewrite (mu_split d (fun x => ms_distinguisher_event D (f x)) bad)
+    /predI /predC /=.
+have Hg_split :
+    mu d (fun x => ms_distinguisher_event D (g x)) =
+    mu d (fun x => ms_distinguisher_event D (g x) /\ bad x) +
+    mu d (fun x => ms_distinguisher_event D (g x) /\ ! bad x).
+  by rewrite (mu_split d (fun x => ms_distinguisher_event D (g x)) bad)
+    /predI /predC /=.
+have Hclean_eq :
+    mu d (fun x => ms_distinguisher_event D (f x) /\ ! bad x) =
+    mu d (fun x => ms_distinguisher_event D (g x) /\ ! bad x).
+  apply/mu_eq=> x /=.
+  have [Hbad|Hgood] : bad x \/ ! bad x by smt().
+  - by rewrite Hbad.
+  have -> : f x = g x.
+    exact (Hagree x Hgood).
+  by [].
+rewrite Hf_split Hg_split Hclean_eq.
+have Hf_bad_le :
+    mu d (fun x => ms_distinguisher_event D (f x) /\ bad x) <=
+    mu d bad.
+  apply mu_sub => x /=.
+  by smt().
+have Hg_bad_le :
+    mu d (fun x => ms_distinguisher_event D (g x) /\ bad x) <=
+    mu d bad.
+  apply mu_sub => x /=.
+  by smt().
+by smt(mu_bounded).
+qed.
+
 op d_ms_after_binding_observable_v2
   (x : qssm_public_input) (s : seed) (xms : ms_public_input) :
   ms_v2_transcript_observable distr =
