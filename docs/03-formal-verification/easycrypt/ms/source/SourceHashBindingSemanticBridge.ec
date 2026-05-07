@@ -503,6 +503,83 @@ rewrite Hmap.
 by [].
 qed.
 
+op ms_hash_binding_public_divergence_upper_category_event
+  (category : BudgetParameters.ms_hash_binding_semantic_category) : bool =
+  pred1 BudgetParameters.MSHashBindingSemanticMalformedBinding category ||
+  pred1 BudgetParameters.MSHashBindingSemanticTranscriptMismatch category.
+
+op ms_hash_binding_public_divergence_upper_slot (slot : int) : bool =
+  ms_hash_binding_public_divergence_upper_category_event
+    (ms_hash_binding_semantic_category_of_slot slot).
+
+op d_ms_hash_binding_public_divergence_upper_choice : bool distr =
+  dmap d_ms_hash_binding_semantic_category_choice
+    ms_hash_binding_public_divergence_upper_category_event.
+
+op ms_hash_binding_local_public_divergence_upper_mass : real =
+  (BudgetParameters.ms_hash_binding_malformed_binding_slot_count +
+   BudgetParameters.ms_hash_binding_transcript_mismatch_slot_count)%r /
+  BudgetParameters.ms_hash_binding_total_slot_count%r.
+
+lemma d_ms_hash_binding_public_divergence_upper_choiceE :
+  d_ms_hash_binding_public_divergence_upper_choice =
+  dmap d_ms_hash_binding_semantic_slot_choice
+    ms_hash_binding_public_divergence_upper_slot.
+proof.
+rewrite /d_ms_hash_binding_public_divergence_upper_choice.
+rewrite /d_ms_hash_binding_semantic_category_choice.
+rewrite (dmap_comp ms_hash_binding_semantic_category_of_slot
+  ms_hash_binding_public_divergence_upper_category_event
+  d_ms_hash_binding_semantic_slot_choice).
+have Hmap :
+  dmap d_ms_hash_binding_semantic_slot_choice
+    (ms_hash_binding_public_divergence_upper_category_event \o
+      ms_hash_binding_semantic_category_of_slot) =
+  dmap d_ms_hash_binding_semantic_slot_choice
+    ms_hash_binding_public_divergence_upper_slot.
+  apply eq_dmap_in=> slot _ /=.
+  by rewrite /ms_hash_binding_public_divergence_upper_slot /(\o).
+rewrite Hmap.
+by [].
+qed.
+
+lemma ms_hash_binding_public_divergence_upper_choice_mass_eq_local_upper_mass :
+  mu1 d_ms_hash_binding_public_divergence_upper_choice true =
+  ms_hash_binding_local_public_divergence_upper_mass.
+proof.
+rewrite /mu1.
+rewrite d_ms_hash_binding_public_divergence_upper_choiceE dmapE /=.
+rewrite /d_ms_hash_binding_semantic_slot_choice duniformE.
+rewrite undup_id ?ms_hash_binding_semantic_slot_support_uniq /=.
+have Hcount :
+    count (pred1 true \o ms_hash_binding_public_divergence_upper_slot)
+      ms_hash_binding_semantic_slot_support = 2.
+  by rewrite ms_hash_binding_semantic_slot_supportE
+    /ms_hash_binding_public_divergence_upper_slot
+    /ms_hash_binding_public_divergence_upper_category_event
+    /ms_hash_binding_semantic_category_of_slot /pred1 /(\o)
+    /BudgetParameters.ms_hash_binding_collision_slot_count
+    /BudgetParameters.ms_hash_binding_malformed_binding_slot_count
+    /BudgetParameters.ms_hash_binding_transcript_mismatch_slot_count
+    /BudgetParameters.ms_hash_binding_failure_slot_count /=.
+rewrite Hcount ms_hash_binding_semantic_slot_supportE /=.
+rewrite /ms_hash_binding_local_public_divergence_upper_mass.
+rewrite /BudgetParameters.ms_hash_binding_malformed_binding_slot_count.
+rewrite /BudgetParameters.ms_hash_binding_transcript_mismatch_slot_count.
+rewrite BudgetParameters.ms_hash_binding_total_slot_count_demo_closed_form /=.
+by smt().
+qed.
+
+lemma ms_hash_binding_local_public_divergence_upper_mass_demo_closed_form :
+  ms_hash_binding_local_public_divergence_upper_mass = 1%r / 8%r.
+proof.
+rewrite /ms_hash_binding_local_public_divergence_upper_mass.
+rewrite /BudgetParameters.ms_hash_binding_malformed_binding_slot_count.
+rewrite /BudgetParameters.ms_hash_binding_transcript_mismatch_slot_count.
+rewrite BudgetParameters.ms_hash_binding_total_slot_count_demo_closed_form /=.
+by smt().
+qed.
+
 lemma ms_hash_binding_semantic_failure_choice_mass_true :
   mu1 d_ms_hash_binding_semantic_failure_choice true =
   BudgetParameters.ms_hash_binding_failure_slot_count%r /
@@ -654,6 +731,100 @@ proof.
 rewrite /ms_hash_binding_execution_owned_semantic_failure_probability.
 rewrite /ms_hash_binding_local_failure_mass.
 by rewrite d_ms_hash_binding_semantic_failure_state_choiceE.
+qed.
+
+op d_ms_hash_binding_public_divergence_upper_pair_choice
+  (x : ms_public_input) : bool distr =
+  dmap ((d_ms3a_bitness_real_source x) `*` d_ms_hash_binding_semantic_category_choice)
+    (fun (p : ms3a_bitness_layer_source *
+              BudgetParameters.ms_hash_binding_semantic_category) =>
+       ms_hash_binding_public_divergence_upper_category_event (snd p)).
+
+lemma d_ms_hash_binding_public_divergence_upper_pair_choiceE
+  (x : ms_public_input) :
+  d_ms_hash_binding_public_divergence_upper_pair_choice x =
+  d_ms_hash_binding_public_divergence_upper_choice.
+proof.
+rewrite /d_ms_hash_binding_public_divergence_upper_pair_choice.
+rewrite -(dmap_comp snd ms_hash_binding_public_divergence_upper_category_event
+  ((d_ms3a_bitness_real_source x) `*` d_ms_hash_binding_semantic_category_choice)).
+have Hsnd :
+  dmap ((d_ms3a_bitness_real_source x) `*` d_ms_hash_binding_semantic_category_choice) snd =
+  d_ms_hash_binding_semantic_category_choice.
+  exact (ms_hash_binding_dmap_dprod_snd_lossless
+    (d_ms3a_bitness_real_source x) d_ms_hash_binding_semantic_category_choice
+    (d_ms3a_bitness_real_source_lossless x)).
+rewrite Hsnd.
+by rewrite /d_ms_hash_binding_public_divergence_upper_choice.
+qed.
+
+lemma ms_hash_binding_public_divergence_upper_pair_choice_mass_eq_local_upper_mass
+  (x : ms_public_input) :
+  mu1 (d_ms_hash_binding_public_divergence_upper_pair_choice x) true =
+  ms_hash_binding_local_public_divergence_upper_mass.
+proof.
+rewrite d_ms_hash_binding_public_divergence_upper_pair_choiceE.
+exact ms_hash_binding_public_divergence_upper_choice_mass_eq_local_upper_mass.
+qed.
+
+lemma ms_hash_binding_public_observable_divergence_implies_public_divergence_upper_event
+  (src : ms3a_bitness_layer_source)
+  (category : BudgetParameters.ms_hash_binding_semantic_category) :
+  ms_hash_binding_public_observable_divergence_condition
+    (ms_hash_binding_semantic_state_of_category_source src category) =>
+  ms_hash_binding_public_divergence_upper_category_event category.
+proof.
+move=> Hdiv.
+have [Hmal | Htm] :=
+  ms_hash_binding_public_observable_divergence_noncollision_caseE src category Hdiv.
+- rewrite /ms_hash_binding_public_divergence_upper_category_event.
+  rewrite /ms_hash_binding_public_divergence_upper_category_event.
+  by smt().
+rewrite /ms_hash_binding_public_divergence_upper_category_event.
+by smt().
+qed.
+
+lemma ms_hash_binding_public_observable_divergence_mass_le_local_public_divergence_upper_mass
+  (x : ms_public_input) :
+  mu (d_ms_hash_binding_semantic_coupled_state x)
+    ms_hash_binding_public_observable_divergence_condition <=
+  ms_hash_binding_local_public_divergence_upper_mass.
+proof.
+rewrite /d_ms_hash_binding_semantic_coupled_state dmapE /mu /=.
+have Hupper :
+    mu ((d_ms3a_bitness_real_source x) `*` d_ms_hash_binding_semantic_category_choice)
+      (ms_hash_binding_public_observable_divergence_condition \o
+        (fun (p : ms3a_bitness_layer_source *
+                   BudgetParameters.ms_hash_binding_semantic_category) =>
+           ms_hash_binding_semantic_state_of_category_source (fst p) (snd p))) <=
+    mu ((d_ms3a_bitness_real_source x) `*` d_ms_hash_binding_semantic_category_choice)
+      (fun (p : ms3a_bitness_layer_source *
+                 BudgetParameters.ms_hash_binding_semantic_category) =>
+         ms_hash_binding_public_divergence_upper_category_event (snd p)).
+  apply mu_sub => p /=.
+  exact (ms_hash_binding_public_observable_divergence_implies_public_divergence_upper_event
+    (fst p) (snd p)).
+have Hmu1 :
+    mu ((d_ms3a_bitness_real_source x) `*` d_ms_hash_binding_semantic_category_choice)
+      (fun (p : ms3a_bitness_layer_source *
+                 BudgetParameters.ms_hash_binding_semantic_category) =>
+         ms_hash_binding_public_divergence_upper_category_event (snd p)) =
+    mu1 (d_ms_hash_binding_public_divergence_upper_pair_choice x) true.
+  rewrite /d_ms_hash_binding_public_divergence_upper_pair_choice.
+  rewrite /mu1 dmapE /=.
+  apply/mu_eq=> p /=.
+  rewrite /(\o) /=.
+  by case: (ms_hash_binding_public_divergence_upper_category_event (snd p)).
+have Hupper' :
+    mu ((d_ms3a_bitness_real_source x) `*` d_ms_hash_binding_semantic_category_choice)
+      (ms_hash_binding_public_observable_divergence_condition \o
+        (fun (p : ms3a_bitness_layer_source *
+                   BudgetParameters.ms_hash_binding_semantic_category) =>
+           ms_hash_binding_semantic_state_of_category_source (fst p) (snd p))) <=
+    mu1 (d_ms_hash_binding_public_divergence_upper_pair_choice x) true.
+  by rewrite -Hmu1.
+rewrite -(ms_hash_binding_public_divergence_upper_pair_choice_mass_eq_local_upper_mass x).
+exact Hupper'.
 qed.
 
 lemma ms_hash_binding_public_observable_divergence_implies_semantic_failure
