@@ -241,6 +241,92 @@ rewrite /ms3a_pack_observable_with_digest /ms3a_pack_observable /=.
 by rewrite /pred1 /=.
 qed.
 
+lemma ms_hash_binding_public_observable_divergence_clean_categoryE
+  (src : ms3a_bitness_layer_source) :
+  ms_hash_binding_public_observable_divergence_condition
+    (ms_hash_binding_semantic_state_of_category_source src
+      BudgetParameters.MSHashBindingSemanticClean) = false.
+proof.
+rewrite /ms_hash_binding_public_observable_divergence_condition.
+rewrite /ms_hash_binding_semantic_state_of_category_source /=.
+rewrite /ms_hash_binding_observed_digest_of_category_source.
+rewrite /ms_hash_binding_observable_of_source_digest.
+rewrite /ms3a_after_binding_observable_of_source.
+rewrite /ms_hash_binding_expected_transcript_digest_of_source.
+rewrite /ms3a_pack_observable_with_digest /ms3a_pack_observable /=.
+by rewrite /pred1 /=.
+qed.
+
+lemma ms_hash_binding_public_observable_divergence_collision_categoryE
+  (src : ms3a_bitness_layer_source) :
+  ms_hash_binding_public_observable_divergence_condition
+    (ms_hash_binding_semantic_state_of_category_source src
+      BudgetParameters.MSHashBindingSemanticCollision) = false.
+proof.
+rewrite /ms_hash_binding_public_observable_divergence_condition.
+rewrite /ms_hash_binding_semantic_state_of_category_source /=.
+rewrite /ms_hash_binding_observed_digest_of_category_source.
+rewrite /ms_hash_binding_observable_of_source_digest.
+rewrite /ms3a_after_binding_observable_of_source.
+rewrite /ms_hash_binding_expected_transcript_digest_of_source.
+rewrite /ms3a_pack_observable_with_digest /ms3a_pack_observable /=.
+by rewrite /pred1 /=.
+qed.
+
+lemma ms_hash_binding_public_observable_divergence_malformed_binding_categoryE
+  (src : ms3a_bitness_layer_source) :
+  ms_hash_binding_public_observable_divergence_condition
+    (ms_hash_binding_semantic_state_of_category_source src
+      BudgetParameters.MSHashBindingSemanticMalformedBinding) =
+  (ms_hash_binding_expected_transcript_digest_of_source src <> src.`ms3s_stmt).
+proof.
+rewrite /ms_hash_binding_public_observable_divergence_condition.
+rewrite /ms_hash_binding_semantic_state_of_category_source /=.
+rewrite /ms_hash_binding_observed_digest_of_category_source.
+rewrite /ms_hash_binding_observable_of_source_digest.
+rewrite /ms3a_after_binding_observable_of_source.
+rewrite /ms_hash_binding_expected_transcript_digest_of_source.
+rewrite /ms3a_pack_observable_with_digest /ms3a_pack_observable /=.
+by rewrite /pred1 /=.
+qed.
+
+lemma ms_hash_binding_public_observable_divergence_transcript_mismatch_categoryE
+  (src : ms3a_bitness_layer_source) :
+  ms_hash_binding_public_observable_divergence_condition
+    (ms_hash_binding_semantic_state_of_category_source src
+      BudgetParameters.MSHashBindingSemanticTranscriptMismatch) =
+  (ms_hash_binding_expected_transcript_digest_of_source src <>
+   src.`ms3s_comparison_global_challenge).
+proof.
+rewrite /ms_hash_binding_public_observable_divergence_condition.
+rewrite /ms_hash_binding_semantic_state_of_category_source /=.
+rewrite /ms_hash_binding_observed_digest_of_category_source.
+rewrite /ms_hash_binding_observable_of_source_digest.
+rewrite /ms3a_after_binding_observable_of_source.
+rewrite /ms_hash_binding_expected_transcript_digest_of_source.
+rewrite /ms3a_pack_observable_with_digest /ms3a_pack_observable /=.
+by rewrite /pred1 /=.
+qed.
+
+lemma ms_hash_binding_public_observable_divergence_categoryE
+  (src : ms3a_bitness_layer_source)
+  (category : BudgetParameters.ms_hash_binding_semantic_category) :
+  ms_hash_binding_public_observable_divergence_condition
+    (ms_hash_binding_semantic_state_of_category_source src category) =
+  if pred1 BudgetParameters.MSHashBindingSemanticClean category then false
+  else if pred1 BudgetParameters.MSHashBindingSemanticCollision category then false
+  else if pred1 BudgetParameters.MSHashBindingSemanticMalformedBinding category then
+    ms_hash_binding_expected_transcript_digest_of_source src <> src.`ms3s_stmt
+  else ms_hash_binding_expected_transcript_digest_of_source src <>
+       src.`ms3s_comparison_global_challenge.
+proof.
+case: category=> /=.
+- exact (ms_hash_binding_public_observable_divergence_clean_categoryE src).
+- exact (ms_hash_binding_public_observable_divergence_collision_categoryE src).
+- exact (ms_hash_binding_public_observable_divergence_malformed_binding_categoryE src).
+exact (ms_hash_binding_public_observable_divergence_transcript_mismatch_categoryE src).
+qed.
+
 lemma ms_hash_binding_semantic_category_condition_stateE
   (src : ms3a_bitness_layer_source)
   (category : BudgetParameters.ms_hash_binding_semantic_category) :
