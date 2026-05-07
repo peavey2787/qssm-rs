@@ -1023,6 +1023,43 @@ have -> :
 exact (ler_add _ _ _ _ Hms1 Hms2).
 qed.
 
+lemma A_MS1_to_MS2_semantic_public_endpoint_local_visible_flags_bound
+  (x : qssm_public_input) (s : seed) (xms : ms_public_input) (D : distinguisher) :
+  ms_view_distinguish_pr
+    (d_ms_after_binding_public_semantic_observable_v2 x s xms) D -
+  ms_view_distinguish_pr
+    (d_ms_after_rom_public_semantic_observable_v2 x s xms) D
+  <= ms_hash_binding_local_public_divergence_upper_mass +
+     ((if ms_rom_public_divergence_global_digest_flag xms then
+         (BudgetParameters.ms_rom_query_collision_slot_count +
+          BudgetParameters.ms_rom_programming_collision_slot_count)%r
+       else 0%r) +
+      (if ms_rom_public_divergence_query_digest_flag xms then
+         BudgetParameters.ms_rom_transcript_mismatch_slot_count%r
+       else 0%r)) /
+     BudgetParameters.ms_rom_total_slot_count%r.
+proof.
+have Hms1 :=
+  L_ms1_public_after_binding_compatibility_le_local_public_divergence_upper_mass x s xms D.
+have Hms2 :=
+  L_ms2_public_after_rom_transition_le_public_visible_flags_mass x s xms D.
+have -> :
+  ms_view_distinguish_pr
+    (d_ms_after_binding_public_semantic_observable_v2 x s xms) D -
+  ms_view_distinguish_pr
+    (d_ms_after_rom_public_semantic_observable_v2 x s xms) D =
+  (ms_view_distinguish_pr
+     (d_ms_after_binding_public_semantic_observable_v2 x s xms) D -
+   ms_view_distinguish_pr
+     (d_ms_after_binding_observable_v2 x s xms) D) +
+  (ms_view_distinguish_pr
+     (d_ms_after_binding_observable_v2 x s xms) D -
+   ms_view_distinguish_pr
+     (d_ms_after_rom_public_semantic_observable_v2 x s xms) D).
+  by ring.
+exact (ler_add _ _ _ _ Hms1 Hms2).
+qed.
+
 lemma L_ms2_rom_programming_transition_zero
   (x : qssm_public_input) (s : seed) (xms : ms_public_input) (D : distinguisher) :
   ms_view_distinguish_pr
