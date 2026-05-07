@@ -640,6 +640,18 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     `epsilon_ms_hash_binding_semantic +
     epsilon_ms_rom_programmability_semantic + epsilon_le_semantic = 3%r / 4%r`.
     The exact-zero route remains unchanged.
+  - Public-endpoint splice boundary, May 2026: `ms/MSProbabilitySurface.ec`
+    now also proves the staged lower-surface theorems
+    `A_MS2_rom_programming_semantic_public_endpoint_transition_bound` and
+    `A_MS1_to_MS2_semantic_public_endpoint_transition_bound`. They are not
+    part of the live semantic route. The live G0->G1 semantic chain already
+    pays MS1 once through `A_MS1_hash_binding_semantic_transition` and MS2
+    once through `A_MS2_rom_programming_semantic_transition`, so routing the
+    staged splice through the current canonical telescope would double-count
+    the MS1 term. If these public endpoints are ever to be used live, the
+    next patch is not direct splice routing in `games/GameMSHopComposition.ec`
+    or `theorem/MainTheorem.ec`; it is a new public-endpoint game
+    abstraction below the current `game_pr_ms_core` / `Adv` surface.
     law.
   - Design refinement, May 2026: `A_LE_rejection_sampler_sdist_bound` remains a
     proved lemma in `le/LERejection.ec`, but it is no longer a repackaging of a
