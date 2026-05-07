@@ -327,6 +327,25 @@ case: category=> /=.
 exact (ms_hash_binding_public_observable_divergence_transcript_mismatch_categoryE src).
 qed.
 
+lemma ms_hash_binding_public_observable_divergence_noncollision_caseE
+  (src : ms3a_bitness_layer_source)
+  (category : BudgetParameters.ms_hash_binding_semantic_category) :
+  ms_hash_binding_public_observable_divergence_condition
+    (ms_hash_binding_semantic_state_of_category_source src category) =>
+  pred1 BudgetParameters.MSHashBindingSemanticMalformedBinding category \/
+  pred1 BudgetParameters.MSHashBindingSemanticTranscriptMismatch category.
+proof.
+case: category=> /=.
+- rewrite ms_hash_binding_public_observable_divergence_clean_categoryE.
+  by rewrite /pred1.
+- rewrite ms_hash_binding_public_observable_divergence_collision_categoryE.
+  by rewrite /pred1.
+- move=> _.
+  by left; rewrite /pred1.
+move=> _.
+by right; rewrite /pred1.
+qed.
+
 lemma ms_hash_binding_semantic_category_condition_stateE
   (src : ms3a_bitness_layer_source)
   (category : BudgetParameters.ms_hash_binding_semantic_category) :
