@@ -202,6 +202,93 @@ apply (L_ms1_hash_binding_bad_event_zero_if_public_digest_eq_canonical x s xms D
 exact (ms3a_public_transcript_digest_by_construction xms).
 qed.
 
+op d_ms_after_binding_public_semantic_observable_v2
+  (x : qssm_public_input) (s : seed) (xms : ms_public_input) :
+  ms_v2_transcript_observable distr =
+  d_ms_hash_binding_public_semantic_observable_v2 xms.
+
+lemma L_ms1_public_after_binding_transition_le_execution_owned_semantic_failure
+  (x : qssm_public_input) (s : seed) (xms : ms_public_input) (D : distinguisher) :
+  ms_view_distinguish_pr (d_ms_after_binding_observable_v2 x s xms) D -
+  ms_view_distinguish_pr (d_ms_after_binding_public_semantic_observable_v2 x s xms) D <=
+  ms_hash_binding_execution_owned_semantic_failure_probability xms.
+proof.
+have Hcategory_ll :
+    is_lossless d_ms_hash_binding_semantic_category_choice.
+  rewrite /d_ms_hash_binding_semantic_category_choice.
+  by apply dmap_ll; exact ms_hash_binding_semantic_slot_choice_lossless.
+have Hgap :
+    `|ms_view_distinguish_pr (d_ms_after_binding_observable_v2 x s xms) D -
+      ms_view_distinguish_pr (d_ms_after_binding_public_semantic_observable_v2 x s xms) D| <=
+    mu ((d_ms3a_bitness_real_source xms) `*` d_ms_hash_binding_semantic_category_choice)
+      (fun (p : ms3a_bitness_layer_source *
+                 BudgetParameters.ms_hash_binding_semantic_category) =>
+         ms_hash_binding_public_observable_divergence_condition
+           (ms_hash_binding_semantic_state_of_category_source (fst p) (snd p))).
+  rewrite /d_ms_after_binding_public_semantic_observable_v2.
+  rewrite /d_ms_hash_binding_public_semantic_observable_v2.
+  rewrite /d_ms_hash_binding_semantic_coupled_state.
+  rewrite (dmap_comp
+    (fun (p : ms3a_bitness_layer_source *
+               BudgetParameters.ms_hash_binding_semantic_category) =>
+      ms_hash_binding_semantic_state_of_category_source (fst p) (snd p))
+    (fun (st : ms_hash_binding_semantic_state) => st.`mshbss_observed_observable)
+    ((d_ms3a_bitness_real_source xms) `*` d_ms_hash_binding_semantic_category_choice)).
+  have Hleft :
+      d_ms_after_binding_observable_v2 x s xms =
+      dmap ((d_ms3a_bitness_real_source xms) `*` d_ms_hash_binding_semantic_category_choice)
+        (ms3a_after_binding_observable_of_source \o fst).
+  - rewrite /d_ms_after_binding_observable_v2.
+    rewrite -(dmap_comp fst ms3a_after_binding_observable_of_source
+      ((d_ms3a_bitness_real_source xms) `*` d_ms_hash_binding_semantic_category_choice)).
+    rewrite (L_dmap_dprod_fst_lossless
+      (d_ms3a_bitness_real_source xms)
+      d_ms_hash_binding_semantic_category_choice
+      Hcategory_ll).
+    by [].
+  rewrite Hleft.
+  apply (ms_same_source_distinguisher_gap_le_bad_mass
+    ((d_ms3a_bitness_real_source xms) `*` d_ms_hash_binding_semantic_category_choice)
+    (ms3a_after_binding_observable_of_source \o fst)
+    (fun (p : ms3a_bitness_layer_source *
+               BudgetParameters.ms_hash_binding_semantic_category) =>
+      (ms_hash_binding_semantic_state_of_category_source (fst p) (snd p)).`mshbss_observed_observable)
+    (fun (p : ms3a_bitness_layer_source *
+               BudgetParameters.ms_hash_binding_semantic_category) =>
+      ms_hash_binding_public_observable_divergence_condition
+        (ms_hash_binding_semantic_state_of_category_source (fst p) (snd p))) D).
+  move=> p Hnodiv.
+  rewrite /(\o) /=.
+  rewrite /ms_hash_binding_public_observable_divergence_condition in Hnodiv.
+  rewrite /ms_hash_binding_semantic_state_of_category_source /=.
+  rewrite /ms_hash_binding_semantic_state_of_category_source /= in Hnodiv.
+  rewrite /ms_hash_binding_observed_digest_of_category_source.
+  rewrite /ms_hash_binding_observed_digest_of_category_source in Hnodiv.
+  rewrite /ms_hash_binding_observable_of_source_digest.
+  rewrite /ms_hash_binding_observable_of_source_digest in Hnodiv.
+  rewrite /ms3a_after_binding_observable_of_source.
+  rewrite /ms3a_after_binding_observable_of_source in Hnodiv.
+  rewrite /ms_hash_binding_expected_transcript_digest_of_source.
+  rewrite /ms_hash_binding_expected_transcript_digest_of_source in Hnodiv.
+  rewrite /ms3a_pack_observable_with_digest /ms3a_pack_observable /=.
+  rewrite /ms3a_pack_observable_with_digest /ms3a_pack_observable /= in Hnodiv.
+  by smt().
+have Hdir :
+    ms_view_distinguish_pr (d_ms_after_binding_observable_v2 x s xms) D -
+    ms_view_distinguish_pr (d_ms_after_binding_public_semantic_observable_v2 x s xms) D <=
+    `|ms_view_distinguish_pr (d_ms_after_binding_observable_v2 x s xms) D -
+      ms_view_distinguish_pr (d_ms_after_binding_public_semantic_observable_v2 x s xms) D|.
+  exact (ler_norm
+    (ms_view_distinguish_pr (d_ms_after_binding_observable_v2 x s xms) D -
+     ms_view_distinguish_pr (d_ms_after_binding_public_semantic_observable_v2 x s xms) D)).
+have Hmass :=
+  ms_hash_binding_public_observable_divergence_mass_le_execution_owned_semantic_failure xms.
+rewrite /d_ms_hash_binding_semantic_coupled_state dmapE /mu /= in Hmass.
+rewrite /(\o) /= in Hmass.
+apply (ler_trans _ _ _ Hdir).
+exact (ler_trans _ _ _ Hgap Hmass).
+qed.
+
 op d_ms_after_rom_observable_v2
   (x : qssm_public_input) (s : seed) (xms : ms_public_input) :
   ms_v2_transcript_observable distr =
@@ -517,6 +604,29 @@ have Hbound : 0%r <= BudgetParameters.epsilon_ms_hash_binding_semantic.
   exact (ler_trans _ _ _ Hfailure_nonneg Hbridge).
 rewrite /MS.epsilon_ms_hash_binding_semantic.
 exact Hbound.
+qed.
+
+lemma A_MS1_hash_binding_semantic_observable_transition_bound
+  (x : qssm_public_input) (s : seed) (xms : ms_public_input) (D : distinguisher) :
+  ms_view_distinguish_pr
+    (d_ms_game_stage_observable_v2 x s xms MSGameStageReal) D -
+  ms_view_distinguish_pr
+    (d_ms_after_binding_public_semantic_observable_v2 x s xms) D
+  <= MS.epsilon_ms_hash_binding_semantic.
+proof.
+have Heq := L_ms1_hash_binding_stage_zero x s xms D.
+have Hsemantic :=
+  L_ms1_public_after_binding_transition_le_execution_owned_semantic_failure x s xms D.
+have Hbridge := A_MS1_hash_binding_execution_owned_semantic_bound xms.
+have -> :
+  ms_view_distinguish_pr
+    (d_ms_game_stage_observable_v2 x s xms MSGameStageReal) D =
+  ms_view_distinguish_pr
+    (d_ms_game_stage_observable_v2 x s xms MSGameStageAfterBinding) D.
+- exact Heq.
+rewrite /d_ms_game_stage_observable_v2 /=.
+rewrite /MS.epsilon_ms_hash_binding_semantic.
+exact (ler_trans _ _ _ Hsemantic Hbridge).
 qed.
 
 lemma L_ms2_rom_programming_transition_zero
