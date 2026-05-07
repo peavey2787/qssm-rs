@@ -603,14 +603,16 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     `d_ms_after_rom_public_semantic_observable_v2`, proves the direct
     replacement law
     `L_ms2_public_after_rom_transition_le_execution_owned_semantic_failure`,
+    refines its bad predicate to the public-observable divergence condition
+    `ms_rom_public_observable_divergence_condition`,
     retargets `L_ms2_rom_programming_transition_le_execution_owned_semantic_failure`,
     and keeps `A_MS2_rom_programming_semantic_transition_bound` on the same
     theorem name while `games/GameMSHopComposition.ec`, `theorem/MainTheorem.ec`,
     the exact-zero theorem `A_MS2_rom_programming_transition_bound`, and all
     public theorem names stay unchanged. The next patch is therefore no longer
-    lower-surface public AfterRom retargeting; it is to tighten or justify the
-    current semantic-public surrogate if a more deployment-meaningful lower
-    ROM-programming
+    lower-surface public AfterRom retargeting or the first public-divergence
+    refinement; it is to tighten or justify the current semantic-public
+    surrogate if a more deployment-meaningful lower ROM-programming
   - Source-local MS1 hash-binding semantic bridge and staged sibling chain,
     May 2026: `ms/MS.ec` now stages the MS-facing alias/nonneg surface for
     `epsilon_ms_hash_binding_semantic`, and

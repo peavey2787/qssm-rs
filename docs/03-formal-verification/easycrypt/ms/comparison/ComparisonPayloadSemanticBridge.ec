@@ -523,6 +523,39 @@ op ms_rom_semantic_after_rom_observable_of_state
   ms_rom_semantic_after_rom_observable_of_failure_flag x
     (ms_rom_semantic_failure_event st).
 
+op ms_rom_public_observable_divergence_condition
+  (x : ms_public_input) (st : ms_rom_semantic_state) : bool =
+  ms_after_rom_public_semantic_digest_of_state x st <>
+  ms_public_transcript_digest_canonical x.
+
+op ms_rom_public_divergence_global_digest_flag
+  (x : ms_public_input) : bool =
+  x.`mspi_comparison_global <>
+  ms_public_transcript_digest_canonical x.
+
+op ms_rom_public_divergence_query_digest_flag
+  (x : ms_public_input) : bool =
+  ms3c_phase1_seed_query_digest x <>
+  ms_public_transcript_digest_canonical x.
+
+lemma ms_rom_semantic_after_rom_observable_of_failure_flag_falseE
+  (x : ms_public_input) :
+  ms_rom_semantic_after_rom_observable_of_failure_flag x false =
+  ms3a_pack_observable
+    (ms3a_public_stmt_digest x)
+    (ms3a_public_result_bit x)
+    (ms3a_public_bitness_globals x)
+    (ms3a_public_comparison_global x)
+    (ms_public_transcript_digest_canonical x).
+proof.
+rewrite /ms_rom_semantic_after_rom_observable_of_failure_flag.
+rewrite /ms3a_pack_observable_with_digest /ms3a_pack_observable_with_digest_digest.
+rewrite /ms_public_transcript_digest_canonical.
+rewrite /ms3a_public_stmt_digest /ms3a_public_result_bit.
+rewrite /ms3a_public_bitness_globals /ms3a_public_comparison_global.
+by rewrite /ms_result_bit_digest.
+qed.
+
 lemma ms_after_rom_public_semantic_observable_of_state_cleanE
   (x : ms_public_input) (st : ms_rom_semantic_state) :
   ! ms_rom_semantic_failure_event st =>
@@ -532,6 +565,37 @@ proof.
 move=> Hclean.
 rewrite /ms_after_rom_public_semantic_observable_of_state Hclean.
 by rewrite /ms_rom_semantic_after_rom_observable_of_failure_flag.
+qed.
+
+lemma ms_rom_public_observable_divergence_condition_cleanE
+  (x : ms_public_input) (st : ms_rom_semantic_state) :
+  ! ms_rom_semantic_failure_event st =>
+  ! ms_rom_public_observable_divergence_condition x st.
+proof.
+move=> Hclean.
+rewrite /ms_rom_public_observable_divergence_condition.
+by rewrite /ms_after_rom_public_semantic_digest_of_state Hclean.
+qed.
+
+lemma ms_after_rom_public_semantic_observable_of_state_no_divergenceE
+  (x : ms_public_input) (st : ms_rom_semantic_state) :
+  ! ms_rom_public_observable_divergence_condition x st =>
+  ms_after_rom_public_semantic_observable_of_state x st =
+  ms_rom_semantic_after_rom_observable_of_failure_flag x false.
+proof.
+move=> Hnodiv.
+have Hdigest :
+    ms_after_rom_public_semantic_digest_of_state x st =
+    ms_public_transcript_digest_canonical x.
+  rewrite /ms_rom_public_observable_divergence_condition in Hnodiv.
+  by smt().
+have [Hfail|Hclean] : ms_rom_semantic_failure_event st \/
+  ! ms_rom_semantic_failure_event st by smt().
+- have HfailE : ms_rom_semantic_failure_event st = true by smt().
+  rewrite /ms_after_rom_public_semantic_observable_of_state HfailE.
+  rewrite (ms_rom_semantic_after_rom_observable_of_failure_flag_falseE x).
+  by rewrite Hdigest.
+exact (ms_after_rom_public_semantic_observable_of_state_cleanE x st Hclean).
 qed.
 
 lemma ms_rom_semantic_failure_event_stateE
@@ -582,6 +646,141 @@ rewrite /ms_rom_programming_collision_witness_of_category.
 rewrite /ms_rom_transcript_reconstruction_of_category_execution_seed.
 rewrite /ms_rom_canonical_query_row /ms_rom_expected_programmed_pair.
 by rewrite /BudgetParameters.ms_rom_semantic_category_is_failure /pred1 /=.
+qed.
+
+lemma L_ms3c_real_execution_seed_on_support_public_challenge_fields
+  (x : ms_public_input) (sigma : ms3c_real_execution_seed) :
+  sigma \in d_ms3c_real_execution_seed x =>
+  sigma.`ms3cep_challenge.`ms3csc_programmed_challenge =
+    x.`mspi_comparison_global /\
+  sigma.`ms3cep_challenge.`ms3csc_query_digest =
+    ms3c_phase1_seed_query_digest x.
+proof.
+move=> Hsigma.
+have [sr [Hsr ->]] := L_ms3c_real_execution_seed_support_inv x sigma Hsigma.
+move: Hsr.
+case: sr=> sc sa /= Hsr.
+rewrite /d_ms3c_real_payload_seed supp_dprod in Hsr.
+move: Hsr=> [Hsc _].
+have Hsurf := L_ms3c_real_seed_challenge_on_support_public_surface x sc Hsc.
+by smt().
+qed.
+
+lemma ms_rom_public_observable_divergence_condition_query_collision_categoryE
+  (x : ms_public_input) (sigma : ms3c_real_execution_seed) :
+  ms_rom_public_observable_divergence_condition x
+    (ms_rom_semantic_state_of_category_execution_seed x sigma
+      BudgetParameters.MSROMSemanticQueryCollision) =
+  (sigma.`ms3cep_challenge.`ms3csc_programmed_challenge <>
+   ms_public_transcript_digest_canonical x).
+proof.
+rewrite /ms_rom_public_observable_divergence_condition.
+rewrite /ms_after_rom_public_semantic_digest_of_state.
+rewrite (ms_rom_semantic_failure_event_stateE x sigma
+  BudgetParameters.MSROMSemanticQueryCollision).
+rewrite /BudgetParameters.ms_rom_semantic_category_is_failure /pred1 /=.
+rewrite /ms_rom_semantic_state_of_category_execution_seed /=.
+rewrite /ms_rom_query_collision_witness_of_category.
+rewrite /ms_rom_expected_programmed_pair.
+by rewrite /pred1 /=.
+qed.
+
+lemma ms_rom_public_divergence_query_collision_iff
+  (x : ms_public_input) (sigma : ms3c_real_execution_seed) :
+  sigma \in d_ms3c_real_execution_seed x =>
+  ms_rom_public_observable_divergence_condition x
+    (ms_rom_semantic_state_of_category_execution_seed x sigma
+      BudgetParameters.MSROMSemanticQueryCollision) =
+  ms_rom_public_divergence_global_digest_flag x.
+proof.
+move=> Hsigma.
+rewrite ms_rom_public_observable_divergence_condition_query_collision_categoryE.
+rewrite /ms_rom_public_divergence_global_digest_flag.
+have [Hprog _] :=
+  L_ms3c_real_execution_seed_on_support_public_challenge_fields x sigma Hsigma.
+by rewrite Hprog.
+qed.
+
+lemma ms_rom_public_observable_divergence_condition_programming_collision_categoryE
+  (x : ms_public_input) (sigma : ms3c_real_execution_seed) :
+  ms_rom_public_observable_divergence_condition x
+    (ms_rom_semantic_state_of_category_execution_seed x sigma
+      BudgetParameters.MSROMSemanticProgrammingCollision) =
+  (sigma.`ms3cep_challenge.`ms3csc_programmed_challenge <>
+   ms_public_transcript_digest_canonical x).
+proof.
+rewrite /ms_rom_public_observable_divergence_condition.
+rewrite /ms_after_rom_public_semantic_digest_of_state.
+rewrite (ms_rom_semantic_failure_event_stateE x sigma
+  BudgetParameters.MSROMSemanticProgrammingCollision).
+rewrite /BudgetParameters.ms_rom_semantic_category_is_failure /pred1 /=.
+rewrite /ms_rom_semantic_state_of_category_execution_seed /=.
+rewrite /ms_rom_programming_collision_witness_of_category.
+by rewrite /pred1 /=.
+qed.
+
+lemma ms_rom_public_divergence_programming_collision_iff
+  (x : ms_public_input) (sigma : ms3c_real_execution_seed) :
+  sigma \in d_ms3c_real_execution_seed x =>
+  ms_rom_public_observable_divergence_condition x
+    (ms_rom_semantic_state_of_category_execution_seed x sigma
+      BudgetParameters.MSROMSemanticProgrammingCollision) =
+  ms_rom_public_divergence_global_digest_flag x.
+proof.
+move=> Hsigma.
+rewrite ms_rom_public_observable_divergence_condition_programming_collision_categoryE.
+rewrite /ms_rom_public_divergence_global_digest_flag.
+have [Hprog _] :=
+  L_ms3c_real_execution_seed_on_support_public_challenge_fields x sigma Hsigma.
+by rewrite Hprog.
+qed.
+
+lemma ms_rom_public_observable_divergence_condition_transcript_mismatch_categoryE
+  (x : ms_public_input) (sigma : ms3c_real_execution_seed) :
+  ms_rom_public_observable_divergence_condition x
+    (ms_rom_semantic_state_of_category_execution_seed x sigma
+      BudgetParameters.MSROMSemanticTranscriptMismatch) =
+  (sigma.`ms3cep_challenge.`ms3csc_query_digest <>
+   ms_public_transcript_digest_canonical x).
+proof.
+rewrite /ms_rom_public_observable_divergence_condition.
+rewrite /ms_after_rom_public_semantic_digest_of_state.
+rewrite (ms_rom_semantic_failure_event_stateE x sigma
+  BudgetParameters.MSROMSemanticTranscriptMismatch).
+rewrite /BudgetParameters.ms_rom_semantic_category_is_failure /pred1 /=.
+rewrite /ms_rom_semantic_state_of_category_execution_seed /=.
+rewrite /ms_rom_transcript_reconstruction_of_category_execution_seed.
+by rewrite /pred1 /=.
+qed.
+
+lemma ms_rom_public_divergence_transcript_mismatch_iff
+  (x : ms_public_input) (sigma : ms3c_real_execution_seed) :
+  sigma \in d_ms3c_real_execution_seed x =>
+  ms_rom_public_observable_divergence_condition x
+    (ms_rom_semantic_state_of_category_execution_seed x sigma
+      BudgetParameters.MSROMSemanticTranscriptMismatch) =
+  ms_rom_public_divergence_query_digest_flag x.
+proof.
+move=> Hsigma.
+rewrite ms_rom_public_observable_divergence_condition_transcript_mismatch_categoryE.
+rewrite /ms_rom_public_divergence_query_digest_flag.
+have [_ Hquery] :=
+  L_ms3c_real_execution_seed_on_support_public_challenge_fields x sigma Hsigma.
+by rewrite Hquery.
+qed.
+
+lemma ms_rom_public_observable_divergence_condition_implies_semantic_failure
+  (x : ms_public_input) (st : ms_rom_semantic_state) :
+  ms_rom_public_observable_divergence_condition x st =>
+  ms_rom_semantic_failure_event st.
+proof.
+move=> Hdiv.
+have [Hfail|Hclean] : ms_rom_semantic_failure_event st \/
+  ! ms_rom_semantic_failure_event st by smt().
+- exact Hfail.
+have Hnodiv : ! ms_rom_public_observable_divergence_condition x st.
+  exact (ms_rom_public_observable_divergence_condition_cleanE x st Hclean).
+by smt().
 qed.
 
 lemma ms_rom_semantic_after_rom_observable_of_stateE
@@ -676,6 +875,38 @@ proof.
 rewrite /ms_rom_execution_owned_semantic_failure_probability.
 rewrite /ms_rom_local_failure_mass.
 by rewrite d_ms_rom_semantic_failure_state_choiceE.
+qed.
+
+lemma ms_rom_public_observable_divergence_mass_le_execution_owned_semantic_failure
+  (x : ms_public_input) :
+  mu (d_ms_rom_semantic_coupled_state x)
+    (ms_rom_public_observable_divergence_condition x) <=
+  ms_rom_execution_owned_semantic_failure_probability x.
+proof.
+have Hsub :
+    mu (d_ms_rom_semantic_coupled_state x)
+      (ms_rom_public_observable_divergence_condition x) <=
+    mu (d_ms_rom_semantic_coupled_state x)
+      (fun st : ms_rom_semantic_state =>
+        ms_rom_semantic_failure_event st).
+  apply mu_sub => st /=.
+  by smt(ms_rom_public_observable_divergence_condition_implies_semantic_failure).
+have Hmass :
+    mu (d_ms_rom_semantic_coupled_state x)
+      (fun st : ms_rom_semantic_state =>
+        ms_rom_semantic_failure_event st) =
+    ms_rom_execution_owned_semantic_failure_probability x.
+  have Hmu1 :
+      mu (d_ms_rom_semantic_failure_state_choice x)
+        (fun bad : bool => bad) =
+      mu1 (d_ms_rom_semantic_failure_state_choice x) true.
+    apply/mu_eq=> bad /=.
+    by case: bad.
+  rewrite /ms_rom_execution_owned_semantic_failure_probability.
+  rewrite /d_ms_rom_semantic_failure_state_choice dmapE /= in Hmu1.
+  exact Hmu1.
+rewrite -Hmass.
+exact Hsub.
 qed.
 
 lemma A_MS2_rom_programming_execution_owned_semantic_bound

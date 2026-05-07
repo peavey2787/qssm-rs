@@ -403,7 +403,7 @@ have Hgap :
     `|ms_view_distinguish_pr (d_ms_after_binding_observable_v2 x s xms) D -
       ms_view_distinguish_pr (d_ms_after_rom_public_semantic_observable_v2 x s xms) D| <=
     mu (d_ms_rom_semantic_coupled_state xms)
-      ((pred1 true) \o ms_rom_semantic_failure_event).
+      (ms_rom_public_observable_divergence_condition xms).
   rewrite d_ms_after_binding_observable_v2_public_semantic_clean_imageE.
   rewrite /d_ms_after_rom_public_semantic_observable_v2.
   apply (ms_same_source_distinguisher_gap_le_bad_mass
@@ -411,12 +411,11 @@ have Hgap :
     (fun _ : ms_rom_semantic_state =>
       ms_rom_semantic_after_rom_observable_of_failure_flag xms false)
     (ms_after_rom_public_semantic_observable_of_state xms)
-    ((pred1 true) \o ms_rom_semantic_failure_event) D).
-  move=> st Hclean.
-  have Hclean' : ! ms_rom_semantic_failure_event st.
-  - rewrite /pred1 /(\o) in Hclean.
-    by case: (ms_rom_semantic_failure_event st) Hclean.
-  by rewrite (ms_after_rom_public_semantic_observable_of_state_cleanE xms st Hclean').
+    (ms_rom_public_observable_divergence_condition xms) D).
+  move=> st Hnodiv.
+  have Hobs :=
+    ms_after_rom_public_semantic_observable_of_state_no_divergenceE xms st Hnodiv.
+  by smt().
 have Hdir :
     ms_view_distinguish_pr (d_ms_after_binding_observable_v2 x s xms) D -
     ms_view_distinguish_pr (d_ms_after_rom_public_semantic_observable_v2 x s xms) D <=
@@ -425,9 +424,10 @@ have Hdir :
   exact (ler_norm
     (ms_view_distinguish_pr (d_ms_after_binding_observable_v2 x s xms) D -
      ms_view_distinguish_pr (d_ms_after_rom_public_semantic_observable_v2 x s xms) D)).
-rewrite /ms_rom_execution_owned_semantic_failure_probability /mu1.
-rewrite /d_ms_rom_semantic_failure_state_choice dmapE /=.
-exact (ler_trans _ _ _ Hdir Hgap).
+have Hmass :=
+  ms_rom_public_observable_divergence_mass_le_execution_owned_semantic_failure xms.
+apply (ler_trans _ _ _ Hdir).
+exact (ler_trans _ _ _ Hgap Hmass).
 qed.
 
 lemma L_ms2_rom_programming_transition_le_execution_owned_semantic_failure
