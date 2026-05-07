@@ -660,16 +660,24 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     any public theorem name, and do not alter the live semantic top `3%r / 4%r`.
   - Public-endpoint splice boundary, May 2026: `ms/MSProbabilitySurface.ec`
     now also proves the staged lower-surface theorems
-    `A_MS2_rom_programming_semantic_public_endpoint_transition_bound` and
-    `A_MS1_to_MS2_semantic_public_endpoint_transition_bound`. They are not
-    part of the live semantic route. The live G0->G1 semantic chain already
-    pays MS1 once through `A_MS1_hash_binding_semantic_transition` and MS2
-    once through `A_MS2_rom_programming_semantic_transition`, so routing the
-    staged splice through the current canonical telescope would double-count
-    the MS1 term. If these public endpoints are ever to be used live, the
-    next patch is not direct splice routing in `games/GameMSHopComposition.ec`
-    or `theorem/MainTheorem.ec`; it is a new public-endpoint game
-    abstraction below the current `game_pr_ms_core` / `Adv` surface.
+    `A_MS2_rom_programming_semantic_public_endpoint_transition_bound`,
+    `A_MS1_to_MS2_semantic_public_endpoint_transition_bound`,
+    `A_MS1_to_MS2_semantic_public_endpoint_visible_flags_bound`,
+    `A_MS1_to_MS2_semantic_public_endpoint_local_visible_flags_bound`, and
+    `A_MS1_to_MS2_semantic_public_endpoint_local_visible_flags_closed_form_bound`.
+    The visible-flags sibling keeps the MS2 public term on the refined visible
+    divergence mass, the symbolic local-visible sibling keeps the MS1 term on
+    `ms_hash_binding_local_public_divergence_upper_mass`, and the closed-form
+    corollary rewrites only that staged MS1 local term to `1%r / 8%r`.
+    None of these theorems are part of the live semantic route. The live G0->G1
+    semantic chain already pays MS1 once through
+    `A_MS1_hash_binding_semantic_transition` and MS2 once through
+    `A_MS2_rom_programming_semantic_transition`, so routing the staged splice
+    through the current canonical telescope would double-count the MS1 term.
+    If these public endpoints are ever to be used live, the next patch is not
+    direct splice routing in `games/GameMSHopComposition.ec` or
+    `theorem/MainTheorem.ec`; it is a new public-endpoint game abstraction
+    below the current `game_pr_ms_core` / `Adv` surface.
     law.
   - Design refinement, May 2026: `A_LE_rejection_sampler_sdist_bound` remains a
     proved lemma in `le/LERejection.ec`, but it is no longer a repackaging of a
