@@ -986,6 +986,25 @@ rewrite /BudgetParameters.ms_rom_query_collision_slot_count
 exact H3.
 qed.
 
+lemma ms_rom_public_divergence_demo_slot0_3_imageE
+  (x : ms_public_input) (sigma : ms3c_real_execution_seed) :
+  sigma \in d_ms3c_real_execution_seed x =>
+  map (fun (slot : int) =>
+    ms_rom_public_observable_divergence_condition x
+      (ms_rom_semantic_state_of_category_execution_seed x sigma
+        (ms_rom_semantic_category_of_slot slot))) [0; 1; 2; 3] =
+  [ ms_rom_public_divergence_global_digest_flag x;
+    ms_rom_public_divergence_global_digest_flag x;
+    ms_rom_public_divergence_query_digest_flag x;
+    false ].
+proof.
+move=> Hsigma.
+have [Hslot0 [Hslot1 Hslot2]] :=
+  ms_rom_public_divergence_demo_failure_slotsE x sigma Hsigma.
+have Hslot3 := ms_rom_public_divergence_demo_clean_slot3E x sigma Hsigma.
+by rewrite /= Hslot0 Hslot1 Hslot2 Hslot3.
+qed.
+
 lemma ms_rom_public_observable_divergence_condition_implies_semantic_failure
   (x : ms_public_input) (st : ms_rom_semantic_state) :
   ms_rom_public_observable_divergence_condition x st =>
