@@ -905,6 +905,33 @@ by case: (ms_rom_public_observable_divergence_condition x
     BudgetParameters.MSROMSemanticClean)) Hnodiv.
 qed.
 
+lemma ms_rom_public_divergence_slot_choice_imageE
+  (x : ms_public_input) (sigma : ms3c_real_execution_seed) :
+  sigma \in d_ms3c_real_execution_seed x =>
+  dmap d_ms_rom_semantic_slot_choice
+    (fun (slot : int) =>
+      ms_rom_public_observable_divergence_condition x
+        (ms_rom_semantic_state_of_category_execution_seed x sigma
+          (ms_rom_semantic_category_of_slot slot))) =
+  dmap d_ms_rom_semantic_slot_choice
+    (fun (slot : int) =>
+      if slot < BudgetParameters.ms_rom_query_collision_slot_count then
+        ms_rom_public_divergence_global_digest_flag x
+      else if slot <
+          BudgetParameters.ms_rom_query_collision_slot_count +
+          BudgetParameters.ms_rom_programming_collision_slot_count then
+        ms_rom_public_divergence_global_digest_flag x
+      else if slot < BudgetParameters.ms_rom_failure_slot_count then
+        ms_rom_public_divergence_query_digest_flag x
+      else false).
+proof.
+move=> Hsigma.
+apply eq_dmap_in=> slot Hslot /=.
+rewrite /d_ms_rom_semantic_slot_choice in Hslot.
+rewrite supp_duniform in Hslot.
+exact (ms_rom_public_divergence_slot_image_on_supportE x sigma slot Hsigma Hslot).
+qed.
+
 lemma ms_rom_public_observable_divergence_condition_implies_semantic_failure
   (x : ms_public_input) (st : ms_rom_semantic_state) :
   ms_rom_public_observable_divergence_condition x st =>
