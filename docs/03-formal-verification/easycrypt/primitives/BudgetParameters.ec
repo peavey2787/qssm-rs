@@ -91,11 +91,13 @@ op ms_hash_binding_semantic_category_support :
     MSHashBindingSemanticMalformedBinding;
     MSHashBindingSemanticTranscriptMismatch ].
 
-(* Primitive owner for a future semantic MS hash-binding budget.
-   The active theorem-facing MS1 budget remains the exact-zero
-   `epsilon_ms_hash_binding` on the current route. This parallel semantic
-   skeleton records a structured category law without changing the theorem
-   surface until an execution-owned MS1 semantic bridge exists. *)
+(* Primitive owner for the staged semantic MS hash-binding budget.
+  The active exact-zero MS1 budget remains `epsilon_ms_hash_binding` on the
+  exact-zero route, while the semantic sibling route already consumes this
+  owner through the execution-owned bridge in
+  `ms/source/SourceHashBindingSemanticBridge.ec`.
+  The remaining staged caveat is the lower non-identity observable-law gap,
+  not the existence of the bridge or the semantic theorem route. *)
 
 lemma ms_hash_binding_semantic_category_support_uniq :
   uniq ms_hash_binding_semantic_category_support.
@@ -253,11 +255,13 @@ op ms_rom_semantic_category_support :
     MSROMSemanticProgrammingCollision;
     MSROMSemanticTranscriptMismatch ].
 
-(* Primitive owner for a future semantic MS ROM-programmability budget.
-   The active theorem-facing MS2 budget remains the exact-zero
-   `epsilon_ms_rom_programmability` on the current route. This parallel
-   semantic skeleton records a structured category law without changing the
-   theorem surface until an execution-owned MS2 semantic bridge exists. *)
+(* Primitive owner for the staged semantic MS ROM-programmability budget.
+  The active exact-zero MS2 budget remains `epsilon_ms_rom_programmability`
+  on the exact-zero route, while the semantic sibling route already consumes
+  this owner through the execution-owned bridge in
+  `ms/comparison/ComparisonPayloadSemanticBridge.ec`.
+  The remaining staged caveat is the public AfterRom observable-law retarget,
+  not the existence of the bridge or the semantic theorem route. *)
 
 lemma ms_rom_semantic_category_support_uniq :
   uniq ms_rom_semantic_category_support.
