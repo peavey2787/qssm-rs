@@ -726,6 +726,50 @@ rewrite /MS.epsilon_ms_hash_binding_semantic.
 exact (ler_trans _ _ _ Hsemantic Hbridge).
 qed.
 
+lemma A_MS2_rom_programming_semantic_public_endpoint_transition_bound
+  (x : qssm_public_input) (s : seed) (xms : ms_public_input) (D : distinguisher) :
+  ms_view_distinguish_pr
+    (d_ms_after_binding_observable_v2 x s xms) D -
+  ms_view_distinguish_pr
+    (d_ms_after_rom_public_semantic_observable_v2 x s xms) D
+  <= epsilon_ms_rom_programmability_semantic.
+proof.
+have Hsemantic :=
+  L_ms2_rom_programming_transition_le_execution_owned_semantic_failure x s xms D.
+have Hbridge := A_MS2_rom_programming_execution_owned_semantic_bound xms.
+exact (ler_trans _ _ _ Hsemantic Hbridge).
+qed.
+
+lemma A_MS1_to_MS2_semantic_public_endpoint_transition_bound
+  (x : qssm_public_input) (s : seed) (xms : ms_public_input) (D : distinguisher) :
+  ms_view_distinguish_pr
+    (d_ms_after_binding_public_semantic_observable_v2 x s xms) D -
+  ms_view_distinguish_pr
+    (d_ms_after_rom_public_semantic_observable_v2 x s xms) D
+  <= MS.epsilon_ms_hash_binding_semantic +
+     epsilon_ms_rom_programmability_semantic.
+proof.
+have Hms1 :=
+  A_MS1_hash_binding_semantic_public_endpoint_compatibility_bound x s xms D.
+have Hms2 :=
+  A_MS2_rom_programming_semantic_public_endpoint_transition_bound x s xms D.
+have -> :
+  ms_view_distinguish_pr
+    (d_ms_after_binding_public_semantic_observable_v2 x s xms) D -
+  ms_view_distinguish_pr
+    (d_ms_after_rom_public_semantic_observable_v2 x s xms) D =
+  (ms_view_distinguish_pr
+     (d_ms_after_binding_public_semantic_observable_v2 x s xms) D -
+   ms_view_distinguish_pr
+     (d_ms_after_binding_observable_v2 x s xms) D) +
+  (ms_view_distinguish_pr
+     (d_ms_after_binding_observable_v2 x s xms) D -
+   ms_view_distinguish_pr
+     (d_ms_after_rom_public_semantic_observable_v2 x s xms) D).
+  by ring.
+exact (ler_add _ _ _ _ Hms1 Hms2).
+qed.
+
 lemma L_ms2_rom_programming_transition_zero
   (x : qssm_public_input) (s : seed) (xms : ms_public_input) (D : distinguisher) :
   ms_view_distinguish_pr
