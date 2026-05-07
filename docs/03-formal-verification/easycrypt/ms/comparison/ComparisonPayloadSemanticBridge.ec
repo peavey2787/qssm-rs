@@ -455,9 +455,51 @@ op d_ms_rom_semantic_coupled_state
     (fun (p : ms3c_real_execution_seed * BudgetParameters.ms_rom_semantic_category) =>
       ms_rom_semantic_state_of_category_execution_seed x (fst p) (snd p)).
 
+lemma d_ms_rom_semantic_coupled_state_lossless
+  (x : ms_public_input) :
+  is_lossless (d_ms_rom_semantic_coupled_state x).
+proof.
+rewrite /d_ms_rom_semantic_coupled_state.
+apply dmap_ll.
+apply dprod_ll_auto.
+- exact (L_ms3c_real_execution_seed_law_lossless x).
+exact ms_rom_semantic_category_choice_lossless.
+qed.
+
 op ms_rom_semantic_failure_event
   (st : ms_rom_semantic_state) : bool =
   ms_rom_semantic_divergence_condition st.
+
+op ms_after_rom_public_semantic_digest_of_state
+  (x : ms_public_input) (st : ms_rom_semantic_state) : digest =
+  if ms_rom_semantic_failure_event st then
+    if pred1 BudgetParameters.MSROMSemanticQueryCollision st.`msrss_category then
+      fst st.`msrss_query_collision_witness.`msrqcw_observed_row
+    else if pred1 BudgetParameters.MSROMSemanticProgrammingCollision st.`msrss_category then
+      fst st.`msrss_programming_collision_witness.`msrpcw_observed_programmed_pair
+    else if pred1 BudgetParameters.MSROMSemanticTranscriptMismatch st.`msrss_category then
+      st.`msrss_transcript_reconstruction.`msrtr_reconstructed_digest
+    else
+      ms_public_transcript_digest_canonical x
+  else
+    ms_public_transcript_digest_canonical x.
+
+op ms_after_rom_public_semantic_observable_of_state
+  (x : ms_public_input) (st : ms_rom_semantic_state) :
+  ms_v2_transcript_observable =
+  if ms_rom_semantic_failure_event st then
+    ms3a_pack_observable
+      (ms3a_public_stmt_digest x)
+      (ms3a_public_result_bit x)
+      (ms3a_public_bitness_globals x)
+      (ms3a_public_comparison_global x)
+      (ms_after_rom_public_semantic_digest_of_state x st)
+  else
+    ms3a_pack_observable_with_digest
+      (ms3a_public_stmt_digest x)
+      (ms3a_public_result_bit x)
+      (ms3a_public_bitness_globals x)
+      (ms3a_public_comparison_global x).
 
 op ms_rom_semantic_after_rom_observable_of_failure_flag
   (x : ms_public_input) (bad : bool) : ms_v2_transcript_observable =
@@ -480,6 +522,17 @@ op ms_rom_semantic_after_rom_observable_of_state
   ms_v2_transcript_observable =
   ms_rom_semantic_after_rom_observable_of_failure_flag x
     (ms_rom_semantic_failure_event st).
+
+lemma ms_after_rom_public_semantic_observable_of_state_cleanE
+  (x : ms_public_input) (st : ms_rom_semantic_state) :
+  ! ms_rom_semantic_failure_event st =>
+  ms_after_rom_public_semantic_observable_of_state x st =
+  ms_rom_semantic_after_rom_observable_of_failure_flag x false.
+proof.
+move=> Hclean.
+rewrite /ms_after_rom_public_semantic_observable_of_state Hclean.
+by rewrite /ms_rom_semantic_after_rom_observable_of_failure_flag.
+qed.
 
 lemma ms_rom_semantic_failure_event_stateE
   (x : ms_public_input) (sigma : ms3c_real_execution_seed)

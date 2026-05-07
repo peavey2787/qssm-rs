@@ -600,15 +600,17 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     `ms/MSProbabilitySurface.ec`: that file now maps the bridge projection
     `ms_rom_semantic_after_rom_observable_of_state` over
     `d_ms_rom_semantic_coupled_state` as
-    `d_ms_after_rom_semantic_observable_v2`, proves the non-identity local law
-    `L_ms2_rom_programming_transition_le_execution_owned_semantic_failure`, and
-    keeps `A_MS2_rom_programming_semantic_transition_bound` on the same theorem
-    name while `games/GameMSHopComposition.ec`, `theorem/MainTheorem.ec`, the
-    exact-zero theorem `A_MS2_rom_programming_transition_bound`, and all public
-    theorem names stay unchanged. The next patch is therefore no longer lower-
-    surface retargeting; it is to decide whether the public MS2 AfterRom stage
-    should remain on the current exact-equality carrier or be retargeted to a
-    more deployment-meaningful lower ROM-programming
+    `d_ms_after_rom_public_semantic_observable_v2`, proves the direct
+    replacement law
+    `L_ms2_public_after_rom_transition_le_execution_owned_semantic_failure`,
+    retargets `L_ms2_rom_programming_transition_le_execution_owned_semantic_failure`,
+    and keeps `A_MS2_rom_programming_semantic_transition_bound` on the same
+    theorem name while `games/GameMSHopComposition.ec`, `theorem/MainTheorem.ec`,
+    the exact-zero theorem `A_MS2_rom_programming_transition_bound`, and all
+    public theorem names stay unchanged. The next patch is therefore no longer
+    lower-surface public AfterRom retargeting; it is to tighten or justify the
+    current semantic-public surrogate if a more deployment-meaningful lower
+    ROM-programming
   - Source-local MS1 hash-binding semantic bridge and staged sibling chain,
     May 2026: `ms/MS.ec` now stages the MS-facing alias/nonneg surface for
     `epsilon_ms_hash_binding_semantic`, and

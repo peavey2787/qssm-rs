@@ -286,6 +286,12 @@ op d_ms_after_rom_semantic_observable_v2
   dmap (d_ms_rom_semantic_coupled_state xms)
     (ms_rom_semantic_after_rom_observable_of_state xms).
 
+op d_ms_after_rom_public_semantic_observable_v2
+  (x : qssm_public_input) (s : seed) (xms : ms_public_input) :
+  ms_v2_transcript_observable distr =
+  dmap (d_ms_rom_semantic_coupled_state xms)
+    (ms_after_rom_public_semantic_observable_of_state xms).
+
 lemma d_ms_after_binding_observable_v2_semantic_clean_imageE
   (x : qssm_public_input) (s : seed) (xms : ms_public_input) :
   d_ms_after_binding_observable_v2 x s xms =
@@ -294,6 +300,20 @@ lemma d_ms_after_binding_observable_v2_semantic_clean_imageE
 proof.
 rewrite d_ms_after_binding_observable_v2_canonical.
 rewrite dmap_dunit.
+by rewrite /ms_rom_semantic_after_rom_observable_of_failure_flag.
+qed.
+
+lemma d_ms_after_binding_observable_v2_public_semantic_clean_imageE
+  (x : qssm_public_input) (s : seed) (xms : ms_public_input) :
+  d_ms_after_binding_observable_v2 x s xms =
+  dmap (d_ms_rom_semantic_coupled_state xms)
+    (fun _ : ms_rom_semantic_state =>
+      ms_rom_semantic_after_rom_observable_of_failure_flag xms false).
+proof.
+rewrite d_ms_after_binding_observable_v2_canonical.
+rewrite (dmap_const_ll (d_ms_rom_semantic_coupled_state xms)
+  (ms_rom_semantic_after_rom_observable_of_failure_flag xms false)
+  (d_ms_rom_semantic_coupled_state_lossless xms)).
 by rewrite /ms_rom_semantic_after_rom_observable_of_failure_flag.
 qed.
 
@@ -373,36 +393,50 @@ rewrite HE mu0.
 exact Hfailure_nonneg.
 qed.
 
+lemma L_ms2_public_after_rom_transition_le_execution_owned_semantic_failure
+  (x : qssm_public_input) (s : seed) (xms : ms_public_input) (D : distinguisher) :
+  ms_view_distinguish_pr (d_ms_after_binding_observable_v2 x s xms) D -
+  ms_view_distinguish_pr (d_ms_after_rom_public_semantic_observable_v2 x s xms) D <=
+  ms_rom_execution_owned_semantic_failure_probability xms.
+proof.
+have Hgap :
+    `|ms_view_distinguish_pr (d_ms_after_binding_observable_v2 x s xms) D -
+      ms_view_distinguish_pr (d_ms_after_rom_public_semantic_observable_v2 x s xms) D| <=
+    mu (d_ms_rom_semantic_coupled_state xms)
+      ((pred1 true) \o ms_rom_semantic_failure_event).
+  rewrite d_ms_after_binding_observable_v2_public_semantic_clean_imageE.
+  rewrite /d_ms_after_rom_public_semantic_observable_v2.
+  apply (ms_same_source_distinguisher_gap_le_bad_mass
+    (d_ms_rom_semantic_coupled_state xms)
+    (fun _ : ms_rom_semantic_state =>
+      ms_rom_semantic_after_rom_observable_of_failure_flag xms false)
+    (ms_after_rom_public_semantic_observable_of_state xms)
+    ((pred1 true) \o ms_rom_semantic_failure_event) D).
+  move=> st Hclean.
+  have Hclean' : ! ms_rom_semantic_failure_event st.
+  - rewrite /pred1 /(\o) in Hclean.
+    by case: (ms_rom_semantic_failure_event st) Hclean.
+  by rewrite (ms_after_rom_public_semantic_observable_of_state_cleanE xms st Hclean').
+have Hdir :
+    ms_view_distinguish_pr (d_ms_after_binding_observable_v2 x s xms) D -
+    ms_view_distinguish_pr (d_ms_after_rom_public_semantic_observable_v2 x s xms) D <=
+    `|ms_view_distinguish_pr (d_ms_after_binding_observable_v2 x s xms) D -
+      ms_view_distinguish_pr (d_ms_after_rom_public_semantic_observable_v2 x s xms) D|.
+  exact (ler_norm
+    (ms_view_distinguish_pr (d_ms_after_binding_observable_v2 x s xms) D -
+     ms_view_distinguish_pr (d_ms_after_rom_public_semantic_observable_v2 x s xms) D)).
+rewrite /ms_rom_execution_owned_semantic_failure_probability /mu1.
+rewrite /d_ms_rom_semantic_failure_state_choice dmapE /=.
+exact (ler_trans _ _ _ Hdir Hgap).
+qed.
+
 lemma L_ms2_rom_programming_transition_le_execution_owned_semantic_failure
   (x : qssm_public_input) (s : seed) (xms : ms_public_input) (D : distinguisher) :
   ms_view_distinguish_pr (d_ms_after_binding_observable_v2 x s xms) D -
-  ms_view_distinguish_pr (d_ms_after_rom_semantic_observable_v2 x s xms) D <=
+  ms_view_distinguish_pr (d_ms_after_rom_public_semantic_observable_v2 x s xms) D <=
   ms_rom_execution_owned_semantic_failure_probability xms.
 proof.
-pose db := d_ms_after_binding_observable_v2 x s xms.
-pose dsem := d_ms_after_rom_semantic_observable_v2 x s xms.
-pose E := ms_distinguisher_event D.
-have Hsdist :
-    sdist db dsem <= ms_rom_execution_owned_semantic_failure_probability xms.
-  rewrite /db /dsem.
-  rewrite d_ms_after_binding_observable_v2_semantic_clean_imageE.
-  rewrite d_ms_after_rom_semantic_observable_v2_failure_choiceE.
-  pose F := ms_rom_semantic_after_rom_observable_of_failure_flag xms.
-  have Hmap :
-    sdist (dmap (dunit false) F)
-      (dmap (d_ms_rom_semantic_failure_state_choice xms) F) <=
-    sdist (dunit false) (d_ms_rom_semantic_failure_state_choice xms).
-    exact (sdist_dmap (dunit false)
-      (d_ms_rom_semantic_failure_state_choice xms) F).
-  apply (ler_trans _ _ _ Hmap).
-  rewrite sdistC.
-  exact (ms_rom_semantic_failure_state_choice_sdist_dunit_false_le_failure_probability xms).
-have Habs : `|mu db E - mu dsem E| <= sdist db dsem.
-  exact (sdist_upper_bound db dsem E).
-have Hle : mu db E - mu dsem E <= `|mu db E - mu dsem E|.
-  exact (ler_norm (mu db E - mu dsem E)).
-apply (ler_trans _ _ _ Hle).
-apply (ler_trans _ _ _ Habs Hsdist).
+exact (L_ms2_public_after_rom_transition_le_execution_owned_semantic_failure x s xms D).
 qed.
 
 op d_ms_game_stage_observable_v2
@@ -537,7 +571,7 @@ have Hsemantic_endpoint_budget :
     ms_view_distinguish_pr
       (d_ms_game_stage_observable_v2 x s xms MSGameStageAfterBinding) D -
     ms_view_distinguish_pr
-      (d_ms_after_rom_semantic_observable_v2 x s xms) D <=
+      (d_ms_after_rom_public_semantic_observable_v2 x s xms) D <=
     epsilon_ms_rom_programmability_semantic.
   rewrite /d_ms_game_stage_observable_v2 /=.
   exact (ler_trans _ _ _ Hsemantic Hbridge).
