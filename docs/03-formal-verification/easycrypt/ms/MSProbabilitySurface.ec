@@ -763,6 +763,41 @@ apply (ler_trans _ _ _ Hdir).
 exact (ler_trans _ _ _ Hgap Hmass).
 qed.
 
+lemma L_ms2_public_after_rom_transition_le_public_observable_divergence_mass
+  (x : qssm_public_input) (s : seed) (xms : ms_public_input) (D : distinguisher) :
+  ms_view_distinguish_pr (d_ms_after_binding_observable_v2 x s xms) D -
+  ms_view_distinguish_pr (d_ms_after_rom_public_semantic_observable_v2 x s xms) D <=
+  ms_rom_public_observable_divergence_mass xms.
+proof.
+have Hgap :
+    `|ms_view_distinguish_pr (d_ms_after_binding_observable_v2 x s xms) D -
+      ms_view_distinguish_pr (d_ms_after_rom_public_semantic_observable_v2 x s xms) D| <=
+    mu (d_ms_rom_semantic_coupled_state xms)
+      (ms_rom_public_observable_divergence_condition xms).
+  rewrite d_ms_after_binding_observable_v2_public_semantic_clean_imageE.
+  rewrite /d_ms_after_rom_public_semantic_observable_v2.
+  apply (ms_same_source_distinguisher_gap_le_bad_mass
+    (d_ms_rom_semantic_coupled_state xms)
+    (fun _ : ms_rom_semantic_state =>
+      ms_rom_semantic_after_rom_observable_of_failure_flag xms false)
+    (ms_after_rom_public_semantic_observable_of_state xms)
+    (ms_rom_public_observable_divergence_condition xms) D).
+  move=> st Hnodiv.
+  have Hobs :=
+    ms_after_rom_public_semantic_observable_of_state_no_divergenceE xms st Hnodiv.
+  by smt().
+have Hdir :
+    ms_view_distinguish_pr (d_ms_after_binding_observable_v2 x s xms) D -
+    ms_view_distinguish_pr (d_ms_after_rom_public_semantic_observable_v2 x s xms) D <=
+    `|ms_view_distinguish_pr (d_ms_after_binding_observable_v2 x s xms) D -
+      ms_view_distinguish_pr (d_ms_after_rom_public_semantic_observable_v2 x s xms) D|.
+  exact (ler_norm
+    (ms_view_distinguish_pr (d_ms_after_binding_observable_v2 x s xms) D -
+     ms_view_distinguish_pr (d_ms_after_rom_public_semantic_observable_v2 x s xms) D)).
+rewrite /ms_rom_public_observable_divergence_mass.
+exact (ler_trans _ _ _ Hdir Hgap).
+qed.
+
 lemma L_ms2_rom_programming_transition_le_execution_owned_semantic_failure
   (x : qssm_public_input) (s : seed) (xms : ms_public_input) (D : distinguisher) :
   ms_view_distinguish_pr (d_ms_after_binding_observable_v2 x s xms) D -
