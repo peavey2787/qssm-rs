@@ -444,8 +444,17 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     `d_le_pre_fs_semantic_programming_view` /
     `d_le_post_fs_semantic_programmed_view`, and
     `le/LEStatisticalDistance.ec` plus `games/GameLEBridge.ec` now route the
-    semantic comparison path over that honest internal chain. The local
-    semantic comparison theorem still closes at
+    semantic comparison path over that honest internal chain. The current
+    execution/sampler material carrier still projects `soft_repair`,
+    `hard_repair`, and `invalid` to the shared reject branch, so the checked
+    lower lemmas distinguish only failure-vs-accept plus repair/no-repair.
+    That is sufficient for the present theorem path because the live consumers
+    do not need category-specific material witnesses. Any future true material
+    split should therefore be added as an additive category-carrying
+    constructor/ticket layer in `le/LERealExecution.ec`, replayed through the
+    sampler below the theorem-facing wrappers rather than by changing the
+    public theorem names or budget owners. The local semantic comparison
+    theorem still closes at
     `le_rejection_shadow_semantic_failure_probability + le_fs_shadow_local_bad_branch_mass`,
     the owned theorem still closes at
     `epsilon_le_rej_semantic + epsilon_le_fs_semantic`, and the semantic
@@ -708,9 +717,14 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     `le_rej_invalid_slot_count`, `le_rej_accept_slot_count`,
     `le_rej_failure_slot_count`, and `le_rej_total_slot_count`, and the
     concrete execution-owned ticket failure probability is proved equal to it.
-    The next LE-side realism step should therefore be to tighten or protocol-
-    source those rejection counts rather than to rewire rejection ownership
-    again or churn the theorem API without adding model substance.
+    The current milestone decision is to stop there: the four-way budget law is
+    now documented and checked, while the live material carrier intentionally
+    keeps `soft_repair`, `hard_repair`, and `invalid` on the shared reject
+    branch because the theorem path only consumes failure-vs-accept and
+    repair/no-repair facts. If later LE realism work needs true category-
+    specific material consequences, the first refactor should be a design-only
+    sketch and then an additive category-carrying constructor layer in
+    `le/LERealExecution.ec`, not theorem-surface churn.
   - LE budget decomposition audit, May 2026: do not treat that rejection-side
     bridge as the permanent replacement surface. The intended steady state is
     component arithmetic, with a new FS budget `epsilon_le_fs` beside
