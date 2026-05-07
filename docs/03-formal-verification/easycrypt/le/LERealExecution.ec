@@ -721,6 +721,84 @@ op le_real_execution_semantic_rejection_ticket_requires_repair
   (ticket : le_real_execution_semantic_rejection_ticket) : bool =
   ticket.`lerest_decision.`leresd_repairs_hidden_query_material.
 
+lemma le_real_execution_semantic_rejection_ticket_of_category_decisionE
+  (x : qssm_public_input) (s : seed) (obs : le_transcript_observable)
+  (category : BudgetParameters.le_rejection_semantic_ticket_category) :
+  (le_real_execution_semantic_rejection_ticket_of_observable_branch x s obs
+    (BudgetParameters.le_rejection_semantic_ticket_category_is_failure category)).`lerest_decision =
+  le_real_execution_semantic_rejection_decision_of_category category.
+proof.
+rewrite /le_real_execution_semantic_rejection_ticket_of_observable_branch /=.
+by rewrite /le_real_execution_semantic_rejection_decision_of_category
+  /le_real_execution_semantic_rejection_category_is_failure.
+qed.
+
+lemma le_real_execution_semantic_rejection_ticket_of_category_requires_repairE
+  (x : qssm_public_input) (s : seed) (obs : le_transcript_observable)
+  (category : BudgetParameters.le_rejection_semantic_ticket_category) :
+  le_real_execution_semantic_rejection_ticket_requires_repair
+    (le_real_execution_semantic_rejection_ticket_of_observable_branch x s obs
+      (BudgetParameters.le_rejection_semantic_ticket_category_is_failure category)) =
+  BudgetParameters.le_rejection_semantic_ticket_category_is_failure category.
+proof.
+rewrite /le_real_execution_semantic_rejection_ticket_requires_repair.
+rewrite (le_real_execution_semantic_rejection_ticket_of_category_decisionE x s obs category).
+exact
+  (le_real_execution_semantic_rejection_decision_of_category_repairs_hidden_query_materialE
+    category).
+qed.
+
+lemma le_real_execution_semantic_rejection_ticket_of_category_branch_bitE
+  (x : qssm_public_input) (s : seed) (obs : le_transcript_observable)
+  (category : BudgetParameters.le_rejection_semantic_ticket_category) :
+  (le_real_execution_semantic_rejection_ticket_of_observable_branch x s obs
+    (BudgetParameters.le_rejection_semantic_ticket_category_is_failure category)).`lerest_challenge_seed_material.`lerecsm_branch =
+  BudgetParameters.le_rejection_semantic_ticket_category_is_failure category.
+proof.
+rewrite /le_real_execution_semantic_rejection_ticket_of_observable_branch /=.
+by rewrite /le_real_execution_semantic_rejection_challenge_seed_material_of_branch.
+qed.
+
+lemma le_real_execution_semantic_rejection_failure_category_query_material_matches_challenge_seed_obsE
+  (x : qssm_public_input) (s : seed) (obs : le_transcript_observable)
+  (category : BudgetParameters.le_rejection_semantic_ticket_category) :
+  BudgetParameters.le_rejection_semantic_ticket_category_is_failure category =>
+  (le_real_execution_semantic_rejection_ticket_of_observable_branch x s obs
+    (BudgetParameters.le_rejection_semantic_ticket_category_is_failure category)).`lerest_query_material.`leqm_row_challenge_seed =
+  le_real_execution_semantic_rejection_challenge_seed_obs_of_branch x s true.
+proof.
+move=> Hfail.
+rewrite /le_real_execution_semantic_rejection_ticket_of_observable_branch /=.
+rewrite /le_real_execution_semantic_rejection_repaired_query_material_of_observable_branch.
+by rewrite Hfail /=.
+qed.
+
+lemma le_real_execution_semantic_rejection_failure_category_query_material_matches_programmed_query_digest_obsE
+  (x : qssm_public_input) (s : seed) (obs : le_transcript_observable)
+  (category : BudgetParameters.le_rejection_semantic_ticket_category) :
+  BudgetParameters.le_rejection_semantic_ticket_category_is_failure category =>
+  (le_real_execution_semantic_rejection_ticket_of_observable_branch x s obs
+    (BudgetParameters.le_rejection_semantic_ticket_category_is_failure category)).`lerest_query_material.`leqm_row_programmed_query_digest =
+  le_real_execution_semantic_rejection_programmed_query_digest_obs_of_branch x s true.
+proof.
+move=> Hfail.
+rewrite /le_real_execution_semantic_rejection_ticket_of_observable_branch /=.
+rewrite /le_real_execution_semantic_rejection_repaired_query_material_of_observable_branch.
+by rewrite Hfail /=.
+qed.
+
+lemma le_real_execution_semantic_rejection_accept_category_query_material_idE
+  (x : qssm_public_input) (s : seed) (obs : le_transcript_observable) :
+  (le_real_execution_semantic_rejection_ticket_of_observable_branch x s obs
+    (BudgetParameters.le_rejection_semantic_ticket_category_is_failure
+      BudgetParameters.LERejectionSemanticTicketAccept)).`lerest_query_material =
+  obs.`leto_query_material.
+proof.
+rewrite /le_real_execution_semantic_rejection_ticket_of_observable_branch /=.
+rewrite /BudgetParameters.le_rejection_semantic_ticket_category_is_failure /pred1.
+by rewrite /le_real_execution_semantic_rejection_repaired_query_material_of_observable_branch /=.
+qed.
+
 op d_le_real_execution_semantic_rejection_ticket_repair_choice
   (x : qssm_public_input) (s : seed) : bool distr =
   dmap (d_le_real_execution_semantic_rejection_ticket_choice x s)
