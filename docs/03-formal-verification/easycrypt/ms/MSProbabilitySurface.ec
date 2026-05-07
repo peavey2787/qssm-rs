@@ -798,6 +798,23 @@ rewrite /ms_rom_public_observable_divergence_mass.
 exact (ler_trans _ _ _ Hdir Hgap).
 qed.
 
+lemma L_ms2_public_after_rom_transition_le_public_visible_flags_mass
+  (x : qssm_public_input) (s : seed) (xms : ms_public_input) (D : distinguisher) :
+  ms_view_distinguish_pr (d_ms_after_binding_observable_v2 x s xms) D -
+  ms_view_distinguish_pr (d_ms_after_rom_public_semantic_observable_v2 x s xms) D <=
+  ((if ms_rom_public_divergence_global_digest_flag xms then
+      (BudgetParameters.ms_rom_query_collision_slot_count +
+       BudgetParameters.ms_rom_programming_collision_slot_count)%r
+    else 0%r) +
+   (if ms_rom_public_divergence_query_digest_flag xms then
+      BudgetParameters.ms_rom_transcript_mismatch_slot_count%r
+    else 0%r)) /
+  BudgetParameters.ms_rom_total_slot_count%r.
+proof.
+rewrite -(ms_rom_public_observable_divergence_mass_flagsE xms).
+exact (L_ms2_public_after_rom_transition_le_public_observable_divergence_mass x s xms D).
+qed.
+
 lemma L_ms2_rom_programming_transition_le_execution_owned_semantic_failure
   (x : qssm_public_input) (s : seed) (xms : ms_public_input) (D : distinguisher) :
   ms_view_distinguish_pr (d_ms_after_binding_observable_v2 x s xms) D -
