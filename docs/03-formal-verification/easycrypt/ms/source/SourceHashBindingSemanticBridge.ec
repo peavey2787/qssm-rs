@@ -114,6 +114,11 @@ op ms_hash_binding_semantic_state_of_category_source
      mshbss_malformed_binding_witness =
        ms_hash_binding_malformed_binding_witness_of_category_source src category |}.
 
+op ms_hash_binding_public_observable_divergence_condition
+  (st : ms_hash_binding_semantic_state) : bool =
+  st.`mshbss_after_binding_observable.`msv2_transcript_digest <>
+  st.`mshbss_observed_observable.`msv2_transcript_digest.
+
 op ms_hash_binding_clean_condition
   (st : ms_hash_binding_semantic_state) : bool =
   ! st.`mshbss_collision_witness.`mshbcw_present /\
@@ -413,6 +418,11 @@ op d_ms_hash_binding_semantic_coupled_state
     (fun (p : ms3a_bitness_layer_source * BudgetParameters.ms_hash_binding_semantic_category) =>
       ms_hash_binding_semantic_state_of_category_source (fst p) (snd p)).
 
+op d_ms_hash_binding_public_semantic_observable_v2
+  (x : ms_public_input) : ms_v2_transcript_observable distr =
+  dmap (d_ms_hash_binding_semantic_coupled_state x)
+    (fun (st : ms_hash_binding_semantic_state) => st.`mshbss_observed_observable).
+
 op ms_hash_binding_semantic_failure_event
   (st : ms_hash_binding_semantic_state) : bool =
   BudgetParameters.ms_hash_binding_semantic_category_is_failure st.`mshbss_category.
@@ -483,6 +493,66 @@ proof.
 rewrite /ms_hash_binding_execution_owned_semantic_failure_probability.
 rewrite /ms_hash_binding_local_failure_mass.
 by rewrite d_ms_hash_binding_semantic_failure_state_choiceE.
+qed.
+
+lemma ms_hash_binding_public_observable_divergence_implies_semantic_failure
+  (src : ms3a_bitness_layer_source)
+  (category : BudgetParameters.ms_hash_binding_semantic_category) :
+  ms_hash_binding_public_observable_divergence_condition
+    (ms_hash_binding_semantic_state_of_category_source src category) =>
+  ms_hash_binding_semantic_failure_event
+    (ms_hash_binding_semantic_state_of_category_source src category).
+proof.
+case: category=> /=.
+- rewrite /ms_hash_binding_public_observable_divergence_condition.
+  rewrite /ms_hash_binding_semantic_failure_event.
+  rewrite /ms_hash_binding_semantic_state_of_category_source /=.
+  rewrite /ms_hash_binding_observed_digest_of_category_source.
+  rewrite /ms_hash_binding_observable_of_source_digest.
+  rewrite /ms3a_after_binding_observable_of_source.
+  rewrite /ms_hash_binding_expected_transcript_digest_of_source.
+  rewrite /ms3a_pack_observable_with_digest /ms3a_pack_observable /=.
+  by rewrite /BudgetParameters.ms_hash_binding_semantic_category_is_failure /pred1.
+- rewrite /ms_hash_binding_semantic_failure_event.
+  rewrite /ms_hash_binding_semantic_state_of_category_source /=.
+  by rewrite /BudgetParameters.ms_hash_binding_semantic_category_is_failure /pred1.
+- rewrite /ms_hash_binding_semantic_failure_event.
+  rewrite /ms_hash_binding_semantic_state_of_category_source /=.
+  by rewrite /BudgetParameters.ms_hash_binding_semantic_category_is_failure /pred1.
+rewrite /ms_hash_binding_semantic_failure_event.
+rewrite /ms_hash_binding_semantic_state_of_category_source /=.
+by rewrite /BudgetParameters.ms_hash_binding_semantic_category_is_failure /pred1.
+qed.
+
+lemma ms_hash_binding_public_observable_divergence_mass_le_execution_owned_semantic_failure
+  (x : ms_public_input) :
+  mu (d_ms_hash_binding_semantic_coupled_state x)
+    ms_hash_binding_public_observable_divergence_condition <=
+  ms_hash_binding_execution_owned_semantic_failure_probability x.
+proof.
+rewrite /d_ms_hash_binding_semantic_coupled_state.
+rewrite /ms_hash_binding_execution_owned_semantic_failure_probability.
+rewrite /d_ms_hash_binding_semantic_failure_state_choice.
+rewrite /mu1 !dmapE /=.
+have Hmu1 :
+    mu ((d_ms3a_bitness_real_source x) `*` d_ms_hash_binding_semantic_category_choice)
+      ((pred1 true \o ms_hash_binding_semantic_failure_event) \o
+        (fun (p : ms3a_bitness_layer_source *
+                   BudgetParameters.ms_hash_binding_semantic_category) =>
+           ms_hash_binding_semantic_state_of_category_source (fst p) (snd p))) =
+    mu ((d_ms3a_bitness_real_source x) `*` d_ms_hash_binding_semantic_category_choice)
+      (ms_hash_binding_semantic_failure_event \o
+        (fun (p : ms3a_bitness_layer_source *
+                   BudgetParameters.ms_hash_binding_semantic_category) =>
+           ms_hash_binding_semantic_state_of_category_source (fst p) (snd p))).
+  apply/mu_eq=> p /=.
+  rewrite /(\o) /=.
+  by case: (ms_hash_binding_semantic_failure_event
+    (ms_hash_binding_semantic_state_of_category_source (fst p) (snd p))).
+rewrite Hmu1.
+apply mu_sub => p /=.
+exact (ms_hash_binding_public_observable_divergence_implies_semantic_failure
+  (fst p) (snd p)).
 qed.
 
 lemma A_MS1_hash_binding_execution_owned_semantic_bound
