@@ -346,6 +346,35 @@ move=> _.
 by right; rewrite /pred1.
 qed.
 
+lemma ms_hash_binding_public_observable_divergence_bad_case_splitE
+  (src : ms3a_bitness_layer_source)
+  (category : BudgetParameters.ms_hash_binding_semantic_category) :
+  ms_hash_binding_public_observable_divergence_condition
+    (ms_hash_binding_semantic_state_of_category_source src category) =>
+  (category = BudgetParameters.MSHashBindingSemanticMalformedBinding /\
+   ms_hash_binding_expected_transcript_digest_of_source src <> src.`ms3s_stmt) \/
+  (category = BudgetParameters.MSHashBindingSemanticTranscriptMismatch /\
+   ms_hash_binding_expected_transcript_digest_of_source src <>
+     src.`ms3s_comparison_global_challenge).
+proof.
+move=> Hdiv.
+have Hbad :=
+  ms_hash_binding_public_observable_divergence_noncollision_caseE src category Hdiv.
+case: Hbad=> Hcat.
+- left; split.
+  + by move: Hcat; rewrite /pred1.
+  move: Hcat Hdiv.
+  rewrite /pred1 => -> Hdiv.
+  rewrite ms_hash_binding_public_observable_divergence_categoryE /= in Hdiv.
+  exact Hdiv.
+- right; split.
+  + by move: Hcat; rewrite /pred1.
+  move: Hcat Hdiv.
+  rewrite /pred1 => -> Hdiv.
+  rewrite ms_hash_binding_public_observable_divergence_categoryE /= in Hdiv.
+  exact Hdiv.
+qed.
+
 lemma ms_hash_binding_semantic_category_condition_stateE
   (src : ms3a_bitness_layer_source)
   (category : BudgetParameters.ms_hash_binding_semantic_category) :
