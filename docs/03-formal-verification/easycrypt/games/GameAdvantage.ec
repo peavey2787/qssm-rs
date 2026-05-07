@@ -9,8 +9,9 @@ require import TranscriptObservable.
 require import SourceModel.
 require import SourceDistributions.
 require import SourceTheorem.
+require import SourceHashBindingSemanticBridge.
 require import MSProbabilitySurface.
-require import TrueClause ComparisonTypes ComparisonDigests ComparisonPayloadTypes ComparisonPayloadFromSeed.
+require import TrueClause ComparisonTypes ComparisonDigests ComparisonPayloadTypes ComparisonPayloadFromSeed ComparisonPayloadSemanticBridge.
 require import MS FS LESurface.
 
 (* Game probability is projected from the concrete `game_view` surface.
@@ -202,6 +203,29 @@ op ms3a_game_pr_stage (xms : ms_public_input) (s : seed) (st : ms_game_stage) : 
   then MSGameStageAfterRom
   else st.
 
+type ms_public_endpoint_stage = [
+  | MSPublicEndpointAfterBinding
+  | MSPublicEndpointAfterRom
+].
+
+op d_ms_public_endpoint_after_binding_observable_v2
+  (x : qssm_public_input) (s : seed) (xms : ms_public_input) :
+  ms_v2_transcript_observable distr =
+  d_ms_after_binding_public_semantic_observable_v2 x s xms.
+
+op d_ms_public_endpoint_after_rom_observable_v2
+  (x : qssm_public_input) (s : seed) (xms : ms_public_input) :
+  ms_v2_transcript_observable distr =
+  d_ms_after_rom_public_semantic_observable_v2 x s xms.
+
+op d_ms_public_endpoint_stage_observable_v2
+  (x : qssm_public_input) (s : seed) (xms : ms_public_input)
+  (st : ms_public_endpoint_stage) : ms_v2_transcript_observable distr =
+  with st = MSPublicEndpointAfterBinding =>
+    d_ms_public_endpoint_after_binding_observable_v2 x s xms
+  with st = MSPublicEndpointAfterRom =>
+    d_ms_public_endpoint_after_rom_observable_v2 x s xms.
+
 op game_pr_ms_core
   (x : qssm_public_input) (s : seed) (xms : ms_public_input)
   (obs : ms_v2_transcript_observable) (st : ms_game_stage)
@@ -270,6 +294,93 @@ proof.
 move=> x s xms obs lep D Hnonneg.
 rewrite /game_pr_ms_core.
 exact (A_MS2_rom_programming_semantic_transition_bound x s xms D).
+qed.
+
+(* Parallel semantic-public endpoint surface. This stays below the canonical
+   `game_pr_ms_core` / `game_pr` / `Adv` telescope and only lifts the staged
+   lower MS public-endpoint lemmas already proved in `MSProbabilitySurface.ec`. *)
+op game_pr_ms_public_endpoint_core
+  (x : qssm_public_input) (s : seed) (xms : ms_public_input)
+  (st : ms_public_endpoint_stage) (D : distinguisher) : real =
+  ms_view_distinguish_pr (d_ms_public_endpoint_stage_observable_v2 x s xms st) D.
+
+op Adv_ms_public_endpoint
+  (x : qssm_public_input) (s : seed) (xms : ms_public_input)
+  (D : distinguisher) : real =
+  game_pr_ms_public_endpoint_core x s xms MSPublicEndpointAfterBinding D -
+  game_pr_ms_public_endpoint_core x s xms MSPublicEndpointAfterRom D.
+
+lemma A_MS_public_endpoint_semantic_transition_bound :
+  forall (x : qssm_public_input) (s : seed) (xms : ms_public_input)
+         (D : distinguisher),
+    Adv_ms_public_endpoint x s xms D <=
+      MS.epsilon_ms_hash_binding_semantic +
+      epsilon_ms_rom_programmability_semantic.
+proof.
+move=> x s xms D.
+rewrite /Adv_ms_public_endpoint /game_pr_ms_public_endpoint_core.
+rewrite /d_ms_public_endpoint_stage_observable_v2 /=.
+exact (A_MS1_to_MS2_semantic_public_endpoint_transition_bound x s xms D).
+qed.
+
+lemma A_MS_public_endpoint_visible_flags_transition_bound :
+  forall (x : qssm_public_input) (s : seed) (xms : ms_public_input)
+         (D : distinguisher),
+    Adv_ms_public_endpoint x s xms D <=
+      MS.epsilon_ms_hash_binding_semantic +
+      ((if ms_rom_public_divergence_global_digest_flag xms then
+          (BudgetParameters.ms_rom_query_collision_slot_count +
+           BudgetParameters.ms_rom_programming_collision_slot_count)%r
+        else 0%r) +
+       (if ms_rom_public_divergence_query_digest_flag xms then
+          BudgetParameters.ms_rom_transcript_mismatch_slot_count%r
+        else 0%r)) /
+      BudgetParameters.ms_rom_total_slot_count%r.
+proof.
+move=> x s xms D.
+rewrite /Adv_ms_public_endpoint /game_pr_ms_public_endpoint_core.
+rewrite /d_ms_public_endpoint_stage_observable_v2 /=.
+exact (A_MS1_to_MS2_semantic_public_endpoint_visible_flags_bound x s xms D).
+qed.
+
+lemma A_MS_public_endpoint_local_visible_flags_transition_bound :
+  forall (x : qssm_public_input) (s : seed) (xms : ms_public_input)
+         (D : distinguisher),
+    Adv_ms_public_endpoint x s xms D <=
+      ms_hash_binding_local_public_divergence_upper_mass +
+      ((if ms_rom_public_divergence_global_digest_flag xms then
+          (BudgetParameters.ms_rom_query_collision_slot_count +
+           BudgetParameters.ms_rom_programming_collision_slot_count)%r
+        else 0%r) +
+       (if ms_rom_public_divergence_query_digest_flag xms then
+          BudgetParameters.ms_rom_transcript_mismatch_slot_count%r
+        else 0%r)) /
+      BudgetParameters.ms_rom_total_slot_count%r.
+proof.
+move=> x s xms D.
+rewrite /Adv_ms_public_endpoint /game_pr_ms_public_endpoint_core.
+rewrite /d_ms_public_endpoint_stage_observable_v2 /=.
+exact (A_MS1_to_MS2_semantic_public_endpoint_local_visible_flags_bound x s xms D).
+qed.
+
+lemma A_MS_public_endpoint_local_visible_flags_closed_form_transition_bound :
+  forall (x : qssm_public_input) (s : seed) (xms : ms_public_input)
+         (D : distinguisher),
+    Adv_ms_public_endpoint x s xms D <=
+      1%r / 8%r +
+      ((if ms_rom_public_divergence_global_digest_flag xms then
+          (BudgetParameters.ms_rom_query_collision_slot_count +
+           BudgetParameters.ms_rom_programming_collision_slot_count)%r
+        else 0%r) +
+       (if ms_rom_public_divergence_query_digest_flag xms then
+          BudgetParameters.ms_rom_transcript_mismatch_slot_count%r
+        else 0%r)) /
+      BudgetParameters.ms_rom_total_slot_count%r.
+proof.
+move=> x s xms D.
+rewrite /Adv_ms_public_endpoint /game_pr_ms_public_endpoint_core.
+rewrite /d_ms_public_endpoint_stage_observable_v2 /=.
+exact (A_MS1_to_MS2_semantic_public_endpoint_local_visible_flags_closed_form_bound x s xms D).
 qed.
 
 op game_pr_g2_core
