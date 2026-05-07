@@ -932,6 +932,60 @@ rewrite supp_duniform in Hslot.
 exact (ms_rom_public_divergence_slot_image_on_supportE x sigma slot Hsigma Hslot).
 qed.
 
+lemma ms_rom_public_divergence_demo_failure_slotsE
+  (x : ms_public_input) (sigma : ms3c_real_execution_seed) :
+  sigma \in d_ms3c_real_execution_seed x =>
+  ms_rom_public_observable_divergence_condition x
+    (ms_rom_semantic_state_of_category_execution_seed x sigma
+      (ms_rom_semantic_category_of_slot 0)) =
+    ms_rom_public_divergence_global_digest_flag x /\
+  ms_rom_public_observable_divergence_condition x
+    (ms_rom_semantic_state_of_category_execution_seed x sigma
+      (ms_rom_semantic_category_of_slot 1)) =
+    ms_rom_public_divergence_global_digest_flag x /\
+  ms_rom_public_observable_divergence_condition x
+    (ms_rom_semantic_state_of_category_execution_seed x sigma
+      (ms_rom_semantic_category_of_slot 2)) =
+    ms_rom_public_divergence_query_digest_flag x.
+proof.
+move=> Hsigma.
+have Hslot0 : 0 \in ms_rom_semantic_slot_support.
+  by rewrite ms_rom_semantic_slot_supportE /=.
+have Hslot1 : 1 \in ms_rom_semantic_slot_support.
+  by rewrite ms_rom_semantic_slot_supportE /=.
+have Hslot2 : 2 \in ms_rom_semantic_slot_support.
+  by rewrite ms_rom_semantic_slot_supportE /=.
+have H0 := ms_rom_public_divergence_slot_image_on_supportE x sigma 0 Hsigma Hslot0.
+have H1 := ms_rom_public_divergence_slot_image_on_supportE x sigma 1 Hsigma Hslot1.
+have H2 := ms_rom_public_divergence_slot_image_on_supportE x sigma 2 Hsigma Hslot2.
+rewrite /BudgetParameters.ms_rom_query_collision_slot_count /= in H0.
+rewrite /BudgetParameters.ms_rom_query_collision_slot_count
+  /BudgetParameters.ms_rom_programming_collision_slot_count /= in H1.
+rewrite /BudgetParameters.ms_rom_query_collision_slot_count
+  /BudgetParameters.ms_rom_programming_collision_slot_count
+  /BudgetParameters.ms_rom_transcript_mismatch_slot_count
+  /BudgetParameters.ms_rom_failure_slot_count /= in H2.
+by split; [exact H0 | split; [exact H1 | exact H2]].
+qed.
+
+lemma ms_rom_public_divergence_demo_clean_slot3E
+  (x : ms_public_input) (sigma : ms3c_real_execution_seed) :
+  sigma \in d_ms3c_real_execution_seed x =>
+  ms_rom_public_observable_divergence_condition x
+    (ms_rom_semantic_state_of_category_execution_seed x sigma
+      (ms_rom_semantic_category_of_slot 3)) = false.
+proof.
+move=> Hsigma.
+have Hslot3 : 3 \in ms_rom_semantic_slot_support.
+  by rewrite ms_rom_semantic_slot_supportE /=.
+have H3 := ms_rom_public_divergence_slot_image_on_supportE x sigma 3 Hsigma Hslot3.
+rewrite /BudgetParameters.ms_rom_query_collision_slot_count
+  /BudgetParameters.ms_rom_programming_collision_slot_count
+  /BudgetParameters.ms_rom_transcript_mismatch_slot_count
+  /BudgetParameters.ms_rom_failure_slot_count /= in H3.
+exact H3.
+qed.
+
 lemma ms_rom_public_observable_divergence_condition_implies_semantic_failure
   (x : ms_public_input) (st : ms_rom_semantic_state) :
   ms_rom_public_observable_divergence_condition x st =>
