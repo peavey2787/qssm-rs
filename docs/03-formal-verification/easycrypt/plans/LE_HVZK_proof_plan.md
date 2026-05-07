@@ -639,7 +639,16 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     semantic umbrella theorem closes at
     `epsilon_ms_hash_binding_semantic +
     epsilon_ms_rom_programmability_semantic + epsilon_le_semantic = 3%r / 4%r`.
-    The exact-zero route remains unchanged.
+    The exact-zero route remains unchanged. The same MS1 bridge now also
+    carries a local public-divergence upper mass
+    `ms_hash_binding_local_public_divergence_upper_mass = 1%r / 8%r`, and
+    `ms/MSProbabilitySurface.ec` stages it in
+    `L_ms1_public_after_binding_transition_le_local_public_divergence_upper_mass`
+    and
+    `L_ms1_public_after_binding_compatibility_le_local_public_divergence_upper_mass`.
+    Those lemmas are staged-only evidence: they do not replace the theorem-facing
+    `epsilon_ms_hash_binding_semantic = 3%r / 16%r` owner path, do not change
+    any public theorem name, and do not alter the live semantic top `3%r / 4%r`.
   - Public-endpoint splice boundary, May 2026: `ms/MSProbabilitySurface.ec`
     now also proves the staged lower-surface theorems
     `A_MS2_rom_programming_semantic_public_endpoint_transition_bound` and
