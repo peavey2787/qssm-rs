@@ -366,6 +366,25 @@ rewrite /LERealExecution.le_real_execution_semantic_rejection_challenge_seed_mat
 by [].
 qed.
 
+lemma le_rejection_shadow_semantic_reject_event_of_categoryE
+  (x : qssm_public_input) (s : seed) (obs : le_transcript_observable)
+  (category : BudgetParameters.le_rejection_semantic_ticket_category) :
+  le_rejection_shadow_reject_event
+    (le_rejection_shadow_semantic_state_of_branch_execution x s obs
+      (LERealExecution.le_real_execution_semantic_rejection_decision_reject
+        (LERealExecution.le_real_execution_semantic_rejection_decision_of_category
+          category))) =
+  BudgetParameters.le_rejection_semantic_ticket_category_is_failure category.
+proof.
+rewrite (le_rejection_shadow_semantic_reject_event_branch_stateE x s obs
+  (LERealExecution.le_real_execution_semantic_rejection_decision_reject
+    (LERealExecution.le_real_execution_semantic_rejection_decision_of_category
+      category))).
+exact
+  (LERealExecution.le_real_execution_semantic_rejection_decision_of_category_rejectE
+    category).
+qed.
+
 lemma d_le_rejection_shadow_semantic_coupled_state_pairE :
   forall (x : qssm_public_input) (s : seed),
     d_le_rejection_shadow_semantic_coupled_state x s =

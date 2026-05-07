@@ -173,6 +173,72 @@ op le_real_execution_semantic_rejection_decision_repairs_hidden_query_material
   (decision : le_real_execution_semantic_rejection_decision) : bool =
   decision.`leresd_repairs_hidden_query_material.
 
+lemma le_real_execution_semantic_rejection_decision_of_category_rejectE
+  (category : BudgetParameters.le_rejection_semantic_ticket_category) :
+  le_real_execution_semantic_rejection_decision_reject
+    (le_real_execution_semantic_rejection_decision_of_category category) =
+  BudgetParameters.le_rejection_semantic_ticket_category_is_failure category.
+proof.
+by rewrite /le_real_execution_semantic_rejection_decision_reject
+  /le_real_execution_semantic_rejection_decision_of_category
+  /le_real_execution_semantic_rejection_category_is_failure.
+qed.
+
+lemma le_real_execution_semantic_rejection_decision_of_category_repairs_hidden_query_materialE
+  (category : BudgetParameters.le_rejection_semantic_ticket_category) :
+  le_real_execution_semantic_rejection_decision_repairs_hidden_query_material
+    (le_real_execution_semantic_rejection_decision_of_category category) =
+  BudgetParameters.le_rejection_semantic_ticket_category_is_failure category.
+proof.
+by rewrite /le_real_execution_semantic_rejection_decision_repairs_hidden_query_material
+  /le_real_execution_semantic_rejection_decision_of_category
+  /le_real_execution_semantic_rejection_category_is_failure.
+qed.
+
+lemma le_real_execution_semantic_rejection_soft_repair_decisionE :
+  le_real_execution_semantic_rejection_decision_of_category
+    BudgetParameters.LERejectionSemanticTicketSoftRepair =
+  {| leresd_reject = true;
+     leresd_repairs_hidden_query_material = true |}.
+proof.
+by rewrite /le_real_execution_semantic_rejection_decision_of_category
+  /le_real_execution_semantic_rejection_category_is_failure
+  /BudgetParameters.le_rejection_semantic_ticket_category_is_failure /pred1.
+qed.
+
+lemma le_real_execution_semantic_rejection_hard_repair_decisionE :
+  le_real_execution_semantic_rejection_decision_of_category
+    BudgetParameters.LERejectionSemanticTicketHardRepair =
+  {| leresd_reject = true;
+     leresd_repairs_hidden_query_material = true |}.
+proof.
+by rewrite /le_real_execution_semantic_rejection_decision_of_category
+  /le_real_execution_semantic_rejection_category_is_failure
+  /BudgetParameters.le_rejection_semantic_ticket_category_is_failure /pred1.
+qed.
+
+lemma le_real_execution_semantic_rejection_invalid_decisionE :
+  le_real_execution_semantic_rejection_decision_of_category
+    BudgetParameters.LERejectionSemanticTicketInvalid =
+  {| leresd_reject = true;
+     leresd_repairs_hidden_query_material = true |}.
+proof.
+by rewrite /le_real_execution_semantic_rejection_decision_of_category
+  /le_real_execution_semantic_rejection_category_is_failure
+  /BudgetParameters.le_rejection_semantic_ticket_category_is_failure /pred1.
+qed.
+
+lemma le_real_execution_semantic_rejection_accept_decisionE :
+  le_real_execution_semantic_rejection_decision_of_category
+    BudgetParameters.LERejectionSemanticTicketAccept =
+  {| leresd_reject = false;
+     leresd_repairs_hidden_query_material = false |}.
+proof.
+by rewrite /le_real_execution_semantic_rejection_decision_of_category
+  /le_real_execution_semantic_rejection_category_is_failure
+  /BudgetParameters.le_rejection_semantic_ticket_category_is_failure /pred1.
+qed.
+
 op le_real_execution_semantic_rejection_branch_support : bool list =
   BudgetParameters.le_rejection_semantic_branch_support.
 
