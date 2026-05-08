@@ -85,6 +85,7 @@ FILES=(
   le/LERealExecution.ec
   le/LESurface.ec
   le/LERejectionSamplerCore.ec
+  le/LERejectionSamplerExact.ec
   le/LERejectionSampler.ec
   le/LEFsProgrammingCoreDefs.ec
   le/LEFsProgrammingShadowBranch.ec
