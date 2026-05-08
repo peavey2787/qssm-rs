@@ -2260,6 +2260,26 @@ proof.
 exact (ms_rom_execution_owned_visible_silent_common_equalitiesE x).
 qed.
 
+lemma ms_rom_execution_owned_visible_silent_normalized_local_massE
+  (x : ms_public_input) :
+  ms_rom_execution_owned_semantic_failure_probability x =
+    ms_rom_local_failure_mass.
+proof.
+have [Hlocal _] :=
+  ms_rom_execution_owned_visible_silent_common_equalities_normalizeE x.
+exact Hlocal.
+qed.
+
+lemma ms_rom_execution_owned_visible_silent_normalized_budgetE
+  (x : ms_public_input) :
+  ms_rom_execution_owned_semantic_failure_probability x =
+    BudgetParameters.epsilon_ms_rom_programmability_semantic.
+proof.
+have [_ Hbudget] :=
+  ms_rom_execution_owned_visible_silent_common_equalities_normalizeE x.
+exact Hbudget.
+qed.
+
 lemma ms_rom_public_observable_divergence_mass_le_execution_owned_semantic_failure
   (x : ms_public_input) :
   ms_rom_public_observable_divergence_mass x <=
