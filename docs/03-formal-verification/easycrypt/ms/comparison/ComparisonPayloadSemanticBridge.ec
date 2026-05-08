@@ -1880,6 +1880,54 @@ have Hlocal :=
 by smt().
 qed.
 
+lemma ms_rom_execution_owned_fully_silent_budgetE
+  (x : ms_public_input) :
+  ms_rom_public_divergence_global_digest_flag x = false =>
+  ms_rom_public_divergence_query_digest_flag x = false =>
+  ms_rom_execution_owned_semantic_failure_probability x =
+  BudgetParameters.epsilon_ms_rom_programmability_semantic.
+proof.
+move=> Hglobal Hquery.
+rewrite (ms_rom_execution_owned_fully_silent_valueE x Hglobal Hquery).
+exact ms_rom_local_failure_mass_eq_epsilon_ms_rom_programmability_semantic.
+qed.
+
+lemma ms_rom_execution_owned_query_visible_only_budgetE
+  (x : ms_public_input) :
+  ms_rom_public_divergence_global_digest_flag x = false =>
+  ms_rom_public_divergence_query_digest_flag x = true =>
+  ms_rom_execution_owned_semantic_failure_probability x =
+  BudgetParameters.epsilon_ms_rom_programmability_semantic.
+proof.
+move=> Hglobal Hquery.
+rewrite (ms_rom_execution_owned_query_visible_only_valueE x Hglobal Hquery).
+exact ms_rom_local_failure_mass_eq_epsilon_ms_rom_programmability_semantic.
+qed.
+
+lemma ms_rom_execution_owned_global_visible_only_budgetE
+  (x : ms_public_input) :
+  ms_rom_public_divergence_global_digest_flag x = true =>
+  ms_rom_public_divergence_query_digest_flag x = false =>
+  ms_rom_execution_owned_semantic_failure_probability x =
+  BudgetParameters.epsilon_ms_rom_programmability_semantic.
+proof.
+move=> Hglobal Hquery.
+rewrite (ms_rom_execution_owned_global_visible_only_valueE x Hglobal Hquery).
+exact ms_rom_local_failure_mass_eq_epsilon_ms_rom_programmability_semantic.
+qed.
+
+lemma ms_rom_execution_owned_fully_visible_budgetE
+  (x : ms_public_input) :
+  ms_rom_public_divergence_global_digest_flag x = true =>
+  ms_rom_public_divergence_query_digest_flag x = true =>
+  ms_rom_execution_owned_semantic_failure_probability x =
+  BudgetParameters.epsilon_ms_rom_programmability_semantic.
+proof.
+move=> Hglobal Hquery.
+rewrite (ms_rom_execution_owned_fully_visible_valueE x Hglobal Hquery).
+exact ms_rom_local_failure_mass_eq_epsilon_ms_rom_programmability_semantic.
+qed.
+
 lemma ms_rom_public_observable_divergence_mass_le_execution_owned_semantic_failure
   (x : ms_public_input) :
   ms_rom_public_observable_divergence_mass x <=
