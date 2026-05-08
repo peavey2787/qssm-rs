@@ -646,30 +646,6 @@ op d_le_fs_shadow_semantic_bad_branch_image
   (x : qssm_public_input) (s : seed) : le_transcript_observable distr =
   LEFsProgrammingCoupledState.d_le_fs_shadow_semantic_bad_branch_image x s.
 
-lemma le_fs_shadow_hidden_bad_flag_matches_pre_query_material
-  (obs : le_transcript_observable) :
-  (le_fs_shadow_hidden_material_of_observable obs).`lefshm_bad_flag =
-  (le_fs_query_material_obs obs).`leqm_bad_flag.
-proof.
-by rewrite /le_fs_shadow_hidden_material_of_observable
-  /le_fs_shadow_hidden_material_of_observable_branch.
-qed.
-
-lemma le_fs_shadow_semantic_post_observable_bad_flag_false
-  (obs : le_transcript_observable) :
-  ! (le_fs_query_material_obs
-      ((le_fs_shadow_state_of_observable obs).`lefss_semantic_post_observable)).`leqm_bad_flag.
-proof.
-rewrite /le_fs_shadow_state_of_observable /le_fs_shadow_state_of_branch_observable.
-rewrite /le_fs_shadow_post_of_observable /=.
-rewrite /le_fs_shadow_hidden_material_of_observable_branch /le_fs_query_material_obs /=.
-case: (obs.`leto_query_material.`leqm_bad_flag) => /=.
-- rewrite /le_fs_shadow_semantic_post_observable /=.
-  by rewrite /le_fs_shadow_semantic_post_query_material_of_observable.
-rewrite /le_fs_surrogate_transform /le_fs_view_surrogate.
-by rewrite /le_fs_program_query_material.
-qed.
-
 lemma d_le_pre_fs_programming_view_dunit
   (x : qssm_public_input) (s : seed) :
   d_le_pre_fs_programming_view x s = dunit (le_real_execution_observable x s).
