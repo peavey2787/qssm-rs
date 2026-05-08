@@ -2250,6 +2250,16 @@ have Hequiv := ms_rom_execution_owned_visible_silent_common_equalities_equivE x.
 by smt().
 qed.
 
+lemma ms_rom_execution_owned_visible_silent_common_equalities_normalizeE
+  (x : ms_public_input) :
+  ms_rom_execution_owned_semantic_failure_probability x =
+    ms_rom_local_failure_mass /\
+  ms_rom_execution_owned_semantic_failure_probability x =
+    BudgetParameters.epsilon_ms_rom_programmability_semantic.
+proof.
+exact (ms_rom_execution_owned_visible_silent_common_equalitiesE x).
+qed.
+
 lemma ms_rom_public_observable_divergence_mass_le_execution_owned_semantic_failure
   (x : ms_public_input) :
   ms_rom_public_observable_divergence_mass x <=
