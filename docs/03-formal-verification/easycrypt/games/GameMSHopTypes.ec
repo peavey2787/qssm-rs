@@ -4,6 +4,7 @@ require import StdOrder.
 require import QssmTypes Algebra Simulator FS TrueClause Comparison ComparisonTypes ComparisonDigests ComparisonPayloadTypes ComparisonPayload ComparisonCoupling ComparisonCouplingTypes ComparisonCouplingAxioms ComparisonCouplingTheorem ComparisonTheorem.
 require import SourceModel.
 require import SourceDistributions SourceTheorem MS LESurface LEModel.
+require import SourceHashBindingSemanticBridge ComparisonPayloadSemanticBridge.
 require import GameTypes GameViews GameAdvantage.
 require import TranscriptObservable.
 
@@ -308,6 +309,73 @@ move=> x xms s D Hnonneg.
 rewrite /G_MS_after_binding /G_MS_after_rom /mk_ms_game_view /=.
 exact (A_MS2_rom_programming_semantic_concrete_pair_advantage_bound
   x s xms (ms_game_view_public_obs xms) None D Hnonneg).
+qed.
+
+(* Staged public-endpoint wrapper surface: these are thin aliases over the
+   parallel GameAdvantage core and remain unused by the canonical telescope. *)
+lemma A_MS_public_endpoint_staged_semantic_transition_bound :
+  forall (x : qssm_public_input) (s : seed) (xms : ms_public_input)
+         (D : distinguisher),
+    Adv_ms_public_endpoint x s xms D <=
+      MS.epsilon_ms_hash_binding_semantic +
+      epsilon_ms_rom_programmability_semantic.
+proof.
+move=> x s xms D.
+exact (A_MS_public_endpoint_semantic_transition_bound x s xms D).
+qed.
+
+lemma A_MS_public_endpoint_staged_visible_flags_transition_bound :
+  forall (x : qssm_public_input) (s : seed) (xms : ms_public_input)
+         (D : distinguisher),
+    Adv_ms_public_endpoint x s xms D <=
+      MS.epsilon_ms_hash_binding_semantic +
+      ((if ms_rom_public_divergence_global_digest_flag xms then
+          (BudgetParameters.ms_rom_query_collision_slot_count +
+           BudgetParameters.ms_rom_programming_collision_slot_count)%r
+        else 0%r) +
+       (if ms_rom_public_divergence_query_digest_flag xms then
+          BudgetParameters.ms_rom_transcript_mismatch_slot_count%r
+        else 0%r)) /
+      BudgetParameters.ms_rom_total_slot_count%r.
+proof.
+move=> x s xms D.
+exact (A_MS_public_endpoint_visible_flags_transition_bound x s xms D).
+qed.
+
+lemma A_MS_public_endpoint_staged_local_visible_flags_transition_bound :
+  forall (x : qssm_public_input) (s : seed) (xms : ms_public_input)
+         (D : distinguisher),
+    Adv_ms_public_endpoint x s xms D <=
+      ms_hash_binding_local_public_divergence_upper_mass +
+      ((if ms_rom_public_divergence_global_digest_flag xms then
+          (BudgetParameters.ms_rom_query_collision_slot_count +
+           BudgetParameters.ms_rom_programming_collision_slot_count)%r
+        else 0%r) +
+       (if ms_rom_public_divergence_query_digest_flag xms then
+          BudgetParameters.ms_rom_transcript_mismatch_slot_count%r
+        else 0%r)) /
+      BudgetParameters.ms_rom_total_slot_count%r.
+proof.
+move=> x s xms D.
+exact (A_MS_public_endpoint_local_visible_flags_transition_bound x s xms D).
+qed.
+
+lemma A_MS_public_endpoint_staged_local_visible_flags_closed_form_transition_bound :
+  forall (x : qssm_public_input) (s : seed) (xms : ms_public_input)
+         (D : distinguisher),
+    Adv_ms_public_endpoint x s xms D <=
+      1%r / 8%r +
+      ((if ms_rom_public_divergence_global_digest_flag xms then
+          (BudgetParameters.ms_rom_query_collision_slot_count +
+           BudgetParameters.ms_rom_programming_collision_slot_count)%r
+        else 0%r) +
+       (if ms_rom_public_divergence_query_digest_flag xms then
+          BudgetParameters.ms_rom_transcript_mismatch_slot_count%r
+        else 0%r)) /
+      BudgetParameters.ms_rom_total_slot_count%r.
+proof.
+move=> x s xms D.
+exact (A_MS_public_endpoint_local_visible_flags_closed_form_transition_bound x s xms D).
 qed.
 
 (* MS3a canonical bitness exact-simulation bound on the concrete stage pair
