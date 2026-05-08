@@ -7,6 +7,7 @@ require import StdOrder.
 require import LERealExecution.
 require import LERejectionSampler.
 require import LESurface.
+require LEFsProgrammingCoreDefs.
 require BudgetParameters.
 
 (*---*) import RealOrder.
@@ -15,115 +16,127 @@ require BudgetParameters.
    This file introduces the concrete lower names needed to eventually discharge
    the FS-side sdist theorem without collapsing FS programming to the identity. *)
 
-type le_fs_query_row = {
-  lefsqr_challenge_seed : digest;
-  lefsqr_programmed_query_digest : digest;
-}.
+type le_fs_query_row = LEFsProgrammingCoreDefs.le_fs_query_row.
 
-type le_fs_visible_shell = {
-  lefsvs_commitment_coeffs : coeff_vector;
-  lefsvs_t_coeffs : coeff_vector;
-  lefsvs_z_coeffs : coeff_vector;
-  lefsvs_challenge_seed_obs : digest;
-  lefsvs_programmed_query_digest_obs : digest;
-  lefsvs_qssm_event_payload : qssm_event_payload;
-}.
+type le_fs_visible_shell = LEFsProgrammingCoreDefs.le_fs_visible_shell.
 
-type le_fs_hidden_programming_state = {
-  lefsps_visible_shell : le_fs_visible_shell;
-  lefsps_query_material : le_query_material;
-}.
+type le_fs_hidden_programming_state = LEFsProgrammingCoreDefs.le_fs_hidden_programming_state.
 
-type le_fs_programmed_response_carrier = {
-  lefspc_query_row : le_fs_query_row;
-  lefspc_programmed_view : le_transcript_observable;
-}.
+type le_fs_programmed_response_carrier = LEFsProgrammingCoreDefs.le_fs_programmed_response_carrier.
 
-op le_fs_query_row_of_observable
-  (obs : le_transcript_observable) : le_fs_query_row = {|
-  lefsqr_challenge_seed = le_challenge_seed_obs obs;
-  lefsqr_programmed_query_digest = le_programmed_query_digest_obs obs;
-|}.
-
-op le_fs_visible_shell_of_observable
-  (obs : le_transcript_observable) : le_fs_visible_shell = {|
-  lefsvs_commitment_coeffs = le_commitment_coeffs obs;
-  lefsvs_t_coeffs = le_t_coeffs obs;
-  lefsvs_z_coeffs = le_z_coeffs obs;
-  lefsvs_challenge_seed_obs = le_challenge_seed_obs obs;
-  lefsvs_programmed_query_digest_obs = le_programmed_query_digest_obs obs;
-  lefsvs_qssm_event_payload = le_qssm_event_payload obs;
-|}.
-
-op le_fs_hidden_programming_state_of_observable
-  (obs : le_transcript_observable) : le_fs_hidden_programming_state = {|
-  lefsps_visible_shell = le_fs_visible_shell_of_observable obs;
-  lefsps_query_material = le_fs_query_material_obs obs;
-|}.
-
-op le_fs_visible_shell_of_hidden_programming_state
-  (st : le_fs_hidden_programming_state) : le_fs_visible_shell =
-  st.`lefsps_visible_shell.
-
-op le_fs_query_material_of_hidden_programming_state
-  (st : le_fs_hidden_programming_state) : le_query_material =
-  st.`lefsps_query_material.
-
-op le_fs_observable_of_hidden_programming_state
-  (st : le_fs_hidden_programming_state) : le_transcript_observable =
-  {|
-    leto_commitment_coeffs =
-      (le_fs_visible_shell_of_hidden_programming_state st).`lefsvs_commitment_coeffs;
-    leto_t_coeffs =
-      (le_fs_visible_shell_of_hidden_programming_state st).`lefsvs_t_coeffs;
-    leto_z_coeffs =
-      (le_fs_visible_shell_of_hidden_programming_state st).`lefsvs_z_coeffs;
-    leto_challenge_seed_obs =
-      (le_fs_visible_shell_of_hidden_programming_state st).`lefsvs_challenge_seed_obs;
-    leto_programmed_query_digest_obs =
-      (le_fs_visible_shell_of_hidden_programming_state st).`lefsvs_programmed_query_digest_obs;
-    leto_query_material = le_fs_query_material_of_hidden_programming_state st;
-    leto_qssm_event_payload =
-      (le_fs_visible_shell_of_hidden_programming_state st).`lefsvs_qssm_event_payload;
+op le_fs_query_row_of_observable :
+  le_transcript_observable -> le_fs_query_row =
+  fun (obs : le_transcript_observable) => {|
+    LEFsProgrammingCoreDefs.lefsqr_challenge_seed = le_challenge_seed_obs obs;
+    LEFsProgrammingCoreDefs.lefsqr_programmed_query_digest =
+      le_programmed_query_digest_obs obs;
   |}.
 
-op le_fs_hidden_programming_state_update
-  (st : le_fs_hidden_programming_state) : le_fs_hidden_programming_state = {|
-  lefsps_visible_shell = le_fs_visible_shell_of_hidden_programming_state st;
-  lefsps_query_material =
-    le_fs_program_query_material (le_fs_query_material_of_hidden_programming_state st);
-|}.
+op le_fs_visible_shell_of_observable :
+  le_transcript_observable -> le_fs_visible_shell =
+  fun (obs : le_transcript_observable) => {|
+    LEFsProgrammingCoreDefs.lefsvs_commitment_coeffs = le_commitment_coeffs obs;
+    LEFsProgrammingCoreDefs.lefsvs_t_coeffs = le_t_coeffs obs;
+    LEFsProgrammingCoreDefs.lefsvs_z_coeffs = le_z_coeffs obs;
+    LEFsProgrammingCoreDefs.lefsvs_challenge_seed_obs =
+      le_challenge_seed_obs obs;
+    LEFsProgrammingCoreDefs.lefsvs_programmed_query_digest_obs =
+      le_programmed_query_digest_obs obs;
+    LEFsProgrammingCoreDefs.lefsvs_qssm_event_payload =
+      le_qssm_event_payload obs;
+  |}.
 
-op le_fs_programmed_hidden_state_of_observable
-  (obs : le_transcript_observable) : le_fs_hidden_programming_state =
-  le_fs_hidden_programming_state_update
-    (le_fs_hidden_programming_state_of_observable obs).
+op le_fs_hidden_programming_state_of_observable :
+  le_transcript_observable -> le_fs_hidden_programming_state =
+  fun (obs : le_transcript_observable) => {|
+    LEFsProgrammingCoreDefs.lefsps_visible_shell =
+      le_fs_visible_shell_of_observable obs;
+    LEFsProgrammingCoreDefs.lefsps_query_material = le_fs_query_material_obs obs;
+  |}.
 
-op le_fs_surrogate_transform
-  (obs : le_transcript_observable) : le_transcript_observable =
-  le_fs_view_surrogate obs.
+op le_fs_visible_shell_of_hidden_programming_state :
+  le_fs_hidden_programming_state -> le_fs_visible_shell =
+  fun (st : le_fs_hidden_programming_state) =>
+    LEFsProgrammingCoreDefs.lefsps_visible_shell st.
 
-op le_fs_programmed_response_of_observable
-  (obs : le_transcript_observable) : le_fs_programmed_response_carrier = {|
-  lefspc_query_row = le_fs_query_row_of_observable obs;
-  lefspc_programmed_view = le_fs_surrogate_transform obs;
-|}.
+op le_fs_query_material_of_hidden_programming_state :
+  le_fs_hidden_programming_state -> le_query_material =
+  fun (st : le_fs_hidden_programming_state) =>
+    LEFsProgrammingCoreDefs.lefsps_query_material st.
 
-op d_le_pre_fs_programming_view
-  (x : qssm_public_input) (s : seed) : le_transcript_observable distr =
-  d_le_post_rejection_view x s.
+op le_fs_observable_of_hidden_programming_state :
+  le_fs_hidden_programming_state -> le_transcript_observable =
+  fun (st : le_fs_hidden_programming_state) =>
+    {|
+      leto_commitment_coeffs =
+        LEFsProgrammingCoreDefs.lefsvs_commitment_coeffs
+          (le_fs_visible_shell_of_hidden_programming_state st);
+      leto_t_coeffs =
+        LEFsProgrammingCoreDefs.lefsvs_t_coeffs
+          (le_fs_visible_shell_of_hidden_programming_state st);
+      leto_z_coeffs =
+        LEFsProgrammingCoreDefs.lefsvs_z_coeffs
+          (le_fs_visible_shell_of_hidden_programming_state st);
+      leto_challenge_seed_obs =
+        LEFsProgrammingCoreDefs.lefsvs_challenge_seed_obs
+          (le_fs_visible_shell_of_hidden_programming_state st);
+      leto_programmed_query_digest_obs =
+        LEFsProgrammingCoreDefs.lefsvs_programmed_query_digest_obs
+          (le_fs_visible_shell_of_hidden_programming_state st);
+      leto_query_material = le_fs_query_material_of_hidden_programming_state st;
+      leto_qssm_event_payload =
+        LEFsProgrammingCoreDefs.lefsvs_qssm_event_payload
+          (le_fs_visible_shell_of_hidden_programming_state st);
+    |}.
 
-op d_le_pre_fs_semantic_programming_view
-  (x : qssm_public_input) (s : seed) : le_transcript_observable distr =
-  LERejectionSampler.d_le_semantic_post_rejection_view x s.
+op le_fs_hidden_programming_state_update :
+  le_fs_hidden_programming_state -> le_fs_hidden_programming_state =
+  fun (st : le_fs_hidden_programming_state) => {|
+    LEFsProgrammingCoreDefs.lefsps_visible_shell =
+      le_fs_visible_shell_of_hidden_programming_state st;
+    LEFsProgrammingCoreDefs.lefsps_query_material =
+      le_fs_program_query_material
+        (le_fs_query_material_of_hidden_programming_state st);
+  |}.
 
-op d_le_post_fs_programmed_view
-  (x : qssm_public_input) (s : seed) : le_transcript_observable distr =
-  dmap (d_le_pre_fs_programming_view x s) le_fs_surrogate_transform.
+op le_fs_programmed_hidden_state_of_observable :
+  le_transcript_observable -> le_fs_hidden_programming_state =
+  fun (obs : le_transcript_observable) =>
+    le_fs_hidden_programming_state_update
+      (le_fs_hidden_programming_state_of_observable obs).
 
-op d_le_post_fs_semantic_programmed_view
-  (x : qssm_public_input) (s : seed) : le_transcript_observable distr =
-  dmap (d_le_pre_fs_semantic_programming_view x s) le_fs_surrogate_transform.
+op le_fs_surrogate_transform :
+  le_transcript_observable -> le_transcript_observable =
+  fun (obs : le_transcript_observable) =>
+    le_fs_view_surrogate obs.
+
+op le_fs_programmed_response_of_observable :
+  le_transcript_observable -> le_fs_programmed_response_carrier =
+  fun (obs : le_transcript_observable) => {|
+    LEFsProgrammingCoreDefs.lefspc_query_row =
+      le_fs_query_row_of_observable obs;
+    LEFsProgrammingCoreDefs.lefspc_programmed_view =
+      le_fs_surrogate_transform obs;
+  |}.
+
+op d_le_pre_fs_programming_view :
+  qssm_public_input -> seed -> le_transcript_observable distr =
+  fun (x : qssm_public_input) (s : seed) => d_le_post_rejection_view x s.
+
+op d_le_pre_fs_semantic_programming_view :
+  qssm_public_input -> seed -> le_transcript_observable distr =
+  fun (x : qssm_public_input) (s : seed) =>
+    LERejectionSampler.d_le_semantic_post_rejection_view x s.
+
+op d_le_post_fs_programmed_view :
+  qssm_public_input -> seed -> le_transcript_observable distr =
+  fun (x : qssm_public_input) (s : seed) =>
+    dmap (d_le_pre_fs_programming_view x s) le_fs_surrogate_transform.
+
+op d_le_post_fs_semantic_programmed_view :
+  qssm_public_input -> seed -> le_transcript_observable distr =
+  fun (x : qssm_public_input) (s : seed) =>
+    dmap (d_le_pre_fs_semantic_programming_view x s) le_fs_surrogate_transform.
 
 op d_le_pre_fs_hidden_programming_state
   (x : qssm_public_input) (s : seed) : le_fs_hidden_programming_state distr =
@@ -590,23 +603,29 @@ op le_fs_shadow_semantic_post_observable
   (hm : le_fs_shadow_hidden_material) : le_transcript_observable =
   {| leto_commitment_coeffs =
        le_commitment_coeffs
-         hm.`lefshm_programmed_response.`lefspc_programmed_view;
+         (LEFsProgrammingCoreDefs.lefspc_programmed_view
+            hm.`lefshm_programmed_response);
      leto_t_coeffs =
        le_t_coeffs
-         hm.`lefshm_programmed_response.`lefspc_programmed_view;
+         (LEFsProgrammingCoreDefs.lefspc_programmed_view
+            hm.`lefshm_programmed_response);
      leto_z_coeffs =
        le_z_coeffs
-         hm.`lefshm_programmed_response.`lefspc_programmed_view;
+         (LEFsProgrammingCoreDefs.lefspc_programmed_view
+            hm.`lefshm_programmed_response);
      leto_challenge_seed_obs =
        le_challenge_seed_obs
-         hm.`lefshm_programmed_response.`lefspc_programmed_view;
+         (LEFsProgrammingCoreDefs.lefspc_programmed_view
+            hm.`lefshm_programmed_response);
      leto_programmed_query_digest_obs =
        le_programmed_query_digest_obs
-         hm.`lefshm_programmed_response.`lefspc_programmed_view;
+         (LEFsProgrammingCoreDefs.lefspc_programmed_view
+            hm.`lefshm_programmed_response);
      leto_query_material = hm.`lefshm_semantic_post_query_material;
      leto_qssm_event_payload =
        le_qssm_event_payload
-         hm.`lefshm_programmed_response.`lefspc_programmed_view;
+         (LEFsProgrammingCoreDefs.lefspc_programmed_view
+            hm.`lefshm_programmed_response);
   |}.
 
 op le_fs_shadow_semantic_programmed_view_of_observable
@@ -629,7 +648,7 @@ op le_fs_shadow_post_of_observable
 
 op le_fs_shadow_projected_post_of_hidden_material
   (hm : le_fs_shadow_hidden_material) : le_transcript_observable =
-  hm.`lefshm_programmed_response.`lefspc_programmed_view.
+  LEFsProgrammingCoreDefs.lefspc_programmed_view hm.`lefshm_programmed_response.
 
 op le_fs_shadow_state_of_branch_observable
   (obs : le_transcript_observable) (bad : bool) : le_fs_shadow_state =
@@ -681,19 +700,24 @@ op le_fs_shadow_clean_condition
 op le_fs_shadow_query_collision_condition
   (st : le_fs_shadow_state) : bool =
   le_fs_shadow_semantic_bad_event st /\
-  st.`lefss_hidden_material.`lefshm_query_row.`lefsqr_challenge_seed =
+  LEFsProgrammingCoreDefs.lefsqr_challenge_seed
+      st.`lefss_hidden_material.`lefshm_query_row =
     st.`lefss_hidden_material.`lefshm_semantic_post_query_material.`leqm_row_challenge_seed /\
-  st.`lefss_hidden_material.`lefshm_query_row.`lefsqr_programmed_query_digest =
+  LEFsProgrammingCoreDefs.lefsqr_programmed_query_digest
+      st.`lefss_hidden_material.`lefshm_query_row =
     st.`lefss_hidden_material.`lefshm_semantic_post_query_material.`leqm_row_programmed_query_digest.
 
 op le_fs_shadow_programming_collision_condition
   (st : le_fs_shadow_state) : bool =
   le_fs_shadow_semantic_bad_event st /\
   st.`lefss_hidden_material.`lefshm_semantic_post_query_material.`leqm_programmed_response_digest =
-    st.`lefss_hidden_material.`lefshm_query_row.`lefsqr_programmed_query_digest /\
+    LEFsProgrammingCoreDefs.lefsqr_programmed_query_digest
+      st.`lefss_hidden_material.`lefshm_query_row /\
   st.`lefss_hidden_material.`lefshm_semantic_post_query_material.`leqm_programming_log =
-    [ st.`lefss_hidden_material.`lefshm_query_row.`lefsqr_challenge_seed;
-      st.`lefss_hidden_material.`lefshm_query_row.`lefsqr_programmed_query_digest ].
+    [ LEFsProgrammingCoreDefs.lefsqr_challenge_seed
+        st.`lefss_hidden_material.`lefshm_query_row;
+      LEFsProgrammingCoreDefs.lefsqr_programmed_query_digest
+        st.`lefss_hidden_material.`lefshm_query_row ].
 
 op le_fs_shadow_transcript_mismatch_condition
   (st : le_fs_shadow_state) : bool =
