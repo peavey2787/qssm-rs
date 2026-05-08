@@ -669,15 +669,23 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     divergence mass, the symbolic local-visible sibling keeps the MS1 term on
     `ms_hash_binding_local_public_divergence_upper_mass`, and the closed-form
     corollary rewrites only that staged MS1 local term to `1%r / 8%r`.
-    None of these theorems are part of the live semantic route. The live G0->G1
-    semantic chain already pays MS1 once through
-    `A_MS1_hash_binding_semantic_transition` and MS2 once through
-    `A_MS2_rom_programming_semantic_transition`, so routing the staged splice
-    through the current canonical telescope would double-count the MS1 term.
-    If these public endpoints are ever to be used live, the next patch is not
-    direct splice routing in `games/GameMSHopComposition.ec` or
-    `theorem/MainTheorem.ec`; it is a new public-endpoint game abstraction
-    below the current `game_pr_ms_core` / `Adv` surface.
+    `games/GameAdvantage.ec`, `games/GameMSHopTypes.ec`, and
+    `games/GameMSHopComposition.ec` now also lift that same segment into a
+    parallel staged public-endpoint route through `Adv_ms_public_endpoint`,
+    staged wrappers, and staged composition aliases. None of these theorems are
+    part of the live semantic route. The live G0->G1 semantic chain already
+    pays canonical MS1 once through `A_MS1_hash_binding_semantic_transition`
+    and canonical MS2 once through `A_MS2_rom_programming_semantic_transition`,
+    and the staged public-endpoint route covers that same MS1+MS2 segment, so
+    routing the staged splice through the current canonical telescope would
+    double-count the routed semantic MS segment. If these public endpoints are
+    ever to be used live, the next patch is not direct splice routing in
+    `games/GameMSHopComposition.ec` or `theorem/MainTheorem.ec`; it is a new
+    public-endpoint bridge or game abstraction below the current
+    `game_pr_ms_core` / `Adv` surface that replaces the current MS1+MS2 witness
+    behind unchanged theorem names and theorem-facing bounds. The visible-flags
+    and local-visible variants remain staged refinements only, the exact-zero
+    route stays separate, and the semantic top remains `3%r / 4%r`.
     law.
   - Design refinement, May 2026: `A_LE_rejection_sampler_sdist_bound` remains a
     proved lemma in `le/LERejection.ec`, but it is no longer a repackaging of a
