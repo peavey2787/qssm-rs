@@ -95,6 +95,7 @@ FILES=(
   le/LEFsProgrammingMarginals.ec
   le/LEFsProgrammingSupportImages.ec
   le/LEFsProgrammingPostMarginal.ec
+  le/LEFsProgrammingFailureProbability.ec
   le/LEFsProgrammingSurface.ec
   le/LESetB.ec
   le/LERejection.ec
