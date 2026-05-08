@@ -496,30 +496,6 @@ rewrite /LEFsProgrammingFailureProbability.le_fs_shadow_local_bad_branch_mass in
 exact H.
 qed.
 
-op le_fs_shadow_programming_log_of_observable
-  (obs : le_transcript_observable) : digest list =
-  [le_challenge_seed_obs obs; le_programmed_query_digest_obs obs].
-
-op le_fs_shadow_pre_query_material_of_observable
-  (obs : le_transcript_observable) (bad : bool) : le_query_material =
-  {| leqm_row_challenge_seed =
-       (le_fs_query_material_obs obs).`leqm_row_challenge_seed;
-     leqm_row_programmed_query_digest =
-       (le_fs_query_material_obs obs).`leqm_row_programmed_query_digest;
-     leqm_programmed_response_digest =
-       (le_fs_query_material_obs obs).`leqm_programmed_response_digest;
-     leqm_programming_log =
-       (le_fs_query_material_obs obs).`leqm_programming_log;
-     leqm_bad_flag = bad |}.
-
-op le_fs_shadow_semantic_post_query_material_of_observable
-  (obs : le_transcript_observable) : le_query_material =
-  {| leqm_row_challenge_seed = le_challenge_seed_obs obs;
-     leqm_row_programmed_query_digest = le_programmed_query_digest_obs obs;
-     leqm_programmed_response_digest = le_programmed_query_digest_obs obs;
-     leqm_programming_log = le_fs_shadow_programming_log_of_observable obs;
-     leqm_bad_flag = false |}.
-
 op le_fs_shadow_hidden_material_of_observable_branch
   (obs : le_transcript_observable) (bad : bool) : le_fs_shadow_hidden_material =
   {| LEFsProgrammingShadowBranch.lefshm_query_row =
@@ -531,11 +507,6 @@ op le_fs_shadow_hidden_material_of_observable_branch
      LEFsProgrammingShadowBranch.lefshm_programmed_response =
        le_fs_programmed_response_of_observable obs;
      LEFsProgrammingShadowBranch.lefshm_bad_flag = bad |}.
-
-op le_fs_shadow_hidden_material_of_observable
-  (obs : le_transcript_observable) : le_fs_shadow_hidden_material =
-  le_fs_shadow_hidden_material_of_observable_branch obs
-    ((le_fs_query_material_obs obs).`leqm_bad_flag).
 
 op le_fs_shadow_semantic_post_observable
   (hm : le_fs_shadow_hidden_material) : le_transcript_observable =
@@ -576,43 +547,6 @@ op le_fs_shadow_semantic_branch_image_of_observable
   if bad
   then le_fs_shadow_semantic_programmed_view_of_observable obs
   else le_fs_surrogate_transform obs.
-
-op le_fs_shadow_post_of_observable
-  (obs : le_transcript_observable) (hm : le_fs_shadow_hidden_material) :
-  le_transcript_observable =
-  if hm.`lefshm_bad_flag
-  then le_fs_shadow_semantic_post_observable hm
-  else le_fs_surrogate_transform obs.
-
-op le_fs_shadow_projected_post_of_hidden_material
-  (hm : le_fs_shadow_hidden_material) : le_transcript_observable =
-  LEFsProgrammingCoreDefs.lefspc_programmed_view hm.`lefshm_programmed_response.
-
-op le_fs_shadow_projected_post_of_observable
-  (obs : le_transcript_observable) (bad : bool) : le_transcript_observable =
-  le_fs_shadow_projected_post_of_hidden_material
-    (le_fs_shadow_hidden_material_of_observable_branch obs bad).
-
-op le_fs_shadow_state_of_branch_observable
-  (obs : le_transcript_observable) (bad : bool) : le_fs_shadow_state =
-  let hm = le_fs_shadow_hidden_material_of_observable_branch obs bad in
-  {| LEFsProgrammingShadowBranch.lefss_pre_observable = obs;
-     LEFsProgrammingShadowBranch.lefss_post_observable =
-       le_fs_shadow_projected_post_of_hidden_material hm;
-     LEFsProgrammingShadowBranch.lefss_semantic_post_observable =
-       le_fs_shadow_post_of_observable obs hm;
-     LEFsProgrammingShadowBranch.lefss_hidden_material = hm |}.
-
-op le_fs_shadow_state_of_observable
-  (obs : le_transcript_observable) : le_fs_shadow_state =
-  le_fs_shadow_state_of_branch_observable obs
-    ((le_fs_query_material_obs obs).`leqm_bad_flag).
-
-op le_fs_shadow_state_of_category_observable
-  (obs : le_transcript_observable)
-  (category : BudgetParameters.le_fs_semantic_branch_category) : le_fs_shadow_state =
-  le_fs_shadow_state_of_branch_observable obs
-    (BudgetParameters.le_fs_semantic_branch_category_is_failure category).
 
 op d_le_fs_shadow_coupled_state
   (x : qssm_public_input) (s : seed) : le_fs_shadow_state distr =
