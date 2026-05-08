@@ -87,6 +87,7 @@ FILES=(
   le/LERejectionSampler.ec
   le/LEFsProgrammingCoreDefs.ec
   le/LEFsProgrammingShadowBranch.ec
+  le/LEFsProgrammingCoupledState.ec
   le/LEFsProgrammingSurface.ec
   le/LESetB.ec
   le/LERejection.ec

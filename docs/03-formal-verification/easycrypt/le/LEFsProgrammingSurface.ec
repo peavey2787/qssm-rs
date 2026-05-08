@@ -9,6 +9,7 @@ require import LERejectionSampler.
 require import LESurface.
 require LEFsProgrammingCoreDefs.
 require import LEFsProgrammingShadowBranch.
+require import LEFsProgrammingCoupledState.
 require BudgetParameters.
 
 (*---*) import RealOrder.
@@ -749,44 +750,35 @@ pred le_fs_shadow_good_event
 
 op d_le_fs_shadow_coupled_state
   (x : qssm_public_input) (s : seed) : le_fs_shadow_state distr =
-  dmap ((d_le_pre_fs_programming_view x s) `*` d_le_fs_shadow_branch_choice)
-    (fun (p : le_transcript_observable * bool) =>
-      le_fs_shadow_state_of_branch_observable (fst p) (snd p)).
+  LEFsProgrammingCoupledState.d_le_fs_shadow_coupled_state x s.
 
 op d_le_fs_shadow_semantic_coupled_state
   (x : qssm_public_input) (s : seed) : le_fs_shadow_state distr =
-  dmap ((d_le_pre_fs_semantic_programming_view x s) `*` d_le_fs_shadow_branch_choice)
-    (fun (p : le_transcript_observable * bool) =>
-      le_fs_shadow_state_of_branch_observable (fst p) (snd p)).
+  LEFsProgrammingCoupledState.d_le_fs_shadow_semantic_coupled_state x s.
 
 op d_le_fs_shadow_pre_marginal
   (x : qssm_public_input) (s : seed) : le_transcript_observable distr =
-  dmap (d_le_fs_shadow_coupled_state x s)
-    le_fs_shadow_pre_observable.
+  LEFsProgrammingCoupledState.d_le_fs_shadow_pre_marginal x s.
 
 op d_le_fs_shadow_semantic_pre_marginal
   (x : qssm_public_input) (s : seed) : le_transcript_observable distr =
-  dmap (d_le_fs_shadow_semantic_coupled_state x s)
-    le_fs_shadow_pre_observable.
+  LEFsProgrammingCoupledState.d_le_fs_shadow_semantic_pre_marginal x s.
 
 op d_le_fs_shadow_post_marginal
   (x : qssm_public_input) (s : seed) : le_transcript_observable distr =
-  dmap (d_le_fs_shadow_coupled_state x s)
-    le_fs_shadow_post_observable.
+  LEFsProgrammingCoupledState.d_le_fs_shadow_post_marginal x s.
 
 op d_le_fs_shadow_semantic_post_marginal
   (x : qssm_public_input) (s : seed) : le_transcript_observable distr =
-  dmap (d_le_fs_shadow_semantic_coupled_state x s)
-    le_fs_shadow_semantic_post_state_observable.
+  LEFsProgrammingCoupledState.d_le_fs_shadow_semantic_post_marginal x s.
 
 op d_le_fs_shadow_semantic_good_branch_image
   (x : qssm_public_input) (s : seed) : le_transcript_observable distr =
-  d_le_post_fs_semantic_programmed_view x s.
+  LEFsProgrammingCoupledState.d_le_fs_shadow_semantic_good_branch_image x s.
 
 op d_le_fs_shadow_semantic_bad_branch_image
   (x : qssm_public_input) (s : seed) : le_transcript_observable distr =
-  dmap (d_le_pre_fs_semantic_programming_view x s)
-    le_fs_shadow_semantic_programmed_view_of_observable.
+  LEFsProgrammingCoupledState.d_le_fs_shadow_semantic_bad_branch_image x s.
 
 op le_fs_shadow_failure_probability
   (x : qssm_public_input) (s : seed) =
@@ -1205,7 +1197,8 @@ lemma d_le_fs_shadow_coupled_state_pairE :
         (fun (p : le_transcript_observable * bool) =>
           le_fs_shadow_state_of_branch_observable (fst p) (snd p)).
 proof.
-by move=> x s; rewrite /d_le_fs_shadow_coupled_state.
+by move=> x s; rewrite /d_le_fs_shadow_coupled_state
+  /LEFsProgrammingCoupledState.d_le_fs_shadow_coupled_state.
 qed.
 
 lemma d_le_fs_shadow_semantic_coupled_state_pairE :
@@ -1215,7 +1208,8 @@ lemma d_le_fs_shadow_semantic_coupled_state_pairE :
         (fun (p : le_transcript_observable * bool) =>
           le_fs_shadow_state_of_branch_observable (fst p) (snd p)).
 proof.
-by move=> x s; rewrite /d_le_fs_shadow_semantic_coupled_state.
+by move=> x s; rewrite /d_le_fs_shadow_semantic_coupled_state
+  /LEFsProgrammingCoupledState.d_le_fs_shadow_semantic_coupled_state.
 qed.
 
 lemma le_fs_shadow_semantic_branch_state_has_support
@@ -1333,7 +1327,8 @@ lemma d_le_fs_shadow_pre_marginal_matches_pre_programming_view :
 proof.
 move=> x s.
 rewrite /d_le_fs_shadow_pre_marginal.
-rewrite (d_le_fs_shadow_coupled_state_pairE x s).
+rewrite /LEFsProgrammingCoupledState.d_le_fs_shadow_pre_marginal.
+rewrite /LEFsProgrammingCoupledState.d_le_fs_shadow_coupled_state.
 rewrite (dmap_comp (fun (p : le_transcript_observable * bool) =>
     le_fs_shadow_state_of_branch_observable (fst p) (snd p))
   le_fs_shadow_pre_observable
@@ -1388,7 +1383,8 @@ lemma d_le_fs_shadow_semantic_pre_marginal_matches_pre_semantic_programming_view
 proof.
 move=> x s.
 rewrite /d_le_fs_shadow_semantic_pre_marginal.
-rewrite (d_le_fs_shadow_semantic_coupled_state_pairE x s).
+rewrite /LEFsProgrammingCoupledState.d_le_fs_shadow_semantic_pre_marginal.
+rewrite /LEFsProgrammingCoupledState.d_le_fs_shadow_semantic_coupled_state.
 rewrite (dmap_comp (fun (p : le_transcript_observable * bool) =>
     le_fs_shadow_state_of_branch_observable (fst p) (snd p))
   le_fs_shadow_pre_observable
@@ -1432,7 +1428,8 @@ have Hcollapse :
   apply eq_dmap_in=> obs Hobs /=.
   exact (le_fs_shadow_post_of_observable_good_branch_supportE x s obs Hobs).
 rewrite /d_le_fs_shadow_post_marginal.
-rewrite (d_le_fs_shadow_coupled_state_pairE x s).
+rewrite /LEFsProgrammingCoupledState.d_le_fs_shadow_post_marginal.
+rewrite /LEFsProgrammingCoupledState.d_le_fs_shadow_coupled_state.
 rewrite (dmap_comp (fun (p : le_transcript_observable * bool) =>
     le_fs_shadow_state_of_branch_observable (fst p) (snd p))
   le_fs_shadow_post_observable
@@ -1471,6 +1468,7 @@ lemma d_le_fs_shadow_semantic_good_branch_image_matches_programmed_view :
     d_le_post_fs_semantic_programmed_view x s.
 proof.
 by move=> x s; rewrite /d_le_fs_shadow_semantic_good_branch_image
+  /LEFsProgrammingCoupledState.d_le_fs_shadow_semantic_good_branch_image
   /d_le_post_fs_semantic_programmed_view.
 qed.
 
@@ -1532,6 +1530,7 @@ lemma d_le_fs_shadow_semantic_bad_branch_image_pairE :
 proof.
 move=> x s.
 rewrite /d_le_fs_shadow_semantic_bad_branch_image.
+rewrite /LEFsProgrammingCoupledState.d_le_fs_shadow_semantic_bad_branch_image.
 rewrite dmap_dprodE.
 have -> :
     dlet (d_le_pre_fs_semantic_programming_view x s)
@@ -1613,7 +1612,8 @@ lemma d_le_fs_shadow_semantic_post_marginal_pairE :
 proof.
 move=> x s.
 rewrite /d_le_fs_shadow_semantic_post_marginal.
-rewrite (d_le_fs_shadow_semantic_coupled_state_pairE x s).
+rewrite /LEFsProgrammingCoupledState.d_le_fs_shadow_semantic_post_marginal.
+rewrite /LEFsProgrammingCoupledState.d_le_fs_shadow_semantic_coupled_state.
 rewrite (dmap_comp (fun (p : le_transcript_observable * bool) =>
     le_fs_shadow_state_of_branch_observable (fst p) (snd p))
   le_fs_shadow_semantic_post_state_observable
@@ -1847,6 +1847,7 @@ lemma le_fs_shadow_semantic_good_branch_image_support
 proof.
 move=> Hobs.
 rewrite /d_le_fs_shadow_semantic_good_branch_image.
+rewrite /LEFsProgrammingCoupledState.d_le_fs_shadow_semantic_good_branch_image.
 rewrite /d_le_post_fs_semantic_programmed_view.
 rewrite supp_dmap.
 exists obs; split.
@@ -1863,6 +1864,7 @@ lemma d_le_fs_shadow_semantic_good_branch_image_supportE
 proof.
 move=> Hpost.
 rewrite /d_le_fs_shadow_semantic_good_branch_image in Hpost.
+rewrite /LEFsProgrammingCoupledState.d_le_fs_shadow_semantic_good_branch_image in Hpost.
 rewrite /d_le_post_fs_semantic_programmed_view in Hpost.
 case/supp_dmap: Hpost=> pre_obs [Hpre ->].
 exists pre_obs; split.
