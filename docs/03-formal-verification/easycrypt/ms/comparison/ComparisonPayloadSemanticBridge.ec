@@ -2189,6 +2189,35 @@ rewrite (ms_rom_execution_owned_semantic_failure_probability_eq_local_mass x).
 exact ms_rom_local_failure_mass_eq_epsilon_ms_rom_programmability_semantic.
 qed.
 
+lemma ms_rom_execution_owned_visible_silent_cases_common_equalitiesE
+  (x : ms_public_input) :
+  ms_rom_execution_owned_semantic_failure_probability x =
+    ms_rom_local_failure_mass /\
+  ms_rom_execution_owned_semantic_failure_probability x =
+    BudgetParameters.epsilon_ms_rom_programmability_semantic.
+proof.
+have Hcases := ms_rom_execution_owned_visible_silent_casesE x.
+by smt().
+qed.
+
+lemma ms_rom_execution_owned_visible_silent_common_equalities_equivE
+  (x : ms_public_input) :
+  (ms_rom_execution_owned_semantic_failure_probability x =
+     ms_rom_local_failure_mass /\
+   ms_rom_execution_owned_semantic_failure_probability x =
+     BudgetParameters.epsilon_ms_rom_programmability_semantic) <=>
+  (ms_rom_execution_owned_semantic_failure_probability x =
+     ms_rom_local_failure_mass /\
+   ms_rom_execution_owned_semantic_failure_probability x =
+     BudgetParameters.epsilon_ms_rom_programmability_semantic).
+proof.
+split.
+- move=> _.
+  exact (ms_rom_execution_owned_visible_silent_common_equalitiesE x).
+move=> _.
+exact (ms_rom_execution_owned_visible_silent_cases_common_equalitiesE x).
+qed.
+
 lemma ms_rom_public_observable_divergence_mass_le_execution_owned_semantic_failure
   (x : ms_public_input) :
   ms_rom_public_observable_divergence_mass x <=
