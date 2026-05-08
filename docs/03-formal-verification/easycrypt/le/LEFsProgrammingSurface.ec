@@ -11,6 +11,7 @@ require LEFsProgrammingCoreDefs.
 require import LEFsProgrammingShadowBranch.
 require import LEFsProgrammingCoupledState.
 require import LEFsProgrammingMarginalHelpers.
+require import LEFsProgrammingMarginalStateFacts.
 require import LEFsProgrammingMarginals.
 require import LEFsProgrammingSupportImages.
 require BudgetParameters.
@@ -874,14 +875,14 @@ lemma le_fs_shadow_semantic_bad_event_branch_stateE
   (obs : le_transcript_observable) (bad : bool) :
   le_fs_shadow_semantic_bad_event (le_fs_shadow_state_of_branch_observable obs bad) = bad.
 proof.
-exact (LEFsProgrammingMarginals.le_fs_shadow_semantic_bad_event_branch_stateE obs bad).
+exact (LEFsProgrammingMarginalStateFacts.le_fs_shadow_semantic_bad_event_branch_stateE obs bad).
 qed.
 
 lemma le_fs_shadow_bad_event_branch_stateE
   (obs : le_transcript_observable) (bad : bool) :
   le_fs_shadow_bad_event (le_fs_shadow_state_of_branch_observable obs bad) = false.
 proof.
-exact (LEFsProgrammingMarginals.le_fs_shadow_bad_event_branch_stateE obs bad).
+exact (LEFsProgrammingMarginalStateFacts.le_fs_shadow_bad_event_branch_stateE obs bad).
 qed.
 
 lemma le_fs_shadow_semantic_post_of_observable_good_branch_supportE
@@ -890,7 +891,7 @@ lemma le_fs_shadow_semantic_post_of_observable_good_branch_supportE
   (le_fs_shadow_state_of_branch_observable obs false).`lefss_semantic_post_observable =
   le_fs_surrogate_transform obs.
 proof.
-exact (LEFsProgrammingMarginals.le_fs_shadow_semantic_post_of_observable_good_branch_supportE x s obs).
+exact (LEFsProgrammingMarginalStateFacts.le_fs_shadow_semantic_post_of_observable_good_branch_supportE x s obs).
 qed.
 
 lemma d_le_fs_shadow_pre_marginal_matches_post_rejection_view :

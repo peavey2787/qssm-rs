@@ -11,6 +11,7 @@ require import LEFsProgrammingCoreDefs.
 require import LEFsProgrammingShadowBranch.
 require import LEFsProgrammingCoupledState.
 require import LEFsProgrammingMarginalHelpers.
+require import LEFsProgrammingMarginalStateFacts.
 require import LEFsProgrammingMarginals.
 require BudgetParameters.
 
