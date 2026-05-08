@@ -2308,6 +2308,28 @@ split.
 exact (ms_rom_execution_owned_visible_silent_normalized_bundleE x).
 qed.
 
+lemma ms_rom_execution_owned_visible_silent_normalized_equiv_to_commonE
+  (x : ms_public_input) :
+  ms_rom_execution_owned_semantic_failure_probability x =
+    ms_rom_local_failure_mass /\
+  ms_rom_execution_owned_semantic_failure_probability x =
+    BudgetParameters.epsilon_ms_rom_programmability_semantic.
+proof.
+have [Hcommon _] := ms_rom_execution_owned_visible_silent_normalized_equivE x.
+exact Hcommon.
+qed.
+
+lemma ms_rom_execution_owned_visible_silent_normalized_equiv_to_bundleE
+  (x : ms_public_input) :
+  ms_rom_execution_owned_semantic_failure_probability x =
+    ms_rom_local_failure_mass /\
+  ms_rom_execution_owned_semantic_failure_probability x =
+    BudgetParameters.epsilon_ms_rom_programmability_semantic.
+proof.
+have [_ Hbundle] := ms_rom_execution_owned_visible_silent_normalized_equivE x.
+exact Hbundle.
+qed.
+
 lemma ms_rom_public_observable_divergence_mass_le_execution_owned_semantic_failure
   (x : ms_public_input) :
   ms_rom_public_observable_divergence_mass x <=
