@@ -88,6 +88,7 @@ FILES=(
   le/LEFsProgrammingCoreDefs.ec
   le/LEFsProgrammingShadowBranch.ec
   le/LEFsProgrammingCoupledState.ec
+  le/LEFsProgrammingMarginalHelpers.ec
   le/LEFsProgrammingMarginals.ec
   le/LEFsProgrammingSupportImages.ec
   le/LEFsProgrammingSurface.ec

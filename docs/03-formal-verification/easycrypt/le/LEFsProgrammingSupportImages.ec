@@ -10,6 +10,7 @@ require import LESurface.
 require import LEFsProgrammingCoreDefs.
 require import LEFsProgrammingShadowBranch.
 require import LEFsProgrammingCoupledState.
+require import LEFsProgrammingMarginalHelpers.
 require import LEFsProgrammingMarginals.
 require BudgetParameters.
 

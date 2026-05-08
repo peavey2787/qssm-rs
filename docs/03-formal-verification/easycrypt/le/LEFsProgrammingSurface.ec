@@ -10,6 +10,7 @@ require import LESurface.
 require LEFsProgrammingCoreDefs.
 require import LEFsProgrammingShadowBranch.
 require import LEFsProgrammingCoupledState.
+require import LEFsProgrammingMarginalHelpers.
 require import LEFsProgrammingMarginals.
 require import LEFsProgrammingSupportImages.
 require BudgetParameters.
@@ -821,14 +822,14 @@ lemma le_fs_shadow_dmap_dprod_fst_lossless ['a 'b] (da : 'a distr) (db : 'b dist
   dmap (da `*` db) fst = da.
 proof.
 move=> Hll.
-exact (LEFsProgrammingMarginals.le_fs_shadow_dmap_dprod_fst_lossless da db Hll).
+exact (LEFsProgrammingMarginalHelpers.le_fs_shadow_dmap_dprod_fst_lossless da db Hll).
 qed.
 
 lemma d_le_pre_fs_programming_view_dunit
   (x : qssm_public_input) (s : seed) :
   d_le_pre_fs_programming_view x s = dunit (le_real_execution_observable x s).
 proof.
-exact (LEFsProgrammingMarginals.d_le_pre_fs_programming_view_dunit x s).
+exact (LEFsProgrammingMarginalHelpers.d_le_pre_fs_programming_view_dunit x s).
 qed.
 
 lemma d_le_pre_fs_semantic_programming_view_fixed_branch_imageE
@@ -839,14 +840,14 @@ lemma d_le_pre_fs_semantic_programming_view_fixed_branch_imageE
         LERejectionSampler.le_rejection_shadow_semantic_branch_image_of_observable
           x s (le_real_execution_observable x s) reject).
 proof.
-exact (LEFsProgrammingMarginals.d_le_pre_fs_semantic_programming_view_fixed_branch_imageE x s).
+exact (LEFsProgrammingMarginalHelpers.d_le_pre_fs_semantic_programming_view_fixed_branch_imageE x s).
 qed.
 
 lemma d_le_pre_fs_semantic_programming_view_lossless
   (x : qssm_public_input) (s : seed) :
   is_lossless (d_le_pre_fs_semantic_programming_view x s).
 proof.
-exact (LEFsProgrammingMarginals.d_le_pre_fs_semantic_programming_view_lossless x s).
+exact (LEFsProgrammingMarginalHelpers.d_le_pre_fs_semantic_programming_view_lossless x s).
 qed.
 
 lemma d_le_fs_shadow_coupled_state_pairE :
@@ -856,7 +857,7 @@ lemma d_le_fs_shadow_coupled_state_pairE :
         (fun (p : le_transcript_observable * bool) =>
           le_fs_shadow_state_of_branch_observable (fst p) (snd p)).
 proof.
-exact LEFsProgrammingMarginals.d_le_fs_shadow_coupled_state_pairE.
+exact LEFsProgrammingMarginalHelpers.d_le_fs_shadow_coupled_state_pairE.
 qed.
 
 lemma d_le_fs_shadow_semantic_coupled_state_pairE :
@@ -866,7 +867,7 @@ lemma d_le_fs_shadow_semantic_coupled_state_pairE :
         (fun (p : le_transcript_observable * bool) =>
           le_fs_shadow_state_of_branch_observable (fst p) (snd p)).
 proof.
-exact LEFsProgrammingMarginals.d_le_fs_shadow_semantic_coupled_state_pairE.
+exact LEFsProgrammingMarginalHelpers.d_le_fs_shadow_semantic_coupled_state_pairE.
 qed.
 
 lemma le_fs_shadow_semantic_bad_event_branch_stateE
