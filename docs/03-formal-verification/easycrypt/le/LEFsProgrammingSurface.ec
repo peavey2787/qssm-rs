@@ -725,16 +725,6 @@ op d_le_fs_shadow_semantic_bad_branch_image
   (x : qssm_public_input) (s : seed) : le_transcript_observable distr =
   LEFsProgrammingCoupledState.d_le_fs_shadow_semantic_bad_branch_image x s.
 
-op le_fs_shadow_failure_probability
-  (x : qssm_public_input) (s : seed) =
-  mu (dmap (d_le_fs_shadow_coupled_state x s) le_fs_shadow_bad_event)
-    (fun (bad : bool) => bad).
-
-op le_fs_shadow_semantic_failure_probability
-  (x : qssm_public_input) (s : seed) =
-  mu (dmap (d_le_fs_shadow_semantic_coupled_state x s) le_fs_shadow_semantic_bad_event)
-    (fun (bad : bool) => bad).
-
 lemma le_fs_shadow_hidden_bad_flag_matches_pre_query_material
   (obs : le_transcript_observable) :
   (le_fs_shadow_hidden_material_of_observable obs).`lefshm_bad_flag =
@@ -898,24 +888,14 @@ lemma A_LE_fs_shadow_sdist_le_failure_probability :
       (d_le_fs_shadow_post_marginal x s)
       <= le_fs_shadow_failure_probability x s.
 proof.
-move=> x s.
-have H := LEFsProgrammingFailureProbability.A_LE_fs_shadow_sdist_le_failure_probability x s.
-rewrite /d_le_fs_shadow_pre_marginal /d_le_fs_shadow_post_marginal /le_fs_shadow_failure_probability.
-rewrite /LEFsProgrammingFailureProbability.d_le_fs_shadow_pre_marginal in H.
-rewrite /LEFsProgrammingFailureProbability.d_le_fs_shadow_post_marginal in H.
-rewrite /LEFsProgrammingFailureProbability.le_fs_shadow_failure_probability in H.
-exact H.
+exact LEFsProgrammingFailureProbability.A_LE_fs_shadow_sdist_le_failure_probability.
 qed.
 
 lemma A_LE_fs_shadow_failure_probability_le_budget :
   forall (x : qssm_public_input) (s : seed),
     le_fs_shadow_failure_probability x s <= BudgetParameters.epsilon_le_fs.
 proof.
-move=> x s.
-have H := LEFsProgrammingFailureProbability.A_LE_fs_shadow_failure_probability_le_budget x s.
-rewrite /le_fs_shadow_failure_probability.
-rewrite /LEFsProgrammingFailureProbability.le_fs_shadow_failure_probability in H.
-exact H.
+exact LEFsProgrammingFailureProbability.A_LE_fs_shadow_failure_probability_le_budget.
 qed.
 
 (* Intended bridge/analysis targets for the lower FS-programming surface.
