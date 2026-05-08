@@ -910,6 +910,16 @@ rewrite /le_fs_shadow_post_of_observable /le_fs_shadow_hidden_material_of_observ
 by [].
 qed.
 
+lemma le_fs_shadow_semantic_post_of_observable_good_branch_supportE
+  (x : qssm_public_input) (s : seed) (obs : le_transcript_observable) :
+  obs \in d_le_pre_fs_semantic_programming_view x s =>
+  (le_fs_shadow_state_of_branch_observable obs false).`lefss_semantic_post_observable =
+  le_fs_surrogate_transform obs.
+proof.
+move=> _.
+exact (le_fs_shadow_semantic_post_good_branch_matches_programmed_view obs).
+qed.
+
 lemma le_fs_shadow_semantic_post_bad_branch_matches_semantic_programmed_view
   (obs : le_transcript_observable) :
   (le_fs_shadow_state_of_branch_observable obs true).`lefss_semantic_post_observable =
@@ -1436,6 +1446,20 @@ by move=> x s; rewrite /d_le_fs_shadow_semantic_good_branch_image
   /d_le_post_fs_semantic_programmed_view.
 qed.
 
+lemma d_le_post_fs_semantic_programmed_view_good_branch_imageE :
+  forall (x : qssm_public_input) (s : seed),
+    d_le_post_fs_semantic_programmed_view x s =
+      dmap (d_le_pre_fs_semantic_programming_view x s)
+        (fun (obs : le_transcript_observable) =>
+          (le_fs_shadow_state_of_branch_observable obs false).`lefss_semantic_post_observable).
+proof.
+move=> x s.
+rewrite /d_le_post_fs_semantic_programmed_view.
+apply eq_dmap_in=> obs Hobs /=.
+rewrite (le_fs_shadow_semantic_post_of_observable_good_branch_supportE x s obs Hobs).
+by [].
+qed.
+
 lemma d_le_post_fs_semantic_programmed_view_pairE :
   forall (x : qssm_public_input) (s : seed),
     d_le_post_fs_semantic_programmed_view x s =
@@ -1444,25 +1468,31 @@ lemma d_le_post_fs_semantic_programmed_view_pairE :
           le_fs_shadow_semantic_branch_image_of_observable (fst p) (snd p)).
 proof.
 move=> x s.
+rewrite (d_le_post_fs_semantic_programmed_view_good_branch_imageE x s).
 rewrite dmap_dprodE.
 have -> :
     dlet (d_le_pre_fs_semantic_programming_view x s)
       (fun obs => dmap (dunit false)
         (fun bad => le_fs_shadow_semantic_branch_image_of_observable obs bad)) =
     dlet (d_le_pre_fs_semantic_programming_view x s)
-      (fun obs => dmap (dunit obs) le_fs_surrogate_transform).
+      (fun obs => dmap (dunit obs)
+        (fun (obs' : le_transcript_observable) =>
+          (le_fs_shadow_state_of_branch_observable obs' false).`lefss_semantic_post_observable)).
   apply (in_eq_dlet
     (fun obs => dmap (dunit false)
       (fun bad => le_fs_shadow_semantic_branch_image_of_observable obs bad))
-    (fun obs => dmap (dunit obs) le_fs_surrogate_transform)
+    (fun obs => dmap (dunit obs)
+      (fun (obs' : le_transcript_observable) =>
+        (le_fs_shadow_state_of_branch_observable obs' false).`lefss_semantic_post_observable))
     (d_le_pre_fs_semantic_programming_view x s)).
-  move=> obs _ /=.
+  move=> obs Hobs /=.
   rewrite !dmap_dunit /=.
   rewrite /le_fs_shadow_semantic_branch_image_of_observable.
+  rewrite (le_fs_shadow_semantic_post_of_observable_good_branch_supportE x s obs Hobs).
   by [].
 rewrite -dmap_dlet.
 rewrite dlet_d_unit.
-by rewrite /d_le_post_fs_semantic_programmed_view.
+by [].
 qed.
 
 lemma d_le_post_fs_programmed_view_fixed_branch_imageE :
