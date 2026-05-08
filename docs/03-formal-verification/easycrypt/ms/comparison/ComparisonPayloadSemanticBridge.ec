@@ -553,6 +553,66 @@ op ms_rom_public_silent_failure_category
   BudgetParameters.ms_rom_semantic_category_is_failure category /\
   ! ms_rom_public_divergence_flag_of_category x category.
 
+lemma ms_rom_public_visible_failure_categoryE
+  (x : ms_public_input) (category : BudgetParameters.ms_rom_semantic_category) :
+  (BudgetParameters.ms_rom_semantic_category_is_failure category /\
+   ms_rom_public_divergence_flag_of_category x category) =
+  ms_rom_public_divergence_flag_of_category x category.
+proof.
+case: category=> /=.
+- by rewrite /BudgetParameters.ms_rom_semantic_category_is_failure /pred1 /=.
+- by rewrite /BudgetParameters.ms_rom_semantic_category_is_failure /pred1 /=.
+- by rewrite /BudgetParameters.ms_rom_semantic_category_is_failure /pred1 /=.
+by rewrite /BudgetParameters.ms_rom_semantic_category_is_failure /pred1 /=.
+qed.
+
+lemma ms_rom_public_silent_failure_categoryE
+  (x : ms_public_input) (category : BudgetParameters.ms_rom_semantic_category) :
+  ms_rom_public_silent_failure_category x category =
+  (BudgetParameters.ms_rom_semantic_category_is_failure category /\
+   ! ms_rom_public_divergence_flag_of_category x category).
+proof.
+by rewrite /ms_rom_public_silent_failure_category.
+qed.
+
+lemma ms_rom_public_divergence_and_silent_failureE
+  (x : ms_public_input) (category : BudgetParameters.ms_rom_semantic_category) :
+  (ms_rom_public_divergence_flag_of_category x category /\
+   ms_rom_public_silent_failure_category x category) = false.
+proof.
+rewrite ms_rom_public_silent_failure_categoryE.
+case: category=> /=; smt().
+qed.
+
+lemma ms_rom_public_divergence_or_silent_failure_categoryE
+  (x : ms_public_input) (category : BudgetParameters.ms_rom_semantic_category) :
+  (ms_rom_public_divergence_flag_of_category x category \/
+   ms_rom_public_silent_failure_category x category) =
+  BudgetParameters.ms_rom_semantic_category_is_failure category.
+proof.
+rewrite ms_rom_public_silent_failure_categoryE.
+case: category=> /=;
+  rewrite /BudgetParameters.ms_rom_semantic_category_is_failure /pred1 /=;
+  smt().
+qed.
+
+lemma ms_rom_public_silent_failure_failure_categories_decompose_flags
+  (x : ms_public_input) :
+  ms_rom_public_silent_failure_category x
+    BudgetParameters.MSROMSemanticQueryCollision =
+    ! ms_rom_public_divergence_global_digest_flag x /\
+  ms_rom_public_silent_failure_category x
+    BudgetParameters.MSROMSemanticProgrammingCollision =
+    ! ms_rom_public_divergence_global_digest_flag x /\
+  ms_rom_public_silent_failure_category x
+    BudgetParameters.MSROMSemanticTranscriptMismatch =
+    ! ms_rom_public_divergence_query_digest_flag x.
+proof.
+rewrite ms_rom_public_silent_failure_categoryE.
+rewrite /BudgetParameters.ms_rom_semantic_category_is_failure /pred1 /=.
+by split; [| split].
+qed.
+
 lemma ms_rom_semantic_after_rom_observable_of_failure_flag_falseE
   (x : ms_public_input) :
   ms_rom_semantic_after_rom_observable_of_failure_flag x false =
@@ -1072,6 +1132,62 @@ have Hslot3 := ms_rom_public_divergence_demo_clean_slot3E x sigma Hsigma.
 by rewrite /= Hslot0 Hslot1 Hslot2 Hslot3.
 qed.
 
+lemma ms_rom_public_silent_failure_slot_image_on_supportE
+  (x : ms_public_input) (slot : int) :
+  slot \in ms_rom_semantic_slot_support =>
+  ms_rom_public_silent_failure_category x
+    (ms_rom_semantic_category_of_slot slot) =
+  if slot < BudgetParameters.ms_rom_query_collision_slot_count then
+    ! ms_rom_public_divergence_global_digest_flag x
+  else if slot <
+      BudgetParameters.ms_rom_query_collision_slot_count +
+      BudgetParameters.ms_rom_programming_collision_slot_count then
+    ! ms_rom_public_divergence_global_digest_flag x
+  else if slot < BudgetParameters.ms_rom_failure_slot_count then
+    ! ms_rom_public_divergence_query_digest_flag x
+  else false.
+proof.
+move=> Hslot.
+have [Hquery [Hprog Hmismatch]] :=
+  ms_rom_public_silent_failure_failure_categories_decompose_flags x.
+have [Hquery_slot|Hquery_slot] :
+    slot < BudgetParameters.ms_rom_query_collision_slot_count \/
+    !(slot < BudgetParameters.ms_rom_query_collision_slot_count) by smt().
+- have Hquery_slotE :
+      (slot < BudgetParameters.ms_rom_query_collision_slot_count) = true by smt().
+  by rewrite /ms_rom_semantic_category_of_slot Hquery_slotE /= Hquery.
+have Hquery_slotE :
+    (slot < BudgetParameters.ms_rom_query_collision_slot_count) = false by smt().
+have [Hprog_slot|Hprog_slot] :
+    slot <
+      BudgetParameters.ms_rom_query_collision_slot_count +
+      BudgetParameters.ms_rom_programming_collision_slot_count \/
+    !(slot <
+      BudgetParameters.ms_rom_query_collision_slot_count +
+      BudgetParameters.ms_rom_programming_collision_slot_count) by smt().
+- have Hprog_slotE :
+      (slot <
+        BudgetParameters.ms_rom_query_collision_slot_count +
+        BudgetParameters.ms_rom_programming_collision_slot_count) = true by smt().
+  by rewrite /ms_rom_semantic_category_of_slot Hquery_slotE Hprog_slotE /= Hprog.
+have Hprog_slotE :
+    (slot <
+      BudgetParameters.ms_rom_query_collision_slot_count +
+      BudgetParameters.ms_rom_programming_collision_slot_count) = false by smt().
+have [Hmismatch_slot|Hmismatch_slot] :
+    slot < BudgetParameters.ms_rom_failure_slot_count \/
+    !(slot < BudgetParameters.ms_rom_failure_slot_count) by smt().
+- have Hmismatch_slotE :
+      (slot < BudgetParameters.ms_rom_failure_slot_count) = true by smt().
+  by rewrite /ms_rom_semantic_category_of_slot
+    Hquery_slotE Hprog_slotE Hmismatch_slotE /= Hmismatch.
+have Hmismatch_slotE :
+    (slot < BudgetParameters.ms_rom_failure_slot_count) = false by smt().
+rewrite /ms_rom_semantic_category_of_slot Hquery_slotE Hprog_slotE Hmismatch_slotE /=.
+rewrite ms_rom_public_silent_failure_categoryE.
+by rewrite /BudgetParameters.ms_rom_semantic_category_is_failure /pred1 /=.
+qed.
+
 lemma ms_rom_public_observable_divergence_condition_implies_semantic_failure
   (x : ms_public_input) (st : ms_rom_semantic_state) :
   ms_rom_public_observable_divergence_condition x st =>
@@ -1107,6 +1223,11 @@ op ms_rom_public_observable_divergence_mass
   (x : ms_public_input) : real =
   mu (d_ms_rom_semantic_coupled_state x)
     (ms_rom_public_observable_divergence_condition x).
+
+op ms_rom_public_silent_failure_mass
+  (x : ms_public_input) : real =
+  mu1 (dmap d_ms_rom_semantic_category_choice
+    (ms_rom_public_silent_failure_category x)) true.
 
 lemma ms_rom_dmap_dprod_snd_lossless ['a 'b]
   (da : 'a distr) (db : 'b distr) :
@@ -1324,6 +1445,149 @@ lemma ms_rom_public_observable_divergence_mass_flagsE
 proof.
 rewrite (ms_rom_public_observable_divergence_mass_category_choiceE x).
 exact (ms_rom_public_observable_divergence_visible_slot_countE x).
+qed.
+
+lemma ms_rom_public_silent_failure_mass_flagsE
+  (x : ms_public_input) :
+  ms_rom_public_silent_failure_mass x =
+  ((if ms_rom_public_divergence_global_digest_flag x then
+      0%r
+    else
+      (BudgetParameters.ms_rom_query_collision_slot_count +
+       BudgetParameters.ms_rom_programming_collision_slot_count)%r) +
+   (if ms_rom_public_divergence_query_digest_flag x then
+      0%r
+    else BudgetParameters.ms_rom_transcript_mismatch_slot_count%r)) /
+  BudgetParameters.ms_rom_total_slot_count%r.
+proof.
+rewrite /ms_rom_public_silent_failure_mass /mu1.
+rewrite /d_ms_rom_semantic_category_choice.
+rewrite (dmap_comp ms_rom_semantic_category_of_slot
+  (ms_rom_public_silent_failure_category x)
+  d_ms_rom_semantic_slot_choice).
+have Hmap :
+    dmap d_ms_rom_semantic_slot_choice
+      (ms_rom_public_silent_failure_category x \o ms_rom_semantic_category_of_slot) =
+    dmap d_ms_rom_semantic_slot_choice
+      (fun (slot : int) =>
+        if slot < BudgetParameters.ms_rom_query_collision_slot_count then
+          ! ms_rom_public_divergence_global_digest_flag x
+        else if slot <
+            BudgetParameters.ms_rom_query_collision_slot_count +
+            BudgetParameters.ms_rom_programming_collision_slot_count then
+          ! ms_rom_public_divergence_global_digest_flag x
+        else if slot < BudgetParameters.ms_rom_failure_slot_count then
+          ! ms_rom_public_divergence_query_digest_flag x
+        else false).
+- apply eq_dmap_in=> slot Hslot /=.
+  rewrite /d_ms_rom_semantic_slot_choice in Hslot.
+  rewrite supp_duniform in Hslot.
+  rewrite /(\o).
+  exact (ms_rom_public_silent_failure_slot_image_on_supportE x slot Hslot).
+rewrite Hmap dmapE /=.
+rewrite /d_ms_rom_semantic_slot_choice duniformE.
+rewrite undup_id ?ms_rom_semantic_slot_support_uniq /=.
+have Hcount :
+    (count (pred1 true \o
+      (fun (slot : int) =>
+        if slot < BudgetParameters.ms_rom_query_collision_slot_count then
+          ! ms_rom_public_divergence_global_digest_flag x
+        else if slot <
+            BudgetParameters.ms_rom_query_collision_slot_count +
+            BudgetParameters.ms_rom_programming_collision_slot_count then
+          ! ms_rom_public_divergence_global_digest_flag x
+        else if slot < BudgetParameters.ms_rom_failure_slot_count then
+          ! ms_rom_public_divergence_query_digest_flag x
+        else false)) ms_rom_semantic_slot_support)%r =
+    (if ms_rom_public_divergence_global_digest_flag x then
+      0%r
+     else
+      (BudgetParameters.ms_rom_query_collision_slot_count +
+       BudgetParameters.ms_rom_programming_collision_slot_count)%r) +
+    (if ms_rom_public_divergence_query_digest_flag x then
+      0%r
+     else BudgetParameters.ms_rom_transcript_mismatch_slot_count%r).
+  have [Hg|Hg] :
+      ms_rom_public_divergence_global_digest_flag x \/
+      ! ms_rom_public_divergence_global_digest_flag x by smt().
+  - have HgE : ms_rom_public_divergence_global_digest_flag x = true by smt().
+    have [Hq|Hq] :
+        ms_rom_public_divergence_query_digest_flag x \/
+        ! ms_rom_public_divergence_query_digest_flag x by smt().
+    + have HqE : ms_rom_public_divergence_query_digest_flag x = true by smt().
+      rewrite ms_rom_semantic_slot_supportE /pred1 /(\o) HgE HqE.
+      rewrite /BudgetParameters.ms_rom_query_collision_slot_count
+        /BudgetParameters.ms_rom_programming_collision_slot_count
+        /BudgetParameters.ms_rom_transcript_mismatch_slot_count
+        /BudgetParameters.ms_rom_failure_slot_count /=.
+      by [].
+    have HqE : ms_rom_public_divergence_query_digest_flag x = false by smt().
+    rewrite ms_rom_semantic_slot_supportE /pred1 /(\o) HgE HqE.
+    rewrite /BudgetParameters.ms_rom_query_collision_slot_count
+      /BudgetParameters.ms_rom_programming_collision_slot_count
+      /BudgetParameters.ms_rom_transcript_mismatch_slot_count
+      /BudgetParameters.ms_rom_failure_slot_count /=.
+    by [].
+  have HgE : ms_rom_public_divergence_global_digest_flag x = false by smt().
+  have [Hq|Hq] :
+      ms_rom_public_divergence_query_digest_flag x \/
+      ! ms_rom_public_divergence_query_digest_flag x by smt().
+  - have HqE : ms_rom_public_divergence_query_digest_flag x = true by smt().
+    rewrite ms_rom_semantic_slot_supportE /pred1 /(\o) HgE HqE.
+    rewrite /BudgetParameters.ms_rom_query_collision_slot_count
+      /BudgetParameters.ms_rom_programming_collision_slot_count
+      /BudgetParameters.ms_rom_transcript_mismatch_slot_count
+      /BudgetParameters.ms_rom_failure_slot_count /=.
+    by [].
+  have HqE : ms_rom_public_divergence_query_digest_flag x = false by smt().
+  rewrite ms_rom_semantic_slot_supportE /pred1 /(\o) HgE HqE.
+  rewrite /BudgetParameters.ms_rom_query_collision_slot_count
+    /BudgetParameters.ms_rom_programming_collision_slot_count
+    /BudgetParameters.ms_rom_transcript_mismatch_slot_count
+    /BudgetParameters.ms_rom_failure_slot_count /=.
+  by [].
+rewrite Hcount.
+rewrite ms_rom_semantic_slot_supportE /=.
+by rewrite BudgetParameters.ms_rom_total_slot_count_demo_closed_form.
+qed.
+
+lemma ms_rom_public_observable_divergence_mass_plus_silent_failure_mass_eq_local_failure_mass
+  (x : ms_public_input) :
+  ms_rom_public_observable_divergence_mass x +
+  ms_rom_public_silent_failure_mass x =
+  ms_rom_local_failure_mass.
+proof.
+rewrite (ms_rom_public_observable_divergence_mass_flagsE x).
+rewrite (ms_rom_public_silent_failure_mass_flagsE x).
+rewrite /ms_rom_local_failure_mass.
+rewrite ms_rom_semantic_failure_choice_mass_true.
+have [Hg|Hg] :
+    ms_rom_public_divergence_global_digest_flag x \/
+    ! ms_rom_public_divergence_global_digest_flag x by smt().
+- have HgE : ms_rom_public_divergence_global_digest_flag x = true by smt().
+  have [Hq|Hq] :
+      ms_rom_public_divergence_query_digest_flag x \/
+      ! ms_rom_public_divergence_query_digest_flag x by smt().
+  + have HqE : ms_rom_public_divergence_query_digest_flag x = true by smt().
+    rewrite HgE HqE.
+    rewrite /BudgetParameters.ms_rom_failure_slot_count.
+    by smt().
+  have HqE : ms_rom_public_divergence_query_digest_flag x = false by smt().
+  rewrite HgE HqE.
+  rewrite /BudgetParameters.ms_rom_failure_slot_count.
+  by smt().
+have HgE : ms_rom_public_divergence_global_digest_flag x = false by smt().
+have [Hq|Hq] :
+    ms_rom_public_divergence_query_digest_flag x \/
+    ! ms_rom_public_divergence_query_digest_flag x by smt().
+- have HqE : ms_rom_public_divergence_query_digest_flag x = true by smt().
+  rewrite HgE HqE.
+  rewrite /BudgetParameters.ms_rom_failure_slot_count.
+  by smt().
+have HqE : ms_rom_public_divergence_query_digest_flag x = false by smt().
+rewrite HgE HqE.
+rewrite /BudgetParameters.ms_rom_failure_slot_count.
+by smt().
 qed.
 
 lemma d_ms_rom_semantic_failure_state_choiceE
