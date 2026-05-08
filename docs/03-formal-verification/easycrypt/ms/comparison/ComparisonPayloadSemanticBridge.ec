@@ -1804,6 +1804,82 @@ move=> Hglobal Hquery; split.
 exact (ms_rom_public_visible_silent_fully_visibleE x Hglobal Hquery).
 qed.
 
+lemma ms_rom_execution_owned_fully_silent_valueE
+  (x : ms_public_input) :
+  ms_rom_public_divergence_global_digest_flag x = false =>
+  ms_rom_public_divergence_query_digest_flag x = false =>
+  ms_rom_execution_owned_semantic_failure_probability x =
+  ms_rom_local_failure_mass.
+proof.
+move=> Hglobal Hquery.
+have Hexec :=
+  ms_rom_execution_owned_semantic_failure_probability_eq_visible_plus_silent_failure_mass x.
+have Hwrap :=
+  ms_rom_execution_owned_visible_silent_fully_silentE x Hglobal Hquery.
+have [Hvis Hsil] :=
+  ms_rom_public_visible_silent_fully_silentE x Hglobal Hquery.
+have Hlocal :=
+  ms_rom_public_observable_divergence_mass_plus_silent_failure_mass_eq_local_failure_mass x.
+by smt().
+qed.
+
+lemma ms_rom_execution_owned_query_visible_only_valueE
+  (x : ms_public_input) :
+  ms_rom_public_divergence_global_digest_flag x = false =>
+  ms_rom_public_divergence_query_digest_flag x = true =>
+  ms_rom_execution_owned_semantic_failure_probability x =
+  ms_rom_local_failure_mass.
+proof.
+move=> Hglobal Hquery.
+have Hexec :=
+  ms_rom_execution_owned_semantic_failure_probability_eq_visible_plus_silent_failure_mass x.
+have Hwrap :=
+  ms_rom_execution_owned_visible_silent_query_visible_onlyE x Hglobal Hquery.
+have [Hvis Hsil] :=
+  ms_rom_public_visible_silent_query_visible_onlyE x Hglobal Hquery.
+have Hlocal :=
+  ms_rom_public_observable_divergence_mass_plus_silent_failure_mass_eq_local_failure_mass x.
+by smt().
+qed.
+
+lemma ms_rom_execution_owned_global_visible_only_valueE
+  (x : ms_public_input) :
+  ms_rom_public_divergence_global_digest_flag x = true =>
+  ms_rom_public_divergence_query_digest_flag x = false =>
+  ms_rom_execution_owned_semantic_failure_probability x =
+  ms_rom_local_failure_mass.
+proof.
+move=> Hglobal Hquery.
+have Hexec :=
+  ms_rom_execution_owned_semantic_failure_probability_eq_visible_plus_silent_failure_mass x.
+have Hwrap :=
+  ms_rom_execution_owned_visible_silent_global_visible_onlyE x Hglobal Hquery.
+have [Hvis Hsil] :=
+  ms_rom_public_visible_silent_global_visible_onlyE x Hglobal Hquery.
+have Hlocal :=
+  ms_rom_public_observable_divergence_mass_plus_silent_failure_mass_eq_local_failure_mass x.
+by smt().
+qed.
+
+lemma ms_rom_execution_owned_fully_visible_valueE
+  (x : ms_public_input) :
+  ms_rom_public_divergence_global_digest_flag x = true =>
+  ms_rom_public_divergence_query_digest_flag x = true =>
+  ms_rom_execution_owned_semantic_failure_probability x =
+  ms_rom_local_failure_mass.
+proof.
+move=> Hglobal Hquery.
+have Hexec :=
+  ms_rom_execution_owned_semantic_failure_probability_eq_visible_plus_silent_failure_mass x.
+have Hwrap :=
+  ms_rom_execution_owned_visible_silent_fully_visibleE x Hglobal Hquery.
+have [Hvis Hsil] :=
+  ms_rom_public_visible_silent_fully_visibleE x Hglobal Hquery.
+have Hlocal :=
+  ms_rom_public_observable_divergence_mass_plus_silent_failure_mass_eq_local_failure_mass x.
+by smt().
+qed.
+
 lemma ms_rom_public_observable_divergence_mass_le_execution_owned_semantic_failure
   (x : ms_public_input) :
   ms_rom_public_observable_divergence_mass x <=
