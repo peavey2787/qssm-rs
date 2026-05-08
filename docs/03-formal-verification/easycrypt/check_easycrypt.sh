@@ -88,6 +88,7 @@ FILES=(
   le/LERejectionSamplerExact.ec
   le/LERejectionSamplerSemanticMarginals.ec
   le/LERejectionSamplerMass.ec
+  le/LERejectionSamplerSemanticFacts.ec
   le/LERejectionSampler.ec
   le/LEFsProgrammingCoreDefs.ec
   le/LEFsProgrammingShadowBranch.ec
