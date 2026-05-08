@@ -670,82 +670,11 @@ rewrite /le_fs_surrogate_transform /le_fs_view_surrogate.
 by rewrite /le_fs_program_query_material.
 qed.
 
-lemma le_fs_shadow_dmap_dprod_fst_lossless ['a 'b] (da : 'a distr) (db : 'b distr) :
-  is_lossless db =>
-  dmap (da `*` db) fst = da.
-proof.
-move=> Hll.
-exact (LEFsProgrammingMarginalHelpers.le_fs_shadow_dmap_dprod_fst_lossless da db Hll).
-qed.
-
 lemma d_le_pre_fs_programming_view_dunit
   (x : qssm_public_input) (s : seed) :
   d_le_pre_fs_programming_view x s = dunit (le_real_execution_observable x s).
 proof.
 exact (LEFsProgrammingMarginalHelpers.d_le_pre_fs_programming_view_dunit x s).
-qed.
-
-lemma d_le_pre_fs_semantic_programming_view_fixed_branch_imageE
-  (x : qssm_public_input) (s : seed) :
-  d_le_pre_fs_semantic_programming_view x s =
-    dmap LERejectionSampler.d_le_rejection_shadow_semantic_branch_choice
-      (fun reject =>
-        LERejectionSampler.le_rejection_shadow_semantic_branch_image_of_observable
-          x s (le_real_execution_observable x s) reject).
-proof.
-exact (LEFsProgrammingMarginalHelpers.d_le_pre_fs_semantic_programming_view_fixed_branch_imageE x s).
-qed.
-
-lemma d_le_pre_fs_semantic_programming_view_lossless
-  (x : qssm_public_input) (s : seed) :
-  is_lossless (d_le_pre_fs_semantic_programming_view x s).
-proof.
-exact (LEFsProgrammingMarginalHelpers.d_le_pre_fs_semantic_programming_view_lossless x s).
-qed.
-
-lemma d_le_fs_shadow_coupled_state_pairE :
-  forall (x : qssm_public_input) (s : seed),
-    d_le_fs_shadow_coupled_state x s =
-      dmap ((d_le_pre_fs_programming_view x s) `*` d_le_fs_shadow_branch_choice)
-        (fun (p : le_transcript_observable * bool) =>
-          le_fs_shadow_state_of_branch_observable (fst p) (snd p)).
-proof.
-exact LEFsProgrammingMarginalHelpers.d_le_fs_shadow_coupled_state_pairE.
-qed.
-
-lemma d_le_fs_shadow_semantic_coupled_state_pairE :
-  forall (x : qssm_public_input) (s : seed),
-    d_le_fs_shadow_semantic_coupled_state x s =
-      dmap ((d_le_pre_fs_semantic_programming_view x s) `*` d_le_fs_shadow_branch_choice)
-        (fun (p : le_transcript_observable * bool) =>
-          le_fs_shadow_state_of_branch_observable (fst p) (snd p)).
-proof.
-exact LEFsProgrammingMarginalHelpers.d_le_fs_shadow_semantic_coupled_state_pairE.
-qed.
-
-lemma le_fs_shadow_semantic_bad_event_branch_stateE
-  (obs : le_transcript_observable) (bad : bool) :
-  LEFsProgrammingShadowBranch.le_fs_shadow_semantic_bad_event
-    (le_fs_shadow_state_of_branch_observable obs bad) = bad.
-proof.
-exact (LEFsProgrammingMarginalStateFacts.le_fs_shadow_semantic_bad_event_branch_stateE obs bad).
-qed.
-
-lemma le_fs_shadow_bad_event_branch_stateE
-  (obs : le_transcript_observable) (bad : bool) :
-  LEFsProgrammingShadowBranch.le_fs_shadow_bad_event
-    (le_fs_shadow_state_of_branch_observable obs bad) = false.
-proof.
-exact (LEFsProgrammingMarginalStateFacts.le_fs_shadow_bad_event_branch_stateE obs bad).
-qed.
-
-lemma le_fs_shadow_semantic_post_of_observable_good_branch_supportE
-  (x : qssm_public_input) (s : seed) (obs : le_transcript_observable) :
-  obs \in d_le_pre_fs_semantic_programming_view x s =>
-  (le_fs_shadow_state_of_branch_observable obs false).`lefss_semantic_post_observable =
-  le_fs_surrogate_transform obs.
-proof.
-exact (LEFsProgrammingMarginalStateFacts.le_fs_shadow_semantic_post_of_observable_good_branch_supportE x s obs).
 qed.
 
 lemma d_le_fs_shadow_pre_marginal_matches_post_rejection_view :
@@ -760,13 +689,6 @@ lemma d_le_fs_shadow_post_marginal_matches_programmed_view :
     d_le_fs_shadow_post_marginal x s = d_le_post_fs_programmed_view x s.
 proof.
 exact LEFsProgrammingPostMarginal.d_le_fs_shadow_post_marginal_matches_programmed_view.
-qed.
-
-lemma d_le_fs_shadow_pre_post_marginals_equal :
-  forall (x : qssm_public_input) (s : seed),
-    d_le_fs_shadow_pre_marginal x s = d_le_fs_shadow_post_marginal x s.
-proof.
-exact LEFsProgrammingPostMarginal.d_le_fs_shadow_pre_post_marginals_equal.
 qed.
 
 lemma le_fs_surrogate_transform_id
