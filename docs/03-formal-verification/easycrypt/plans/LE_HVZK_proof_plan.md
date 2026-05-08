@@ -686,7 +686,17 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     behind unchanged theorem names and theorem-facing bounds. The visible-flags
     and local-visible variants remain staged refinements only, the exact-zero
     route stays separate, and the semantic top remains `3%r / 4%r`.
-    law.
+    A subsequent direct probe of that canonical-terminal replacement surface was
+    attempted in `ms/MSProbabilitySurface.ec` and rolled back: the proof reduced
+    to the terminal obligation `mu (d_ms_rom_semantic_coupled_state xms)
+    (ms_rom_public_observable_divergence_condition xms) <= 0%r`. The current
+    bridge only proves the charged divergence-mass bound
+    `ms_rom_public_observable_divergence_mass_le_execution_owned_semantic_failure`,
+    so there is no zero-cost `public AfterRom -> canonical AfterRom` landing on
+    the present lower carrier. This means the public-endpoint route must remain
+    staged-only for now. Any future live replacement needs either a stronger
+    terminal fusion law proving zero public divergence on that carrier or an
+    approved theorem-facing change that permits a charged terminal term.
   - Design refinement, May 2026: `A_LE_rejection_sampler_sdist_bound` remains a
     proved lemma in `le/LERejection.ec`, but it is no longer a repackaging of a
     surrogate-side axiom. It now rests on the concrete identity rejection
