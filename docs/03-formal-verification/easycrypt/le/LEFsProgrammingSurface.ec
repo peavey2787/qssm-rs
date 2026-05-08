@@ -434,57 +434,20 @@ type le_fs_shadow_hidden_material = LEFsProgrammingShadowBranch.le_fs_shadow_hid
 
 type le_fs_shadow_state = LEFsProgrammingShadowBranch.le_fs_shadow_state.
 
-op le_fs_shadow_branch_support : bool list =
-  BudgetParameters.le_fs_semantic_branch_support.
-
 (* The FS layer consumes the primitive category law through its derived
    boolean bad-branch view so the theorem-facing branch/programming bridge can
    stay stable while the primitive category masses evolve. *)
 op d_le_fs_shadow_branch_choice : bool distr =
   BudgetParameters.d_le_fs_semantic_branch_choice.
 
-op d_le_fs_shadow_category_choice :
-  BudgetParameters.le_fs_semantic_branch_category distr =
-  BudgetParameters.d_le_fs_semantic_branch_category_choice.
-
-lemma d_le_fs_shadow_branch_choice_category_projectionE :
-  d_le_fs_shadow_branch_choice =
-  dmap d_le_fs_shadow_category_choice
-    BudgetParameters.le_fs_semantic_branch_category_is_failure.
-proof.
-rewrite /d_le_fs_shadow_branch_choice /d_le_fs_shadow_category_choice.
-by rewrite /BudgetParameters.d_le_fs_semantic_branch_choice.
-qed.
-
 op le_fs_shadow_local_bad_branch_mass : real =
   mu d_le_fs_shadow_branch_choice (fun (bad : bool) => bad).
-
-lemma le_fs_shadow_branch_support_uniq :
-  uniq le_fs_shadow_branch_support.
-proof.
-rewrite /le_fs_shadow_branch_support.
-exact BudgetParameters.le_fs_semantic_branch_support_uniq.
-qed.
 
 lemma le_fs_shadow_branch_choice_lossless :
   is_lossless d_le_fs_shadow_branch_choice.
 proof.
 rewrite /d_le_fs_shadow_branch_choice.
 exact BudgetParameters.le_fs_semantic_branch_choice_lossless.
-qed.
-
-lemma le_fs_shadow_good_branch_has_support :
-  false \in d_le_fs_shadow_branch_choice.
-proof.
-rewrite /d_le_fs_shadow_branch_choice.
-exact BudgetParameters.le_fs_semantic_good_branch_has_support.
-qed.
-
-lemma le_fs_shadow_bad_branch_has_support :
-  true \in d_le_fs_shadow_branch_choice.
-proof.
-rewrite /d_le_fs_shadow_branch_choice.
-exact BudgetParameters.le_fs_semantic_bad_branch_has_support.
 qed.
 
 lemma le_fs_shadow_local_bad_branch_mass_le_epsilon_le_fs_semantic :
