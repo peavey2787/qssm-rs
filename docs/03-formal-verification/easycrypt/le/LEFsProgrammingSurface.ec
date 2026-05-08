@@ -614,85 +614,6 @@ op le_fs_shadow_state_of_category_observable
   le_fs_shadow_state_of_branch_observable obs
     (BudgetParameters.le_fs_semantic_branch_category_is_failure category).
 
-op le_fs_shadow_pre_observable
-  (st : le_fs_shadow_state) : le_transcript_observable =
-  st.`lefss_pre_observable.
-
-op le_fs_shadow_post_observable
-  (st : le_fs_shadow_state) : le_transcript_observable =
-  st.`lefss_post_observable.
-
-op le_fs_shadow_semantic_post_state_observable
-  (st : le_fs_shadow_state) : le_transcript_observable =
-  st.`lefss_semantic_post_observable.
-
-op le_fs_shadow_bad_event
-  (st : le_fs_shadow_state) : bool =
-  (le_fs_query_material_obs st.`lefss_pre_observable).`leqm_bad_flag /\
-  ! (le_fs_query_material_obs st.`lefss_post_observable).`leqm_bad_flag.
-
-op le_fs_shadow_semantic_bad_event
-  (st : le_fs_shadow_state) : bool =
-  st.`lefss_hidden_material.`lefshm_pre_query_material.`leqm_bad_flag /\
-  ! (le_fs_query_material_obs st.`lefss_semantic_post_observable).`leqm_bad_flag.
-
-op le_fs_shadow_branch_condition
-  (st : le_fs_shadow_state) : bool =
-  st.`lefss_hidden_material.`lefshm_bad_flag =
-  le_fs_shadow_semantic_bad_event st.
-
-op le_fs_shadow_clean_condition
-  (st : le_fs_shadow_state) : bool =
-  ! le_fs_shadow_semantic_bad_event st /\
-  st.`lefss_semantic_post_observable =
-    le_fs_surrogate_transform st.`lefss_pre_observable.
-
-op le_fs_shadow_query_collision_condition
-  (st : le_fs_shadow_state) : bool =
-  le_fs_shadow_semantic_bad_event st /\
-  LEFsProgrammingCoreDefs.lefsqr_challenge_seed
-      st.`lefss_hidden_material.`lefshm_query_row =
-    st.`lefss_hidden_material.`lefshm_semantic_post_query_material.`leqm_row_challenge_seed /\
-  LEFsProgrammingCoreDefs.lefsqr_programmed_query_digest
-      st.`lefss_hidden_material.`lefshm_query_row =
-    st.`lefss_hidden_material.`lefshm_semantic_post_query_material.`leqm_row_programmed_query_digest.
-
-op le_fs_shadow_programming_collision_condition
-  (st : le_fs_shadow_state) : bool =
-  le_fs_shadow_semantic_bad_event st /\
-  st.`lefss_hidden_material.`lefshm_semantic_post_query_material.`leqm_programmed_response_digest =
-    LEFsProgrammingCoreDefs.lefsqr_programmed_query_digest
-      st.`lefss_hidden_material.`lefshm_query_row /\
-  st.`lefss_hidden_material.`lefshm_semantic_post_query_material.`leqm_programming_log =
-    [ LEFsProgrammingCoreDefs.lefsqr_challenge_seed
-        st.`lefss_hidden_material.`lefshm_query_row;
-      LEFsProgrammingCoreDefs.lefsqr_programmed_query_digest
-        st.`lefss_hidden_material.`lefshm_query_row ].
-
-op le_fs_shadow_transcript_mismatch_condition
-  (st : le_fs_shadow_state) : bool =
-  le_fs_shadow_semantic_bad_event st /\
-  le_challenge_seed_obs st.`lefss_semantic_post_observable =
-    le_challenge_seed_obs st.`lefss_post_observable /\
-  le_programmed_query_digest_obs st.`lefss_semantic_post_observable =
-    le_programmed_query_digest_obs st.`lefss_post_observable /\
-  ! (le_fs_query_material_obs st.`lefss_semantic_post_observable).`leqm_bad_flag.
-
-op le_fs_shadow_semantic_category_condition
-  (category : BudgetParameters.le_fs_semantic_branch_category)
-  (st : le_fs_shadow_state) : bool =
-  if pred1 BudgetParameters.LEFSSemanticBranchClean category then
-    le_fs_shadow_clean_condition st
-  else if pred1 BudgetParameters.LEFSSemanticBranchQueryCollision category then
-    le_fs_shadow_query_collision_condition st
-  else if pred1 BudgetParameters.LEFSSemanticBranchProgrammingCollision category then
-    le_fs_shadow_programming_collision_condition st
-  else le_fs_shadow_transcript_mismatch_condition st.
-
-pred le_fs_shadow_good_event
-  (x : qssm_public_input) (s : seed) (obs : le_transcript_observable) =
-  ! (le_fs_query_material_obs obs).`leqm_bad_flag.
-
 op d_le_fs_shadow_coupled_state
   (x : qssm_public_input) (s : seed) : le_fs_shadow_state distr =
   LEFsProgrammingCoupledState.d_le_fs_shadow_coupled_state x s.
@@ -804,14 +725,16 @@ qed.
 
 lemma le_fs_shadow_semantic_bad_event_branch_stateE
   (obs : le_transcript_observable) (bad : bool) :
-  le_fs_shadow_semantic_bad_event (le_fs_shadow_state_of_branch_observable obs bad) = bad.
+  LEFsProgrammingShadowBranch.le_fs_shadow_semantic_bad_event
+    (le_fs_shadow_state_of_branch_observable obs bad) = bad.
 proof.
 exact (LEFsProgrammingMarginalStateFacts.le_fs_shadow_semantic_bad_event_branch_stateE obs bad).
 qed.
 
 lemma le_fs_shadow_bad_event_branch_stateE
   (obs : le_transcript_observable) (bad : bool) :
-  le_fs_shadow_bad_event (le_fs_shadow_state_of_branch_observable obs bad) = false.
+  LEFsProgrammingShadowBranch.le_fs_shadow_bad_event
+    (le_fs_shadow_state_of_branch_observable obs bad) = false.
 proof.
 exact (LEFsProgrammingMarginalStateFacts.le_fs_shadow_bad_event_branch_stateE obs bad).
 qed.
