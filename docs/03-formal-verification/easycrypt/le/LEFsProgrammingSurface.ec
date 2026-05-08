@@ -1811,6 +1811,54 @@ exists bad.
 by [].
 qed.
 
+lemma le_fs_shadow_semantic_bad_branch_image_support
+  (x : qssm_public_input) (s : seed) (obs : le_transcript_observable) :
+  obs \in d_le_pre_fs_semantic_programming_view x s =>
+  le_fs_shadow_semantic_programmed_view_of_observable obs
+    \in d_le_fs_shadow_semantic_bad_branch_image x s.
+proof.
+move=> Hobs.
+rewrite (d_le_fs_shadow_semantic_bad_branch_image_pairE x s).
+rewrite supp_dmap.
+exists (obs, true); split.
+  by rewrite supp_dprod Hobs supp_dunit.
+by rewrite /le_fs_shadow_semantic_branch_image_of_observable.
+qed.
+
+lemma d_le_fs_shadow_semantic_bad_branch_image_supportE
+  (x : qssm_public_input) (s : seed) (post_obs : le_transcript_observable) :
+  post_obs \in d_le_fs_shadow_semantic_bad_branch_image x s =>
+  exists (pre_obs : le_transcript_observable),
+    pre_obs \in d_le_pre_fs_semantic_programming_view x s /\
+    post_obs = le_fs_shadow_semantic_programmed_view_of_observable pre_obs.
+proof.
+move=> Hpost.
+rewrite (d_le_fs_shadow_semantic_bad_branch_image_pairE x s) in Hpost.
+case/supp_dmap: Hpost=> -[pre_obs bad] [Hp ->].
+move: Hp; rewrite supp_dprod supp_dunit => -[Hpre ->].
+exists pre_obs; split.
+  exact Hpre.
+by rewrite /le_fs_shadow_semantic_branch_image_of_observable.
+qed.
+
+lemma d_le_fs_shadow_semantic_bad_branch_image_support_sub_postE
+  (x : qssm_public_input) (s : seed) (post_obs : le_transcript_observable) :
+  post_obs \in d_le_fs_shadow_semantic_bad_branch_image x s =>
+  post_obs \in d_le_fs_shadow_semantic_post_marginal x s.
+proof.
+move=> Hpost.
+have [pre_obs [Hpre Himage]] :=
+  d_le_fs_shadow_semantic_bad_branch_image_supportE x s post_obs Hpost.
+have Hbad :
+    (le_fs_shadow_state_of_branch_observable pre_obs true).`lefss_semantic_post_observable
+      \in d_le_fs_shadow_semantic_post_marginal x s.
+  exact (le_fs_shadow_semantic_post_marginal_support x s pre_obs true Hpre
+    le_fs_shadow_bad_branch_has_support).
+rewrite (le_fs_shadow_semantic_post_bad_branch_matches_semantic_programmed_view pre_obs) in Hbad.
+rewrite Himage.
+exact Hbad.
+qed.
+
 lemma d_le_fs_shadow_bad_event_image_zero :
   forall (x : qssm_public_input) (s : seed),
     dmap (d_le_fs_shadow_coupled_state x s) le_fs_shadow_bad_event = dunit false.
