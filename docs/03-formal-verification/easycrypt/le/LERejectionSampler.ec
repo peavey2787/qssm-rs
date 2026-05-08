@@ -8,6 +8,7 @@ require import LESurface.
 require import LERealExecution.
 require import LERejectionSamplerCore.
 require import LERejectionSamplerExact.
+require import LERejectionSamplerSemanticMarginals.
 require import LERejectionSamplerMass.
 require BudgetParameters.
 
@@ -242,7 +243,7 @@ lemma le_rejection_shadow_semantic_post_branch_imageE
   (le_rejection_shadow_semantic_state_of_branch_execution x s obs reject).`lers_post_observable =
   le_rejection_shadow_semantic_branch_image_of_observable x s obs reject.
 proof.
-exact (LERejectionSamplerMass.le_rejection_shadow_semantic_post_branch_imageE x s obs reject).
+exact (LERejectionSamplerSemanticMarginals.le_rejection_shadow_semantic_post_branch_imageE x s obs reject).
 qed.
 
 lemma le_rejection_shadow_semantic_reject_event_branch_stateE
@@ -251,7 +252,7 @@ lemma le_rejection_shadow_semantic_reject_event_branch_stateE
   le_rejection_shadow_reject_event
     (le_rejection_shadow_semantic_state_of_branch_execution x s obs reject) = reject.
 proof.
-exact (LERejectionSamplerMass.le_rejection_shadow_semantic_reject_event_branch_stateE x s obs reject).
+exact (LERejectionSamplerSemanticMarginals.le_rejection_shadow_semantic_reject_event_branch_stateE x s obs reject).
 qed.
 
 lemma le_rejection_shadow_semantic_reject_event_of_categoryE
@@ -357,7 +358,7 @@ lemma d_le_rejection_shadow_semantic_coupled_state_pairE :
         (fun (p : le_transcript_observable * bool) =>
           le_rejection_shadow_semantic_state_of_branch_execution x s (fst p) (snd p)).
 proof.
-exact LERejectionSamplerMass.d_le_rejection_shadow_semantic_coupled_state_pairE.
+exact LERejectionSamplerSemanticMarginals.d_le_rejection_shadow_semantic_coupled_state_pairE.
 qed.
 
 lemma le_rejection_shadow_semantic_branch_state_has_support
@@ -405,7 +406,7 @@ lemma d_le_rejection_shadow_semantic_pre_marginal_matches_execution_view :
     d_le_rejection_shadow_semantic_pre_marginal x s =
     d_le_rejection_real_execution_view x s.
 proof.
-exact LERejectionSamplerMass.d_le_rejection_shadow_semantic_pre_marginal_matches_execution_view.
+exact LERejectionSamplerSemanticMarginals.d_le_rejection_shadow_semantic_pre_marginal_matches_execution_view.
 qed.
 
 lemma d_le_rejection_shadow_semantic_pre_marginal_matches_real_view :
@@ -426,7 +427,7 @@ lemma d_le_rejection_shadow_semantic_post_marginal_pairE :
         (fun (p : le_transcript_observable * bool) =>
           (le_rejection_shadow_semantic_state_of_branch_execution x s (fst p) (snd p)).`lers_post_observable).
 proof.
-exact LERejectionSamplerMass.d_le_rejection_shadow_semantic_post_marginal_pairE.
+exact LERejectionSamplerSemanticMarginals.d_le_rejection_shadow_semantic_post_marginal_pairE.
 qed.
 
 lemma d_le_rejection_shadow_semantic_post_marginal_branch_split_pairE :
@@ -437,7 +438,7 @@ lemma d_le_rejection_shadow_semantic_post_marginal_branch_split_pairE :
         (fun (p : le_transcript_observable * bool) =>
           le_rejection_shadow_semantic_branch_image_of_observable x s (fst p) (snd p)).
 proof.
-exact LERejectionSamplerMass.d_le_rejection_shadow_semantic_post_marginal_branch_split_pairE.
+exact LERejectionSamplerSemanticMarginals.d_le_rejection_shadow_semantic_post_marginal_branch_split_pairE.
 qed.
 
 lemma d_le_rejection_shadow_semantic_pre_marginal_fixed_branch_imageE :
@@ -448,7 +449,7 @@ lemma d_le_rejection_shadow_semantic_pre_marginal_fixed_branch_imageE :
           le_rejection_shadow_semantic_branch_image_of_observable x s
             (le_real_execution_observable x s) reject).
 proof.
-exact LERejectionSamplerMass.d_le_rejection_shadow_semantic_pre_marginal_fixed_branch_imageE.
+exact LERejectionSamplerSemanticMarginals.d_le_rejection_shadow_semantic_pre_marginal_fixed_branch_imageE.
 qed.
 
 lemma d_le_rejection_shadow_semantic_post_marginal_fixed_branch_imageE :
@@ -459,7 +460,7 @@ lemma d_le_rejection_shadow_semantic_post_marginal_fixed_branch_imageE :
           le_rejection_shadow_semantic_branch_image_of_observable x s
             (le_real_execution_observable x s) reject).
 proof.
-exact LERejectionSamplerMass.d_le_rejection_shadow_semantic_post_marginal_fixed_branch_imageE.
+exact LERejectionSamplerSemanticMarginals.d_le_rejection_shadow_semantic_post_marginal_fixed_branch_imageE.
 qed.
 
 lemma le_rejection_shadow_semantic_branch_choice_sdist_dunit_false_le_reject_branch_mass :
@@ -475,7 +476,7 @@ lemma d_le_rejection_shadow_semantic_reject_event_image_branch_choice :
       le_rejection_shadow_reject_event =
       d_le_rejection_shadow_semantic_branch_choice.
 proof.
-exact LERejectionSamplerMass.d_le_rejection_shadow_semantic_reject_event_image_branch_choice.
+exact LERejectionSamplerSemanticMarginals.d_le_rejection_shadow_semantic_reject_event_image_branch_choice.
 qed.
 
 lemma le_rejection_shadow_semantic_failure_probability_exact_branch_mass :
