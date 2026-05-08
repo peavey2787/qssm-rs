@@ -7,6 +7,8 @@ Navigation: [EasyCrypt README](../README.md)
 Refine the LE Set-B HVZK boundary into narrower, named obligations while keeping
 `epsilon_le` as the final budget for the `G1 -> G2` hop.
 
+Cross-tree checkpoint, May 2026: the MS2 visible/silent decomposition below routing is now complete in `ms/comparison/ComparisonPayloadSemanticBridge.ec`. Execution-owned MS2 semantic failure is split into visible and silent parts, the common execution-owned equalities are normalized through canonical helper names, and the normalized wrapper / round-trip layer remains bridge-local only. No theorem-facing budgets, routed theorem names, `ms/MSProbabilitySurface.ec`, `games/*`, or `theorem/MainTheorem.ec` changed in that checkpoint; the semantic top remains `3%r / 4%r`, the exact-zero route remains unchanged, and the immediate next step is roadmap triage rather than more MS2 normalized-wrapper micro-helpers.
+
 ## Current Layering
 
 The LE theory is split across `le/LESurface.ec`, `le/LESetB.ec`, `le/LERejection.ec`,
