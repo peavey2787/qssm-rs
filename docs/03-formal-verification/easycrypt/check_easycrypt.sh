@@ -91,6 +91,7 @@ FILES=(
   le/LERejectionSamplerSemanticFacts.ec
   le/LERejectionSampler.ec
   le/LEFsProgrammingCoreDefs.ec
+  le/LEFsProgrammingHiddenState.ec
   le/LEFsProgrammingShadowBranch.ec
   le/LEFsProgrammingCoupledState.ec
   le/LEFsProgrammingMarginalHelpers.ec
