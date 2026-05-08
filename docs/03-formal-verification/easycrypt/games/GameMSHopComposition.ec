@@ -3,6 +3,7 @@ require import StdOrder.
 (*---*) import RealOrder.
 require import QssmTypes Algebra Simulator FS TrueClause Comparison ComparisonTypes ComparisonDigests ComparisonPayload ComparisonCoupling ComparisonCouplingTypes ComparisonCouplingAxioms ComparisonCouplingTheorem ComparisonTheorem.
 require import SourceDistributions SourceTheorem MS LESurface LEModel.
+require import SourceHashBindingSemanticBridge ComparisonPayloadSemanticBridge.
 require import GameTypes GameViews GameAdvantage GameMSHopTypes GameMSHopTransitions.
 
 (* G0→G1 MS hop: composed bound from MS1..MS3c segment obligations + telescope. *)
@@ -155,4 +156,67 @@ proof.
 move=> x xms s D Hh Hr H3a H3b H3c.
 exact (A_G0_to_G1_ms_hash_binding_semantic_transition_bound x xms s D
   Hh Hr H3a H3b H3c).
+qed.
+
+(* Staged public-endpoint composition aliases: these stay parallel to the
+   canonical route and simply re-expose the staged wrapper tier without any
+   G0->G1 routing. *)
+lemma A_MS_public_endpoint_staged_semantic_composition_bound :
+  forall (x : qssm_public_input) (xms : ms_public_input) (s : seed) (D : distinguisher),
+    Adv_ms_public_endpoint x s xms D <=
+      MS.epsilon_ms_hash_binding_semantic + epsilon_ms_rom_programmability_semantic.
+proof.
+move=> x xms s D.
+exact (A_MS_public_endpoint_staged_semantic_transition_bound x s xms D).
+qed.
+
+lemma A_MS_public_endpoint_staged_visible_flags_composition_bound :
+  forall (x : qssm_public_input) (xms : ms_public_input) (s : seed) (D : distinguisher),
+    Adv_ms_public_endpoint x s xms D <=
+      MS.epsilon_ms_hash_binding_semantic +
+      ((if ms_rom_public_divergence_global_digest_flag xms then
+          (BudgetParameters.ms_rom_query_collision_slot_count +
+           BudgetParameters.ms_rom_programming_collision_slot_count)%r
+        else 0%r) +
+       (if ms_rom_public_divergence_query_digest_flag xms then
+          BudgetParameters.ms_rom_transcript_mismatch_slot_count%r
+        else 0%r)) /
+      BudgetParameters.ms_rom_total_slot_count%r.
+proof.
+move=> x xms s D.
+exact (A_MS_public_endpoint_staged_visible_flags_transition_bound x s xms D).
+qed.
+
+lemma A_MS_public_endpoint_staged_local_visible_flags_composition_bound :
+  forall (x : qssm_public_input) (xms : ms_public_input) (s : seed) (D : distinguisher),
+    Adv_ms_public_endpoint x s xms D <=
+      ms_hash_binding_local_public_divergence_upper_mass +
+      ((if ms_rom_public_divergence_global_digest_flag xms then
+          (BudgetParameters.ms_rom_query_collision_slot_count +
+           BudgetParameters.ms_rom_programming_collision_slot_count)%r
+        else 0%r) +
+       (if ms_rom_public_divergence_query_digest_flag xms then
+          BudgetParameters.ms_rom_transcript_mismatch_slot_count%r
+        else 0%r)) /
+      BudgetParameters.ms_rom_total_slot_count%r.
+proof.
+move=> x xms s D.
+exact (A_MS_public_endpoint_staged_local_visible_flags_transition_bound x s xms D).
+qed.
+
+lemma A_MS_public_endpoint_staged_local_visible_flags_closed_form_composition_bound :
+  forall (x : qssm_public_input) (xms : ms_public_input) (s : seed) (D : distinguisher),
+    Adv_ms_public_endpoint x s xms D <=
+      1%r / 8%r +
+      ((if ms_rom_public_divergence_global_digest_flag xms then
+          (BudgetParameters.ms_rom_query_collision_slot_count +
+           BudgetParameters.ms_rom_programming_collision_slot_count)%r
+        else 0%r) +
+       (if ms_rom_public_divergence_query_digest_flag xms then
+          BudgetParameters.ms_rom_transcript_mismatch_slot_count%r
+        else 0%r)) /
+      BudgetParameters.ms_rom_total_slot_count%r.
+proof.
+move=> x xms s D.
+exact (A_MS_public_endpoint_staged_local_visible_flags_closed_form_transition_bound x s xms D).
 qed.
