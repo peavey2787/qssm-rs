@@ -94,6 +94,7 @@ FILES=(
   le/LEFsProgrammingMarginalPreFacts.ec
   le/LEFsProgrammingMarginals.ec
   le/LEFsProgrammingSupportImages.ec
+  le/LEFsProgrammingPostMarginal.ec
   le/LEFsProgrammingSurface.ec
   le/LESetB.ec
   le/LERejection.ec
