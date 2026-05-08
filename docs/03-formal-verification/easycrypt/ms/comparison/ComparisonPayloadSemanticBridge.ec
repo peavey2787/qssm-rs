@@ -1664,6 +1664,76 @@ rewrite ms_rom_execution_owned_semantic_failure_probability_eq_local_mass.
 by rewrite (ms_rom_public_observable_divergence_mass_plus_silent_failure_mass_eq_local_failure_mass x).
 qed.
 
+lemma ms_rom_public_visible_silent_fully_silentE
+  (x : ms_public_input) :
+  ms_rom_public_divergence_global_digest_flag x = false =>
+  ms_rom_public_divergence_query_digest_flag x = false =>
+  ms_rom_public_observable_divergence_mass x = 0%r /\
+  ms_rom_public_silent_failure_mass x = ms_rom_local_failure_mass.
+proof.
+move=> Hglobal Hquery; split.
+- rewrite (ms_rom_public_observable_divergence_mass_flagsE x).
+  by rewrite Hglobal Hquery.
+have Hsplit :=
+  ms_rom_public_observable_divergence_mass_plus_silent_failure_mass_eq_local_failure_mass x.
+rewrite (ms_rom_public_observable_divergence_mass_flagsE x) Hglobal Hquery in Hsplit.
+by smt().
+qed.
+
+lemma ms_rom_public_visible_silent_query_visible_onlyE
+  (x : ms_public_input) :
+  ms_rom_public_divergence_global_digest_flag x = false =>
+  ms_rom_public_divergence_query_digest_flag x = true =>
+  ms_rom_public_observable_divergence_mass x =
+    BudgetParameters.ms_rom_transcript_mismatch_slot_count%r /
+    BudgetParameters.ms_rom_total_slot_count%r /\
+  ms_rom_public_silent_failure_mass x =
+    (BudgetParameters.ms_rom_query_collision_slot_count +
+     BudgetParameters.ms_rom_programming_collision_slot_count)%r /
+    BudgetParameters.ms_rom_total_slot_count%r.
+proof.
+move=> Hglobal Hquery; split.
+- rewrite (ms_rom_public_observable_divergence_mass_flagsE x).
+  by rewrite Hglobal Hquery.
+rewrite (ms_rom_public_silent_failure_mass_flagsE x).
+by rewrite Hglobal Hquery.
+qed.
+
+lemma ms_rom_public_visible_silent_global_visible_onlyE
+  (x : ms_public_input) :
+  ms_rom_public_divergence_global_digest_flag x = true =>
+  ms_rom_public_divergence_query_digest_flag x = false =>
+  ms_rom_public_observable_divergence_mass x =
+    (BudgetParameters.ms_rom_query_collision_slot_count +
+     BudgetParameters.ms_rom_programming_collision_slot_count)%r /
+    BudgetParameters.ms_rom_total_slot_count%r /\
+  ms_rom_public_silent_failure_mass x =
+    BudgetParameters.ms_rom_transcript_mismatch_slot_count%r /
+    BudgetParameters.ms_rom_total_slot_count%r.
+proof.
+move=> Hglobal Hquery; split.
+- rewrite (ms_rom_public_observable_divergence_mass_flagsE x).
+  by rewrite Hglobal Hquery.
+rewrite (ms_rom_public_silent_failure_mass_flagsE x).
+by rewrite Hglobal Hquery.
+qed.
+
+lemma ms_rom_public_visible_silent_fully_visibleE
+  (x : ms_public_input) :
+  ms_rom_public_divergence_global_digest_flag x = true =>
+  ms_rom_public_divergence_query_digest_flag x = true =>
+  ms_rom_public_observable_divergence_mass x = ms_rom_local_failure_mass /\
+  ms_rom_public_silent_failure_mass x = 0%r.
+proof.
+move=> Hglobal Hquery; split.
+- have Hsplit :=
+    ms_rom_public_observable_divergence_mass_plus_silent_failure_mass_eq_local_failure_mass x.
+  rewrite (ms_rom_public_silent_failure_mass_flagsE x) Hglobal Hquery in Hsplit.
+  by smt().
+rewrite (ms_rom_public_silent_failure_mass_flagsE x).
+by rewrite Hglobal Hquery.
+qed.
+
 lemma ms_rom_public_observable_divergence_mass_le_execution_owned_semantic_failure
   (x : ms_public_input) :
   ms_rom_public_observable_divergence_mass x <=
