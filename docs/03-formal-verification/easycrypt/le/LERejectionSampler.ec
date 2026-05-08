@@ -6,140 +6,109 @@ require import SDist.
 require import StdOrder.
 require import LESurface.
 require import LERealExecution.
+require import LERejectionSamplerCore.
 require BudgetParameters.
 
 (*---*) import RealOrder.
 
 (* Lower execution-facing rejection sampler boundary below `LERejection.ec`.
-   This file introduces the sampler surface needed to eventually discharge the
-   rejection-side sdist theorem without adding a new quantitative axiom. *)
+   The facade below preserves the downstream LERejectionSampler.* names while
+   the core shadow-state and constructor lane lives in LERejectionSamplerCore. *)
 
-type le_rejection_shadow_hidden_material = {
-  lershm_challenge_seed_material : le_real_execution_challenge_seed_material;
-  lershm_resampled_observable : le_transcript_observable;
-}.
+type le_rejection_shadow_hidden_material =
+  LERejectionSamplerCore.le_rejection_shadow_hidden_material.
 
-type le_rejection_shadow_state = {
-  lers_pre_observable : le_transcript_observable;
-  lers_post_observable : le_transcript_observable;
-  lers_accepts : bool;
-  lers_hidden_material : le_rejection_shadow_hidden_material;
-}.
+type le_rejection_shadow_state =
+  LERejectionSamplerCore.le_rejection_shadow_state.
 
 op d_le_rejection_real_execution_view
   (x : qssm_public_input) (s : seed) : le_transcript_observable distr =
-  d_le_real_view x s.
+  LERejectionSamplerCore.d_le_rejection_real_execution_view x s.
 
 op le_rejection_transform
   (obs : le_transcript_observable) : le_transcript_observable =
-  le_post_rejection_surrogate obs.
+  LERejectionSamplerCore.le_rejection_transform obs.
 
-(* Shadow coupled rejection lane.
-
-   This lane is intentionally separate from the active theorem path. It adds
-   the lower state shape needed for a future non-identity rejection sampler,
-   while the current checked model still closes the rejection step by exact
-   equality. The acceptance bit is now derived from concrete lower execution
-   material (`lerecsm_branch` in `LERealExecution.ec`), and the hidden material
-   explicitly carries both that challenge-seed material and the resampled
-   observable. Later refinements can replace the current branch-fixed carrier
-   with a genuine rejection-side sampler without rewiring the theorem-facing
-   names first. *)
 op le_rejection_shadow_hidden_material_of_execution
   (x : qssm_public_input) (s : seed) (obs : le_transcript_observable) :
   le_rejection_shadow_hidden_material =
-  {| lershm_challenge_seed_material =
-       le_real_execution_challenge_seed_material_of x s;
-     lershm_resampled_observable = le_rejection_transform obs |}.
+  LERejectionSamplerCore.le_rejection_shadow_hidden_material_of_execution x s obs.
 
 op le_rejection_shadow_accepts_from_hidden_material
   (hm : le_rejection_shadow_hidden_material) : bool =
-  if hm.`lershm_challenge_seed_material.`lerecsm_branch then false else true.
+  LERejectionSamplerCore.le_rejection_shadow_accepts_from_hidden_material hm.
 
 op le_rejection_shadow_post_of_execution
   (obs : le_transcript_observable) (hm : le_rejection_shadow_hidden_material) :
   le_transcript_observable =
-  if le_rejection_shadow_accepts_from_hidden_material hm
-  then obs
-  else hm.`lershm_resampled_observable.
+  LERejectionSamplerCore.le_rejection_shadow_post_of_execution obs hm.
 
 op le_rejection_shadow_state_of_execution
   (x : qssm_public_input) (s : seed) (obs : le_transcript_observable) :
   le_rejection_shadow_state =
-  let hm = le_rejection_shadow_hidden_material_of_execution x s obs in
-  {| lers_pre_observable = obs;
-     lers_post_observable = le_rejection_shadow_post_of_execution obs hm;
-     lers_accepts = le_rejection_shadow_accepts_from_hidden_material hm;
-     lers_hidden_material = hm |}.
+  LERejectionSamplerCore.le_rejection_shadow_state_of_execution x s obs.
 
 op le_rejection_shadow_pre_observable
   (st : le_rejection_shadow_state) : le_transcript_observable =
-  st.`lers_pre_observable.
+  LERejectionSamplerCore.le_rejection_shadow_pre_observable st.
 
 op le_rejection_shadow_post_observable
   (st : le_rejection_shadow_state) : le_transcript_observable =
-  st.`lers_post_observable.
+  LERejectionSamplerCore.le_rejection_shadow_post_observable st.
 
 op le_rejection_shadow_accept_event
   (st : le_rejection_shadow_state) : bool =
-  st.`lers_accepts.
+  LERejectionSamplerCore.le_rejection_shadow_accept_event st.
 
 op le_rejection_shadow_reject_event
   (st : le_rejection_shadow_state) : bool =
-  if st.`lers_accepts then false else true.
+  LERejectionSamplerCore.le_rejection_shadow_reject_event st.
 
 op d_le_rejection_shadow_coupled_state
   (x : qssm_public_input) (s : seed) : le_rejection_shadow_state distr =
-  dmap (d_le_rejection_real_execution_view x s)
-    (le_rejection_shadow_state_of_execution x s).
+  LERejectionSamplerCore.d_le_rejection_shadow_coupled_state x s.
 
 op d_le_rejection_shadow_pre_marginal
   (x : qssm_public_input) (s : seed) : le_transcript_observable distr =
-  dmap (d_le_rejection_shadow_coupled_state x s)
-    le_rejection_shadow_pre_observable.
+  LERejectionSamplerCore.d_le_rejection_shadow_pre_marginal x s.
 
 op d_le_rejection_shadow_post_marginal
   (x : qssm_public_input) (s : seed) : le_transcript_observable distr =
-  dmap (d_le_rejection_shadow_coupled_state x s)
-    le_rejection_shadow_post_observable.
+  LERejectionSamplerCore.d_le_rejection_shadow_post_marginal x s.
 
 op le_rejection_shadow_failure_probability
   (x : qssm_public_input) (s : seed) =
-  mu (d_le_rejection_shadow_coupled_state x s)
-    le_rejection_shadow_reject_event.
+  LERejectionSamplerCore.le_rejection_shadow_failure_probability x s.
 
 op d_le_rejection_post_execution_view
   (x : qssm_public_input) (s : seed) : le_transcript_observable distr =
-  dmap (d_le_rejection_real_execution_view x s) le_rejection_transform.
+  LERejectionSamplerCore.d_le_rejection_post_execution_view x s.
 
 op le_rejection_shadow_semantic_branch_support : bool list =
-  LERealExecution.le_real_execution_semantic_rejection_branch_support.
+  LERejectionSamplerCore.le_rejection_shadow_semantic_branch_support.
 
 op d_le_rejection_shadow_semantic_branch_choice : bool distr =
-  LERealExecution.d_le_real_execution_semantic_rejection_branch_choice.
+  LERejectionSamplerCore.d_le_rejection_shadow_semantic_branch_choice.
 
 op le_rejection_shadow_semantic_local_reject_branch_mass : real =
-  mu d_le_rejection_shadow_semantic_branch_choice (fun (reject : bool) => reject).
+  LERejectionSamplerCore.le_rejection_shadow_semantic_local_reject_branch_mass.
 
 lemma le_rejection_shadow_semantic_branch_choice_lossless :
   is_lossless d_le_rejection_shadow_semantic_branch_choice.
 proof.
-rewrite /d_le_rejection_shadow_semantic_branch_choice.
-exact LERealExecution.le_real_execution_semantic_rejection_branch_choice_lossless.
+exact LERejectionSamplerCore.le_rejection_shadow_semantic_branch_choice_lossless.
 qed.
 
 lemma le_rejection_shadow_semantic_accept_branch_has_support :
   false \in d_le_rejection_shadow_semantic_branch_choice.
 proof.
-rewrite /d_le_rejection_shadow_semantic_branch_choice.
-exact LERealExecution.le_real_execution_semantic_rejection_accept_branch_has_support.
+exact LERejectionSamplerCore.le_rejection_shadow_semantic_accept_branch_has_support.
 qed.
 
 lemma le_rejection_shadow_semantic_reject_branch_has_support :
   true \in d_le_rejection_shadow_semantic_branch_choice.
 proof.
-rewrite /d_le_rejection_shadow_semantic_branch_choice.
-exact LERealExecution.le_real_execution_semantic_rejection_reject_branch_has_support.
+exact LERejectionSamplerCore.le_rejection_shadow_semantic_reject_branch_has_support.
 qed.
 
 lemma le_rejection_shadow_semantic_branch_choice_mass_false :
@@ -148,8 +117,7 @@ lemma le_rejection_shadow_semantic_branch_choice_mass_false :
    BudgetParameters.le_rejection_semantic_reject_slot_count)%r /
   BudgetParameters.le_rejection_semantic_total_slot_count%r.
 proof.
-rewrite /d_le_rejection_shadow_semantic_branch_choice.
-exact LERealExecution.le_real_execution_semantic_rejection_branch_choice_mass_false.
+exact LERejectionSamplerCore.le_rejection_shadow_semantic_branch_choice_mass_false.
 qed.
 
 lemma le_rejection_shadow_semantic_branch_choice_mass_true :
@@ -157,21 +125,14 @@ lemma le_rejection_shadow_semantic_branch_choice_mass_true :
   BudgetParameters.le_rejection_semantic_reject_slot_count%r /
   BudgetParameters.le_rejection_semantic_total_slot_count%r.
 proof.
-rewrite /d_le_rejection_shadow_semantic_branch_choice.
-exact LERealExecution.le_real_execution_semantic_rejection_branch_choice_mass_true.
+exact LERejectionSamplerCore.le_rejection_shadow_semantic_branch_choice_mass_true.
 qed.
 
 lemma le_rejection_shadow_semantic_local_reject_branch_mass_is_true_mass :
   le_rejection_shadow_semantic_local_reject_branch_mass =
   mu1 d_le_rejection_shadow_semantic_branch_choice true.
 proof.
-rewrite /le_rejection_shadow_semantic_local_reject_branch_mass.
-have Hmu1 :
-    mu d_le_rejection_shadow_semantic_branch_choice (fun (reject : bool) => reject) =
-    mu1 d_le_rejection_shadow_semantic_branch_choice true.
-  apply/mu_eq=> reject /=.
-  by case: reject.
-exact Hmu1.
+exact LERejectionSamplerCore.le_rejection_shadow_semantic_local_reject_branch_mass_is_true_mass.
 qed.
 
 lemma le_rejection_shadow_semantic_local_reject_branch_mass_closed_form :
@@ -179,77 +140,57 @@ lemma le_rejection_shadow_semantic_local_reject_branch_mass_closed_form :
   BudgetParameters.le_rejection_semantic_reject_slot_count%r /
   BudgetParameters.le_rejection_semantic_total_slot_count%r.
 proof.
-rewrite le_rejection_shadow_semantic_local_reject_branch_mass_is_true_mass.
-exact le_rejection_shadow_semantic_branch_choice_mass_true.
+exact LERejectionSamplerCore.le_rejection_shadow_semantic_local_reject_branch_mass_closed_form.
 qed.
 
 lemma le_rejection_shadow_semantic_local_reject_branch_mass_eq_epsilon :
   le_rejection_shadow_semantic_local_reject_branch_mass =
   BudgetParameters.epsilon_le_rej_semantic.
 proof.
-rewrite le_rejection_shadow_semantic_local_reject_branch_mass_closed_form.
-rewrite BudgetParameters.epsilon_le_rej_semantic_closed_form.
-by [].
+exact LERejectionSamplerCore.le_rejection_shadow_semantic_local_reject_branch_mass_eq_epsilon.
 qed.
 
 op le_rejection_shadow_semantic_challenge_seed_material_of_execution
   (x : qssm_public_input) (s : seed) (reject : bool) :
   le_real_execution_challenge_seed_material =
-  LERealExecution.le_real_execution_semantic_rejection_challenge_seed_material_of_branch
-    x s reject.
+  LERejectionSamplerCore.le_rejection_shadow_semantic_challenge_seed_material_of_execution x s reject.
 
 op le_rejection_shadow_semantic_programmed_query_digest_material_of_execution
   (x : qssm_public_input) (s : seed) (reject : bool) :
   le_real_execution_programmed_query_digest_material =
-  LERealExecution.le_real_execution_semantic_rejection_programmed_query_digest_material_of_branch
-    x s reject.
+  LERejectionSamplerCore.le_rejection_shadow_semantic_programmed_query_digest_material_of_execution x s reject.
 
 op le_rejection_shadow_semantic_primitive_material_of_observable_branch
   (x : qssm_public_input) (s : seed) (obs : le_transcript_observable)
   (reject : bool) : le_real_execution_primitive_material =
-  LERealExecution.le_real_execution_semantic_rejection_primitive_material_of_observable_branch
-    x s obs reject.
+  LERejectionSamplerCore.le_rejection_shadow_semantic_primitive_material_of_observable_branch x s obs reject.
 
 op le_rejection_shadow_semantic_branch_image_of_observable
   (x : qssm_public_input) (s : seed) (obs : le_transcript_observable)
   (reject : bool) : le_transcript_observable =
-  LERealExecution.le_real_execution_semantic_rejection_observable_of_observable_branch
-    x s obs reject.
+  LERejectionSamplerCore.le_rejection_shadow_semantic_branch_image_of_observable x s obs reject.
 
 op le_rejection_shadow_semantic_hidden_material_of_execution_branch
   (x : qssm_public_input) (s : seed) (obs : le_transcript_observable)
   (reject : bool) : le_rejection_shadow_hidden_material =
-  {| lershm_challenge_seed_material =
-       le_rejection_shadow_semantic_challenge_seed_material_of_execution x s reject;
-     lershm_resampled_observable =
-       le_rejection_shadow_semantic_branch_image_of_observable x s obs reject |}.
+  LERejectionSamplerCore.le_rejection_shadow_semantic_hidden_material_of_execution_branch x s obs reject.
 
 op le_rejection_shadow_semantic_state_of_branch_execution
   (x : qssm_public_input) (s : seed) (obs : le_transcript_observable)
   (reject : bool) : le_rejection_shadow_state =
-  let hm =
-    le_rejection_shadow_semantic_hidden_material_of_execution_branch x s obs reject in
-  {| lers_pre_observable = obs;
-     lers_post_observable = le_rejection_shadow_post_of_execution obs hm;
-     lers_accepts = le_rejection_shadow_accepts_from_hidden_material hm;
-     lers_hidden_material = hm |}.
+  LERejectionSamplerCore.le_rejection_shadow_semantic_state_of_branch_execution x s obs reject.
 
 op d_le_rejection_shadow_semantic_coupled_state
   (x : qssm_public_input) (s : seed) : le_rejection_shadow_state distr =
-  dmap ((d_le_rejection_real_execution_view x s) `*`
-        d_le_rejection_shadow_semantic_branch_choice)
-    (fun (p : le_transcript_observable * bool) =>
-      le_rejection_shadow_semantic_state_of_branch_execution x s (fst p) (snd p)).
+  LERejectionSamplerCore.d_le_rejection_shadow_semantic_coupled_state x s.
 
 op d_le_rejection_shadow_semantic_pre_marginal
   (x : qssm_public_input) (s : seed) : le_transcript_observable distr =
-  dmap (d_le_rejection_shadow_semantic_coupled_state x s)
-    le_rejection_shadow_pre_observable.
+  LERejectionSamplerCore.d_le_rejection_shadow_semantic_pre_marginal x s.
 
 op d_le_rejection_shadow_semantic_post_marginal
   (x : qssm_public_input) (s : seed) : le_transcript_observable distr =
-  dmap (d_le_rejection_shadow_semantic_coupled_state x s)
-    le_rejection_shadow_post_observable.
+  LERejectionSamplerCore.d_le_rejection_shadow_semantic_post_marginal x s.
 
 op d_le_semantic_post_rejection_view
   (x : qssm_public_input) (s : seed) : le_transcript_observable distr =
@@ -270,12 +211,7 @@ lemma le_rejection_shadow_dmap_dprod_fst_lossless ['a 'b]
   is_lossless db =>
   dmap (da `*` db) fst = da.
 proof.
-move=> Hll.
-rewrite (dprod_marginalL da db (fun (a : 'a) => a)).
-rewrite dmap_id.
-have Hw : weight db = 1%r by apply (is_losslessP _ Hll).
-rewrite Hw dscalar1.
-by [].
+exact LERejectionSamplerCore.le_rejection_shadow_dmap_dprod_fst_lossless.
 qed.
 
 lemma le_rejection_shadow_dmap_dprod_snd_lossless ['a 'b]
@@ -283,28 +219,21 @@ lemma le_rejection_shadow_dmap_dprod_snd_lossless ['a 'b]
   is_lossless da =>
   dmap (da `*` db) snd = db.
 proof.
-move=> Hll.
-rewrite (dprod_marginalR da db (fun (b : 'b) => b)).
-rewrite dmap_id.
-have Hw : weight da = 1%r by apply (is_losslessP _ Hll).
-rewrite Hw dscalar1.
-by [].
+exact LERejectionSamplerCore.le_rejection_shadow_dmap_dprod_snd_lossless.
 qed.
 
 lemma d_le_rejection_real_execution_view_lossless
   (x : qssm_public_input) (s : seed) :
   is_lossless (d_le_rejection_real_execution_view x s).
 proof.
-rewrite /d_le_rejection_real_execution_view /d_le_real_view /d_le_real_execution_view.
-exact (dunit_ll (le_real_execution_observable x s)).
+exact (LERejectionSamplerCore.d_le_rejection_real_execution_view_lossless x s).
 qed.
 
 lemma le_real_execution_observable_in_rejection_execution_view
   (x : qssm_public_input) (s : seed) :
   le_real_execution_observable x s \in d_le_rejection_real_execution_view x s.
 proof.
-rewrite /d_le_rejection_real_execution_view /d_le_real_view /d_le_real_execution_view.
-by rewrite supp_dunit.
+exact (LERejectionSamplerCore.le_real_execution_observable_in_rejection_execution_view x s).
 qed.
 
 lemma le_rejection_shadow_semantic_post_branch_imageE
@@ -315,23 +244,27 @@ lemma le_rejection_shadow_semantic_post_branch_imageE
 proof.
 case: reject=> /=.
   rewrite /le_rejection_shadow_semantic_state_of_branch_execution.
-  rewrite /le_rejection_shadow_post_of_execution.
-  rewrite /le_rejection_shadow_semantic_hidden_material_of_execution_branch.
-  rewrite /le_rejection_shadow_accepts_from_hidden_material.
-  rewrite /le_rejection_shadow_semantic_challenge_seed_material_of_execution /=.
+  rewrite /LERejectionSamplerCore.le_rejection_shadow_semantic_state_of_branch_execution.
+  rewrite /LERejectionSamplerCore.le_rejection_shadow_post_of_execution.
+  rewrite /LERejectionSamplerCore.le_rejection_shadow_semantic_hidden_material_of_execution_branch.
+  rewrite /LERejectionSamplerCore.le_rejection_shadow_accepts_from_hidden_material.
+  rewrite /LERejectionSamplerCore.le_rejection_shadow_semantic_challenge_seed_material_of_execution /=.
   rewrite /LERealExecution.le_real_execution_semantic_rejection_challenge_seed_material_of_branch.
   rewrite /le_rejection_shadow_semantic_branch_image_of_observable.
+  rewrite /LERejectionSamplerCore.le_rejection_shadow_semantic_branch_image_of_observable.
   rewrite /LERealExecution.le_real_execution_semantic_rejection_observable_of_observable_branch /=.
   by [].
 case: obs=> ccoeffs tcoeffs zcoeffs cseed pqdig qmat payload /=.
 case: qmat=> rowseed rowdig respdig log badflag /=.
 rewrite /le_rejection_shadow_semantic_state_of_branch_execution.
-rewrite /le_rejection_shadow_post_of_execution.
-rewrite /le_rejection_shadow_semantic_hidden_material_of_execution_branch.
-rewrite /le_rejection_shadow_accepts_from_hidden_material.
-rewrite /le_rejection_shadow_semantic_challenge_seed_material_of_execution /=.
+rewrite /LERejectionSamplerCore.le_rejection_shadow_semantic_state_of_branch_execution.
+rewrite /LERejectionSamplerCore.le_rejection_shadow_post_of_execution.
+rewrite /LERejectionSamplerCore.le_rejection_shadow_semantic_hidden_material_of_execution_branch.
+rewrite /LERejectionSamplerCore.le_rejection_shadow_accepts_from_hidden_material.
+rewrite /LERejectionSamplerCore.le_rejection_shadow_semantic_challenge_seed_material_of_execution /=.
 rewrite /LERealExecution.le_real_execution_semantic_rejection_challenge_seed_material_of_branch.
 rewrite /le_rejection_shadow_semantic_branch_image_of_observable.
+rewrite /LERejectionSamplerCore.le_rejection_shadow_semantic_branch_image_of_observable.
 rewrite /LERealExecution.le_real_execution_semantic_rejection_observable_of_observable_branch /=.
 rewrite /LERealExecution.le_real_execution_semantic_rejection_ticket_of_observable_branch /=.
 rewrite /LERealExecution.le_real_execution_semantic_rejection_primitive_material_of_observable_ticket /=.
@@ -352,16 +285,18 @@ proof.
 case: reject.
   rewrite /le_rejection_shadow_reject_event.
   rewrite /le_rejection_shadow_semantic_state_of_branch_execution /=.
-  rewrite /le_rejection_shadow_accepts_from_hidden_material.
-  rewrite /le_rejection_shadow_semantic_hidden_material_of_execution_branch /=.
-  rewrite /le_rejection_shadow_semantic_challenge_seed_material_of_execution /=.
+  rewrite /LERejectionSamplerCore.le_rejection_shadow_semantic_state_of_branch_execution /=.
+  rewrite /LERejectionSamplerCore.le_rejection_shadow_accepts_from_hidden_material.
+  rewrite /LERejectionSamplerCore.le_rejection_shadow_semantic_hidden_material_of_execution_branch /=.
+  rewrite /LERejectionSamplerCore.le_rejection_shadow_semantic_challenge_seed_material_of_execution /=.
   rewrite /LERealExecution.le_real_execution_semantic_rejection_challenge_seed_material_of_branch /=.
   by [].
 rewrite /le_rejection_shadow_reject_event.
 rewrite /le_rejection_shadow_semantic_state_of_branch_execution /=.
-rewrite /le_rejection_shadow_accepts_from_hidden_material.
-rewrite /le_rejection_shadow_semantic_hidden_material_of_execution_branch /=.
-rewrite /le_rejection_shadow_semantic_challenge_seed_material_of_execution /=.
+rewrite /LERejectionSamplerCore.le_rejection_shadow_semantic_state_of_branch_execution /=.
+rewrite /LERejectionSamplerCore.le_rejection_shadow_accepts_from_hidden_material.
+rewrite /LERejectionSamplerCore.le_rejection_shadow_semantic_hidden_material_of_execution_branch /=.
+rewrite /LERejectionSamplerCore.le_rejection_shadow_semantic_challenge_seed_material_of_execution /=.
 rewrite /LERealExecution.le_real_execution_semantic_rejection_challenge_seed_material_of_branch /=.
 by [].
 qed.
@@ -397,9 +332,10 @@ lemma le_rejection_shadow_semantic_accept_event_of_categoryE
 proof.
 rewrite /le_rejection_shadow_accept_event.
 rewrite /le_rejection_shadow_semantic_state_of_branch_execution /=.
-rewrite /le_rejection_shadow_accepts_from_hidden_material.
-rewrite /le_rejection_shadow_semantic_hidden_material_of_execution_branch /=.
-rewrite /le_rejection_shadow_semantic_challenge_seed_material_of_execution /=.
+rewrite /LERejectionSamplerCore.le_rejection_shadow_semantic_state_of_branch_execution /=.
+rewrite /LERejectionSamplerCore.le_rejection_shadow_accepts_from_hidden_material.
+rewrite /LERejectionSamplerCore.le_rejection_shadow_semantic_hidden_material_of_execution_branch /=.
+rewrite /LERejectionSamplerCore.le_rejection_shadow_semantic_challenge_seed_material_of_execution /=.
 rewrite /LERealExecution.le_real_execution_semantic_rejection_challenge_seed_material_of_branch /=.
 rewrite (LERealExecution.le_real_execution_semantic_rejection_decision_of_category_rejectE
   category).
@@ -436,6 +372,7 @@ proof.
 rewrite (le_rejection_shadow_semantic_post_observable_of_categoryE x s obs
   BudgetParameters.LERejectionSemanticTicketAccept).
 rewrite /le_rejection_shadow_semantic_branch_image_of_observable.
+rewrite /LERejectionSamplerCore.le_rejection_shadow_semantic_branch_image_of_observable.
 rewrite /BudgetParameters.le_rejection_semantic_ticket_category_is_failure /pred1.
 exact (LERealExecution.le_real_execution_semantic_rejection_accept_branch_id x s obs).
 qed.
@@ -450,8 +387,9 @@ lemma le_rejection_shadow_semantic_hidden_branch_bit_of_categoryE
   BudgetParameters.le_rejection_semantic_ticket_category_is_failure category.
 proof.
 rewrite /le_rejection_shadow_semantic_state_of_branch_execution /=.
-rewrite /le_rejection_shadow_semantic_hidden_material_of_execution_branch /=.
-rewrite /le_rejection_shadow_semantic_challenge_seed_material_of_execution /=.
+rewrite /LERejectionSamplerCore.le_rejection_shadow_semantic_state_of_branch_execution /=.
+rewrite /LERejectionSamplerCore.le_rejection_shadow_semantic_hidden_material_of_execution_branch /=.
+rewrite /LERejectionSamplerCore.le_rejection_shadow_semantic_challenge_seed_material_of_execution /=.
 rewrite /LERealExecution.le_real_execution_semantic_rejection_challenge_seed_material_of_branch /=.
 exact
   (LERealExecution.le_real_execution_semantic_rejection_decision_of_category_rejectE
@@ -466,7 +404,8 @@ lemma d_le_rejection_shadow_semantic_coupled_state_pairE :
         (fun (p : le_transcript_observable * bool) =>
           le_rejection_shadow_semantic_state_of_branch_execution x s (fst p) (snd p)).
 proof.
-by move=> x s; rewrite /d_le_rejection_shadow_semantic_coupled_state.
+by move=> x s; rewrite /d_le_rejection_shadow_semantic_coupled_state
+  /LERejectionSamplerCore.d_le_rejection_shadow_semantic_coupled_state.
 qed.
 
 lemma le_rejection_shadow_semantic_branch_state_has_support
@@ -516,24 +455,25 @@ lemma d_le_rejection_shadow_semantic_pre_marginal_matches_execution_view :
 proof.
 move=> x s.
 rewrite /d_le_rejection_shadow_semantic_pre_marginal.
-rewrite (d_le_rejection_shadow_semantic_coupled_state_pairE x s).
+rewrite /LERejectionSamplerCore.d_le_rejection_shadow_semantic_pre_marginal.
+rewrite /LERejectionSamplerCore.d_le_rejection_shadow_semantic_coupled_state.
 rewrite (dmap_comp (fun (p : le_transcript_observable * bool) =>
-    le_rejection_shadow_semantic_state_of_branch_execution x s (fst p) (snd p))
-  le_rejection_shadow_pre_observable
+    LERejectionSamplerCore.le_rejection_shadow_semantic_state_of_branch_execution x s (fst p) (snd p))
+  LERejectionSamplerCore.le_rejection_shadow_pre_observable
   ((d_le_rejection_real_execution_view x s) `*`
    d_le_rejection_shadow_semantic_branch_choice)).
 have Hmap :
   dmap ((d_le_rejection_real_execution_view x s) `*`
         d_le_rejection_shadow_semantic_branch_choice)
-    (le_rejection_shadow_pre_observable \o
+    (LERejectionSamplerCore.le_rejection_shadow_pre_observable \o
       (fun (p : le_transcript_observable * bool) =>
-        le_rejection_shadow_semantic_state_of_branch_execution x s (fst p) (snd p))) =
+        LERejectionSamplerCore.le_rejection_shadow_semantic_state_of_branch_execution x s (fst p) (snd p))) =
   dmap ((d_le_rejection_real_execution_view x s) `*`
         d_le_rejection_shadow_semantic_branch_choice) fst.
   apply eq_dmap_in=> p _ /=.
   case: p=> obs reject /=.
-  by rewrite /le_rejection_shadow_pre_observable /(\o)
-    /le_rejection_shadow_semantic_state_of_branch_execution.
+  by rewrite /LERejectionSamplerCore.le_rejection_shadow_pre_observable /(\o)
+    /LERejectionSamplerCore.le_rejection_shadow_semantic_state_of_branch_execution.
 rewrite Hmap.
 exact (le_rejection_shadow_dmap_dprod_fst_lossless
   (d_le_rejection_real_execution_view x s)
@@ -547,7 +487,8 @@ lemma d_le_rejection_shadow_semantic_pre_marginal_matches_real_view :
 proof.
 move=> x s.
 rewrite d_le_rejection_shadow_semantic_pre_marginal_matches_execution_view.
-by rewrite /d_le_rejection_real_execution_view.
+by rewrite /d_le_rejection_real_execution_view
+  /LERejectionSamplerCore.d_le_rejection_real_execution_view.
 qed.
 
 lemma d_le_rejection_shadow_semantic_post_marginal_pairE :
@@ -560,15 +501,16 @@ lemma d_le_rejection_shadow_semantic_post_marginal_pairE :
 proof.
 move=> x s.
 rewrite /d_le_rejection_shadow_semantic_post_marginal.
-rewrite (d_le_rejection_shadow_semantic_coupled_state_pairE x s).
+rewrite /LERejectionSamplerCore.d_le_rejection_shadow_semantic_post_marginal.
+rewrite /LERejectionSamplerCore.d_le_rejection_shadow_semantic_coupled_state.
 rewrite (dmap_comp (fun (p : le_transcript_observable * bool) =>
-    le_rejection_shadow_semantic_state_of_branch_execution x s (fst p) (snd p))
-  le_rejection_shadow_post_observable
+    LERejectionSamplerCore.le_rejection_shadow_semantic_state_of_branch_execution x s (fst p) (snd p))
+  LERejectionSamplerCore.le_rejection_shadow_post_observable
   ((d_le_rejection_real_execution_view x s) `*`
    d_le_rejection_shadow_semantic_branch_choice)).
 apply eq_dmap_in=> p _ /=.
 case: p=> obs reject /=.
-by rewrite /le_rejection_shadow_post_observable /(\o).
+by rewrite /LERejectionSamplerCore.le_rejection_shadow_post_observable /(\o).
 qed.
 
 lemma d_le_rejection_shadow_semantic_post_marginal_branch_split_pairE :
@@ -599,6 +541,7 @@ rewrite d_le_rejection_shadow_semantic_pre_marginal_matches_execution_view.
 rewrite /d_le_rejection_real_execution_view /d_le_real_view /d_le_real_execution_view.
 rewrite dmap_dunit /=.
 rewrite /le_rejection_shadow_semantic_branch_image_of_observable.
+rewrite /LERejectionSamplerCore.le_rejection_shadow_semantic_branch_image_of_observable.
 rewrite (LERealExecution.le_real_execution_semantic_rejection_accept_branch_id
   x s (le_real_execution_observable x s)).
 by [].
@@ -727,6 +670,7 @@ proof.
 move=> x s.
 rewrite /le_rejection_shadow_semantic_failure_probability.
 rewrite /le_rejection_shadow_semantic_local_reject_branch_mass.
+rewrite /LERejectionSamplerCore.le_rejection_shadow_semantic_local_reject_branch_mass.
 rewrite (d_le_rejection_shadow_semantic_reject_event_image_branch_choice x s).
 by [].
 qed.
@@ -848,17 +792,20 @@ lemma d_le_rejection_shadow_pre_marginal_matches_execution_view :
     d_le_rejection_shadow_pre_marginal x s = d_le_rejection_real_execution_view x s.
 proof.
 move=> x s.
-rewrite /d_le_rejection_shadow_pre_marginal /d_le_rejection_shadow_coupled_state.
-rewrite (dmap_comp (le_rejection_shadow_state_of_execution x s)
-  le_rejection_shadow_pre_observable
+rewrite /d_le_rejection_shadow_pre_marginal /LERejectionSamplerCore.d_le_rejection_shadow_pre_marginal.
+rewrite /LERejectionSamplerCore.d_le_rejection_shadow_coupled_state.
+rewrite (dmap_comp (LERejectionSamplerCore.le_rejection_shadow_state_of_execution x s)
+  LERejectionSamplerCore.le_rejection_shadow_pre_observable
   (d_le_rejection_real_execution_view x s)).
 have Hmap :
   dmap (d_le_rejection_real_execution_view x s)
-    (le_rejection_shadow_pre_observable \o (le_rejection_shadow_state_of_execution x s)) =
+    (LERejectionSamplerCore.le_rejection_shadow_pre_observable \o
+      (LERejectionSamplerCore.le_rejection_shadow_state_of_execution x s)) =
   dmap (d_le_rejection_real_execution_view x s)
     (fun (obs : le_transcript_observable) => obs).
 - apply eq_dmap_in=> obs _ /=.
-  by rewrite /le_rejection_shadow_pre_observable /le_rejection_shadow_state_of_execution /(\o).
+  by rewrite /LERejectionSamplerCore.le_rejection_shadow_pre_observable
+    /LERejectionSamplerCore.le_rejection_shadow_state_of_execution /(\o).
 rewrite Hmap.
 by rewrite dmap_id.
 qed.
@@ -868,17 +815,19 @@ lemma d_le_rejection_shadow_post_marginal_matches_execution_transform :
     d_le_rejection_shadow_post_marginal x s = d_le_rejection_post_execution_view x s.
 proof.
 move=> x s.
-rewrite /d_le_rejection_shadow_post_marginal /d_le_rejection_shadow_coupled_state.
-rewrite (dmap_comp (le_rejection_shadow_state_of_execution x s)
-  le_rejection_shadow_post_observable
+rewrite /d_le_rejection_shadow_post_marginal /LERejectionSamplerCore.d_le_rejection_shadow_post_marginal.
+rewrite /LERejectionSamplerCore.d_le_rejection_shadow_coupled_state.
+rewrite (dmap_comp (LERejectionSamplerCore.le_rejection_shadow_state_of_execution x s)
+  LERejectionSamplerCore.le_rejection_shadow_post_observable
   (d_le_rejection_real_execution_view x s)).
 have Hmap :
   dmap (d_le_rejection_real_execution_view x s)
-    (le_rejection_shadow_post_observable \o (le_rejection_shadow_state_of_execution x s)) =
+    (LERejectionSamplerCore.le_rejection_shadow_post_observable \o
+      (LERejectionSamplerCore.le_rejection_shadow_state_of_execution x s)) =
   dmap (d_le_rejection_real_execution_view x s)
     le_rejection_transform.
 - apply eq_dmap_in=> obs _ /=.
-  rewrite /le_rejection_shadow_post_observable /(\o).
+  rewrite /LERejectionSamplerCore.le_rejection_shadow_post_observable /(\o).
   exact (le_rejection_shadow_post_of_execution_matches_transform x s obs).
 rewrite Hmap.
 by rewrite /d_le_rejection_post_execution_view.
@@ -892,7 +841,10 @@ move=> x s.
 rewrite d_le_rejection_shadow_pre_marginal_matches_execution_view.
 rewrite d_le_rejection_shadow_post_marginal_matches_execution_transform.
 by rewrite /d_le_rejection_post_execution_view /d_le_rejection_real_execution_view
-  /le_rejection_transform /le_post_rejection_surrogate dmap_id.
+  /LERejectionSamplerCore.d_le_rejection_post_execution_view
+  /LERejectionSamplerCore.d_le_rejection_real_execution_view
+  /le_rejection_transform /LERejectionSamplerCore.le_rejection_transform
+  /le_post_rejection_surrogate dmap_id.
 qed.
 
 lemma le_rejection_shadow_failure_probability_zero :
@@ -900,13 +852,16 @@ lemma le_rejection_shadow_failure_probability_zero :
     le_rejection_shadow_failure_probability x s = 0%r.
 proof.
 move=> x s.
-rewrite /le_rejection_shadow_failure_probability /d_le_rejection_shadow_coupled_state.
+rewrite /le_rejection_shadow_failure_probability.
+rewrite /LERejectionSamplerCore.le_rejection_shadow_failure_probability.
+rewrite /LERejectionSamplerCore.d_le_rejection_shadow_coupled_state.
 rewrite /d_le_rejection_real_execution_view /d_le_real_view /d_le_real_execution_view.
 rewrite dmap_dunit dunitE /=.
 rewrite /le_rejection_shadow_reject_event.
-rewrite /le_rejection_shadow_state_of_execution.
-rewrite /le_rejection_shadow_accepts_from_hidden_material.
-rewrite /le_rejection_shadow_hidden_material_of_execution.
+rewrite /LERejectionSamplerCore.le_rejection_shadow_reject_event.
+rewrite /LERejectionSamplerCore.le_rejection_shadow_state_of_execution.
+rewrite /LERejectionSamplerCore.le_rejection_shadow_accepts_from_hidden_material.
+rewrite /LERejectionSamplerCore.le_rejection_shadow_hidden_material_of_execution.
 rewrite /le_real_execution_challenge_seed_material_of /=.
 by [].
 qed.
@@ -925,7 +880,8 @@ lemma le_real_view_matches_rejection_execution :
   forall (x : qssm_public_input) (s : seed),
     d_le_real_view x s = d_le_rejection_real_execution_view x s.
 proof.
-by move=> x s; rewrite /d_le_rejection_real_execution_view.
+by move=> x s; rewrite /d_le_rejection_real_execution_view
+  /LERejectionSamplerCore.d_le_rejection_real_execution_view.
 qed.
 
 lemma d_le_rejection_shadow_pre_marginal_matches_real_view :
@@ -943,7 +899,9 @@ lemma le_post_rejection_view_matches_execution_transform :
 proof.
 move=> x s.
 rewrite /d_le_post_rejection_view /d_le_rejection_post_execution_view.
-rewrite /d_le_rejection_real_execution_view /le_rejection_transform.
+rewrite /LERejectionSamplerCore.d_le_rejection_post_execution_view.
+rewrite /d_le_rejection_real_execution_view /LERejectionSamplerCore.d_le_rejection_real_execution_view.
+rewrite /le_rejection_transform /LERejectionSamplerCore.le_rejection_transform.
 by [].
 qed.
 
