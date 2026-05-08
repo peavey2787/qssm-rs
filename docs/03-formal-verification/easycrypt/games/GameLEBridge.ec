@@ -3,6 +3,7 @@ require import QssmTypes Algebra Simulator FS TrueClause Comparison ComparisonTy
 require BudgetParameters.
 require import SourceDistributions SourceTheorem MS LERealExecution LESurface LEModel LERejectionSampler LEStatisticalDistance LEHVZK.
 require import LEFsProgrammingSurface.
+require import LEFsProgrammingShadowBranch LEFsProgrammingCoreDefs.
 require import GameTypes GameViews GameAdvantage.
 
 pred le_game_bridge_consistent
@@ -231,15 +232,17 @@ lemma le_distinguisher_event_on_semantic_branch_image_matches_surrogate
 proof.
 case: bad.
 - rewrite /LEFsProgrammingSurface.le_fs_shadow_semantic_branch_image_of_observable.
-  rewrite /LEFsProgrammingSurface.le_fs_shadow_semantic_programmed_view_of_observable.
-  rewrite /LEFsProgrammingSurface.le_fs_shadow_semantic_post_observable.
-  rewrite /LEFsProgrammingSurface.le_fs_shadow_hidden_material_of_observable_branch.
-  rewrite /LEFsProgrammingSurface.le_fs_programmed_response_of_observable.
-  rewrite /LEFsProgrammingSurface.le_fs_surrogate_transform.
+  rewrite /LEFsProgrammingShadowBranch.le_fs_shadow_semantic_branch_image_of_observable.
+  rewrite /LEFsProgrammingShadowBranch.le_fs_shadow_semantic_programmed_view_of_observable.
+  rewrite /LEFsProgrammingShadowBranch.le_fs_shadow_semantic_post_observable.
+  rewrite /LEFsProgrammingShadowBranch.le_fs_shadow_hidden_material_of_observable_branch.
+  rewrite /LEFsProgrammingCoreDefs.le_fs_programmed_response_of_observable.
+  rewrite /LEFsProgrammingCoreDefs.le_fs_surrogate_transform.
   rewrite /le_distinguisher_event /le_qssm_event_payload /le_fs_view_surrogate /=.
   by [].
 by rewrite /LEFsProgrammingSurface.le_fs_shadow_semantic_branch_image_of_observable
-  /LEFsProgrammingSurface.le_fs_surrogate_transform.
+  /LEFsProgrammingShadowBranch.le_fs_shadow_semantic_branch_image_of_observable
+  /LEFsProgrammingCoreDefs.le_fs_surrogate_transform.
 qed.
 
 lemma dmap_const_ll ['a 'b] (d : 'a distr) (v : 'b) :

@@ -459,57 +459,9 @@ rewrite /LEFsProgrammingFailureProbability.le_fs_shadow_local_bad_branch_mass in
 exact H.
 qed.
 
-op le_fs_shadow_hidden_material_of_observable_branch
-  (obs : le_transcript_observable) (bad : bool) : le_fs_shadow_hidden_material =
-  {| LEFsProgrammingShadowBranch.lefshm_query_row =
-       le_fs_query_row_of_observable obs;
-     LEFsProgrammingShadowBranch.lefshm_pre_query_material =
-       le_fs_shadow_pre_query_material_of_observable obs bad;
-     LEFsProgrammingShadowBranch.lefshm_semantic_post_query_material =
-       le_fs_shadow_semantic_post_query_material_of_observable obs;
-     LEFsProgrammingShadowBranch.lefshm_programmed_response =
-       le_fs_programmed_response_of_observable obs;
-     LEFsProgrammingShadowBranch.lefshm_bad_flag = bad |}.
-
-op le_fs_shadow_semantic_post_observable
-  (hm : le_fs_shadow_hidden_material) : le_transcript_observable =
-  {| leto_commitment_coeffs =
-       le_commitment_coeffs
-         (LEFsProgrammingCoreDefs.lefspc_programmed_view
-            hm.`lefshm_programmed_response);
-     leto_t_coeffs =
-       le_t_coeffs
-         (LEFsProgrammingCoreDefs.lefspc_programmed_view
-            hm.`lefshm_programmed_response);
-     leto_z_coeffs =
-       le_z_coeffs
-         (LEFsProgrammingCoreDefs.lefspc_programmed_view
-            hm.`lefshm_programmed_response);
-     leto_challenge_seed_obs =
-       le_challenge_seed_obs
-         (LEFsProgrammingCoreDefs.lefspc_programmed_view
-            hm.`lefshm_programmed_response);
-     leto_programmed_query_digest_obs =
-       le_programmed_query_digest_obs
-         (LEFsProgrammingCoreDefs.lefspc_programmed_view
-            hm.`lefshm_programmed_response);
-     leto_query_material = hm.`lefshm_semantic_post_query_material;
-     leto_qssm_event_payload =
-       le_qssm_event_payload
-         (LEFsProgrammingCoreDefs.lefspc_programmed_view
-            hm.`lefshm_programmed_response);
-  |}.
-
-op le_fs_shadow_semantic_programmed_view_of_observable
-  (obs : le_transcript_observable) : le_transcript_observable =
-  le_fs_shadow_semantic_post_observable
-    (le_fs_shadow_hidden_material_of_observable_branch obs true).
-
 op le_fs_shadow_semantic_branch_image_of_observable
   (obs : le_transcript_observable) (bad : bool) : le_transcript_observable =
-  if bad
-  then le_fs_shadow_semantic_programmed_view_of_observable obs
-  else le_fs_surrogate_transform obs.
+  LEFsProgrammingShadowBranch.le_fs_shadow_semantic_branch_image_of_observable obs bad.
 
 op d_le_fs_shadow_coupled_state
   (x : qssm_public_input) (s : seed) : le_fs_shadow_state distr =
