@@ -1811,6 +1811,55 @@ exists bad.
 by [].
 qed.
 
+lemma le_fs_shadow_semantic_good_branch_image_support
+  (x : qssm_public_input) (s : seed) (obs : le_transcript_observable) :
+  obs \in d_le_pre_fs_semantic_programming_view x s =>
+  le_fs_surrogate_transform obs
+    \in d_le_fs_shadow_semantic_good_branch_image x s.
+proof.
+move=> Hobs.
+rewrite /d_le_fs_shadow_semantic_good_branch_image.
+rewrite /d_le_post_fs_semantic_programmed_view.
+rewrite supp_dmap.
+exists obs; split.
+  exact Hobs.
+by [].
+qed.
+
+lemma d_le_fs_shadow_semantic_good_branch_image_supportE
+  (x : qssm_public_input) (s : seed) (post_obs : le_transcript_observable) :
+  post_obs \in d_le_fs_shadow_semantic_good_branch_image x s =>
+  exists (pre_obs : le_transcript_observable),
+    pre_obs \in d_le_pre_fs_semantic_programming_view x s /\
+    post_obs = le_fs_surrogate_transform pre_obs.
+proof.
+move=> Hpost.
+rewrite /d_le_fs_shadow_semantic_good_branch_image in Hpost.
+rewrite /d_le_post_fs_semantic_programmed_view in Hpost.
+case/supp_dmap: Hpost=> pre_obs [Hpre ->].
+exists pre_obs; split.
+  exact Hpre.
+by [].
+qed.
+
+lemma d_le_fs_shadow_semantic_good_branch_image_support_sub_postE
+  (x : qssm_public_input) (s : seed) (post_obs : le_transcript_observable) :
+  post_obs \in d_le_fs_shadow_semantic_good_branch_image x s =>
+  post_obs \in d_le_fs_shadow_semantic_post_marginal x s.
+proof.
+move=> Hpost.
+have [pre_obs [Hpre Himage]] :=
+  d_le_fs_shadow_semantic_good_branch_image_supportE x s post_obs Hpost.
+have Hgood :
+    (le_fs_shadow_state_of_branch_observable pre_obs false).`lefss_semantic_post_observable
+      \in d_le_fs_shadow_semantic_post_marginal x s.
+  exact (le_fs_shadow_semantic_post_marginal_support x s pre_obs false Hpre
+    le_fs_shadow_good_branch_has_support).
+rewrite (le_fs_shadow_semantic_post_of_observable_good_branch_supportE x s pre_obs Hpre) in Hgood.
+rewrite Himage.
+exact Hgood.
+qed.
+
 lemma le_fs_shadow_semantic_bad_branch_image_support
   (x : qssm_public_input) (s : seed) (obs : le_transcript_observable) :
   obs \in d_le_pre_fs_semantic_programming_view x s =>
@@ -1857,6 +1906,23 @@ have Hbad :
 rewrite (le_fs_shadow_semantic_post_bad_branch_matches_semantic_programmed_view pre_obs) in Hbad.
 rewrite Himage.
 exact Hbad.
+qed.
+
+lemma d_le_fs_shadow_semantic_post_marginal_support_tagged_imageE
+  (x : qssm_public_input) (s : seed) (post_obs : le_transcript_observable) :
+  post_obs \in d_le_fs_shadow_semantic_post_marginal x s =>
+  exists (pre_obs : le_transcript_observable) (b : bool),
+    pre_obs \in d_le_pre_fs_semantic_programming_view x s /\
+    post_obs =
+      le_fs_shadow_semantic_branch_image_of_observable pre_obs b.
+proof.
+move=> Hpost.
+rewrite (d_le_fs_shadow_semantic_post_marginal_branch_split_pairE x s) in Hpost.
+case/supp_dmap: Hpost=> -[pre_obs b] [Hp ->].
+move: Hp; rewrite supp_dprod => -[Hpre _].
+exists pre_obs; exists b; split.
+  exact Hpre.
+by [].
 qed.
 
 lemma d_le_fs_shadow_bad_event_image_zero :
