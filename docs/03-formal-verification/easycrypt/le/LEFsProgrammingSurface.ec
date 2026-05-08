@@ -8,6 +8,7 @@ require import LERealExecution.
 require import LERejectionSampler.
 require import LESurface.
 require LEFsProgrammingCoreDefs.
+require import LEFsProgrammingShadowBranch.
 require BudgetParameters.
 
 (*---*) import RealOrder.
@@ -422,20 +423,9 @@ rewrite /le_challenge_seed_obs /le_programmed_query_digest_obs.
 by [].
 qed.
 
-type le_fs_shadow_hidden_material = {
-  lefshm_query_row : le_fs_query_row;
-  lefshm_pre_query_material : le_query_material;
-  lefshm_semantic_post_query_material : le_query_material;
-  lefshm_programmed_response : le_fs_programmed_response_carrier;
-  lefshm_bad_flag : bool;
-}.
+type le_fs_shadow_hidden_material = LEFsProgrammingShadowBranch.le_fs_shadow_hidden_material.
 
-type le_fs_shadow_state = {
-  lefss_pre_observable : le_transcript_observable;
-  lefss_post_observable : le_transcript_observable;
-  lefss_semantic_post_observable : le_transcript_observable;
-  lefss_hidden_material : le_fs_shadow_hidden_material;
-}.
+type le_fs_shadow_state = LEFsProgrammingShadowBranch.le_fs_shadow_state.
 
 op le_fs_shadow_branch_support : bool list =
   BudgetParameters.le_fs_semantic_branch_support.
@@ -586,13 +576,15 @@ op le_fs_shadow_semantic_post_query_material_of_observable
 
 op le_fs_shadow_hidden_material_of_observable_branch
   (obs : le_transcript_observable) (bad : bool) : le_fs_shadow_hidden_material =
-  {| lefshm_query_row = le_fs_query_row_of_observable obs;
-     lefshm_pre_query_material =
+  {| LEFsProgrammingShadowBranch.lefshm_query_row =
+       le_fs_query_row_of_observable obs;
+     LEFsProgrammingShadowBranch.lefshm_pre_query_material =
        le_fs_shadow_pre_query_material_of_observable obs bad;
-     lefshm_semantic_post_query_material =
+     LEFsProgrammingShadowBranch.lefshm_semantic_post_query_material =
        le_fs_shadow_semantic_post_query_material_of_observable obs;
-     lefshm_programmed_response = le_fs_programmed_response_of_observable obs;
-     lefshm_bad_flag = bad |}.
+     LEFsProgrammingShadowBranch.lefshm_programmed_response =
+       le_fs_programmed_response_of_observable obs;
+     LEFsProgrammingShadowBranch.lefshm_bad_flag = bad |}.
 
 op le_fs_shadow_hidden_material_of_observable
   (obs : le_transcript_observable) : le_fs_shadow_hidden_material =
@@ -650,13 +642,20 @@ op le_fs_shadow_projected_post_of_hidden_material
   (hm : le_fs_shadow_hidden_material) : le_transcript_observable =
   LEFsProgrammingCoreDefs.lefspc_programmed_view hm.`lefshm_programmed_response.
 
+op le_fs_shadow_projected_post_of_observable
+  (obs : le_transcript_observable) (bad : bool) : le_transcript_observable =
+  le_fs_shadow_projected_post_of_hidden_material
+    (le_fs_shadow_hidden_material_of_observable_branch obs bad).
+
 op le_fs_shadow_state_of_branch_observable
   (obs : le_transcript_observable) (bad : bool) : le_fs_shadow_state =
   let hm = le_fs_shadow_hidden_material_of_observable_branch obs bad in
-  {| lefss_pre_observable = obs;
-     lefss_post_observable = le_fs_shadow_projected_post_of_hidden_material hm;
-     lefss_semantic_post_observable = le_fs_shadow_post_of_observable obs hm;
-     lefss_hidden_material = hm |}.
+  {| LEFsProgrammingShadowBranch.lefss_pre_observable = obs;
+     LEFsProgrammingShadowBranch.lefss_post_observable =
+       le_fs_shadow_projected_post_of_hidden_material hm;
+     LEFsProgrammingShadowBranch.lefss_semantic_post_observable =
+       le_fs_shadow_post_of_observable obs hm;
+     LEFsProgrammingShadowBranch.lefss_hidden_material = hm |}.
 
 op le_fs_shadow_state_of_observable
   (obs : le_transcript_observable) : le_fs_shadow_state =
@@ -690,6 +689,11 @@ op le_fs_shadow_semantic_bad_event
   (st : le_fs_shadow_state) : bool =
   st.`lefss_hidden_material.`lefshm_pre_query_material.`leqm_bad_flag /\
   ! (le_fs_query_material_obs st.`lefss_semantic_post_observable).`leqm_bad_flag.
+
+op le_fs_shadow_branch_condition
+  (st : le_fs_shadow_state) : bool =
+  st.`lefss_hidden_material.`lefshm_bad_flag =
+  le_fs_shadow_semantic_bad_event st.
 
 op le_fs_shadow_clean_condition
   (st : le_fs_shadow_state) : bool =
