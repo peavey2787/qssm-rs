@@ -1260,6 +1260,23 @@ rewrite (le_real_execution_observable_exposes_query_material x s).
 exact (le_real_execution_query_material_bad_flag_false x s).
 qed.
 
+lemma le_fs_shadow_post_of_observable_good_branch_supportE
+  (x : qssm_public_input) (s : seed) (obs : le_transcript_observable) :
+  obs \in d_le_pre_fs_programming_view x s =>
+  le_fs_shadow_post_of_observable obs
+    (le_fs_shadow_hidden_material_of_observable obs) =
+  le_fs_surrogate_transform obs.
+proof.
+move=> Hobs.
+have Hgood := le_fs_shadow_good_event_on_pre_programming_support x s obs Hobs.
+rewrite /le_fs_shadow_post_of_observable.
+rewrite /le_fs_shadow_hidden_material_of_observable.
+rewrite /le_fs_shadow_hidden_material_of_observable_branch.
+move: Hgood.
+rewrite /le_fs_shadow_good_event /le_fs_query_material_obs.
+by case: (obs.`leto_query_material.`leqm_bad_flag).
+qed.
+
 lemma le_fs_shadow_good_branch_post_matches_surrogate_on_pre_support
   (x : qssm_public_input) (s : seed) (obs : le_transcript_observable) :
   obs \in d_le_pre_fs_programming_view x s =>
@@ -1268,13 +1285,8 @@ lemma le_fs_shadow_good_branch_post_matches_surrogate_on_pre_support
     (le_fs_shadow_hidden_material_of_observable obs) =
   le_fs_surrogate_transform obs.
 proof.
-move=> _ Hgood.
-rewrite /le_fs_shadow_post_of_observable.
-rewrite /le_fs_shadow_hidden_material_of_observable.
-rewrite /le_fs_shadow_hidden_material_of_observable_branch.
-move: Hgood.
-rewrite /le_fs_shadow_good_event /le_fs_query_material_obs.
-by case: (obs.`leto_query_material.`leqm_bad_flag).
+move=> Hobs _.
+exact (le_fs_shadow_post_of_observable_good_branch_supportE x s obs Hobs).
 qed.
 
 lemma d_le_fs_shadow_pre_marginal_matches_pre_programming_view :
@@ -1373,6 +1385,14 @@ lemma d_le_fs_shadow_post_marginal_matches_programmed_view :
     d_le_fs_shadow_post_marginal x s = d_le_post_fs_programmed_view x s.
 proof.
 move=> x s.
+have Hcollapse :
+  dmap (d_le_pre_fs_programming_view x s)
+    (fun (obs : le_transcript_observable) =>
+      le_fs_shadow_post_of_observable obs
+        (le_fs_shadow_hidden_material_of_observable obs)) =
+  dmap (d_le_pre_fs_programming_view x s) le_fs_surrogate_transform.
+  apply eq_dmap_in=> obs Hobs /=.
+  exact (le_fs_shadow_post_of_observable_good_branch_supportE x s obs Hobs).
 rewrite /d_le_fs_shadow_post_marginal.
 rewrite (d_le_fs_shadow_coupled_state_pairE x s).
 rewrite (dmap_comp (fun (p : le_transcript_observable * bool) =>
@@ -1386,17 +1406,24 @@ have Hmap :
         le_fs_shadow_state_of_branch_observable (fst p) (snd p))) =
   dmap ((d_le_pre_fs_programming_view x s) `*` d_le_fs_shadow_branch_choice)
     (fun (p : le_transcript_observable * bool) =>
-      le_fs_surrogate_transform (fst p)).
-  apply eq_dmap_in=> p _ /=.
-  case: p=> obs bad /=.
+      le_fs_shadow_post_of_observable (fst p)
+        (le_fs_shadow_hidden_material_of_observable (fst p))).
+  apply eq_dmap_in=> p Hp /=.
+  case: p Hp=> obs bad Hp /=.
+  move: Hp; rewrite supp_dprod => -[Hobs _].
   rewrite /le_fs_shadow_post_observable /(\o).
-  exact (le_fs_shadow_projected_post_branch_matches_surrogate obs bad).
+  rewrite (le_fs_shadow_projected_post_branch_matches_surrogate obs bad).
+  by rewrite (le_fs_shadow_post_of_observable_good_branch_supportE x s obs Hobs).
 rewrite Hmap.
-rewrite -(dmap_comp fst le_fs_surrogate_transform
+rewrite -(dmap_comp fst
+  (fun (obs : le_transcript_observable) =>
+    le_fs_shadow_post_of_observable obs
+      (le_fs_shadow_hidden_material_of_observable obs))
   ((d_le_pre_fs_programming_view x s) `*` d_le_fs_shadow_branch_choice)).
 rewrite (le_fs_shadow_dmap_dprod_fst_lossless
   (d_le_pre_fs_programming_view x s) d_le_fs_shadow_branch_choice
   le_fs_shadow_branch_choice_lossless).
+rewrite Hcollapse.
 by rewrite /d_le_post_fs_programmed_view.
 qed.
 
