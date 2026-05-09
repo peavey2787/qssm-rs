@@ -122,6 +122,7 @@ The deeper architecture and file-map material moved to [formal/ARCHITECTURE.md](
 - [formal/PARAMETERIZED_ROUTE_STATUS.md](formal/PARAMETERIZED_ROUTE_STATUS.md): status table for the parameterized lanes, including what is complete and what remains intentionally unstated
 - [formal/PROOF_DEPENDENCY_GRAPH.md](formal/PROOF_DEPENDENCY_GRAPH.md): route-by-route dependency graphs for MS, LE, and parameterized companions
 - [formal/PARAMETER_PROFILES.md](formal/PARAMETER_PROFILES.md): design-only parameter profile classes and substitution checklist for future concrete parameter selection
+- [formal/DE_ALIASING_PLAN.md](formal/DE_ALIASING_PLAN.md): production-count substitution audit and theorem-by-theorem de-aliasing roadmap for the current parameterized lane
 - [formal/RELEASE_VERIFICATION.md](formal/RELEASE_VERIFICATION.md): reproducibility steps, expected checker output, and `.eco` cleanup procedure for release validation
 - [formal/SEMANTIC_GAP_ANALYSIS.md](formal/SEMANTIC_GAP_ANALYSIS.md): explanation of the public AfterRom versus canonical AfterRom semantic distinction and the budgeted bridge that now closes the parameterized route
 - [formal/PROOF_HISTORY.md](formal/PROOF_HISTORY.md): preserved May 2026 audit log, closure notes, and long-form research history moved out of this entrypoint
