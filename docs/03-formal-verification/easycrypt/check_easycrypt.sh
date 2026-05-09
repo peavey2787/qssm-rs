@@ -74,6 +74,7 @@ FILES=(
   ms/source/SourceHashBindingSemanticSlotMass.ec
   ms/source/SourceHashBindingSemanticSlotMassParameterized.ec
   ms/source/SourceHashBindingSemanticBridge.ec
+  ms/source/SourceHashBindingSemanticBridgeParameterized.ec
   ms/source/SourceDistributions.ec
   ms/source/SourceExecutionLink.ec
   ms/source/SourcePublicBitnessConstructors.ec

@@ -1,0 +1,89 @@
+require import AllCore Int List Distr.
+require import Real.
+require import QssmTypes.
+require import BudgetParameters.
+require import ParameterizedBudgetParameters.
+require import TranscriptObservable.
+require import SourceTypes SourceModel.
+require import SourceConstructors SourcePayloadDistributions.
+require import SourceBitnessDistributions SourceObservableDistributions.
+require import SourceHashBindingSemanticBridge.
+require import SourceHashBindingSemanticSlotMassParameterized.
+import Ring.IntID StdOrder.IntOrder Range.
+
+(* Parallel MS1 semantic bridge against the parameterized owner surface.
+   This leaves the existing semantic/demo bridge untouched and only adds a
+   companion wrapper above the parameterized local mass owners. *)
+
+(* Alias-compatibility lemma: this closes only because the current
+   parameterized MS1 counts alias the live demo semantic counts. *)
+lemma epsilon_ms_hash_binding_semantic_eq_epsilon_ms_hash_binding_parameterized :
+  BudgetParameters.epsilon_ms_hash_binding_semantic =
+  ParameterizedBudgetParameters.epsilon_ms_hash_binding_parameterized.
+proof.
+rewrite BudgetParameters.epsilon_ms_hash_binding_semantic_closed_form.
+rewrite ParameterizedBudgetParameters.epsilon_ms_hash_binding_parameterized_closed_form.
+rewrite /ParameterizedBudgetParameters.ms1_param_failure_count.
+rewrite /ParameterizedBudgetParameters.ms1_param_total_count.
+rewrite /ParameterizedBudgetParameters.ms1_param_collision_count.
+rewrite /ParameterizedBudgetParameters.ms1_param_malformed_binding_count.
+rewrite /ParameterizedBudgetParameters.ms1_param_transcript_count.
+rewrite /ParameterizedBudgetParameters.ms1_param_clean_count.
+by rewrite /BudgetParameters.ms_hash_binding_failure_slot_count
+  /BudgetParameters.ms_hash_binding_total_slot_count.
+qed.
+
+lemma ms_hash_binding_local_public_divergence_upper_mass_eq_parameterized :
+  ms_hash_binding_local_public_divergence_upper_mass =
+  ms_hash_binding_local_public_divergence_upper_mass_parameterized.
+proof.
+rewrite /ms_hash_binding_local_public_divergence_upper_mass.
+rewrite /ms_hash_binding_local_public_divergence_upper_mass_parameterized.
+rewrite /ParameterizedBudgetParameters.ms1_param_malformed_binding_count.
+rewrite /ParameterizedBudgetParameters.ms1_param_transcript_count.
+rewrite /ParameterizedBudgetParameters.ms1_param_total_count.
+rewrite /ParameterizedBudgetParameters.ms1_param_clean_count.
+rewrite /ParameterizedBudgetParameters.ms1_param_failure_count.
+by rewrite /ParameterizedBudgetParameters.ms1_param_collision_count
+  /BudgetParameters.ms_hash_binding_total_slot_count.
+qed.
+
+lemma ms_hash_binding_execution_owned_semantic_failure_probability_eq_epsilon_ms_hash_binding_parameterized
+  (x : ms_public_input) :
+  ms_hash_binding_execution_owned_semantic_failure_probability x =
+  ParameterizedBudgetParameters.epsilon_ms_hash_binding_parameterized.
+proof.
+rewrite ms_hash_binding_execution_owned_semantic_failure_probability_eq_local_mass.
+rewrite ms_hash_binding_local_failure_mass_eq_epsilon_ms_hash_binding_semantic.
+exact epsilon_ms_hash_binding_semantic_eq_epsilon_ms_hash_binding_parameterized.
+qed.
+
+lemma ms_hash_binding_public_divergence_upper_pair_choice_mass_eq_local_upper_mass_parameterized
+  (x : ms_public_input) :
+  mu1 (d_ms_hash_binding_public_divergence_upper_pair_choice x) true =
+  ms_hash_binding_local_public_divergence_upper_mass_parameterized.
+proof.
+rewrite ms_hash_binding_public_divergence_upper_pair_choice_mass_eq_local_upper_mass.
+exact ms_hash_binding_local_public_divergence_upper_mass_eq_parameterized.
+qed.
+
+lemma ms_hash_binding_public_observable_divergence_mass_le_local_public_divergence_upper_mass_parameterized
+  (x : ms_public_input) :
+  mu (d_ms_hash_binding_semantic_coupled_state x)
+    ms_hash_binding_public_observable_divergence_condition <=
+  ms_hash_binding_local_public_divergence_upper_mass_parameterized.
+proof.
+have Hmass :=
+  ms_hash_binding_public_observable_divergence_mass_le_local_public_divergence_upper_mass x.
+rewrite -ms_hash_binding_local_public_divergence_upper_mass_eq_parameterized.
+exact Hmass.
+qed.
+
+lemma A_MS1_hash_binding_execution_owned_parameterized_bound
+  (x : ms_public_input) :
+  ms_hash_binding_execution_owned_semantic_failure_probability x <=
+  ParameterizedBudgetParameters.epsilon_ms_hash_binding_parameterized.
+proof.
+rewrite (ms_hash_binding_execution_owned_semantic_failure_probability_eq_epsilon_ms_hash_binding_parameterized x).
+by [].
+qed.
