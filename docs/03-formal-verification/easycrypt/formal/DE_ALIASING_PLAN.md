@@ -184,11 +184,11 @@ The following theorem paths should now be treated as structurally de-aliased upp
 
 - `A_LE_rejection_sampler_semantic_sdist_parameterized_bound` now closes through the live parameterized rejection sampler chain `LERejectionSamplerParameterizedCore.ec -> LERejectionSamplerMassLiveParameterized.ec -> LERejectionParameterized.ec`; `LEStatisticalDistanceParameterized.ec` then composes that midpoint through `LEFsProgrammingParameterizedView.ec`, so the active rejection lane no longer depends on a demo-semantic/parameterized equality.
 - `A_LE_fs_semantic_programming_sampler_sdist_le_parameterized_budget` now closes through the live FS chain `LEFsProgrammingLiveParameterizedCore.ec -> LEFsProgrammingLiveParameterizedMass.ec -> LEFsProgrammingParameterized.ec`, while `LEFsProgrammingParameterizedView.ec` carries the same live midpoint into `LEStatisticalDistanceParameterized.ec`; the active FS lane no longer depends on a demo-semantic/parameterized equality.
-- `A_MS1_hash_binding_execution_owned_parameterized_bound` now routes through `ms_hash_binding_local_failure_mass_le_parameterized_budget`, not the broad semantic-to-parameterized epsilon equality.
-- `ms_hash_binding_public_observable_divergence_mass_le_local_public_divergence_upper_mass_parameterized` now routes through `ms_hash_binding_local_public_divergence_upper_mass_le_parameterized_upper_mass`; the remaining count-alias sensitivity is localized at the live upper-mass comparison itself.
+- `A_MS1_hash_binding_execution_owned_parameterized_bound` now routes through the live chain `SourceHashBindingSemanticLiveParameterizedCore.ec -> SourceHashBindingSemanticLiveParameterizedMass.ec -> SourceHashBindingSemanticBridgeParameterized.ec`, so the former MS1 local-failure comparison is no longer an active seam.
+- `ms_hash_binding_public_observable_divergence_mass_le_local_public_divergence_upper_mass_parameterized` now routes through the same live MS1 chain, and the staged/public-endpoint wrapper path no longer depends on a demo semantic-to-parameterized upper-mass comparison.
 - `A_MS2_rom_programming_execution_owned_parameterized_bound` now routes through `ms_rom_local_failure_mass_le_parameterized_budget`, not the broad semantic-to-parameterized epsilon equality.
 - `A_MS2_rom_programming_parameterized_public_endpoint_transition_bound` now composes `L_ms2_rom_programming_transition_le_execution_owned_semantic_failure` with `A_MS2_rom_programming_execution_owned_parameterized_bound`; it no longer rewrites the broad MS2 semantic/parameterized epsilon equality directly.
-- `A_MS_public_endpoint_parameterized_transition_bound` now composes the repaired MS1/MS2 public-endpoint theorems instead of directly rewriting broad semantic/parameterized equalities.
+- `A_MS_public_endpoint_parameterized_transition_bound` now composes the live MS1 staged/public-endpoint theorem with the repaired MS2 public-endpoint theorem instead of directly rewriting broad semantic/parameterized equalities.
 
 Classification: `mixed`, but structurally de-aliased above the remaining localized comparison seams.
 
@@ -210,12 +210,10 @@ The structurally de-aliased upper theorem paths listed above are no longer direc
 
 ## Remaining Localized Count-Alias-Sensitive Seams
 
-The following theorems are now the real production-count substitution boundary. The remaining localized count-alias-sensitive seams are MS-side only.
+The following theorem is now the real production-count substitution boundary. The only remaining localized count-alias-sensitive seam is MS2 local failure.
 
 | Theorem | Live/demo quantity compared | Parameterized target | Replay class | Upward blast radius |
 |---|---|---|---|---|
-| `ms_hash_binding_local_failure_mass_le_parameterized_budget` | `ms_hash_binding_local_failure_mass` | `ParameterizedBudgetParameters.epsilon_ms_hash_binding_parameterized` | local semantic replay | feeds the MS1 execution-owned bridge and the MS1 public-endpoint wrapper path, but should not force canonical landing replay if the theorem name and inequality direction stay fixed |
-| `ms_hash_binding_local_public_divergence_upper_mass_le_parameterized_upper_mass` | `ms_hash_binding_local_public_divergence_upper_mass` | `ms_hash_binding_local_public_divergence_upper_mass_parameterized` | public-endpoint replay | feeds only the MS1 public-observable divergence upper theorem and then the public-endpoint MS wrapper path; the canonical MS landing route stays untouched |
 | `ms_rom_local_failure_mass_le_parameterized_budget` | `ms_rom_local_failure_mass` | `ParameterizedBudgetParameters.epsilon_ms_rom_programmability_parameterized` | canonical-sensitive replay | feeds the MS2 execution-owned bridge, the MS2 public-endpoint theorem, the public-to-canonical landing theorem, and the explicit duplicated-charge canonical MS route |
 
 ## Mixed Components That Should Become Reusable Once Lower Replacements Land
@@ -246,43 +244,11 @@ Expected reuse after lower replacements: unchanged.
 
 Expected reuse after lower replacements: mostly unchanged, except for any local replay needed if the MS1 canonical or MS2 canonical theorem names change.
 
-## First True Production-Substitution Breakpoints
+## First True Production-Substitution Breakpoint
 
-When the parameterized counts diverge from the current demo counts, the first actual breakpoints are now the three localized comparison seams above, not the upper theorem routes above them.
+When the parameterized counts diverge from the current demo counts, the first actual breakpoint is now the single localized comparison seam above, not the upper theorem routes above it.
 
-### Breakpoint 1: MS1 local failure comparison
-
-Primary file: `ms/source/SourceHashBindingSemanticBridgeParameterized.ec`
-
-Current break cause:
-
-- `ms_hash_binding_local_failure_mass_le_parameterized_budget`
-
-Smallest replacement theorem needed:
-
-- reprove `ms_hash_binding_local_failure_mass_le_parameterized_budget` against genuinely independent `ms1_param_*` counts
-
-Practical note:
-
-This is now the smallest remaining live parameterized replay on the theorem path. The execution-owned and most public-endpoint theorem names above it should remain unchanged if this theorem name and inequality direction are preserved.
-
-### Breakpoint 2: MS1 public-divergence upper comparison
-
-Primary file: `ms/source/SourceHashBindingSemanticBridgeParameterized.ec`
-
-Current break cause:
-
-- `ms_hash_binding_local_public_divergence_upper_mass_le_parameterized_upper_mass`
-
-Smallest replacement theorem needed:
-
-- reprove `ms_hash_binding_local_public_divergence_upper_mass_le_parameterized_upper_mass` against a genuinely independent parameterized upper mass
-
-Practical note:
-
-This is the only remaining localized seam whose natural replay class is public-endpoint-sensitive rather than a pure local-failure comparison.
-
-### Breakpoint 3: MS2 local failure comparison
+### Breakpoint 1: MS2 local failure comparison
 
 Primary file: `ms/comparison/ComparisonPayloadSemanticBridgeParameterized.ec`
 
@@ -302,22 +268,16 @@ This remains the most globally visible localized seam because the MS2 execution-
 
 The recommended replay order is:
 
-1. replace exactly one parameterized owner subfamily while preserving the current parameterized operator names and arithmetic structure
-2. replay the matching localized comparison seam for that owner subfamily
+1. preserve the current parameterized operator names, theorem names, and arithmetic structure
+2. replay the remaining localized comparison seam `ms_rom_local_failure_mass_le_parameterized_budget`
 3. verify that the upper wrappers above that seam survive unchanged
-4. start with the MS1 local failure comparison
-5. then replay the MS1 public-divergence upper comparison
-6. finally replay the MS2 local failure comparison
-7. rerun the checker and the zero-axiom / zero-admit validation
-8. only after the proof route is stable again, revisit readability or refactor work
+4. rerun the checker and the zero-axiom / zero-admit validation
+5. only after the proof route is stable again, revisit readability or refactor work
 
 Reason for this order:
 
-- the first honest pilot should change only one owner subfamily so profile selection and proof replay stay coupled locally
-- the live LE rejection and live LE FS routes have already validated the substitution process on the LE side without disturbing the theorem-facing route
-- the MS1 local failure comparison is now the smallest remaining honest replay before touching the more public-endpoint-sensitive MS1 upper mass or the canonical-sensitive MS2 path
-- the MS1 public-divergence upper comparison is a separate public-endpoint-sensitive replay surface and should not be conflated with the MS1 local failure replay
-- the MS2 local failure comparison is the most globally visible MS dependency because it feeds both the public-endpoint route and the canonical landing
+- the live LE rejection, live LE FS, live MS1 canonical failure, and live MS1 staged/public-endpoint routes have already validated the substitution process without disturbing the theorem-facing route
+- the MS2 local failure comparison is now the only remaining localized seam and the most globally visible MS dependency because it feeds both the public-endpoint route and the canonical landing
 - delaying readability work avoids mixing semantic substitutions with naming churn
 
 ## Structural Invariants That Must Remain Frozen
@@ -359,15 +319,14 @@ These are intentionally deferred until after production-count substitution succe
 
 ### First actual production-substitution target
 
-Start with the LE FS bad-branch comparison.
+Start with the MS2 local failure comparison.
 
 Reason:
 
-- the LE rejection live sampler route already landed and validated the first honest lower-budget LE substitution slice
-- the remaining LE FS seam is the smallest local replay point still on the live queue
-- the expected proof touches stay below the theorem-facing wrappers
-- it validates the next LE parameterized component before touching the more expensive MS2 canonical landing path
-- `formal/PARAMETER_PROFILES.md` can be updated afterward once the first real profile choice is locked
+- the LE rejection, LE FS, and both MS1 parameterized replay slices are already landed and checker-green
+- `ms_rom_local_failure_mass_le_parameterized_budget` is now the only remaining localized seam on the live parameterized route
+- the expected proof touches stay below the theorem-facing wrappers even though the MS2 blast radius is larger than the finished MS1 slices
+- the next proof phase should be the MS2 live parameterized replay audit, not a readability refactor or theorem-surface mutation
 
 ### Most expensive replay points
 
@@ -376,7 +335,6 @@ The likely highest-cost remaining seam and theorem replay points are:
 - `ms_rom_local_failure_mass_le_parameterized_budget`
 - `A_MS2_rom_programming_parameterized_canonical_game_pr_core_bound`
 - `A_G0_to_G1_ms_parameterized_transition_bound`
-- `A_LE_fs_semantic_programming_sampler_sdist_le_parameterized_budget`
 
 Among these, `ms_rom_local_failure_mass_le_parameterized_budget` is the hardest remaining localized seam, and the MS2 canonical game-pr core theorem remains the most architecture-sensitive theorem above it because it is where the duplicate MS2 charge becomes explicit at the canonical game layer.
 

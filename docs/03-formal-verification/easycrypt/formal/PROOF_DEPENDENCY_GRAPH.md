@@ -6,6 +6,8 @@ Navigation: [EasyCrypt README](../README.md)
 
 This document gives external reviewers a route-by-route view of how the frozen EasyCrypt proof surface composes.
 
+Checkpoint snapshot: `./check_easycrypt.sh` is `OK` over 133 checked theories, with `axiom_count=0` and `admit_count=0`.
+
 ## Global Split
 
 ```mermaid
@@ -106,7 +108,10 @@ Canonical demo semantic MS route + parameterized LE route
 ```text
 ParameterizedBudgetParameters.epsilon_ms_hash_binding_parameterized
   -> ms/source/SourceHashBindingSemanticSlotMassParameterized.ec
+  -> ms/source/SourceHashBindingSemanticLiveParameterizedCore.ec
+  -> ms/source/SourceHashBindingSemanticLiveParameterizedMass.ec
   -> ms/source/SourceHashBindingSemanticBridgeParameterized.ec
+  -> ms/MSProbabilitySurfaceParameterized.ec : A_MS1_hash_binding_parameterized_public_endpoint_compatibility_bound
 
 ParameterizedBudgetParameters.epsilon_ms_rom_programmability_parameterized
   -> ms/comparison/ComparisonPayloadSemanticSlotMassParameterized.ec
@@ -115,7 +120,7 @@ ParameterizedBudgetParameters.epsilon_ms_rom_programmability_parameterized
   -> games/GameAdvantageParameterized.ec : A_MS_public_after_rom_to_canonical_after_rom_parameterized_bound
   -> games/GameMSHopTypesParameterized.ec : A_MS2_canonical_rom_programming_parameterized_bound
 
-Parameterized MS1 route + budgeted public-to-canonical MS2 landing
+Live MS1 route + budgeted public-to-canonical MS2 landing
   -> games/GameMSHopCompositionParameterized.ec : A_G0_to_G1_ms_parameterized_transition_bound
 
 Canonical parameterized MS route + parameterized LE route
@@ -127,13 +132,15 @@ Canonical parameterized MS route + parameterized LE route
 ```text
 ParameterizedBudgetParameters.epsilon_ms_hash_binding_parameterized
   -> ms/source/SourceHashBindingSemanticSlotMassParameterized.ec
+  -> ms/source/SourceHashBindingSemanticLiveParameterizedCore.ec
+  -> ms/source/SourceHashBindingSemanticLiveParameterizedMass.ec
   -> ms/source/SourceHashBindingSemanticBridgeParameterized.ec
 
 ParameterizedBudgetParameters.epsilon_ms_rom_programmability_parameterized
   -> ms/comparison/ComparisonPayloadSemanticSlotMassParameterized.ec
   -> ms/comparison/ComparisonPayloadSemanticBridgeParameterized.ec
 
-MS parameterized bridge companions
+Live MS1 staged route + remaining MS2 companion
   -> ms/MSProbabilitySurfaceParameterized.ec
   -> games/GameAdvantageParameterized.ec
   -> games/GameMSHopTypesParameterized.ec
@@ -200,6 +207,20 @@ ParameterizedBudgetParameters.epsilon_le_parameterized
   -> MainTheoremParameterized.ec
 ```
 
+### MS1 live parameterized route
+
+```text
+ParameterizedBudgetParameters.epsilon_ms_hash_binding_parameterized
+  -> SourceHashBindingSemanticSlotMassParameterized.ec
+  -> SourceHashBindingSemanticLiveParameterizedCore.ec : live coupled-state/public-observable core
+  -> SourceHashBindingSemanticLiveParameterizedMass.ec : canonical failure at 3/32 and public-divergence upper at 1/16
+  -> SourceHashBindingSemanticBridgeParameterized.ec : preserved bridge facts delegated to the live lane
+  -> MSProbabilitySurfaceParameterized.ec
+  -> GameAdvantageParameterized.ec
+  -> GameMSHopTypesParameterized.ec
+  -> GameMSHopCompositionParameterized.ec
+```
+
 ## Honest Boundary
 
-The dependency graph remains intentionally split. The public theorem surface now includes both the LE-only intermediate parameterized theorem and the full canonical parameterized theorem, while the internal staged/public-endpoint MS route remains visible because the canonical closure still depends on a charged public-to-canonical bridge rather than a zero-cost identification.
+The dependency graph remains intentionally split. The public theorem surface now includes both the LE-only intermediate parameterized theorem and the full canonical parameterized theorem, while the internal staged/public-endpoint MS route remains visible because the canonical closure still depends on a charged public-to-canonical bridge rather than a zero-cost identification. On the MS1 half, that staged route is now live parameterized; the only remaining localized replay seam is MS2 local failure.

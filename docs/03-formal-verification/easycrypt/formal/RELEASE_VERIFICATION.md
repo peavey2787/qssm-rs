@@ -10,7 +10,7 @@ This document explains how to reproduce the frozen May 2026 release checkpoint a
 
 At the current release checkpoint, the expected result is:
 
-- full checker: `OK: checked 131 theories`
+- full checker: `OK: checked 133 theories`
 - `axiom_count=0`
 - `admit_count=0`
 - worktree clean after restoring generated `.eco` churn
@@ -19,7 +19,11 @@ At the current release checkpoint, the expected result is:
 - active parameterized LE rejection profile documented as `soft=1`, `hard=1`, `invalid=1`, `accept=29`, `failure=3`, `total=32`, so `epsilon_le_rej_parameterized = 3%r / 32%r`
 - active parameterized LE FS profile documented as `query_collision=1`, `programming_collision=1`, `transcript=1`, `clean=29`, `failure=3`, `total=32`, so `epsilon_le_fs_parameterized = 3%r / 32%r`
 - active parameterized LE umbrella documented as `epsilon_le_parameterized = 6%r / 32%r = 3%r / 16%r`
-- both LE rejection and LE FS documented as lowered below `3%r / 16%r`; the MS parameterized families remain on their existing demo-derived bridge surfaces
+- active parameterized MS1 profile documented as `collision=1`, `malformed_binding=1`, `transcript=1`, `clean=29`, `failure=3`, `total=32`, so `epsilon_ms_hash_binding_parameterized = 3%r / 32%r`
+- MS1 canonical failure lane documented as live at `3%r / 32%r`
+- MS1 public-divergence upper lane documented as live at `2%r / 32%r = 1%r / 16%r`
+- staged MS1 public-endpoint route documented as live parameterized rather than demo-bound
+- the only remaining localized replay seam documented as `ms_rom_local_failure_mass_le_parameterized_budget`
 - `qssm_main_theorem_le_parameterized_budget` present and documented as the LE-only intermediate theorem
 - `qssm_main_theorem_parameterized_budget` present and documented as the full canonical parameterized theorem
 - canonical parameterized top budget documented as `epsilon_ms_hash_binding_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_le_parameterized`
@@ -36,7 +40,7 @@ cd docs/03-formal-verification/easycrypt
 Expected terminal tail:
 
 ```text
-OK: checked 131 theories in .../docs/03-formal-verification/easycrypt
+OK: checked 133 theories in .../docs/03-formal-verification/easycrypt
 ```
 
 The compile-order authority remains [../check_easycrypt.sh](../check_easycrypt.sh).
@@ -99,10 +103,16 @@ A release-ready checkpoint must preserve all of the following.
 - semantic top unchanged at `3%r / 4%r`
 - active parameterized LE rejection and LE FS routes documented as `3%r / 32%r` while the demo LE rejection and LE FS routes remain `3%r / 16%r`
 - active parameterized LE umbrella documented as `epsilon_le_parameterized = 3%r / 16%r`
+- active parameterized MS1 profile documented as `collision=1`, `malformed_binding=1`, `transcript=1`, `clean=29`, `failure=3`, `total=32`
+- MS1 canonical failure lane documented as live at `3%r / 32%r`
+- MS1 public-divergence upper lane documented as live at `2%r / 32%r = 1%r / 16%r`
+- staged MS1 public-endpoint route documented as live parameterized rather than demo-bound
 - `qssm_main_theorem_le_parameterized_budget` documented as the LE-only intermediate theorem
 - `qssm_main_theorem_parameterized_budget` documented as the full canonical parameterized theorem
 - the explicit duplicated `epsilon_ms_rom_programmability_parameterized` term documented without simplification
 - staged/public-endpoint MS caveat documented explicitly as a charged bridge, not a zero bridge
+- remaining localized replay seam documented as MS2 local failure only
+- arbitrary non-uniform parameter profiles still documented as unsupported
 
 ## What The Release Does Not Claim
 
@@ -111,7 +121,7 @@ The release does not claim a zero-cost public-to-canonical MS fusion.
 - Public AfterRom is still budget-close to canonical AfterRom, not zero-equal.
 - There is still no theorem claiming `public AfterRom = canonical AfterRom` or `sdist(public AfterRom, canonical AfterRom) = 0`.
 - The canonical parameterized route closes by paying an explicit extra `epsilon_ms_rom_programmability_parameterized` term.
-- The staged/public-endpoint MS lane remains visible as the internal route consumed by that charged closure.
+- The staged/public-endpoint MS lane remains visible as the internal route consumed by that charged closure, with the MS1 half now live parameterized and the MS2 half still pending replay.
 
 ## Recommended Release Stop
 

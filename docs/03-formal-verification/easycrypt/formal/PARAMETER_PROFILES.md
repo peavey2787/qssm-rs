@@ -44,13 +44,17 @@ No concrete production values are selected in this document. Any future rational
 
 ## Current Checked Snapshot
 
-- `./check_easycrypt.sh` is `OK` over 131 checked theories; `axiom_count=0`; `admit_count=0`.
+- `./check_easycrypt.sh` is `OK` over 133 checked theories; `axiom_count=0`; `admit_count=0`.
 - The unchanged demo semantic LE rejection route still uses `soft=1`, `hard=1`, `invalid=1`, `accept=13`, so `epsilon_le_rej_semantic = 3%r / 16%r`.
 - The active parameterized LE rejection profile is `soft=1`, `hard=1`, `invalid=1`, `accept=29`, `failure=3`, `total=32`, so `epsilon_le_rej_parameterized = 3%r / 32%r`.
 - The active parameterized LE FS profile is `query_collision=1`, `programming_collision=1`, `transcript=1`, `clean=29`, `failure=3`, `total=32`, so `epsilon_le_fs_parameterized = 3%r / 32%r`.
 - Those paired `3%r / 32%r` LE profiles now reach `qssm_main_theorem_parameterized_budget` through `LERejectionSamplerParameterizedCore.ec`, `LERejectionSamplerMassLiveParameterized.ec`, `LEFsProgrammingLiveParameterizedCore.ec`, `LEFsProgrammingLiveParameterizedMass.ec`, `LEFsProgrammingParameterizedView.ec`, `LERejectionParameterized.ec`, `LEFsProgrammingParameterized.ec`, and `LEStatisticalDistanceParameterized.ec`.
 - Together they give `epsilon_le_parameterized = 6%r / 32%r = 3%r / 16%r`.
-- Both LE rejection and LE FS have active lower-budget live parameterized routes today; MS1 and MS2 have not been honestly lowered yet.
+- The active parameterized MS1 profile is `collision=1`, `malformed_binding=1`, `transcript=1`, `clean=29`, `failure=3`, `total=32`, so `epsilon_ms_hash_binding_parameterized = 3%r / 32%r`.
+- The MS1 canonical failure lane now closes live at `3%r / 32%r`, and the staged public-divergence upper lane now closes live at `2%r / 32%r = 1%r / 16%r`.
+- `SourceHashBindingSemanticLiveParameterizedCore.ec` owns the live MS1 coupled-state/public-observable core, `SourceHashBindingSemanticLiveParameterizedMass.ec` owns the live MS1 canonical failure and public-divergence upper mass closure, and `MSProbabilitySurfaceParameterized.ec`, `GameAdvantageParameterized.ec`, `GameMSHopTypesParameterized.ec`, and `GameMSHopCompositionParameterized.ec` now carry the live staged/public-endpoint MS1 route.
+- `qssm_main_theorem_parameterized_budget` remains closed with the explicit duplicated MS2 charge.
+- The only remaining localized replay seam is `ms_rom_local_failure_mass_le_parameterized_budget`.
 
 ## Why The MS2 Charge Appears Twice
 
@@ -161,23 +165,21 @@ The first honest live lower-budget substitution slices are now the LE rejection 
 
 Before any profile is promoted from design to theorem-facing parameter selection, complete the following work:
 
-1. Choose actual counts for the remaining parameterized MS1 and MS2 owners if lower budgets are desired.
-2. Replay the matching remaining localized comparison seams, starting with the MS1 local failure comparison and the MS1 public-divergence upper comparison.
-3. Preserve the owner-layer parameterized arithmetic so theorem statements continue to consume the same budget structure.
+1. Choose actual counts for the remaining parameterized MS2 owner if a lower MS2 budget is desired.
+2. Replay the remaining localized comparison seam `ms_rom_local_failure_mass_le_parameterized_budget`.
+3. Preserve the owner-layer parameterized arithmetic and the explicit duplicated MS2 charge so theorem statements continue to consume the same budget structure.
 4. Rerun the full EasyCrypt checker and the zero-axiom / zero-admit validation.
-5. Update theorem-facing and release-facing docs after the new counts and bridge proofs are locked.
+5. Update theorem-facing and release-facing docs after the MS2 bridge proof is locked.
 
 ## Explicit Warning About The Current Proof Surface
 
-The current parameterized proof route is structurally complete, and its upper LE/MS bridge paths are now largely de-aliased above the lower comparison layer. The LE rejection route is already past its former demo-arithmetic seam, but the remaining localized comparison seams still rely on demo arithmetic until production-count substitution is performed.
+The current parameterized proof route is structurally complete, and its upper LE/MS bridge paths are now largely de-aliased above the lower comparison layer. The LE rejection route is already past its former demo-arithmetic seam, the MS1 canonical and staged routes are now live parameterized, and the only remaining localized comparison seam still relying on demo arithmetic is MS2 local failure.
 
 The active seams are:
 
-- `ms_hash_binding_local_failure_mass_le_parameterized_budget`
-- `ms_hash_binding_local_public_divergence_upper_mass_le_parameterized_upper_mass`
 - `ms_rom_local_failure_mass_le_parameterized_budget`
 
-That means the architecture and theorem composition are now in place, and the live LE route has already landed as paired `3%r / 32%r` rejection and FS components. Future lowering of either MS family still requires localized lower-proof replacement work before any broader production-count claim is honest.
+That means the architecture and theorem composition are now in place, and the live LE route plus the live MS1 route have already landed as paired `3%r / 32%r` LE components and a live `3%r / 32%r` / `1%r / 16%r` MS1 pair. Future lowering of the remaining MS family still requires localized lower-proof replacement work before any broader production-count claim is honest.
 
 ## MS2 Refactor Candidates Before Production-Count Substitution
 

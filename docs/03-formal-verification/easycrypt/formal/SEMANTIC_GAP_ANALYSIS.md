@@ -24,6 +24,7 @@ The following facts are available on the current lower surface.
 - The canonical AfterRom observable collapses back to the canonical AfterBinding observable.
 - The public semantic AfterRom observable is only bounded against the canonical surface by a charged semantic-failure term.
 - The public-endpoint route can therefore be proved as a staged/public-endpoint route.
+- On the MS1 half, that staged/public-endpoint route is now live parameterized at `2%r / 32%r = 1%r / 16%r` rather than demo-bound.
 - The parameterized route can now land back in the canonical game chain by paying an explicit budgeted bridge charge.
 
 In practical theorem names, the strongest relevant current facts are:
@@ -96,11 +97,12 @@ What remains missing is a stronger lower theorem about the actual relationship b
 
 The first honest owner boundary is still below the theorem surface if future work wants to tighten the new route.
 
-On the current tree, the live LE rejection and live LE FS `3%r / 32%r` lanes are already closed, so the remaining localized replay seams are MS-side only: the MS1 local failure comparison, the MS1 public-divergence upper comparison, and the MS2 local failure comparison. The next focused audit is therefore MS1 rather than another LE refinement.
+On the current tree, the live LE rejection and live LE FS `3%r / 32%r` lanes are already closed, and the MS1 canonical failure plus staged/public-endpoint lanes are now also live parameterized at `3%r / 32%r` and `1%r / 16%r`. The only remaining localized replay seam is therefore MS2 local failure comparison `ms_rom_local_failure_mass_le_parameterized_budget`, so the next focused audit is MS2 rather than another LE refinement or a theorem-surface mutation.
 
 - Start at `ms/MSProbabilitySurface.ec` or a sibling lower companion.
 - Do not start in `MainTheorem.ec`.
 - Do not start by mutating theorem names.
+- Do not start with a readability refactor.
 - Do not treat the current gap as a packaging problem.
 
 ## Research Backlog

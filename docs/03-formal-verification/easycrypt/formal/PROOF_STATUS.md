@@ -4,7 +4,7 @@ Navigation: [EasyCrypt README](../README.md)
 
 ## Snapshot
 
-As of May 2026, the EasyCrypt tree under this directory checks cleanly with `./check_easycrypt.sh`; the current checker snapshot is `OK` over 131 checked theories; the repo-local named `axiom` count in `*.ec` files under this directory is `0`; and the current repo-local `admit` count is `0`.
+As of May 2026, the EasyCrypt tree under this directory checks cleanly with `./check_easycrypt.sh`; the current checker snapshot is `OK` over 133 checked theories; the repo-local named `axiom` count in `*.ec` files under this directory is `0`; and the current repo-local `admit` count is `0`.
 
 The active theorem path is therefore fully machine-checked at the current abstraction boundary. The important caveat is now narrower: theorem routing is frozen at an exact-zero route, a demo semantic route, an LE-only intermediate parameterized route, and a full canonical parameterized route that closes through a charged public-to-canonical MS landing rather than a zero-cost identification.
 
@@ -49,9 +49,9 @@ The active theorem stack is checker-green end to end.
 - `games/` packages the MS and LE transition bounds into the final additive theorem path
 - `sim/Simulator.ec` closes the public-surface bridge needed for the MS-to-LE handoff
 
-## Parameterized LE Checkpoint
+## Parameterized Checkpoint
 
-The live parameterized LE route is now fully landed and reaches the closed canonical parameterized theorem.
+The live parameterized LE route and the live parameterized MS1 route are now fully landed and reach the closed canonical parameterized theorem.
 
 - `primitives/ParameterizedBudgetParameters.ec` now carries the active LE rejection parameterized counts `soft=1`, `hard=1`, `invalid=1`, `accept=29`, `failure=3`, `total=32`, so `epsilon_le_rej_parameterized = 3%r / 32%r`.
 - The same file now carries the active LE FS parameterized counts `query_collision=1`, `programming_collision=1`, `transcript=1`, `clean=29`, `failure=3`, `total=32`, so `epsilon_le_fs_parameterized = 3%r / 32%r`.
@@ -59,8 +59,11 @@ The live parameterized LE route is now fully landed and reaches the closed canon
 - `le/LEFsProgrammingLiveParameterizedCore.ec` and `le/LEFsProgrammingLiveParameterizedMass.ec` own the live parameterized FS branch/midpoint core and bad-branch mass/sdist closure.
 - `le/LEFsProgrammingParameterizedView.ec`, `le/LERejectionParameterized.ec`, `le/LEFsProgrammingParameterized.ec`, and `le/LEStatisticalDistanceParameterized.ec` now route through those live LE midpoints.
 - `epsilon_le_parameterized = epsilon_le_rej_parameterized + epsilon_le_fs_parameterized = 6%r / 32%r = 3%r / 16%r`.
+- `primitives/ParameterizedBudgetParameters.ec` now also carries the active MS1 profile `collision=1`, `malformed_binding=1`, `transcript=1`, `clean=29`, `failure=3`, `total=32`, so `epsilon_ms_hash_binding_parameterized = 3%r / 32%r`.
+- `ms/source/SourceHashBindingSemanticLiveParameterizedCore.ec` owns the live MS1 coupled-state/public-observable core, and `ms/source/SourceHashBindingSemanticLiveParameterizedMass.ec` owns live MS1 canonical failure and public-divergence upper mass closure.
+- `ms/source/SourceHashBindingSemanticBridgeParameterized.ec`, `ms/MSProbabilitySurfaceParameterized.ec`, `games/GameAdvantageParameterized.ec`, `games/GameMSHopTypesParameterized.ec`, and `games/GameMSHopCompositionParameterized.ec` now carry the live MS1 staged/public-endpoint route, so the staged MS1 lane is no longer demo-bound and the public-divergence upper lane closes at `2%r / 32%r = 1%r / 16%r`.
 - `BudgetParameters.ec`, `MainTheorem.ec`, `LERealExecution.ec`, `LERejection.ec`, and demo `LEStatisticalDistance.ec` remain unchanged.
-- No MS parameter family has been honestly lowered yet; the remaining localized replay seams are MS1 local failure, MS1 public-divergence upper comparison, and MS2 local failure.
+- `qssm_main_theorem_parameterized_budget` remains closed with the explicit duplicated MS2 charge, and the only remaining localized replay seam is `ms_rom_local_failure_mass_le_parameterized_budget`.
 
 ## Budget Models Today
 
@@ -154,7 +157,7 @@ The following items remain outside the current exact-zero theorem path:
 
 ## Current Next Target
 
-The next parameterized proof target is now MS1, not another LE slice. The live parameterized LE route is already landed and checker-green through `LERejectionSamplerParameterizedCore.ec`, `LERejectionSamplerMassLiveParameterized.ec`, `LEFsProgrammingLiveParameterizedCore.ec`, `LEFsProgrammingLiveParameterizedMass.ec`, `LEFsProgrammingParameterizedView.ec`, `LERejectionParameterized.ec`, `LEFsProgrammingParameterized.ec`, and `LEStatisticalDistanceParameterized.ec`, with both `epsilon_le_rej_parameterized` and `epsilon_le_fs_parameterized` at `3%r / 32%r`, so `epsilon_le_parameterized = 3%r / 16%r` reaches `qssm_main_theorem_parameterized_budget`. The demo semantic route and exact-zero route remain unchanged, and the remaining honest parameterized replay seams are therefore MS-side only: `ms_hash_binding_local_failure_mass_le_parameterized_budget`, `ms_hash_binding_local_public_divergence_upper_mass_le_parameterized_upper_mass`, and `ms_rom_local_failure_mass_le_parameterized_budget`.
+The next parameterized proof target is now MS2, not another LE or MS1 slice. The live parameterized LE route is landed and checker-green through `LERejectionSamplerParameterizedCore.ec`, `LERejectionSamplerMassLiveParameterized.ec`, `LEFsProgrammingLiveParameterizedCore.ec`, `LEFsProgrammingLiveParameterizedMass.ec`, `LEFsProgrammingParameterizedView.ec`, `LERejectionParameterized.ec`, `LEFsProgrammingParameterized.ec`, and `LEStatisticalDistanceParameterized.ec`, with both `epsilon_le_rej_parameterized` and `epsilon_le_fs_parameterized` at `3%r / 32%r`, so `epsilon_le_parameterized = 3%r / 16%r` reaches `qssm_main_theorem_parameterized_budget`. The live parameterized MS1 route is also landed and checker-green through `SourceHashBindingSemanticLiveParameterizedCore.ec`, `SourceHashBindingSemanticLiveParameterizedMass.ec`, `SourceHashBindingSemanticBridgeParameterized.ec`, `MSProbabilitySurfaceParameterized.ec`, `GameAdvantageParameterized.ec`, `GameMSHopTypesParameterized.ec`, and `GameMSHopCompositionParameterized.ec`, with the canonical failure lane at `epsilon_ms_hash_binding_parameterized = 3%r / 32%r` and the staged public-divergence upper lane at `2%r / 32%r = 1%r / 16%r`. The demo semantic route and exact-zero route remain unchanged, and the only remaining honest localized parameterized replay seam is `ms_rom_local_failure_mass_le_parameterized_budget`.
 
 The execution-owned semantic rejection-to-FS handoff is now landed and checker-green. `LERealExecution.ec` owns the semantic rejection support/material, `LERejectionSampler.d_le_semantic_post_rejection_view` is the semantic midpoint, `LEFsProgrammingSurface.d_le_pre_fs_semantic_programming_view` feeds that midpoint into the semantic FS lane, and `games/GameLEBridge.ec` now packages the resulting semantic projected-simulation advantage without changing the exact-zero theorem path.
 
@@ -171,7 +174,7 @@ The next exact local target is therefore no longer the rejection-owner handoff, 
 - keep the current exact-zero theorem path unchanged while any future material split remains strictly below the theorem-facing rejection wrappers
 - defer any future `primitives/ProtocolParameters.ec` move until there is a real shared parameter source worth centralizing
 
-This is the best current stopping point because the semantic rejection owner, semantic post-rejection midpoint, repaired rejection ticket/observable, primitive category law, ticket-failure bridge, semantic FS pre-image, bridge packaging, and semantic umbrella plumbing are now all installed and checker-green, and the live theorem path does not need more than failure-vs-accept plus repair/no-repair. The next design target, if parameterized replay work resumes here, is a focused MS1 live parameterized replay audit rather than another LE slice.
+This is the best current stopping point because the semantic rejection owner, semantic post-rejection midpoint, repaired rejection ticket/observable, primitive category law, ticket-failure bridge, semantic FS pre-image, bridge packaging, and semantic umbrella plumbing are now all installed and checker-green, and the live theorem path no longer needs more than failure-vs-accept plus repair/no-repair on LE while the MS1 live parameterized route is also checker-green. The next design target, if parameterized replay work resumes here, is a focused MS2 live parameterized replay audit rather than another LE or MS1 slice.
 
 The MS2 visible/silent micro-layer is now intentionally stopped and checkpointed. The bridge-local execution-owned decomposition, common-equality normalization, normalized bundle / wrapper packaging, projection helpers, and round-trip helper are in place below routing, and no further normalized-wrapper micro-helpers are planned on the live route. The next work item is roadmap triage rather than more MS2 bridge-local proof churn.
 

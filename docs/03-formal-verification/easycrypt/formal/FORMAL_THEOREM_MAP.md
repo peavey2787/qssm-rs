@@ -8,7 +8,7 @@ This document is the canonical external explanation of what the current EasyCryp
 
 The proof surface is frozen at the May 2026 release checkpoint.
 
-- Current checker snapshot is `OK` over 131 checked theories, with `axiom_count=0` and `admit_count=0`.
+- Current checker snapshot is `OK` over 133 checked theories, with `axiom_count=0` and `admit_count=0`.
 - The exact-zero route remains unchanged.
 - The live demo semantic route remains unchanged and still closes at `3%r / 4%r`.
 - `qssm_main_theorem_le_parameterized_budget` exists and is closed as the LE-only intermediate theorem.
@@ -127,11 +127,15 @@ The full canonical parameterized route is now complete and honest about the extr
 | Layer | File | Main symbols |
 |---|---|---|
 | Parameterized owners | `primitives/ParameterizedBudgetParameters.ec` | `epsilon_ms_hash_binding_parameterized`, `epsilon_ms_rom_programmability_parameterized`, `epsilon_le_parameterized` |
+| Live MS1 coupled-state/public core | `ms/source/SourceHashBindingSemanticLiveParameterizedCore.ec` | `d_ms_hash_binding_semantic_coupled_state_parameterized`, `d_ms_hash_binding_public_semantic_observable_v2_parameterized`, `d_ms_hash_binding_public_divergence_upper_pair_choice_parameterized` |
+| Live MS1 mass closure | `ms/source/SourceHashBindingSemanticLiveParameterizedMass.ec` | `A_MS1_hash_binding_execution_owned_live_parameterized_bound`, `ms_hash_binding_public_divergence_upper_pair_choice_mass_eq_local_upper_mass_live_parameterized`, `ms_hash_binding_public_observable_divergence_mass_le_local_public_divergence_upper_mass_live_parameterized` |
+| Parameterized MS1 bridge + surface | `ms/source/SourceHashBindingSemanticBridgeParameterized.ec`, `ms/MSProbabilitySurfaceParameterized.ec` | preserved canonical/staged theorem names delegated to the live MS1 lane at `epsilon_ms_hash_binding_parameterized = 3%r / 32%r` and staged upper mass `1%r / 16%r` |
 | Budgeted public-to-canonical bridge | `ms/MSProbabilitySurfaceParameterized.ec` | `A_MS_public_after_rom_to_canonical_after_rom_parameterized_transition_bound` |
-| Game-layer landing | `games/GameAdvantageParameterized.ec`, `games/GameMSHopTypesParameterized.ec` | `A_MS_public_after_rom_to_canonical_after_rom_parameterized_bound`, `A_MS2_canonical_rom_programming_parameterized_bound` |
-| Canonical MS composition | `games/GameMSHopCompositionParameterized.ec` | `A_G0_to_G1_ms_parameterized_transition_bound` |
+| Game-layer landing | `games/GameAdvantageParameterized.ec`, `games/GameMSHopTypesParameterized.ec`, `games/GameMSHopCompositionParameterized.ec` | live MS1 staged/public-endpoint route plus canonical landing with explicit duplicated MS2 charge |
 | Parameterized LE bridge | `games/GameLEBridgeParameterized.ec` | `A_G1_to_G2_le_semantic_parameterized_budget_transition_bound` |
 | Top theorem | `theorem/MainTheoremParameterized.ec` | `qssm_main_theorem_parameterized_budget` |
+
+The active live MS1 profile on this route is `collision=1`, `malformed_binding=1`, `transcript=1`, `clean=29`, `failure=3`, `total=32`, so the canonical failure lane closes at `3%r / 32%r` and the staged public-divergence upper lane closes at `2%r / 32%r = 1%r / 16%r`.
 
 The closed top-level budget is:
 
@@ -149,12 +153,13 @@ The MS parameterized lane still factors through a staged public-endpoint route, 
 | Layer | File | Main symbols |
 |---|---|---|
 | Parameterized owners | `primitives/ParameterizedBudgetParameters.ec` | `epsilon_ms_hash_binding_parameterized`, `epsilon_ms_rom_programmability_parameterized` |
-| Parameterized local owner closure | `ms/source/SourceHashBindingSemanticSlotMassParameterized.ec`, `ms/comparison/ComparisonPayloadSemanticSlotMassParameterized.ec` | parameterized local mass closure |
-| Parameterized bridge companions | `ms/source/SourceHashBindingSemanticBridgeParameterized.ec`, `ms/comparison/ComparisonPayloadSemanticBridgeParameterized.ec` | parameterized companion theorems above the demo semantic bridge surfaces |
-| Parameterized probability surface | `ms/MSProbabilitySurfaceParameterized.ec` | parameterized public-endpoint bounds plus the budgeted public AfterRom to canonical AfterRom landing theorem |
-| Parameterized game wrappers | `games/GameAdvantageParameterized.ec`, `games/GameMSHopTypesParameterized.ec`, `games/GameMSHopCompositionParameterized.ec` | staged public-endpoint game wrappers plus the canonical parameterized composition theorem |
+| Live MS1 public-endpoint core | `ms/source/SourceHashBindingSemanticLiveParameterizedCore.ec` | `d_ms_hash_binding_public_semantic_observable_v2_parameterized`, `d_ms_hash_binding_public_divergence_upper_pair_choice_parameterized` |
+| Live MS1 staged mass closure | `ms/source/SourceHashBindingSemanticLiveParameterizedMass.ec` | live staged/public-divergence upper closure at `1%r / 16%r` |
+| Parameterized bridge companions | `ms/source/SourceHashBindingSemanticBridgeParameterized.ec`, `ms/comparison/ComparisonPayloadSemanticBridgeParameterized.ec` | live MS1 bridge delegation plus the remaining MS2 companion theorems |
+| Parameterized probability surface | `ms/MSProbabilitySurfaceParameterized.ec` | `A_MS1_hash_binding_parameterized_public_endpoint_compatibility_bound`, `A_MS_public_endpoint_parameterized_transition_bound`, and the budgeted public AfterRom to canonical AfterRom landing theorem |
+| Parameterized game wrappers | `games/GameAdvantageParameterized.ec`, `games/GameMSHopTypesParameterized.ec`, `games/GameMSHopCompositionParameterized.ec` | live staged/public-endpoint MS1 wrappers plus the canonical parameterized composition theorem |
 
-This lane still carries `A_MS_public_endpoint_parameterized_staged_composition_bound`, but it no longer stops there. The public-endpoint subroute is now consumed by the budgeted landing theorem and the canonical composition theorem `A_G0_to_G1_ms_parameterized_transition_bound`.
+This lane still carries `A_MS_public_endpoint_parameterized_staged_composition_bound`, but it no longer stops there. The MS1 half of the public-endpoint subroute is no longer demo-bound, and the staged/public-endpoint route is now consumed by the budgeted landing theorem and the canonical composition theorem `A_G0_to_G1_ms_parameterized_transition_bound`.
 
 ## What Is Intentionally Not Proved
 
