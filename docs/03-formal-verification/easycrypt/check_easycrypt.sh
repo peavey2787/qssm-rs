@@ -136,6 +136,7 @@ FILES=(
   games/GameMSHopTypesParameterized.ec
   games/GameMSHopTransitions.ec
   games/GameMSHopComposition.ec
+  games/GameMSHopCompositionParameterized.ec
   games/GameMSHops.ec
   games/GameLEBridge.ec
   games/GameLEBridgeParameterized.ec
