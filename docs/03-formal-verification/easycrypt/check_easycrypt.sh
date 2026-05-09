@@ -120,6 +120,7 @@ FILES=(
   le/LEFsProgrammingParameterized.ec
   le/LEViewIndist.ec
   le/LEStatisticalDistance.ec
+  le/LEStatisticalDistanceParameterized.ec
   le/LEHVZK.ec
   le/LEModel.ec
   sim/Simulator.ec
