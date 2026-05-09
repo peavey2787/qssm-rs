@@ -122,10 +122,12 @@ FILES=(
   le/LERejectionSamplerMassLiveParameterized.ec
   le/LERejectionParameterized.ec
   le/LEFsProgramming.ec
-  le/LEFsProgrammingParameterized.ec
   le/LEViewIndist.ec
   le/LEStatisticalDistance.ec
+  le/LEFsProgrammingLiveParameterizedCore.ec
+  le/LEFsProgrammingLiveParameterizedMass.ec
   le/LEFsProgrammingParameterizedView.ec
+  le/LEFsProgrammingParameterized.ec
   le/LEStatisticalDistanceParameterized.ec
   le/LEHVZK.ec
   le/LEHVZKParameterized.ec

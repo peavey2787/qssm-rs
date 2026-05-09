@@ -8,29 +8,25 @@ require import LESurface.
 require import LERealExecution.
 require import LERejectionSampler.
 require import LERejectionSamplerParameterizedCore.
+require import LEFsProgrammingLiveParameterizedCore.
+require import LEFsProgrammingLiveParameterizedMass.
 require import LEFsProgrammingSurface.
 require import LEFsProgrammingPostMarginal.
-require import LEFsProgrammingParameterized.
 require ParameterizedBudgetParameters.
 
 (*---*) import RealOrder.
 
 op d_le_parameterized_pre_fs_semantic_programming_view
   (x : qssm_public_input) (s : seed) : le_transcript_observable distr =
-  d_le_parameterized_post_rejection_view x s.
+  LEFsProgrammingLiveParameterizedCore.d_le_parameterized_pre_fs_semantic_programming_view x s.
 
 op d_le_parameterized_post_fs_semantic_programmed_view
   (x : qssm_public_input) (s : seed) : le_transcript_observable distr =
-  dmap (d_le_parameterized_pre_fs_semantic_programming_view x s)
-    LEFsProgrammingSurface.le_fs_surrogate_transform.
+  LEFsProgrammingLiveParameterizedCore.d_le_parameterized_post_fs_semantic_programmed_view x s.
 
 op d_le_parameterized_fs_shadow_semantic_post_marginal
   (x : qssm_public_input) (s : seed) : le_transcript_observable distr =
-  dmap ((d_le_parameterized_pre_fs_semantic_programming_view x s) `*`
-        LEFsProgrammingSurface.d_le_fs_shadow_branch_choice)
-    (fun (p : le_transcript_observable * bool) =>
-      LEFsProgrammingSurface.le_fs_shadow_semantic_branch_image_of_observable
-        (fst p) (snd p)).
+  LEFsProgrammingLiveParameterizedCore.d_le_fs_parameterized_shadow_semantic_post_marginal x s.
 
 lemma d_le_parameterized_post_fs_semantic_programmed_view_pairE :
   forall (x : qssm_public_input) (s : seed),
@@ -41,96 +37,28 @@ lemma d_le_parameterized_post_fs_semantic_programmed_view_pairE :
           LEFsProgrammingSurface.le_fs_shadow_semantic_branch_image_of_observable
             (fst p) (snd p)).
 proof.
-move=> x s.
-rewrite /d_le_parameterized_post_fs_semantic_programmed_view.
-rewrite dmap_dprodE.
-have -> :
-    dlet (d_le_parameterized_pre_fs_semantic_programming_view x s)
-      (fun obs => dmap (dunit false)
-        (fun bad =>
-          LEFsProgrammingSurface.le_fs_shadow_semantic_branch_image_of_observable obs bad)) =
-    dlet (d_le_parameterized_pre_fs_semantic_programming_view x s)
-      (fun obs => dmap (dunit obs)
-        (fun (obs' : le_transcript_observable) =>
-          LEFsProgrammingSurface.le_fs_shadow_semantic_branch_image_of_observable
-            obs' false)).
-  apply (in_eq_dlet
-    (fun obs => dmap (dunit false)
-      (fun bad =>
-        LEFsProgrammingSurface.le_fs_shadow_semantic_branch_image_of_observable obs bad))
-    (fun obs => dmap (dunit obs)
-      (fun (obs' : le_transcript_observable) =>
-        LEFsProgrammingSurface.le_fs_shadow_semantic_branch_image_of_observable
-          obs' false))
-    (d_le_parameterized_pre_fs_semantic_programming_view x s)).
-  move=> obs _ /=.
-  rewrite !dmap_dunit /=.
-  by rewrite /LEFsProgrammingSurface.le_fs_shadow_semantic_branch_image_of_observable.
-rewrite -dmap_dlet.
-rewrite dlet_d_unit.
-by [].
+exact LEFsProgrammingLiveParameterizedCore.d_le_parameterized_post_fs_semantic_programmed_view_pairE.
 qed.
 
 lemma d_le_parameterized_fs_shadow_semantic_post_marginal_branch_split_pairE :
   forall (x : qssm_public_input) (s : seed),
     d_le_parameterized_fs_shadow_semantic_post_marginal x s =
       dmap ((d_le_parameterized_pre_fs_semantic_programming_view x s) `*`
-            LEFsProgrammingSurface.d_le_fs_shadow_branch_choice)
+            LEFsProgrammingLiveParameterizedCore.d_le_fs_parameterized_shadow_branch_choice)
         (fun (p : le_transcript_observable * bool) =>
           LEFsProgrammingSurface.le_fs_shadow_semantic_branch_image_of_observable
             (fst p) (snd p)).
 proof.
-by move=> x s; rewrite /d_le_parameterized_fs_shadow_semantic_post_marginal.
+exact LEFsProgrammingLiveParameterizedCore.d_le_fs_parameterized_shadow_semantic_post_marginal_branch_split_pairE.
 qed.
 
 lemma A_LE_parameterized_fs_shadow_semantic_post_marginal_sdist_le_bad_branch_mass :
   forall (x : qssm_public_input) (s : seed),
     sdist (d_le_parameterized_fs_shadow_semantic_post_marginal x s)
       (d_le_parameterized_post_fs_semantic_programmed_view x s)
-      <= LEFsProgrammingSurface.le_fs_shadow_local_bad_branch_mass.
+      <= LEFsProgrammingLiveParameterizedMass.le_fs_parameterized_local_bad_branch_mass.
 proof.
-move=> x s.
-rewrite (d_le_parameterized_fs_shadow_semantic_post_marginal_branch_split_pairE x s).
-rewrite (d_le_parameterized_post_fs_semantic_programmed_view_pairE x s).
-pose dpre := d_le_parameterized_pre_fs_semantic_programming_view x s.
-pose F := fun (p : le_transcript_observable * bool) =>
-  LEFsProgrammingSurface.le_fs_shadow_semantic_branch_image_of_observable
-    (fst p) (snd p).
-have Hmap :
-  sdist (dmap (dpre `*` LEFsProgrammingSurface.d_le_fs_shadow_branch_choice) F)
-        (dmap (dpre `*` dunit false) F)
-    <= sdist (dpre `*` LEFsProgrammingSurface.d_le_fs_shadow_branch_choice)
-         (dpre `*` dunit false).
-  exact (sdist_dmap (dpre `*` LEFsProgrammingSurface.d_le_fs_shadow_branch_choice)
-    (dpre `*` dunit false) F).
-have Hdprod :
-  sdist (dpre `*` LEFsProgrammingSurface.d_le_fs_shadow_branch_choice)
-        (dpre `*` dunit false)
-    <= sdist dpre dpre +
-       sdist LEFsProgrammingSurface.d_le_fs_shadow_branch_choice (dunit false).
-  exact (sdist_dprod dpre dpre LEFsProgrammingSurface.d_le_fs_shadow_branch_choice
-    (dunit false)).
-have Hdprod' :
-  sdist (dpre `*` LEFsProgrammingSurface.d_le_fs_shadow_branch_choice)
-        (dpre `*` dunit false)
-    <= sdist LEFsProgrammingSurface.d_le_fs_shadow_branch_choice (dunit false).
-  have Hsame : sdist dpre dpre <= 0%r.
-    by rewrite sdistdd.
-  have Hsum :
-    sdist dpre dpre +
-    sdist LEFsProgrammingSurface.d_le_fs_shadow_branch_choice (dunit false) <=
-    0%r + sdist LEFsProgrammingSurface.d_le_fs_shadow_branch_choice (dunit false).
-    apply (ler_add _ _ _ _ Hsame).
-    by [].
-  have Hstep :
-    sdist (dpre `*` LEFsProgrammingSurface.d_le_fs_shadow_branch_choice)
-          (dpre `*` dunit false) <=
-    0%r + sdist LEFsProgrammingSurface.d_le_fs_shadow_branch_choice (dunit false).
-    exact (ler_trans _ _ _ Hdprod Hsum).
-  by smt().
-apply (ler_trans _ _ _ Hmap).
-apply (ler_trans _ _ _ Hdprod').
-exact LEFsProgrammingPostMarginal.le_fs_shadow_branch_choice_sdist_dunit_false_le_bad_branch_mass.
+exact LEFsProgrammingLiveParameterizedMass.A_LE_fs_parameterized_shadow_semantic_post_marginal_sdist_le_bad_branch_mass.
 qed.
 
 lemma A_LE_fs_semantic_programming_sampler_sdist_le_parameterized_budget_from_parameterized_midpoint :
@@ -142,13 +70,9 @@ lemma A_LE_fs_semantic_programming_sampler_sdist_le_parameterized_budget_from_pa
       (d_le_parameterized_fs_shadow_semantic_post_marginal x s)
       <= ParameterizedBudgetParameters.epsilon_le_fs_parameterized.
 proof.
-move=> x s D Hr Hs Hfs.
-have Hmass :=
-  A_LE_parameterized_fs_shadow_semantic_post_marginal_sdist_le_bad_branch_mass x s.
-have Hbridge :=
-  le_fs_shadow_local_bad_branch_mass_le_parameterized_budget x s.
+move=> x s D _ _ _.
 rewrite sdistC.
-exact (ler_trans _ _ _ Hmass Hbridge).
+exact (LEFsProgrammingLiveParameterizedMass.A_LE_fs_parameterized_shadow_semantic_post_marginal_sdist_le_parameterized_budget x s).
 qed.
 
 lemma le_parameterized_distinguisher_event_on_semantic_branch_image_matches_surrogate
@@ -310,7 +234,7 @@ have Hparam :
     rewrite !dmap_dprodE.
     apply (in_eq_dlet
       (fun obs =>
-        dmap LEFsProgrammingSurface.d_le_fs_shadow_branch_choice
+        dmap LEFsProgrammingLiveParameterizedCore.d_le_fs_parameterized_shadow_branch_choice
           (fun bad =>
             E (LEFsProgrammingSurface.le_fs_shadow_semantic_branch_image_of_observable obs bad)))
       (fun obs =>
@@ -328,18 +252,18 @@ have Hparam :
         (le_parameterized_distinguisher_event_on_semantic_branch_image_matches_surrogate obs bad D)
         (le_parameterized_distinguisher_event_on_semantic_branch_image_matches_surrogate obs false D).
     have -> :
-        dmap LEFsProgrammingSurface.d_le_fs_shadow_branch_choice
+        dmap LEFsProgrammingLiveParameterizedCore.d_le_fs_parameterized_shadow_branch_choice
           (fun bad =>
             E (LEFsProgrammingSurface.le_fs_shadow_semantic_branch_image_of_observable obs bad)) =
-        dmap LEFsProgrammingSurface.d_le_fs_shadow_branch_choice
+        dmap LEFsProgrammingLiveParameterizedCore.d_le_fs_parameterized_shadow_branch_choice
           (fun _ =>
             E (LEFsProgrammingSurface.le_fs_shadow_semantic_branch_image_of_observable obs false)).
       apply eq_dmap=> bad /=.
       exact (Hconst bad).
     rewrite (le_parameterized_dmap_const_ll
-      LEFsProgrammingSurface.d_le_fs_shadow_branch_choice
+      LEFsProgrammingLiveParameterizedCore.d_le_fs_parameterized_shadow_branch_choice
       (E (LEFsProgrammingSurface.le_fs_shadow_semantic_branch_image_of_observable obs false))
-      LEFsProgrammingSurface.le_fs_shadow_branch_choice_lossless).
+      LEFsProgrammingLiveParameterizedCore.d_le_fs_parameterized_shadow_branch_choice_lossless).
     by rewrite dmap_dunit.
   have Hcollapse :
       dmap (d_le_parameterized_post_fs_semantic_programmed_view x s) E =

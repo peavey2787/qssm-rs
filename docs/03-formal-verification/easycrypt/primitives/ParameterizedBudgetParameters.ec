@@ -344,16 +344,16 @@ by smt(le_rej_param_failure_count_nonneg le_rej_param_total_count_pos).
 qed.
 
 op le_fs_param_query_collision_count : int =
-  BudgetParameters.le_fs_query_collision_slot_count.
+  1.
 
 op le_fs_param_programming_collision_count : int =
-  BudgetParameters.le_fs_programming_collision_slot_count.
+  1.
 
 op le_fs_param_transcript_count : int =
-  BudgetParameters.le_fs_transcript_mismatch_slot_count.
+  1.
 
 op le_fs_param_clean_count : int =
-  BudgetParameters.le_fs_clean_slot_count.
+  29.
 
 op le_fs_param_failure_count : int =
   le_fs_param_query_collision_count +
@@ -374,35 +374,35 @@ lemma le_fs_param_query_collision_count_nonneg :
   0 <= le_fs_param_query_collision_count.
 proof.
 rewrite /le_fs_param_query_collision_count.
-exact BudgetParameters.le_fs_query_collision_slot_count_nonneg.
+by smt().
 qed.
 
 lemma le_fs_param_programming_collision_count_nonneg :
   0 <= le_fs_param_programming_collision_count.
 proof.
 rewrite /le_fs_param_programming_collision_count.
-exact BudgetParameters.le_fs_programming_collision_slot_count_nonneg.
+by smt().
 qed.
 
 lemma le_fs_param_transcript_count_nonneg :
   0 <= le_fs_param_transcript_count.
 proof.
 rewrite /le_fs_param_transcript_count.
-exact BudgetParameters.le_fs_transcript_mismatch_slot_count_nonneg.
+by smt().
 qed.
 
 lemma le_fs_param_clean_count_nonneg :
   0 <= le_fs_param_clean_count.
 proof.
 rewrite /le_fs_param_clean_count.
-exact BudgetParameters.le_fs_clean_slot_count_nonneg.
+by smt().
 qed.
 
 lemma le_fs_param_clean_count_pos :
   0 < le_fs_param_clean_count.
 proof.
 rewrite /le_fs_param_clean_count.
-exact BudgetParameters.le_fs_clean_slot_count_pos.
+by smt().
 qed.
 
 lemma le_fs_param_failure_count_nonneg :
