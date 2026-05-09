@@ -122,6 +122,7 @@ FILES=(
   le/LEStatisticalDistance.ec
   le/LEStatisticalDistanceParameterized.ec
   le/LEHVZK.ec
+  le/LEHVZKParameterized.ec
   le/LEModel.ec
   sim/Simulator.ec
   games/GameTypes.ec
