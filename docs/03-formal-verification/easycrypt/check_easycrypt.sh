@@ -110,6 +110,7 @@ FILES=(
   le/LEFsProgrammingSupportImages.ec
   le/LEFsProgrammingPostMarginal.ec
   le/LEFsProgrammingFailureProbability.ec
+  le/LEFsProgrammingFailureProbabilityParameterized.ec
   le/LEFsProgrammingSurface.ec
   le/LESetB.ec
   le/LERejection.ec
