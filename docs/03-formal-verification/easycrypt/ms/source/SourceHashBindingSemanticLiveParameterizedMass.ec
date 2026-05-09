@@ -1,0 +1,49 @@
+require import AllCore Distr.
+require import Real.
+require import QssmTypes.
+require import ParameterizedBudgetParameters.
+require import SourceTypes SourceModel.
+require import SourceHashBindingSemanticSlotMassParameterized.
+require import SourceHashBindingSemanticLiveParameterizedCore.
+
+(* Live parameterized MS1 canonical failure mass lane. *)
+
+op ms_hash_binding_execution_owned_parameterized_failure_probability
+  (x : ms_public_input) : real =
+  mu1 (d_ms_hash_binding_semantic_failure_state_choice_parameterized x) true.
+
+lemma ms_hash_binding_execution_owned_parameterized_failure_probability_eq_local_mass
+  (x : ms_public_input) :
+  ms_hash_binding_execution_owned_parameterized_failure_probability x =
+  ms_hash_binding_local_failure_mass_parameterized.
+proof.
+rewrite /ms_hash_binding_execution_owned_parameterized_failure_probability
+        /ms_hash_binding_local_failure_mass_parameterized.
+by rewrite d_ms_hash_binding_semantic_failure_state_choice_parameterizedE.
+qed.
+
+lemma ms_hash_binding_execution_owned_parameterized_failure_probability_eq_epsilon_ms_hash_binding_parameterized
+  (x : ms_public_input) :
+  ms_hash_binding_execution_owned_parameterized_failure_probability x =
+  ParameterizedBudgetParameters.epsilon_ms_hash_binding_parameterized.
+proof.
+rewrite ms_hash_binding_execution_owned_parameterized_failure_probability_eq_local_mass.
+exact ms_hash_binding_local_failure_mass_eq_epsilon_ms_hash_binding_parameterized.
+qed.
+
+lemma ms_hash_binding_execution_owned_parameterized_failure_probability_le_epsilon_ms_hash_binding_parameterized
+  (x : ms_public_input) :
+  ms_hash_binding_execution_owned_parameterized_failure_probability x <=
+  ParameterizedBudgetParameters.epsilon_ms_hash_binding_parameterized.
+proof.
+rewrite ms_hash_binding_execution_owned_parameterized_failure_probability_eq_local_mass.
+exact ms_hash_binding_local_failure_mass_le_epsilon_ms_hash_binding_parameterized.
+qed.
+
+lemma A_MS1_hash_binding_execution_owned_live_parameterized_bound
+  (x : ms_public_input) :
+  ms_hash_binding_execution_owned_parameterized_failure_probability x <=
+  ParameterizedBudgetParameters.epsilon_ms_hash_binding_parameterized.
+proof.
+exact (ms_hash_binding_execution_owned_parameterized_failure_probability_le_epsilon_ms_hash_binding_parameterized x).
+qed.

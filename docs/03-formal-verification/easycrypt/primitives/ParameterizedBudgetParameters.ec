@@ -7,16 +7,16 @@ import Ring.IntID StdOrder.IntOrder.
    proof-closed without changing any existing theorem names or owners. *)
 
 op ms1_param_collision_count : int =
-  BudgetParameters.ms_hash_binding_collision_slot_count.
+  1.
 
 op ms1_param_malformed_binding_count : int =
-  BudgetParameters.ms_hash_binding_malformed_binding_slot_count.
+  1.
 
 op ms1_param_transcript_count : int =
-  BudgetParameters.ms_hash_binding_transcript_mismatch_slot_count.
+  1.
 
 op ms1_param_clean_count : int =
-  BudgetParameters.ms_hash_binding_clean_slot_count.
+  29.
 
 op ms1_param_failure_count : int =
   ms1_param_collision_count +

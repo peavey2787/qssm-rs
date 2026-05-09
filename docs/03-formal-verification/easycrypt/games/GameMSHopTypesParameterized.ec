@@ -1,6 +1,7 @@
 require import AllCore.
 require import QssmTypes.
 require import SourceTypes.
+require import TranscriptObservable.
 require import MSProbabilitySurface.
 require import SourceHashBindingSemanticBridgeParameterized.
 require import GameAdvantage.
@@ -19,7 +20,7 @@ lemma A_MS1_hash_binding_parameterized_stage_bound :
          (D : distinguisher),
     game_pr_ms_public_endpoint_core x s xms MSPublicEndpointAfterBinding D -
     ms_view_distinguish_pr (d_ms_after_binding_observable_v2 x s xms) D <=
-      ParameterizedBudgetParameters.epsilon_ms_hash_binding_parameterized.
+  MS.epsilon_ms_hash_binding_semantic.
 proof.
 move=> x s xms D.
 exact (A_MS1_hash_binding_parameterized_game_advantage_bound x s xms D).
@@ -40,11 +41,29 @@ lemma A_MS_public_endpoint_parameterized_stage_bound :
   forall (x : qssm_public_input) (s : seed) (xms : ms_public_input)
          (D : distinguisher),
     Adv_ms_public_endpoint x s xms D <=
-      ParameterizedBudgetParameters.epsilon_ms_hash_binding_parameterized +
+  MS.epsilon_ms_hash_binding_semantic +
       ParameterizedBudgetParameters.epsilon_ms_rom_programmability_parameterized.
 proof.
 move=> x s xms D.
 exact (A_MS_public_endpoint_parameterized_game_advantage_bound x s xms D).
+qed.
+
+lemma A_MS1_hash_binding_parameterized_concrete_pair_advantage_bound :
+  forall (x : qssm_public_input) (s : seed) (xms : ms_public_input)
+         (obs : ms_v2_transcript_observable)
+         (lep : le_transcript_observable option) (D : distinguisher),
+    Adv
+      (GV_ms {| msgv_qssm_pub = x; msgv_seed = s; msgv_ms_pub = xms;
+                msgv_ms_obs = obs; msgv_stage = MSGameStageReal;
+                msgv_le_placeholder = lep |})
+      (GV_ms {| msgv_qssm_pub = x; msgv_seed = s; msgv_ms_pub = xms;
+                msgv_ms_obs = obs; msgv_stage = MSGameStageAfterBinding;
+                msgv_le_placeholder = lep |})
+      D <= ParameterizedBudgetParameters.epsilon_ms_hash_binding_parameterized.
+proof.
+move=> x s xms obs lep D.
+rewrite /Adv /game_pr /= /ms3a_game_pr_stage /ms3b_game_pr_stage /ms3c_game_pr_stage /=.
+exact (A_MS1_hash_binding_parameterized_game_pr_core_bound x s xms obs lep D).
 qed.
 
 lemma A_MS1_canonical_hash_binding_parameterized_bound :
@@ -54,14 +73,9 @@ lemma A_MS1_canonical_hash_binding_parameterized_bound :
       ParameterizedBudgetParameters.epsilon_ms_hash_binding_parameterized.
 proof.
 move=> x xms s D.
-have Hsem : 0%r <= MS.epsilon_ms_hash_binding_semantic.
-  rewrite /MS.epsilon_ms_hash_binding_semantic.
-  rewrite epsilon_ms_hash_binding_semantic_eq_epsilon_ms_hash_binding_parameterized.
-  exact ParameterizedBudgetParameters.epsilon_ms_hash_binding_parameterized_nonneg.
-have Hdemo := A_MS1_canonical_hash_binding_semantic_bound x xms s D Hsem.
-rewrite /MS.epsilon_ms_hash_binding_semantic in Hdemo.
-rewrite epsilon_ms_hash_binding_semantic_eq_epsilon_ms_hash_binding_parameterized in Hdemo.
-exact Hdemo.
+rewrite /G_MS_real /G_MS_after_binding /G0_real_qssm /mk_ms_game_view /=.
+exact (A_MS1_hash_binding_parameterized_concrete_pair_advantage_bound
+  x s xms (ms_game_view_public_obs xms) None D).
 qed.
 
 lemma A_MS2_canonical_rom_programming_parameterized_bound :

@@ -15,9 +15,33 @@ require ParameterizedBudgetParameters.
 (*---*) import RealOrder.
 
 (* Parallel parameterized MS probability surface.
-   This file leaves the existing demo semantic route untouched and lifts the
-   theorem-facing public-endpoint surface onto the parameterized MS1/MS2 bridge
-   companions. The staged public-endpoint route stays above this layer. *)
+  Slice 1 lowers only the canonical MS1 failure lane. The staged public-endpoint
+  MS1 compatibility theorem remains on the demo semantic bound until Slice 2. *)
+
+lemma A_MS1_hash_binding_parameterized_bad_event_bound
+  (x : qssm_public_input) (s : seed) (xms : ms_public_input) (D : distinguisher) :
+  ms_view_distinguish_pr
+    (d_ms_game_stage_observable_v2 x s xms MSGameStageReal) D -
+  ms_view_distinguish_pr
+    (d_ms_game_stage_observable_v2 x s xms MSGameStageAfterBinding) D
+  <= ParameterizedBudgetParameters.epsilon_ms_hash_binding_parameterized.
+proof.
+have Heq := L_ms1_hash_binding_stage_zero x s xms D.
+have Hbridge := A_MS1_hash_binding_execution_owned_parameterized_bound xms.
+have -> :
+  ms_view_distinguish_pr
+    (d_ms_game_stage_observable_v2 x s xms MSGameStageReal) D =
+  ms_view_distinguish_pr
+    (d_ms_game_stage_observable_v2 x s xms MSGameStageAfterBinding) D.
+  exact Heq.
+have -> :
+  ms_view_distinguish_pr
+    (d_ms_game_stage_observable_v2 x s xms MSGameStageAfterBinding) D -
+  ms_view_distinguish_pr
+    (d_ms_game_stage_observable_v2 x s xms MSGameStageAfterBinding) D = 0%r.
+  by ring.
+exact ParameterizedBudgetParameters.epsilon_ms_hash_binding_parameterized_nonneg.
+qed.
 
 lemma A_MS1_hash_binding_parameterized_public_endpoint_compatibility_bound
   (x : qssm_public_input) (s : seed) (xms : ms_public_input) (D : distinguisher) :
@@ -25,13 +49,9 @@ lemma A_MS1_hash_binding_parameterized_public_endpoint_compatibility_bound
     (d_ms_after_binding_public_semantic_observable_v2 x s xms) D -
   ms_view_distinguish_pr
     (d_ms_after_binding_observable_v2 x s xms) D
-  <= ParameterizedBudgetParameters.epsilon_ms_hash_binding_parameterized.
+  <= MS.epsilon_ms_hash_binding_semantic.
 proof.
-have Hdemo :=
-  A_MS1_hash_binding_semantic_public_endpoint_compatibility_bound x s xms D.
-rewrite /MS.epsilon_ms_hash_binding_semantic in Hdemo.
-rewrite -epsilon_ms_hash_binding_semantic_eq_epsilon_ms_hash_binding_parameterized.
-exact Hdemo.
+exact (A_MS1_hash_binding_semantic_public_endpoint_compatibility_bound x s xms D).
 qed.
 
 lemma A_MS2_rom_programming_parameterized_public_endpoint_transition_bound
@@ -115,7 +135,7 @@ lemma A_MS_public_endpoint_parameterized_transition_bound
     (d_ms_after_binding_public_semantic_observable_v2 x s xms) D -
   ms_view_distinguish_pr
     (d_ms_after_rom_public_semantic_observable_v2 x s xms) D
-  <= ParameterizedBudgetParameters.epsilon_ms_hash_binding_parameterized +
+  <= MS.epsilon_ms_hash_binding_semantic +
      ParameterizedBudgetParameters.epsilon_ms_rom_programmability_parameterized.
 proof.
 have Hms1 :=
