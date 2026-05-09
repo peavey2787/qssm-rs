@@ -133,6 +133,7 @@ FILES=(
   games/GameMSHopComposition.ec
   games/GameMSHops.ec
   games/GameLEBridge.ec
+  games/GameLEBridgeParameterized.ec
   games/Games.ec
   theorem/MainTheorem.ec
 )
