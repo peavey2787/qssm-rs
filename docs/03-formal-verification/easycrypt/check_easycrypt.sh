@@ -115,6 +115,7 @@ FILES=(
   le/LEFsProgrammingSurface.ec
   le/LESetB.ec
   le/LERejection.ec
+  le/LERejectionParameterized.ec
   le/LEFsProgramming.ec
   le/LEViewIndist.ec
   le/LEStatisticalDistance.ec
