@@ -2,6 +2,7 @@ require import AllCore Int List Distr.
 require import Algebra QssmTypes FS.
 require import BudgetParameters.
 require import ComparisonTypes ComparisonPayloadTypes ComparisonPayloadSeedTypes.
+require import ComparisonPayloadExecutionSeedTypes.
 require import TranscriptObservable SourceModel.
 import Ring.IntID StdOrder.IntOrder Range.
 

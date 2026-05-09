@@ -38,6 +38,7 @@ FILES=(
   ms/comparison/ComparisonDigests.ec
   ms/comparison/ComparisonPayloadTypes.ec
   ms/comparison/ComparisonPayloadSeedTypes.ec
+  ms/comparison/ComparisonPayloadExecutionSeedTypes.ec
   ms/comparison/ComparisonPayloadFromSeed.ec
   ms/comparison/ComparisonPayloadExecutionLaw.ec
   ms/comparison/ComparisonPayloadSemanticBridge.ec

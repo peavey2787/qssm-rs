@@ -1,6 +1,7 @@
 require import AllCore Int List Distr.
 require import Algebra QssmTypes FS SchnorrBranch TrueClauseTypes BitnessOne.
 require import ComparisonTypes ComparisonPayloadTypes ComparisonPayloadSeedTypes.
+require import ComparisonPayloadExecutionSeedTypes.
 require import ComparisonPayloadFromSeed.
 
 (* Execution-seed pushforwards and payload law transport below the stable
