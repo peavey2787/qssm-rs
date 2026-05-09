@@ -131,6 +131,7 @@ FILES=(
   games/GameTypes.ec
   games/GameViews.ec
   games/GameAdvantage.ec
+  games/GameAdvantageParameterized.ec
   games/GameMSHopTypes.ec
   games/GameMSHopTransitions.ec
   games/GameMSHopComposition.ec
