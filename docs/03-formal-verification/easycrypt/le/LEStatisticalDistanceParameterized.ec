@@ -8,11 +8,13 @@ require import LESurface.
 require import LERejectionSampler.
 require import LEFsProgrammingSurface.
 require import LERejection.
+require import LERejectionSamplerParameterizedCore.
 require import LEFsProgramming.
 require import LEViewIndist.
 require import LEStatisticalDistance.
 require import LERejectionParameterized.
 require import LEFsProgrammingParameterized.
+require import LEFsProgrammingParameterizedView.
 require import LEFsProgrammingFailureProbabilityParameterized.
 require ParameterizedBudgetParameters.
 
@@ -28,7 +30,7 @@ lemma A_LE_rejection_semantic_contributes_to_sdist_parameterized_budget :
     le_rejection_sampling_hiding_bound x s D =>
     0%r <= epsilon_le =>
     sdist (d_le_real_view x s)
-      (LERejectionSampler.d_le_semantic_post_rejection_view x s)
+      (d_le_parameterized_post_rejection_view x s)
       <= ParameterizedBudgetParameters.epsilon_le_rej_parameterized.
 proof.
 move=> x s D Hr _ Hrej _.
@@ -47,12 +49,13 @@ lemma A_LE_fs_semantic_contributes_to_sdist_parameterized_budget :
     le_sim_view_distribution_defined x s =>
     le_fs_programming_hiding_bound x s D =>
     0%r <= epsilon_le =>
-    sdist (LEFsProgrammingSurface.d_le_post_fs_semantic_programmed_view x s)
-      (LEFsProgrammingSurface.d_le_fs_shadow_semantic_post_marginal x s)
+    sdist (d_le_parameterized_post_fs_semantic_programmed_view x s)
+      (d_le_parameterized_fs_shadow_semantic_post_marginal x s)
       <= ParameterizedBudgetParameters.epsilon_le_fs_parameterized.
 proof.
 move=> x s D Hr Hs Hfs _.
-exact (A_LE_fs_semantic_programming_sampler_sdist_le_parameterized_budget x s D Hr Hs Hfs).
+exact (A_LE_fs_semantic_programming_sampler_sdist_le_parameterized_budget_from_parameterized_midpoint
+  x s D Hr Hs Hfs).
 qed.
 
 lemma A_LE_semantic_combined_hiding_bounds_sdist_parameterized_budget :
@@ -63,21 +66,21 @@ lemma A_LE_semantic_combined_hiding_bounds_sdist_parameterized_budget :
     le_fs_programming_hiding_bound x s D =>
     0%r <= epsilon_le =>
     sdist (d_le_real_view x s)
-      (LEFsProgrammingSurface.d_le_fs_shadow_semantic_post_marginal x s)
+      (d_le_parameterized_fs_shadow_semantic_post_marginal x s)
       <= ParameterizedBudgetParameters.epsilon_le_parameterized.
 proof.
 move=> x s D Hr Hs Hrej Hfs Heps.
 pose dr := d_le_real_view x s.
-pose dmid := LERejectionSampler.d_le_semantic_post_rejection_view x s.
-pose dprog := LEFsProgrammingSurface.d_le_post_fs_semantic_programmed_view x s.
-pose dsem := LEFsProgrammingSurface.d_le_fs_shadow_semantic_post_marginal x s.
+pose dmid := d_le_parameterized_post_rejection_view x s.
+pose dprog := d_le_parameterized_post_fs_semantic_programmed_view x s.
+pose dsem := d_le_parameterized_fs_shadow_semantic_post_marginal x s.
 have Hrej' : sdist dr dmid <= ParameterizedBudgetParameters.epsilon_le_rej_parameterized.
   exact (A_LE_rejection_semantic_contributes_to_sdist_parameterized_budget x s D Hr Hs Hrej Heps).
 have Hfs0 : sdist dmid dprog <= 0%r.
-  rewrite /dmid /dprog /LEFsProgrammingSurface.d_le_post_fs_semantic_programmed_view.
+  rewrite /dmid /dprog /d_le_parameterized_post_fs_semantic_programmed_view.
   have Hmap :
-    dmap (LERejectionSampler.d_le_semantic_post_rejection_view x s) le_fs_view_surrogate =
-    dmap (LERejectionSampler.d_le_semantic_post_rejection_view x s)
+    dmap (d_le_parameterized_post_rejection_view x s) le_fs_view_surrogate =
+    dmap (d_le_parameterized_post_rejection_view x s)
       (fun (obs : le_transcript_observable) => obs).
     apply eq_dmap_in=> obs _ /=.
     exact (LEFsProgrammingSurface.le_fs_surrogate_transform_id obs).
@@ -118,32 +121,29 @@ lemma A_LE_semantic_view_advantage_bound_from_parameterized_budget :
 proof.
 move=> x s D Hr Hs Hind Heps.
 rewrite /le_semantic_view_advantage_bound_from_parameterized_budget.
-have Hmass :=
-  A_LE_semantic_view_advantage_bound_from_indistinguishability x s D Hr Hs Hind Heps.
-rewrite /le_semantic_view_advantage_bound_from_indistinguishability in Hmass.
-have Hrej :
-    LERejectionSampler.le_rejection_shadow_semantic_failure_probability x s <=
-    ParameterizedBudgetParameters.epsilon_le_rej_parameterized.
-  exact (A_LE_rejection_shadow_semantic_failure_probability_le_parameterized_budget x s).
-have Hfs :
-    LEFsProgrammingSurface.le_fs_shadow_local_bad_branch_mass <=
-    ParameterizedBudgetParameters.epsilon_le_fs_parameterized.
-  have Hbridge :=
-    le_fs_shadow_local_bad_branch_mass_le_parameterized_failure_probability x s.
-  have Hbudget :=
-    le_fs_failure_probability_le_epsilon_le_fs_parameterized x s.
-  by smt().
-have Hextend :
-    LERejectionSampler.le_rejection_shadow_semantic_failure_probability x s +
-    LEFsProgrammingSurface.le_fs_shadow_local_bad_branch_mass <=
-    ParameterizedBudgetParameters.epsilon_le_parameterized.
-  have Hsum :
-      LERejectionSampler.le_rejection_shadow_semantic_failure_probability x s +
-      LEFsProgrammingSurface.le_fs_shadow_local_bad_branch_mass <=
-      ParameterizedBudgetParameters.epsilon_le_rej_parameterized +
-      ParameterizedBudgetParameters.epsilon_le_fs_parameterized.
-    exact (ler_add _ _ _ _ Hrej Hfs).
-  rewrite /ParameterizedBudgetParameters.epsilon_le_parameterized.
-  exact Hsum.
-exact (ler_trans _ _ _ Hmass Hextend).
+have Hsim :
+    le_view_distinguish_pr
+      (LEFsProgrammingSurface.d_le_fs_shadow_semantic_post_marginal x s) D =
+    le_view_distinguish_pr
+      (d_le_parameterized_fs_shadow_semantic_post_marginal x s) D.
+  by rewrite (le_view_distinguish_pr_parameterized_fs_shadow_semantic_post_marginal_matches_demo
+    x s D).
+rewrite /le_semantic_view_distinguishing_adv.
+rewrite Hsim.
+rewrite /le_view_distinguish_pr.
+case: Hind => Hrej Hfs.
+have Hstat :
+    sdist (d_le_real_view x s)
+      (d_le_parameterized_fs_shadow_semantic_post_marginal x s)
+      <= ParameterizedBudgetParameters.epsilon_le_parameterized.
+  exact (A_LE_semantic_combined_hiding_bounds_sdist_parameterized_budget x s D Hr Hs Hrej Hfs Heps).
+pose dr := d_le_real_view x s.
+pose ds := d_le_parameterized_fs_shadow_semantic_post_marginal x s.
+pose E := le_distinguisher_event D.
+have Habs : `|mu dr E - mu ds E| <= sdist dr ds.
+  exact (sdist_upper_bound dr ds E).
+have Hle : mu dr E - mu ds E <= `|mu dr E - mu ds E|.
+  exact (ler_norm (mu dr E - mu ds E)).
+apply (ler_trans _ _ _ Hle).
+apply (ler_trans _ _ _ Habs Hstat).
 qed.

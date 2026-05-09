@@ -118,11 +118,14 @@ FILES=(
   le/LEFsProgrammingSurface.ec
   le/LESetB.ec
   le/LERejection.ec
+  le/LERejectionSamplerParameterizedCore.ec
+  le/LERejectionSamplerMassLiveParameterized.ec
   le/LERejectionParameterized.ec
   le/LEFsProgramming.ec
   le/LEFsProgrammingParameterized.ec
   le/LEViewIndist.ec
   le/LEStatisticalDistance.ec
+  le/LEFsProgrammingParameterizedView.ec
   le/LEStatisticalDistanceParameterized.ec
   le/LEHVZK.ec
   le/LEHVZKParameterized.ec

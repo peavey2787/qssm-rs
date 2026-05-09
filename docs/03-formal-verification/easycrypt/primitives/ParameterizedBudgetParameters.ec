@@ -237,16 +237,16 @@ by smt(ms2_param_failure_count_nonneg ms2_param_total_count_pos).
 qed.
 
 op le_rej_param_soft_repair_count : int =
-  2.
+  1.
 
 op le_rej_param_hard_repair_count : int =
-  2.
+  1.
 
 op le_rej_param_invalid_count : int =
-  2.
+  1.
 
 op le_rej_param_accept_count : int =
-  26.
+  29.
 
 op le_rej_param_failure_count : int =
   le_rej_param_soft_repair_count +
