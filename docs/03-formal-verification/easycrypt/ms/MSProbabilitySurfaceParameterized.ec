@@ -8,6 +8,7 @@ require import MS.
 require import SourceTypes SourceModel.
 require import MSProbabilitySurface.
 require import SourceHashBindingSemanticBridgeParameterized.
+require import ComparisonPayloadSemanticBridge.
 require import ComparisonPayloadSemanticBridgeParameterized.
 require ParameterizedBudgetParameters.
 
@@ -45,6 +46,66 @@ have Hdemo :=
   A_MS2_rom_programming_semantic_public_endpoint_transition_bound x s xms D.
 rewrite -epsilon_ms_rom_programmability_semantic_eq_epsilon_ms_rom_programmability_parameterized.
 exact Hdemo.
+qed.
+
+lemma A_MS_public_after_rom_to_canonical_after_rom_parameterized_transition_bound
+  (x : qssm_public_input) (s : seed) (xms : ms_public_input) (D : distinguisher) :
+  ms_view_distinguish_pr
+    (d_ms_after_rom_public_semantic_observable_v2 x s xms) D -
+  ms_view_distinguish_pr
+    (d_ms_after_rom_observable_v2 x s xms) D
+  <= ParameterizedBudgetParameters.epsilon_ms_rom_programmability_parameterized.
+proof.
+have Heq_canonical :
+    ms_view_distinguish_pr
+      (d_ms_after_rom_observable_v2 x s xms) D =
+    ms_view_distinguish_pr
+      (d_ms_after_binding_observable_v2 x s xms) D.
+  apply (ms_view_distinguish_pr_respects_distribution_equality
+    (d_ms_after_rom_observable_v2 x s xms)
+    (d_ms_after_binding_observable_v2 x s xms) D).
+  exact (d_ms_after_rom_observable_v2_eq_after_binding x s xms).
+have Hgap :
+    `|ms_view_distinguish_pr
+        (d_ms_after_rom_public_semantic_observable_v2 x s xms) D -
+      ms_view_distinguish_pr
+        (d_ms_after_binding_observable_v2 x s xms) D| <=
+    mu (d_ms_rom_semantic_coupled_state xms)
+      (ms_rom_public_observable_divergence_condition xms).
+  rewrite d_ms_after_binding_observable_v2_public_semantic_clean_imageE.
+  rewrite /d_ms_after_rom_public_semantic_observable_v2.
+  apply (ms_same_source_distinguisher_gap_le_bad_mass
+    (d_ms_rom_semantic_coupled_state xms)
+    (ms_after_rom_public_semantic_observable_of_state xms)
+    (fun _ : ms_rom_semantic_state =>
+      ms_rom_semantic_after_rom_observable_of_failure_flag xms false)
+    (ms_rom_public_observable_divergence_condition xms) D).
+  move=> st Hnodiv.
+  have Hobs :=
+    ms_after_rom_public_semantic_observable_of_state_no_divergenceE xms st Hnodiv.
+  by smt().
+have Hdir :
+    ms_view_distinguish_pr
+      (d_ms_after_rom_public_semantic_observable_v2 x s xms) D -
+    ms_view_distinguish_pr
+      (d_ms_after_binding_observable_v2 x s xms) D <=
+    `|ms_view_distinguish_pr
+        (d_ms_after_rom_public_semantic_observable_v2 x s xms) D -
+      ms_view_distinguish_pr
+        (d_ms_after_binding_observable_v2 x s xms) D|.
+  exact (ler_norm
+    (ms_view_distinguish_pr
+       (d_ms_after_rom_public_semantic_observable_v2 x s xms) D -
+     ms_view_distinguish_pr
+       (d_ms_after_binding_observable_v2 x s xms) D)).
+have Hmass :=
+  ms_rom_public_observable_divergence_mass_le_execution_owned_semantic_failure xms.
+have Hbridge :=
+  A_MS2_rom_programming_execution_owned_parameterized_bound xms.
+rewrite Heq_canonical.
+apply (ler_trans _ _ _ Hdir).
+apply (ler_trans _ _ _ Hgap).
+exact (ler_trans _ _ _ Hmass Hbridge).
 qed.
 
 lemma A_MS_public_endpoint_parameterized_transition_bound
