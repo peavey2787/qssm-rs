@@ -96,6 +96,8 @@ What remains missing is a stronger lower theorem about the actual relationship b
 
 The first honest owner boundary is still below the theorem surface if future work wants to tighten the new route.
 
+On the current tree, the live LE rejection and live LE FS `3%r / 32%r` lanes are already closed, so the remaining localized replay seams are MS-side only: the MS1 local failure comparison, the MS1 public-divergence upper comparison, and the MS2 local failure comparison. The next focused audit is therefore MS1 rather than another LE refinement.
+
 - Start at `ms/MSProbabilitySurface.ec` or a sibling lower companion.
 - Do not start in `MainTheorem.ec`.
 - Do not start by mutating theorem names.

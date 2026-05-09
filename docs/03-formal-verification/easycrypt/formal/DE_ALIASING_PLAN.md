@@ -30,10 +30,12 @@ This layer owns parameterized counts, derived epsilons, and local mass identitie
 - `le/LERejectionSamplerParameterizedCore.ec`
 - `le/LERejectionSamplerMassLiveParameterized.ec`
 - `le/LEFsProgrammingFailureProbabilityParameterized.ec`
+- `le/LEFsProgrammingLiveParameterizedCore.ec`
+- `le/LEFsProgrammingLiveParameterizedMass.ec`
 
 ### Bridge layer
 
-This layer packages lower parameterized facts into theorem-facing parameterized lanes. Some MS and FS entries still re-export demo-derived lower facts; the live LE rejection route no longer does.
+This layer packages lower parameterized facts into theorem-facing parameterized lanes. Some MS entries still re-export demo-derived lower facts; the live LE rejection and live LE FS routes no longer do.
 
 - `ms/source/SourceHashBindingSemanticBridgeParameterized.ec`
 - `ms/comparison/ComparisonPayloadSemanticBridgeParameterized.ec`
@@ -113,8 +115,16 @@ The local mass files are mostly already expressed over parameterized operators a
 - `le/LEFsProgrammingFailureProbabilityParameterized.ec`
   - `le_fs_failure_probability_eq_epsilon_le_fs_parameterized`
   - `le_fs_failure_probability_le_epsilon_le_fs_parameterized`
+- `le/LEFsProgrammingLiveParameterizedCore.ec`
+  - `d_le_parameterized_post_fs_semantic_programmed_view_pairE`
+  - `d_le_fs_parameterized_shadow_semantic_post_marginal_branch_split_pairE`
+- `le/LEFsProgrammingLiveParameterizedMass.ec`
+  - `le_fs_parameterized_local_bad_branch_mass_eq_epsilon_le_fs_parameterized`
+  - `le_fs_parameterized_local_bad_branch_mass_le_epsilon_le_fs_parameterized`
+  - `A_LE_fs_parameterized_shadow_semantic_post_marginal_sdist_le_bad_branch_mass`
+  - `A_LE_fs_parameterized_shadow_semantic_post_marginal_sdist_le_parameterized_budget`
 
-These results are all parameterized-operator first. The live LE rejection slice no longer depends on semantic-demo equality lemmas at all; the remaining MS and FS items still inherit the current aliasing owner definitions, but they already expose the right theorem-facing operators for a later replay.
+These results are all parameterized-operator first. The live LE rejection and live LE FS slices no longer depend on semantic-demo equality lemmas on the active route; the remaining MS items still inherit the current aliasing owner definitions, but they already expose the right theorem-facing operators for a later replay.
 
 Classification: mostly `genuinely parameterized` at theorem level.
 
@@ -173,7 +183,7 @@ Since then, LE rejection has moved beyond that localized-comparison shape entire
 The following theorem paths should now be treated as structurally de-aliased upper consumers.
 
 - `A_LE_rejection_sampler_semantic_sdist_parameterized_bound` now closes through the live parameterized rejection sampler chain `LERejectionSamplerParameterizedCore.ec -> LERejectionSamplerMassLiveParameterized.ec -> LERejectionParameterized.ec`; `LEStatisticalDistanceParameterized.ec` then composes that midpoint through `LEFsProgrammingParameterizedView.ec`, so the active rejection lane no longer depends on a demo-semantic/parameterized equality.
-- `A_LE_fs_semantic_programming_sampler_sdist_le_parameterized_budget` now forwards the semantic bad-branch experiment theorem through `le_fs_shadow_local_bad_branch_mass_le_parameterized_budget`; the remaining count-alias sensitivity is localized below it at that bad-branch comparison theorem.
+- `A_LE_fs_semantic_programming_sampler_sdist_le_parameterized_budget` now closes through the live FS chain `LEFsProgrammingLiveParameterizedCore.ec -> LEFsProgrammingLiveParameterizedMass.ec -> LEFsProgrammingParameterized.ec`, while `LEFsProgrammingParameterizedView.ec` carries the same live midpoint into `LEStatisticalDistanceParameterized.ec`; the active FS lane no longer depends on a demo-semantic/parameterized equality.
 - `A_MS1_hash_binding_execution_owned_parameterized_bound` now routes through `ms_hash_binding_local_failure_mass_le_parameterized_budget`, not the broad semantic-to-parameterized epsilon equality.
 - `ms_hash_binding_public_observable_divergence_mass_le_local_public_divergence_upper_mass_parameterized` now routes through `ms_hash_binding_local_public_divergence_upper_mass_le_parameterized_upper_mass`; the remaining count-alias sensitivity is localized at the live upper-mass comparison itself.
 - `A_MS2_rom_programming_execution_owned_parameterized_bound` now routes through `ms_rom_local_failure_mass_le_parameterized_budget`, not the broad semantic-to-parameterized epsilon equality.
@@ -200,11 +210,10 @@ The structurally de-aliased upper theorem paths listed above are no longer direc
 
 ## Remaining Localized Count-Alias-Sensitive Seams
 
-The following theorems are now the real production-count substitution boundary.
+The following theorems are now the real production-count substitution boundary. The remaining localized count-alias-sensitive seams are MS-side only.
 
 | Theorem | Live/demo quantity compared | Parameterized target | Replay class | Upward blast radius |
 |---|---|---|---|---|
-| `le_fs_shadow_local_bad_branch_mass_le_parameterized_budget` | `LEFsProgrammingSurface.le_fs_shadow_local_bad_branch_mass` | `ParameterizedBudgetParameters.epsilon_le_fs_parameterized` | local semantic replay | LE FS wrapper chain only; still below `A_LE_fs_semantic_programming_sampler_sdist_le_parameterized_budget` |
 | `ms_hash_binding_local_failure_mass_le_parameterized_budget` | `ms_hash_binding_local_failure_mass` | `ParameterizedBudgetParameters.epsilon_ms_hash_binding_parameterized` | local semantic replay | feeds the MS1 execution-owned bridge and the MS1 public-endpoint wrapper path, but should not force canonical landing replay if the theorem name and inequality direction stay fixed |
 | `ms_hash_binding_local_public_divergence_upper_mass_le_parameterized_upper_mass` | `ms_hash_binding_local_public_divergence_upper_mass` | `ms_hash_binding_local_public_divergence_upper_mass_parameterized` | public-endpoint replay | feeds only the MS1 public-observable divergence upper theorem and then the public-endpoint MS wrapper path; the canonical MS landing route stays untouched |
 | `ms_rom_local_failure_mass_le_parameterized_budget` | `ms_rom_local_failure_mass` | `ParameterizedBudgetParameters.epsilon_ms_rom_programmability_parameterized` | canonical-sensitive replay | feeds the MS2 execution-owned bridge, the MS2 public-endpoint theorem, the public-to-canonical landing theorem, and the explicit duplicated-charge canonical MS route |
@@ -239,25 +248,9 @@ Expected reuse after lower replacements: mostly unchanged, except for any local 
 
 ## First True Production-Substitution Breakpoints
 
-When the parameterized counts diverge from the current demo counts, the first actual breakpoints are now the four localized comparison seams above, not the upper theorem routes above them.
+When the parameterized counts diverge from the current demo counts, the first actual breakpoints are now the three localized comparison seams above, not the upper theorem routes above them.
 
-### Breakpoint 1: LE FS bad-branch comparison
-
-Primary file: `le/LEFsProgrammingParameterized.ec`
-
-Current break cause:
-
-- `le_fs_shadow_local_bad_branch_mass_le_parameterized_budget`
-
-Smallest replacement theorem needed:
-
-- reprove `le_fs_shadow_local_bad_branch_mass_le_parameterized_budget` against genuinely independent `le_fs_param_*` counts
-
-Practical note:
-
-This is now the smallest remaining honest LE slice. The LE theorem names above it should remain unchanged if the theorem name and inequality direction are preserved.
-
-### Breakpoint 2: MS1 local failure comparison
+### Breakpoint 1: MS1 local failure comparison
 
 Primary file: `ms/source/SourceHashBindingSemanticBridgeParameterized.ec`
 
@@ -271,9 +264,9 @@ Smallest replacement theorem needed:
 
 Practical note:
 
-The execution-owned and most public-endpoint theorem names above it should remain unchanged if this theorem name and inequality direction are preserved.
+This is now the smallest remaining live parameterized replay on the theorem path. The execution-owned and most public-endpoint theorem names above it should remain unchanged if this theorem name and inequality direction are preserved.
 
-### Breakpoint 3: MS1 public-divergence upper comparison
+### Breakpoint 2: MS1 public-divergence upper comparison
 
 Primary file: `ms/source/SourceHashBindingSemanticBridgeParameterized.ec`
 
@@ -289,7 +282,7 @@ Practical note:
 
 This is the only remaining localized seam whose natural replay class is public-endpoint-sensitive rather than a pure local-failure comparison.
 
-### Breakpoint 4: MS2 local failure comparison
+### Breakpoint 3: MS2 local failure comparison
 
 Primary file: `ms/comparison/ComparisonPayloadSemanticBridgeParameterized.ec`
 
@@ -312,18 +305,17 @@ The recommended replay order is:
 1. replace exactly one parameterized owner subfamily while preserving the current parameterized operator names and arithmetic structure
 2. replay the matching localized comparison seam for that owner subfamily
 3. verify that the upper wrappers above that seam survive unchanged
-4. start with the LE FS bad-branch comparison
-5. then replay the MS1 local failure comparison
-6. then replay the MS1 public-divergence upper comparison
-7. finally replay the MS2 local failure comparison
-9. rerun the checker and the zero-axiom / zero-admit validation
-10. only after the proof route is stable again, revisit readability or refactor work
+4. start with the MS1 local failure comparison
+5. then replay the MS1 public-divergence upper comparison
+6. finally replay the MS2 local failure comparison
+7. rerun the checker and the zero-axiom / zero-admit validation
+8. only after the proof route is stable again, revisit readability or refactor work
 
 Reason for this order:
 
 - the first honest pilot should change only one owner subfamily so profile selection and proof replay stay coupled locally
-- the LE rejection live sampler route has already validated the substitution process on the LE side without disturbing the theorem-facing route
-- the remaining LE FS seam is more locally contained than the MS work and should be replayed before touching the canonical MS path
+- the live LE rejection and live LE FS routes have already validated the substitution process on the LE side without disturbing the theorem-facing route
+- the MS1 local failure comparison is now the smallest remaining honest replay before touching the more public-endpoint-sensitive MS1 upper mass or the canonical-sensitive MS2 path
 - the MS1 public-divergence upper comparison is a separate public-endpoint-sensitive replay surface and should not be conflated with the MS1 local failure replay
 - the MS2 local failure comparison is the most globally visible MS dependency because it feeds both the public-endpoint route and the canonical landing
 - delaying readability work avoids mixing semantic substitutions with naming churn

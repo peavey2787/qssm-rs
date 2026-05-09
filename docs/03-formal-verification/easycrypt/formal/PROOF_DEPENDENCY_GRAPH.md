@@ -87,11 +87,12 @@ ParameterizedBudgetParameters.epsilon_le_rej_parameterized
   -> le/LERejectionParameterized.ec
 
 ParameterizedBudgetParameters.epsilon_le_fs_parameterized
-  -> le/LEFsProgrammingFailureProbabilityParameterized.ec
-  -> le/LEFsProgrammingParameterized.ec
+  -> le/LEFsProgrammingLiveParameterizedCore.ec
+  -> le/LEFsProgrammingLiveParameterizedMass.ec
 
-Parameterized rejection midpoint + FS-facing parameterized bridge
+Parameterized rejection midpoint + live parameterized FS bridge
   -> le/LEFsProgrammingParameterizedView.ec
+  -> le/LEFsProgrammingParameterized.ec
   -> le/LEStatisticalDistanceParameterized.ec
   -> le/LEHVZKParameterized.ec
   -> games/GameLEBridgeParameterized.ec : A_G1_to_G2_le_semantic_parameterized_budget_transition_bound
@@ -191,7 +192,7 @@ BudgetParameters.epsilon_le_fs_semantic
 ```text
 ParameterizedBudgetParameters.epsilon_le_parameterized
   <- epsilon_le_rej_parameterized + epsilon_le_fs_parameterized
-  <- LERejectionSamplerMassLiveParameterized.ec and LEFsProgrammingFailureProbabilityParameterized.ec
+  <- LERejectionSamplerMassLiveParameterized.ec and LEFsProgrammingLiveParameterizedMass.ec
   -> LERejectionParameterized.ec, LEFsProgrammingParameterized.ec, and LEFsProgrammingParameterizedView.ec
   -> LEStatisticalDistanceParameterized.ec
   -> LEHVZKParameterized.ec

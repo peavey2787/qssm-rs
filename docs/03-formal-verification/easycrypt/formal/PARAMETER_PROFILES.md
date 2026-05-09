@@ -44,11 +44,13 @@ No concrete production values are selected in this document. Any future rational
 
 ## Current Checked Snapshot
 
-- `./check_easycrypt.sh` is `OK` over 129 checked theories; `axiom_count=0`; `admit_count=0`.
+- `./check_easycrypt.sh` is `OK` over 131 checked theories; `axiom_count=0`; `admit_count=0`.
 - The unchanged demo semantic LE rejection route still uses `soft=1`, `hard=1`, `invalid=1`, `accept=13`, so `epsilon_le_rej_semantic = 3%r / 16%r`.
 - The active parameterized LE rejection profile is `soft=1`, `hard=1`, `invalid=1`, `accept=29`, `failure=3`, `total=32`, so `epsilon_le_rej_parameterized = 3%r / 32%r`.
-- That `3%r / 32%r` profile now reaches `qssm_main_theorem_parameterized_budget` through `LERejectionSamplerParameterizedCore.ec`, `LERejectionSamplerMassLiveParameterized.ec`, `LEFsProgrammingParameterizedView.ec`, `LERejectionParameterized.ec`, and `LEStatisticalDistanceParameterized.ec`.
-- Only LE rejection has an active lower-budget live parameterized route today; LE FS, MS1, and MS2 have not been honestly lowered yet.
+- The active parameterized LE FS profile is `query_collision=1`, `programming_collision=1`, `transcript=1`, `clean=29`, `failure=3`, `total=32`, so `epsilon_le_fs_parameterized = 3%r / 32%r`.
+- Those paired `3%r / 32%r` LE profiles now reach `qssm_main_theorem_parameterized_budget` through `LERejectionSamplerParameterizedCore.ec`, `LERejectionSamplerMassLiveParameterized.ec`, `LEFsProgrammingLiveParameterizedCore.ec`, `LEFsProgrammingLiveParameterizedMass.ec`, `LEFsProgrammingParameterizedView.ec`, `LERejectionParameterized.ec`, `LEFsProgrammingParameterized.ec`, and `LEStatisticalDistanceParameterized.ec`.
+- Together they give `epsilon_le_parameterized = 6%r / 32%r = 3%r / 16%r`.
+- Both LE rejection and LE FS have active lower-budget live parameterized routes today; MS1 and MS2 have not been honestly lowered yet.
 
 ## Why The MS2 Charge Appears Twice
 
@@ -142,25 +144,25 @@ The current parameterized owner/helper layer supports the following profile geom
 - non-uniform weights are not yet supported
 - sparse or non-contiguous failure layouts are not yet supported
 - reordered MS1/MS2 category branches are not safe without proof changes in the slot-mass and bridge files
-- no upper theorem currently depends directly on a literal 16-slot enumeration, but the remaining live lower-budget work is still localized at the LE FS, MS1, and MS2 comparison seams
+- no upper theorem currently depends directly on a literal 16-slot enumeration, but the remaining live lower-budget work is localized at the MS1 and MS2 comparison seams
 
-## First Landed Live Substitution Slice
+## Landed Live LE Substitution Slices
 
-The first honest live lower-budget substitution slice is now the LE rejection route.
+The first honest live lower-budget substitution slices are now the LE rejection and LE FS routes.
 
 - `ParameterizedBudgetParameters.ec` changed only the LE rejection owner subfamily to `soft=1`, `hard=1`, `invalid=1`, `accept=29`.
-- `LERejectionSamplerParameterizedCore.ec` owns the parameterized rejection branch/marginal core.
-- `LERejectionSamplerMassLiveParameterized.ec` owns the live parameterized rejection mass and `sdist` facts.
-- `LERejectionParameterized.ec` retargets theorem-facing rejection bounds to that lane.
-- `LEFsProgrammingParameterizedView.ec` and `LEStatisticalDistanceParameterized.ec` carry the parameterized rejection midpoint into the combined LE route.
-- The demo route remains at `3%r / 16%r`; only the parameterized LE rejection component moved to `3%r / 32%r` in this phase.
+- `LERejectionSamplerParameterizedCore.ec` and `LERejectionSamplerMassLiveParameterized.ec` own the live parameterized rejection core and mass/sdist closure.
+- `ParameterizedBudgetParameters.ec` also changed the LE FS owner subfamily to `query_collision=1`, `programming_collision=1`, `transcript=1`, `clean=29`.
+- `LEFsProgrammingLiveParameterizedCore.ec` and `LEFsProgrammingLiveParameterizedMass.ec` own the live parameterized FS branch/midpoint core and bad-branch mass/sdist closure.
+- `LEFsProgrammingParameterizedView.ec`, `LERejectionParameterized.ec`, `LEFsProgrammingParameterized.ec`, and `LEStatisticalDistanceParameterized.ec` now carry both live LE components into the combined parameterized route.
+- The demo route remains at `3%r / 16%r` per LE component; the active parameterized LE route now carries both LE components at `3%r / 32%r`, so `epsilon_le_parameterized = 3%r / 16%r`.
 
 ## Production-Count Substitution Checklist
 
 Before any profile is promoted from design to theorem-facing parameter selection, complete the following work:
 
-1. Choose actual counts for the remaining parameterized MS1, MS2, and LE FS owners if lower budgets are desired.
-2. Replay the matching remaining localized comparison seams, starting with the LE FS bad-branch comparison.
+1. Choose actual counts for the remaining parameterized MS1 and MS2 owners if lower budgets are desired.
+2. Replay the matching remaining localized comparison seams, starting with the MS1 local failure comparison and the MS1 public-divergence upper comparison.
 3. Preserve the owner-layer parameterized arithmetic so theorem statements continue to consume the same budget structure.
 4. Rerun the full EasyCrypt checker and the zero-axiom / zero-admit validation.
 5. Update theorem-facing and release-facing docs after the new counts and bridge proofs are locked.
@@ -171,12 +173,11 @@ The current parameterized proof route is structurally complete, and its upper LE
 
 The active seams are:
 
-- `le_fs_shadow_local_bad_branch_mass_le_parameterized_budget`
 - `ms_hash_binding_local_failure_mass_le_parameterized_budget`
 - `ms_hash_binding_local_public_divergence_upper_mass_le_parameterized_upper_mass`
 - `ms_rom_local_failure_mass_le_parameterized_budget`
 
-That means the architecture and theorem composition are now in place, the LE rejection pilot has already landed as a live `3%r / 32%r` route, but future lowering of LE FS or either MS family still requires localized lower-proof replacement work before any broader production-count claim is honest.
+That means the architecture and theorem composition are now in place, and the live LE route has already landed as paired `3%r / 32%r` rejection and FS components. Future lowering of either MS family still requires localized lower-proof replacement work before any broader production-count claim is honest.
 
 ## MS2 Refactor Candidates Before Production-Count Substitution
 
