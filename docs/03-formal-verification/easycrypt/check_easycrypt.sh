@@ -133,6 +133,7 @@ FILES=(
   games/GameAdvantage.ec
   games/GameAdvantageParameterized.ec
   games/GameMSHopTypes.ec
+  games/GameMSHopTypesParameterized.ec
   games/GameMSHopTransitions.ec
   games/GameMSHopComposition.ec
   games/GameMSHops.ec
