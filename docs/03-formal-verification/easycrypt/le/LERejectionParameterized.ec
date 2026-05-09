@@ -28,7 +28,8 @@ rewrite /ParameterizedBudgetParameters.le_rej_param_soft_repair_count.
 rewrite /ParameterizedBudgetParameters.le_rej_param_hard_repair_count.
 rewrite /ParameterizedBudgetParameters.le_rej_param_invalid_count.
 rewrite /ParameterizedBudgetParameters.le_rej_param_accept_count.
-by rewrite /BudgetParameters.le_rej_failure_slot_count /BudgetParameters.le_rej_total_slot_count.
+rewrite /BudgetParameters.le_rej_failure_slot_count /BudgetParameters.le_rej_total_slot_count.
+by smt().
 qed.
 
 lemma le_rejection_shadow_semantic_failure_probability_eq_parameterized

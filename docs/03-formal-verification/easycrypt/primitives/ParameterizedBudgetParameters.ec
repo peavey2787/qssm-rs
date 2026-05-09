@@ -237,16 +237,16 @@ by smt(ms2_param_failure_count_nonneg ms2_param_total_count_pos).
 qed.
 
 op le_rej_param_soft_repair_count : int =
-  BudgetParameters.le_rej_soft_repair_slot_count.
+  2.
 
 op le_rej_param_hard_repair_count : int =
-  BudgetParameters.le_rej_hard_repair_slot_count.
+  2.
 
 op le_rej_param_invalid_count : int =
-  BudgetParameters.le_rej_invalid_slot_count.
+  2.
 
 op le_rej_param_accept_count : int =
-  BudgetParameters.le_rej_accept_slot_count.
+  26.
 
 op le_rej_param_failure_count : int =
   le_rej_param_soft_repair_count +
@@ -267,35 +267,35 @@ lemma le_rej_param_soft_repair_count_nonneg :
   0 <= le_rej_param_soft_repair_count.
 proof.
 rewrite /le_rej_param_soft_repair_count.
-exact BudgetParameters.le_rej_soft_repair_slot_count_nonneg.
+by smt().
 qed.
 
 lemma le_rej_param_hard_repair_count_nonneg :
   0 <= le_rej_param_hard_repair_count.
 proof.
 rewrite /le_rej_param_hard_repair_count.
-exact BudgetParameters.le_rej_hard_repair_slot_count_nonneg.
+by smt().
 qed.
 
 lemma le_rej_param_invalid_count_nonneg :
   0 <= le_rej_param_invalid_count.
 proof.
 rewrite /le_rej_param_invalid_count.
-exact BudgetParameters.le_rej_invalid_slot_count_nonneg.
+by smt().
 qed.
 
 lemma le_rej_param_accept_count_nonneg :
   0 <= le_rej_param_accept_count.
 proof.
 rewrite /le_rej_param_accept_count.
-exact BudgetParameters.le_rej_accept_slot_count_nonneg.
+by smt().
 qed.
 
 lemma le_rej_param_accept_count_pos :
   0 < le_rej_param_accept_count.
 proof.
 rewrite /le_rej_param_accept_count.
-exact BudgetParameters.le_rej_accept_slot_count_pos.
+by smt().
 qed.
 
 lemma le_rej_param_failure_count_nonneg :
