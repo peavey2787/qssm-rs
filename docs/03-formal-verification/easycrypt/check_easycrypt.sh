@@ -91,6 +91,7 @@ FILES=(
   ms/source/SourceObligations.ec
   ms/source/SourceTheorem.ec
   ms/MSProbabilitySurface.ec
+  ms/MSProbabilitySurfaceParameterized.ec
   ms/MS.ec
   le/LERealExecution.ec
   le/LESurface.ec
