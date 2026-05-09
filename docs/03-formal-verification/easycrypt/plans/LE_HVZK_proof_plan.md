@@ -9,6 +9,8 @@ Refine the LE Set-B HVZK boundary into narrower, named obligations while keeping
 
 Cross-tree checkpoint, May 2026: the MS2 visible/silent decomposition below routing is now complete in `ms/comparison/ComparisonPayloadSemanticBridge.ec`. Execution-owned MS2 semantic failure is split into visible and silent parts, the common execution-owned equalities are normalized through canonical helper names, and the normalized wrapper / round-trip layer remains bridge-local only. No theorem-facing budgets, routed theorem names, `ms/MSProbabilitySurface.ec`, `games/*`, or `theorem/MainTheorem.ec` changed in that checkpoint; the semantic top remains `3%r / 4%r`, the exact-zero route remains unchanged, and the immediate next step is roadmap triage rather than more MS2 normalized-wrapper micro-helpers.
 
+Docs checkpoint, May 2026: `./check_easycrypt.sh` remains `OK` over 108 explicitly listed theories, `axiom_count=0`, and `admit_count=0`. The theorem-surface corollary phase is complete in `theorem/MainTheorem.ec` through `qssm_main_theorem`, `qssm_main_theorem_semantic_budget`, `qssm_main_theorem_semantic_budget_umbrella`, and `qssm_main_theorem_nonzero_budget`, so no separate `Corollaries.ec` file is needed. `BudgetParameters.ec` and `theorem/MainTheorem.ec` stay unchanged on this docs checkpoint, the semantic top remains `3%r / 4%r`, and the exact-zero route remains unchanged.
+
 ## Current Layering
 
 The LE theory is split across `le/LESurface.ec`, `le/LESetB.ec`, `le/LERejection.ec`,
@@ -24,8 +26,8 @@ chains. Theories that use LE **operators** (for example `le_game_hop_adv`) shoul
 
 - **Surface / Set-B / views (ops + basic preds):** `le/LESurface.ec`
 - **Set-B projection lemmas + view-defined-from-sound:** `le/LESetB.ec`
-- **Lower rejection sampler surface:** `le/LERejectionSampler.ec`
-- **Lower FS programming surface:** `le/LEFsProgrammingSurface.ec`
+- **Lower rejection sampler split:** `le/LERejectionSamplerCore.ec` owns core definitions/helpers, `le/LERejectionSamplerSemanticMarginals.ec` owns semantic marginal/image helpers, `le/LERejectionSamplerMass.ec` owns semantic failure-probability / mass-budget closure, `le/LERejectionSamplerSemanticFacts.ec` owns semantic event/category/support facts, and `le/LERejectionSampler.ec` remains the public facade
+- **Lower FS programming split:** `le/LEFsProgrammingHiddenState.ec` owns hidden-state reconstruction/update/projection and lower FS programming proofs, while `le/LEFsProgrammingSurface.ec` remains the stable lower FS public surface
 - **Rejection sampling / surrogate / rejection sdist axiom:** `le/LERejection.ec`
 - **FS programming chain + FS surrogate shape + FS sdist axiom:** `le/LEFsProgramming.ec`
 - **View indistinguishability + distribution links:** `le/LEViewIndist.ec`
@@ -592,9 +594,16 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     3%r / 16%r + 3%r / 16%r + 3%r / 8%r = 3%r / 4%r`, and the staged sibling
     remains as a parallel bisectable theorem.
   - Comparison-local MS ROM semantic bridge, May 2026:
+    `ms/comparison/ComparisonPayloadExecutionSeedTypes.ec` now owns the
+    execution-seed package/types/laws,
+    `ms/comparison/ComparisonPayloadExecutionLaw.ec` owns the execution
+    payload law transport, `ms/comparison/ComparisonPayloadFromSeed.ec`
+    remains the stable payload/schedule facade,
+    `ms/comparison/ComparisonPayloadSemanticSlotMass.ec` owns the local
+    slot/mass law for the semantic MS2 ROM owner, and
     `ms/comparison/ComparisonPayloadSemanticBridge.ec` now lands the first
     execution-owned bridge surface below `ms/MSProbabilitySurface.ec` without
-    changing the live routing. The new file defines
+    changing the live routing. The bridge file defines
     `ms_rom_semantic_state_of_category_execution_seed`, carrying the real
     comparison execution seed package together with canonical query/row data,
     programmed challenge/response data, transcript reconstruction data, and
@@ -602,8 +611,8 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     `ms_rom_clean_condition`, `ms_rom_query_collision_condition`,
     `ms_rom_programming_collision_condition`,
     `ms_rom_transcript_mismatch_condition`, and
-    `ms_rom_semantic_category_condition`; the local mass
-    `ms_rom_local_failure_mass` with
+    `ms_rom_semantic_category_condition`; the bridge consumes the local mass
+    owner `ms_rom_local_failure_mass` together with
     `ms_rom_local_failure_mass_eq_epsilon_ms_rom_programmability_semantic`; and
     the lower bound `A_MS2_rom_programming_execution_owned_semantic_bound`.
     `check_easycrypt.sh` now includes that new theory in dependency order. This
@@ -626,15 +635,17 @@ Then `A_LE_SetB_HVZK_bound` is derived as a **lemma** (no longer an axiom), and
     surrogate if a more deployment-meaningful lower ROM-programming
   - Source-local MS1 hash-binding semantic bridge and staged sibling chain,
     May 2026: `ms/MS.ec` now stages the MS-facing alias/nonneg surface for
-    `epsilon_ms_hash_binding_semantic`, and
+    `epsilon_ms_hash_binding_semantic`,
+    `ms/source/SourceHashBindingSemanticSlotMass.ec` now owns the local
+    slot/mass law for the parallel semantic MS1 owner, and
     `ms/source/SourceHashBindingSemanticBridge.ec` now lands the source-local
-    execution-owned bridge for the parallel semantic MS1 owner. The new file
+    execution-owned bridge for that owner. The bridge file
     defines `ms_hash_binding_semantic_state_of_category_source`, the category
     predicates `ms_hash_binding_clean_condition`,
     `ms_hash_binding_collision_condition`,
     `ms_hash_binding_malformed_binding_condition`,
-    `ms_hash_binding_transcript_mismatch_condition`, the local mass
-    `ms_hash_binding_local_failure_mass`, and the lower bound
+    `ms_hash_binding_transcript_mismatch_condition`, consumes the local mass
+    owner `ms_hash_binding_local_failure_mass`, and proves the lower bound
     `A_MS1_hash_binding_execution_owned_semantic_bound`. `ms/MSProbabilitySurface.ec`,
     `games/GameAdvantage.ec`, `games/GameMSHopTypes.ec`, and
     `games/GameMSHopTransitions.ec` now carry the staged semantic MS1 sibling

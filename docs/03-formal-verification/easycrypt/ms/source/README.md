@@ -15,6 +15,7 @@ Internal grouping is by proof role:
 
 - `SourceTypes.ec` and `SourceConstructors.ec` define the source records and Phase-1 constructors.
 - `SourcePayloadDistributions.ec`, `SourceCoupling*.ec`, `SourceBitnessDistributions.ec`, `SourceDistributionLemmas.ec`, and `SourceObservableDistributions.ec` implement the distribution layer surfaced by `SourceDistributions.ec`.
+- `SourceHashBindingSemanticSlotMass.ec` owns the MS1 hash-binding semantic local slot/mass law, and `SourceHashBindingSemanticBridge.ec` consumes that owner to package the source-local execution-owned bridge used by the staged sibling chain.
 - `SourceExecutionLink.ec`, `SourcePublicBitness*.ec`, `SourceRealExecutionGameLink.ec`, and `SourceRealExecutionSeed.ec` sit on the execution/public-spine boundary.
 - `SourceProgrammedObligations.ec`, `SourcePublicFieldObligations.ec`, `SourceSchedule*.ec`, and `SourceObligations.ec` package the proof obligations consumed by `SourceTheorem.ec`.
 
