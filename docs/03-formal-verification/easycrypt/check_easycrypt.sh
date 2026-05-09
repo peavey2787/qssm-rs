@@ -67,6 +67,7 @@ FILES=(
   ms/source/SourceBitnessDistributions.ec
   ms/source/SourceDistributionLemmas.ec
   ms/source/SourceObservableDistributions.ec
+  ms/source/SourceHashBindingSemanticSlotMass.ec
   ms/source/SourceHashBindingSemanticBridge.ec
   ms/source/SourceDistributions.ec
   ms/source/SourceExecutionLink.ec
