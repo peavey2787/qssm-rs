@@ -82,14 +82,16 @@ Canonical semantic MS route + LE semantic route
 
 ```text
 ParameterizedBudgetParameters.epsilon_le_rej_parameterized
-  -> le/LERejectionSamplerMassParameterized.ec
+  -> le/LERejectionSamplerParameterizedCore.ec
+  -> le/LERejectionSamplerMassLiveParameterized.ec
   -> le/LERejectionParameterized.ec
 
 ParameterizedBudgetParameters.epsilon_le_fs_parameterized
   -> le/LEFsProgrammingFailureProbabilityParameterized.ec
   -> le/LEFsProgrammingParameterized.ec
 
-Parameterized LE rejection route + parameterized LE FS route
+Parameterized rejection midpoint + FS-facing parameterized bridge
+  -> le/LEFsProgrammingParameterizedView.ec
   -> le/LEStatisticalDistanceParameterized.ec
   -> le/LEHVZKParameterized.ec
   -> games/GameLEBridgeParameterized.ec : A_G1_to_G2_le_semantic_parameterized_budget_transition_bound
@@ -189,8 +191,8 @@ BudgetParameters.epsilon_le_fs_semantic
 ```text
 ParameterizedBudgetParameters.epsilon_le_parameterized
   <- epsilon_le_rej_parameterized + epsilon_le_fs_parameterized
-  <- LERejectionSamplerMassParameterized.ec and LEFsProgrammingFailureProbabilityParameterized.ec
-  -> LERejectionParameterized.ec and LEFsProgrammingParameterized.ec
+  <- LERejectionSamplerMassLiveParameterized.ec and LEFsProgrammingFailureProbabilityParameterized.ec
+  -> LERejectionParameterized.ec, LEFsProgrammingParameterized.ec, and LEFsProgrammingParameterizedView.ec
   -> LEStatisticalDistanceParameterized.ec
   -> LEHVZKParameterized.ec
   -> GameLEBridgeParameterized.ec

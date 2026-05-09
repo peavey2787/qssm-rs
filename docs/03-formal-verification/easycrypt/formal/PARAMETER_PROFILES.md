@@ -42,6 +42,14 @@ epsilon_top_parameterized =
 
 No concrete production values are selected in this document. Any future rational examples should be labeled illustrative only and not yet production-selected.
 
+## Current Checked Snapshot
+
+- `./check_easycrypt.sh` is `OK` over 129 checked theories; `axiom_count=0`; `admit_count=0`.
+- The unchanged demo semantic LE rejection route still uses `soft=1`, `hard=1`, `invalid=1`, `accept=13`, so `epsilon_le_rej_semantic = 3%r / 16%r`.
+- The active parameterized LE rejection profile is `soft=1`, `hard=1`, `invalid=1`, `accept=29`, `failure=3`, `total=32`, so `epsilon_le_rej_parameterized = 3%r / 32%r`.
+- That `3%r / 32%r` profile now reaches `qssm_main_theorem_parameterized_budget` through `LERejectionSamplerParameterizedCore.ec`, `LERejectionSamplerMassLiveParameterized.ec`, `LEFsProgrammingParameterizedView.ec`, `LERejectionParameterized.ec`, and `LEStatisticalDistanceParameterized.ec`.
+- Only LE rejection has an active lower-budget live parameterized route today; LE FS, MS1, and MS2 have not been honestly lowered yet.
+
 ## Why The MS2 Charge Appears Twice
 
 The duplicated `epsilon_ms_rom_programmability_parameterized` term is real and must remain explicit.
@@ -130,44 +138,45 @@ The current parameterized owner/helper layer supports the following profile geom
 - prefix failure layouts are supported for LE rejection, LE FS, MS1 local failure, and MS2 local failure
 - a contiguous interval layout is supported for the MS1 public-divergence upper mass
 - larger contiguous uniform supports are structurally supported
+- the current live LE rejection pilot is a 32-slot uniform prefix-failure layout; this does not imply arbitrary non-uniform or sparse profiles are supported
 - non-uniform weights are not yet supported
 - sparse or non-contiguous failure layouts are not yet supported
 - reordered MS1/MS2 category branches are not safe without proof changes in the slot-mass and bridge files
-- no upper theorem currently depends directly on a literal 16-slot enumeration, but the remaining localized comparison seams still reflect demo arithmetic until they are replayed against real counts
+- no upper theorem currently depends directly on a literal 16-slot enumeration, but the remaining live lower-budget work is still localized at the LE FS, MS1, and MS2 comparison seams
 
-## First Real Substitution Candidate
+## First Landed Live Substitution Slice
 
-The first honest production-count substitution candidate is the LE rejection profile slice.
+The first honest live lower-budget substitution slice is now the LE rejection route.
 
-- change only the LE rejection owner subfamily first
-- do not change all parameter families or profile classes at once
-- preserve the theorem names above the seam so the LE wrapper chain remains reusable
-- the expected first proof touch is `ParameterizedBudgetParameters.ec` plus `LERejectionParameterized.ec`
-- update this document after that proof lands with the chosen concrete profile values or constraints
+- `ParameterizedBudgetParameters.ec` changed only the LE rejection owner subfamily to `soft=1`, `hard=1`, `invalid=1`, `accept=29`.
+- `LERejectionSamplerParameterizedCore.ec` owns the parameterized rejection branch/marginal core.
+- `LERejectionSamplerMassLiveParameterized.ec` owns the live parameterized rejection mass and `sdist` facts.
+- `LERejectionParameterized.ec` retargets theorem-facing rejection bounds to that lane.
+- `LEFsProgrammingParameterizedView.ec` and `LEStatisticalDistanceParameterized.ec` carry the parameterized rejection midpoint into the combined LE route.
+- The demo route remains at `3%r / 16%r`; only the parameterized LE rejection component moved to `3%r / 32%r` in this phase.
 
 ## Production-Count Substitution Checklist
 
 Before any profile is promoted from design to theorem-facing parameter selection, complete the following work:
 
-1. Choose actual counts for the parameterized MS1, MS2, LE rejection, and LE FS owners.
-2. Replay the matching localized comparison seams for any owner subfamily that changes, starting with the rejection ticket-failure comparison for the first pilot.
+1. Choose actual counts for the remaining parameterized MS1, MS2, and LE FS owners if lower budgets are desired.
+2. Replay the matching remaining localized comparison seams, starting with the LE FS bad-branch comparison.
 3. Preserve the owner-layer parameterized arithmetic so theorem statements continue to consume the same budget structure.
 4. Rerun the full EasyCrypt checker and the zero-axiom / zero-admit validation.
 5. Update theorem-facing and release-facing docs after the new counts and bridge proofs are locked.
 
 ## Explicit Warning About The Current Proof Surface
 
-The current parameterized proof route is structurally complete, and its upper LE/MS bridge paths are now largely de-aliased above the lower comparison layer, but the remaining localized comparison seams still rely on demo arithmetic until production-count substitution is performed.
+The current parameterized proof route is structurally complete, and its upper LE/MS bridge paths are now largely de-aliased above the lower comparison layer. The LE rejection route is already past its former demo-arithmetic seam, but the remaining localized comparison seams still rely on demo arithmetic until production-count substitution is performed.
 
 The active seams are:
 
-- `le_rejection_shadow_semantic_ticket_failure_probability_le_parameterized_budget`
 - `le_fs_shadow_local_bad_branch_mass_le_parameterized_budget`
 - `ms_hash_binding_local_failure_mass_le_parameterized_budget`
 - `ms_hash_binding_local_public_divergence_upper_mass_le_parameterized_upper_mass`
 - `ms_rom_local_failure_mass_le_parameterized_budget`
 
-That means the architecture and theorem composition are now in place, but future concrete parameter selection still requires localized lower-proof replacement work before any production-count claim is honest.
+That means the architecture and theorem composition are now in place, the LE rejection pilot has already landed as a live `3%r / 32%r` route, but future lowering of LE FS or either MS family still requires localized lower-proof replacement work before any broader production-count claim is honest.
 
 ## MS2 Refactor Candidates Before Production-Count Substitution
 

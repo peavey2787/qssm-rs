@@ -8,6 +8,7 @@ This document is the canonical external explanation of what the current EasyCryp
 
 The proof surface is frozen at the May 2026 release checkpoint.
 
+- Current checker snapshot is `OK` over 129 checked theories, with `axiom_count=0` and `admit_count=0`.
 - The exact-zero route remains unchanged.
 - The live demo semantic route remains unchanged and still closes at `3%r / 4%r`.
 - `qssm_main_theorem_le_parameterized_budget` exists and is closed as the LE-only intermediate theorem.
@@ -109,13 +110,15 @@ The LE-only parameterized route is complete and intentionally narrow.
 | Layer | File | Main symbols |
 |---|---|---|
 | Parameterized owners | `primitives/ParameterizedBudgetParameters.ec` | `epsilon_le_rej_parameterized`, `epsilon_le_fs_parameterized`, `epsilon_le_parameterized` |
-| Rejection parameterized lane | `le/LERejectionSamplerMassParameterized.ec`, `le/LERejectionParameterized.ec` | parameterized rejection owner and theorem-facing companion |
-| FS parameterized lane | `le/LEFsProgrammingFailureProbabilityParameterized.ec`, `le/LEFsProgrammingParameterized.ec` | parameterized FS owner and theorem-facing companion |
+| Rejection parameterized lane | `le/LERejectionSamplerParameterizedCore.ec`, `le/LERejectionSamplerMassLiveParameterized.ec`, `le/LERejectionParameterized.ec` | live parameterized rejection core, mass/sdist closure, and theorem-facing bridge at `epsilon_le_rej_parameterized = 3%r / 32%r` |
+| FS parameterized lane | `le/LEFsProgrammingFailureProbabilityParameterized.ec`, `le/LEFsProgrammingParameterized.ec`, `le/LEFsProgrammingParameterizedView.ec` | demo-budget FS bad-branch bridge plus the FS-facing parameterized programmed-view/midpoint companion |
 | LE parameterized additive bridge | `le/LEStatisticalDistanceParameterized.ec`, `le/LEHVZKParameterized.ec` | parameterized LE advantage closure |
 | Game bridge | `games/GameLEBridgeParameterized.ec` | `A_G1_to_G2_le_semantic_parameterized_budget_transition_bound` |
 | Top theorem | `theorem/MainTheoremParameterized.ec` | `qssm_main_theorem_le_parameterized_budget` |
 
 This route keeps the MS contribution on `A_G0_to_G1_ms_semantic_transition_bound` and swaps only the LE side.
+
+Only LE rejection has moved below the demo `3%r / 16%r` profile so far. The demo route remains unchanged, and LE FS still closes its honest parameterized budget through the demo-derived bad-branch comparison.
 
 ## Full Canonical Parameterized Route
 

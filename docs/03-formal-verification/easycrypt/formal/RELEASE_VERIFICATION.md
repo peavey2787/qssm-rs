@@ -10,12 +10,14 @@ This document explains how to reproduce the frozen May 2026 release checkpoint a
 
 At the current release checkpoint, the expected result is:
 
-- full checker: `OK: checked 126 theories`
+- full checker: `OK: checked 129 theories`
 - `axiom_count=0`
 - `admit_count=0`
 - worktree clean after restoring generated `.eco` churn
 - exact-zero route unchanged
 - live demo semantic route unchanged
+- active parameterized LE rejection profile documented as `soft=1`, `hard=1`, `invalid=1`, `accept=29`, `failure=3`, `total=32`, so `epsilon_le_rej_parameterized = 3%r / 32%r`
+- only LE rejection documented as lowered below `3%r / 16%r`; LE FS and the MS parameterized families remain on their existing demo-derived bridge surfaces
 - `qssm_main_theorem_le_parameterized_budget` present and documented as the LE-only intermediate theorem
 - `qssm_main_theorem_parameterized_budget` present and documented as the full canonical parameterized theorem
 - canonical parameterized top budget documented as `epsilon_ms_hash_binding_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_le_parameterized`
@@ -32,7 +34,7 @@ cd docs/03-formal-verification/easycrypt
 Expected terminal tail:
 
 ```text
-OK: checked 126 theories in .../docs/03-formal-verification/easycrypt
+OK: checked 129 theories in .../docs/03-formal-verification/easycrypt
 ```
 
 The compile-order authority remains [../check_easycrypt.sh](../check_easycrypt.sh).
@@ -87,9 +89,13 @@ A release-ready checkpoint must preserve all of the following.
 
 - `BudgetParameters.ec` unchanged
 - `MainTheorem.ec` unchanged
+- `LERealExecution.ec` unchanged
+- `LERejection.ec` unchanged
+- demo `LEStatisticalDistance.ec` unchanged
 - exact-zero route unchanged
 - live demo semantic route unchanged
 - semantic top unchanged at `3%r / 4%r`
+- active parameterized LE rejection route documented as `3%r / 32%r` while the demo rejection route remains `3%r / 16%r`
 - `qssm_main_theorem_le_parameterized_budget` documented as the LE-only intermediate theorem
 - `qssm_main_theorem_parameterized_budget` documented as the full canonical parameterized theorem
 - the explicit duplicated `epsilon_ms_rom_programmability_parameterized` term documented without simplification

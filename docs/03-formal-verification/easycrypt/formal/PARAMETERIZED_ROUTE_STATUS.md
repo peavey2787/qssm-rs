@@ -6,6 +6,8 @@ Navigation: [EasyCrypt README](../README.md)
 
 This document records which parameterized lanes are complete, which ones are only staged, and which ones remain intentionally unstated at the frozen May 2026 checkpoint.
 
+Current checker snapshot: `OK` over 129 checked theories; `axiom_count=0`; `admit_count=0`.
+
 ## Route Status Table
 
 | Lane | Owner-complete | Bridge-complete | Staged-only | Canonical-route-complete | Top-theorem-complete | Notes |
@@ -15,9 +17,9 @@ This document records which parameterized lanes are complete, which ones are onl
 | MS2 parameterized owner | Yes | Local owner only | No | No | No | `ParameterizedBudgetParameters.ec` plus `ComparisonPayloadSemanticSlotMassParameterized.ec` are real parameterized owner surfaces |
 | MS2 parameterized bridge companion | Yes | Yes, alias-based | Yes | No | No | `ComparisonPayloadSemanticBridgeParameterized.ec` still relies on equality between semantic and parameterized demo counts |
 | Combined MS parameterized public-endpoint lane | Yes | Yes, alias-based | Yes | No | No | `MSProbabilitySurfaceParameterized.ec` through `GameMSHopCompositionParameterized.ec` closes only as a staged/public-endpoint lane |
-| LE rejection parameterized lane | Yes | Yes, partly alias-based | No | Yes, inside `G1 -> G2` | No by itself | Lower owner surface is real; theorem-facing companion still uses alias equality to the demo semantic owner |
-| LE FS parameterized lane | Yes | Yes, partly alias-based | No | Yes, inside `G1 -> G2` | No by itself | Lower owner surface is real; theorem-facing companion still uses alias equality to the demo semantic owner |
-| LE parameterized umbrella | Yes | Yes | No | Yes, for `G1 -> G2` | Indirectly yes | `LEStatisticalDistanceParameterized.ec`, `LEHVZKParameterized.ec`, and `GameLEBridgeParameterized.ec` close the LE parameterized route |
+| LE rejection parameterized lane | Yes | Yes, live parameterized sampler route | No | Yes, inside `G1 -> G2` | No by itself | `LERejectionSamplerParameterizedCore.ec` plus `LERejectionSamplerMassLiveParameterized.ec` own the live 3/32 rejection lane; `LERejectionParameterized.ec` and `LEStatisticalDistanceParameterized.ec` now route through `d_le_parameterized_post_rejection_view` rather than the demo rejection midpoint |
+| LE FS parameterized lane | Yes | Mixed: demo-budget bridge plus parameterized midpoint | No | Yes, inside `G1 -> G2` | No by itself | `LEFsProgrammingParameterizedView.ec` gives an FS-facing parameterized programmed-view bridge, but `LEFsProgrammingParameterized.ec` still closes the honest budget through the demo FS bad-branch comparison, so LE FS has not moved below 3/16 |
+| LE parameterized umbrella | Yes | Yes | No | Yes, for `G1 -> G2` | Indirectly yes | `LEStatisticalDistanceParameterized.ec`, `LEHVZKParameterized.ec`, and `GameLEBridgeParameterized.ec` now compose over the parameterized rejection midpoint plus the FS-facing parameterized view bridge |
 | LE-only parameterized top theorem | Yes | Yes | No | Yes, with canonical MS retained | Yes | `qssm_main_theorem_le_parameterized_budget` remains the LE-only intermediate theorem |
 | Full canonical parameterized QSSM theorem | Yes | Yes, with explicit extra MS2 charge | Not applicable | Yes | Yes | `qssm_main_theorem_parameterized_budget` closes through a budgeted public AfterRom to canonical AfterRom bridge and keeps the duplicated MS2 term explicit |
 
@@ -30,8 +32,10 @@ These files should remain part of the architecture even after production-count d
 - `primitives/ParameterizedBudgetParameters.ec`
 - `ms/source/SourceHashBindingSemanticSlotMassParameterized.ec`
 - `ms/comparison/ComparisonPayloadSemanticSlotMassParameterized.ec`
-- `le/LERejectionSamplerMassParameterized.ec`
+- `le/LERejectionSamplerParameterizedCore.ec`
+- `le/LERejectionSamplerMassLiveParameterized.ec`
 - `le/LEFsProgrammingFailureProbabilityParameterized.ec`
+- `le/LEFsProgrammingParameterizedView.ec`
 - `games/GameAdvantageParameterized.ec`
 - `games/GameMSHopTypesParameterized.ec`
 - `games/GameMSHopCompositionParameterized.ec`
@@ -47,21 +51,24 @@ These files are architecturally useful today, but their current proofs still dep
 - `ms/source/SourceHashBindingSemanticBridgeParameterized.ec`
 - `ms/comparison/ComparisonPayloadSemanticBridgeParameterized.ec`
 - `ms/MSProbabilitySurfaceParameterized.ec`
-- `le/LERejectionParameterized.ec`
 - `le/LEFsProgrammingParameterized.ec`
 
 ## What Is Complete Today
 
 - Parameterized owner definitions are present for MS1, MS2, LE rejection, LE FS, and the parameterized LE umbrella.
+- The LE parameterized lane now carries a live rejection-only sampler route with counts `soft=1`, `hard=1`, `invalid=1`, `accept=29`, `failure=3`, `total=32`, so `epsilon_le_rej_parameterized = 3%r / 32%r`.
+- `LERejectionParameterized.ec` and `LEStatisticalDistanceParameterized.ec` now route through that parameterized rejection midpoint, and `LEFsProgrammingParameterizedView.ec` carries the midpoint into the combined LE route without changing the demo semantic theorem path.
 - The LE parameterized lane closes all the way to `qssm_main_theorem_le_parameterized_budget`.
 - The full canonical parameterized route closes all the way to `qssm_main_theorem_parameterized_budget`.
 - The staged/public-endpoint caveat is still explicit and part of the frozen proof claim because the canonical closure still factors through a charged public-endpoint landing.
+- The exact-zero route and live demo semantic route remain unchanged.
 
 ## What Is Intentionally Incomplete
 
 - No zero-cost public-endpoint landing theorem from public AfterRom to canonical AfterRom.
 - No theorem claiming public AfterRom is zero-equal to canonical AfterRom.
-- No production-count substitution for the current demo-alias bridge companions.
+- No production-count substitution for the remaining demo-alias bridge companions.
+- No honest lowering of the LE FS, MS1, or MS2 parameterized budgets beyond their current demo-derived bridge surfaces.
 
 ## Minimum Future Work For True Production-Count Substitution
 
@@ -69,7 +76,7 @@ The next research phase, if reopened, starts below the theorem surface.
 
 1. Introduce a genuinely non-demo parameter owner surface without mutating `BudgetParameters.ec`.
 2. Replace alias-based MS1 and MS2 bridge companions with real execution-owned parameterized bridge proofs.
-3. Replace alias-based LE rejection and LE FS theorem-facing companions with real semantic-to-parameterized bridge proofs.
+3. Replay LE FS through a live parameterized bad-branch route if `epsilon_le_fs_parameterized` is to be lowered honestly.
 4. Tighten or replace the current alias-based public-to-canonical landing if a future route wants to remove the duplicated MS2 charge honestly.
 5. Re-evaluate the remaining MS semantic distinction only if a zero-cost or tighter landing is required later.
 

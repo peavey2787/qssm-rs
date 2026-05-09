@@ -4,7 +4,7 @@ Navigation: [EasyCrypt README](../README.md)
 
 ## Snapshot
 
-As of May 2026, the EasyCrypt tree under this directory checks cleanly with `./check_easycrypt.sh`; the current checker snapshot is `OK` over 126 checked theories; the repo-local named `axiom` count in `*.ec` files under this directory is `0`; and the current repo-local `admit` count is `0`.
+As of May 2026, the EasyCrypt tree under this directory checks cleanly with `./check_easycrypt.sh`; the current checker snapshot is `OK` over 129 checked theories; the repo-local named `axiom` count in `*.ec` files under this directory is `0`; and the current repo-local `admit` count is `0`.
 
 The active theorem path is therefore fully machine-checked at the current abstraction boundary. The important caveat is now narrower: theorem routing is frozen at an exact-zero route, a demo semantic route, an LE-only intermediate parameterized route, and a full canonical parameterized route that closes through a charged public-to-canonical MS landing rather than a zero-cost identification.
 
@@ -48,6 +48,18 @@ The active theorem stack is checker-green end to end.
 - `le/` closes the rejection and FS component bounds on the current lower carriers and component budgets
 - `games/` packages the MS and LE transition bounds into the final additive theorem path
 - `sim/Simulator.ec` closes the public-surface bridge needed for the MS-to-LE handoff
+
+## Parameterized LE Rejection Checkpoint
+
+The first honest lower-budget parameterized LE slice is now live and reaches the closed canonical parameterized theorem.
+
+- `primitives/ParameterizedBudgetParameters.ec` now carries the active LE rejection parameterized counts `soft=1`, `hard=1`, `invalid=1`, `accept=29`, `failure=3`, `total=32`, so `epsilon_le_rej_parameterized = 3%r / 32%r`.
+- `le/LERejectionSamplerParameterizedCore.ec` owns the parameterized rejection branch/marginal core.
+- `le/LERejectionSamplerMassLiveParameterized.ec` owns the live parameterized rejection mass and `sdist` facts.
+- `le/LEFsProgrammingParameterizedView.ec` owns the FS-facing parameterized programmed-view/midpoint bridge.
+- `le/LERejectionParameterized.ec` retargets theorem-facing rejection bounds to the new sampler lane, and `le/LEStatisticalDistanceParameterized.ec` now composes over `d_le_parameterized_post_rejection_view`.
+- `BudgetParameters.ec`, `MainTheorem.ec`, `LERealExecution.ec`, `LERejection.ec`, and demo `LEStatisticalDistance.ec` remain unchanged.
+- Only LE rejection has moved below `3%r / 16%r` so far; honest lowering of LE FS still requires a live parameterized FS bad-branch route.
 
 ## Budget Models Today
 
@@ -135,12 +147,14 @@ The following items remain outside the current exact-zero theorem path:
 - tightening or further routing the current semantic-public MS2 AfterRom surrogate now that the lower public carrier retarget and public-divergence refinement are checker-green below the theorem surface
 - whether the staged sibling `A_G0_to_G1_ms_hash_binding_semantic_transition_bound` should remain as a parallel bisectable theorem now that the live semantic top-level route also consumes `epsilon_ms_hash_binding_semantic`
 - a true category-carrying LE rejection material split below the current shared boolean reject carrier for `soft_repair`, `hard_repair`, and `invalid`
-- a non-identity LE rejection sampler with a nonzero derived rejection budget
-- a branch-sensitive, semantically nontrivial LE FS bad-event model on the theorem-facing path
+- a live parameterized LE FS lane if `epsilon_le_fs_parameterized` is to be lowered honestly below the current demo-derived `3%r / 16%r`
+- production-profile-independent MS1/MS2 local comparison seams beyond the current localized bridges
 - a nonzero end-to-end quantitative budget connected to realistic lower assumptions
 - a machine-checked refinement link from the EasyCrypt model to the Rust implementation
 
 ## Current Next Target
+
+The next parameterized LE proof target is now FS, not rejection. The rejection-only live parameterized sampler route is already landed and checker-green through `LERejectionSamplerParameterizedCore.ec`, `LERejectionSamplerMassLiveParameterized.ec`, `LEFsProgrammingParameterizedView.ec`, `LERejectionParameterized.ec`, and `LEStatisticalDistanceParameterized.ec`, with `epsilon_le_rej_parameterized = 3%r / 32%r` reaching `qssm_main_theorem_parameterized_budget`. The demo semantic route and exact-zero route remain unchanged, and the remaining honest parameterized LE work is therefore to decide whether `epsilon_le_fs_parameterized` should stay on the current demo-derived bridge or move to a live parameterized FS bad-branch route.
 
 The execution-owned semantic rejection-to-FS handoff is now landed and checker-green. `LERealExecution.ec` owns the semantic rejection support/material, `LERejectionSampler.d_le_semantic_post_rejection_view` is the semantic midpoint, `LEFsProgrammingSurface.d_le_pre_fs_semantic_programming_view` feeds that midpoint into the semantic FS lane, and `games/GameLEBridge.ec` now packages the resulting semantic projected-simulation advantage without changing the exact-zero theorem path.
 
@@ -157,7 +171,7 @@ The next exact local target is therefore no longer the rejection-owner handoff, 
 - keep the current exact-zero theorem path unchanged while any future material split remains strictly below the theorem-facing rejection wrappers
 - defer any future `primitives/ProtocolParameters.ec` move until there is a real shared parameter source worth centralizing
 
-This is the best current stopping point because the semantic rejection owner, semantic post-rejection midpoint, repaired rejection ticket/observable, primitive category law, ticket-failure bridge, semantic FS pre-image, bridge packaging, and semantic umbrella plumbing are now all installed and checker-green, and the live theorem path does not need more than failure-vs-accept plus repair/no-repair. The next design target, if LE realism work resumes here, is a design-only sketch of that future additive category-carrying constructor layer or a broader roadmap re-triage, not immediate proof churn.
+This is the best current stopping point because the semantic rejection owner, semantic post-rejection midpoint, repaired rejection ticket/observable, primitive category law, ticket-failure bridge, semantic FS pre-image, bridge packaging, and semantic umbrella plumbing are now all installed and checker-green, and the live theorem path does not need more than failure-vs-accept plus repair/no-repair. The next design target, if LE parameterization work resumes here, is a focused LE FS live parameterization audit rather than another rejection-material split.
 
 The MS2 visible/silent micro-layer is now intentionally stopped and checkpointed. The bridge-local execution-owned decomposition, common-equality normalization, normalized bundle / wrapper packaging, projection helpers, and round-trip helper are in place below routing, and no further normalized-wrapper micro-helpers are planned on the live route. The next work item is roadmap triage rather than more MS2 bridge-local proof churn.
 

@@ -27,17 +27,19 @@ This layer owns parameterized counts, derived epsilons, and local mass identitie
 - `primitives/ParameterizedBudgetParameters.ec`
 - `ms/source/SourceHashBindingSemanticSlotMassParameterized.ec`
 - `ms/comparison/ComparisonPayloadSemanticSlotMassParameterized.ec`
-- `le/LERejectionSamplerMassParameterized.ec`
+- `le/LERejectionSamplerParameterizedCore.ec`
+- `le/LERejectionSamplerMassLiveParameterized.ec`
 - `le/LEFsProgrammingFailureProbabilityParameterized.ec`
 
 ### Bridge layer
 
-This layer is where demo semantic facts are currently re-exported to the parameterized lane.
+This layer packages lower parameterized facts into theorem-facing parameterized lanes. Some MS and FS entries still re-export demo-derived lower facts; the live LE rejection route no longer does.
 
 - `ms/source/SourceHashBindingSemanticBridgeParameterized.ec`
 - `ms/comparison/ComparisonPayloadSemanticBridgeParameterized.ec`
 - `le/LERejectionParameterized.ec`
 - `le/LEFsProgrammingParameterized.ec`
+- `le/LEFsProgrammingParameterizedView.ec`
 - `ms/MSProbabilitySurfaceParameterized.ec`
 
 ### Wrapper layer
@@ -98,16 +100,21 @@ The local mass files are mostly already expressed over parameterized operators a
   - `ms_rom_semantic_failure_choice_mass_true_parameterized`
   - `ms_rom_local_failure_mass_eq_epsilon_ms_rom_programmability_parameterized`
   - `ms_rom_local_failure_mass_le_epsilon_ms_rom_programmability_parameterized`
-- `le/LERejectionSamplerMassParameterized.ec`
-  - `le_rejection_shadow_semantic_ticket_failure_probability_parameterized_eq_epsilon_le_rej_parameterized`
-  - `le_rejection_shadow_semantic_failure_probability_eq_ticket_failure_probability_parameterized`
-  - `le_rejection_shadow_semantic_failure_probability_eq_epsilon_le_rej_parameterized`
-  - `le_rejection_shadow_semantic_failure_probability_le_epsilon_le_rej_parameterized`
+- `le/LERejectionSamplerParameterizedCore.ec`
+  - `d_le_rejection_parameterized_pre_marginal_matches_execution_view`
+  - `d_le_rejection_parameterized_post_marginal_fixed_branch_imageE`
+  - `d_le_rejection_parameterized_reject_event_image_branch_choice`
+- `le/LERejectionSamplerMassLiveParameterized.ec`
+  - `le_rejection_parameterized_ticket_failure_probability_eq_epsilon_le_rej_parameterized`
+  - `le_rejection_parameterized_failure_probability_eq_ticket_failure_probability`
+  - `le_rejection_parameterized_failure_probability_le_epsilon_le_rej_parameterized`
+  - `A_LE_rejection_parameterized_sampler_semantic_experiment_sdist_bound`
+  - `A_LE_rejection_parameterized_sampler_semantic_sdist_bound`
 - `le/LEFsProgrammingFailureProbabilityParameterized.ec`
   - `le_fs_failure_probability_eq_epsilon_le_fs_parameterized`
   - `le_fs_failure_probability_le_epsilon_le_fs_parameterized`
 
-These results are still fed by the current aliasing owner definitions, but they do not rely on semantic-demo equality lemmas. Once the parameterized counts change, these files should continue to prove the same theorems over the new parameterized operators.
+These results are all parameterized-operator first. The live LE rejection slice no longer depends on semantic-demo equality lemmas at all; the remaining MS and FS items still inherit the current aliasing owner definitions, but they already expose the right theorem-facing operators for a later replay.
 
 Classification: mostly `genuinely parameterized` at theorem level.
 
@@ -161,9 +168,11 @@ Classification: `mixed`, but structurally stable.
 
 The recent LE rejection, LE FS, MS1, and MS2 bridge pilots pushed the broad semantic-to-parameterized epsilon rewrites downward into localized comparison theorems.
 
+Since then, LE rejection has moved beyond that localized-comparison shape entirely: the active rejection route now uses the live sampler chain `LERejectionSamplerParameterizedCore.ec -> LERejectionSamplerMassLiveParameterized.ec -> LERejectionParameterized.ec`, and `LEFsProgrammingParameterizedView.ec` plus `LEStatisticalDistanceParameterized.ec` carry the resulting midpoint into the combined LE route. LE rejection is therefore no longer one of the remaining localized count-alias-sensitive seams.
+
 The following theorem paths should now be treated as structurally de-aliased upper consumers.
 
-- `A_LE_rejection_sampler_semantic_sdist_parameterized_bound` now forwards the semantic experiment theorem through `A_LE_rejection_shadow_semantic_failure_probability_le_parameterized_budget`; the remaining count-alias sensitivity is localized below it at `le_rejection_shadow_semantic_ticket_failure_probability_le_parameterized_budget`.
+- `A_LE_rejection_sampler_semantic_sdist_parameterized_bound` now closes through the live parameterized rejection sampler chain `LERejectionSamplerParameterizedCore.ec -> LERejectionSamplerMassLiveParameterized.ec -> LERejectionParameterized.ec`; `LEStatisticalDistanceParameterized.ec` then composes that midpoint through `LEFsProgrammingParameterizedView.ec`, so the active rejection lane no longer depends on a demo-semantic/parameterized equality.
 - `A_LE_fs_semantic_programming_sampler_sdist_le_parameterized_budget` now forwards the semantic bad-branch experiment theorem through `le_fs_shadow_local_bad_branch_mass_le_parameterized_budget`; the remaining count-alias sensitivity is localized below it at that bad-branch comparison theorem.
 - `A_MS1_hash_binding_execution_owned_parameterized_bound` now routes through `ms_hash_binding_local_failure_mass_le_parameterized_budget`, not the broad semantic-to-parameterized epsilon equality.
 - `ms_hash_binding_public_observable_divergence_mass_le_local_public_divergence_upper_mass_parameterized` now routes through `ms_hash_binding_local_public_divergence_upper_mass_le_parameterized_upper_mass`; the remaining count-alias sensitivity is localized at the live upper-mass comparison itself.
@@ -187,8 +196,6 @@ The structurally de-aliased upper theorem paths listed above are no longer direc
 | `epsilon_ms_rom_programmability_semantic_eq_epsilon_ms_rom_programmability_parameterized` | direct equality between demo semantic MS2 epsilon and parameterized MS2 epsilon by expanding aliased counts | none; closes by algebra over aliased counts | keep only as a compatibility shim, or retire it from the active route once production counts diverge | low |
 | `ms_rom_local_failure_mass_eq_parameterized` | rewrites the demo local failure mass to the parameterized one through the alias equality | `ms_rom_local_failure_mass_eq_epsilon_ms_rom_programmability_semantic` | keep only as a compatibility equality; the active route should continue to consume `ms_rom_local_failure_mass_le_parameterized_budget` | medium |
 | `ms_rom_execution_owned_semantic_failure_probability_eq_epsilon_ms_rom_programmability_parameterized` | chains `ms_rom_execution_owned_semantic_failure_probability_eq_local_mass`, `ms_rom_local_failure_mass_eq_parameterized`, and the semantic-to-parameterized equality | `ms_rom_execution_owned_semantic_failure_probability_eq_local_mass` | keep only as a compatibility exact-equality companion; the active route should continue to use `A_MS2_rom_programming_execution_owned_parameterized_bound` | medium |
-| `epsilon_le_rej_semantic_eq_epsilon_le_rej_parameterized` | direct equality between demo semantic rejection epsilon and parameterized rejection epsilon | none; closes by algebra over aliased counts | keep only as a compatibility shim, or retire it from the active route once production counts diverge | low |
-| `le_rejection_shadow_semantic_failure_probability_eq_parameterized` | rewrites the demo semantic rejection failure probability to the parameterized one through the compatibility equality above | `le_rejection_shadow_semantic_failure_probability_eq_epsilon_le_rej_semantic` | keep only as a compatibility exact-equality companion; the active route should continue to use the direct ticket-failure comparison theorem | medium |
 | `epsilon_le_fs_semantic_eq_epsilon_le_fs_parameterized` | direct equality between demo semantic FS epsilon and parameterized FS epsilon | none; closes by algebra over aliased counts | keep only as a compatibility shim, or retire it from the active route once production counts diverge | low |
 
 ## Remaining Localized Count-Alias-Sensitive Seams
@@ -197,7 +204,6 @@ The following theorems are now the real production-count substitution boundary.
 
 | Theorem | Live/demo quantity compared | Parameterized target | Replay class | Upward blast radius |
 |---|---|---|---|---|
-| `le_rejection_shadow_semantic_ticket_failure_probability_le_parameterized_budget` | `le_rejection_shadow_semantic_ticket_failure_probability x s` | `ParameterizedBudgetParameters.epsilon_le_rej_parameterized` | arithmetic-dominated | LE rejection wrapper chain only; no MS or canonical game-hop replay should be needed if the theorem name and inequality direction stay fixed |
 | `le_fs_shadow_local_bad_branch_mass_le_parameterized_budget` | `LEFsProgrammingSurface.le_fs_shadow_local_bad_branch_mass` | `ParameterizedBudgetParameters.epsilon_le_fs_parameterized` | local semantic replay | LE FS wrapper chain only; still below `A_LE_fs_semantic_programming_sampler_sdist_le_parameterized_budget` |
 | `ms_hash_binding_local_failure_mass_le_parameterized_budget` | `ms_hash_binding_local_failure_mass` | `ParameterizedBudgetParameters.epsilon_ms_hash_binding_parameterized` | local semantic replay | feeds the MS1 execution-owned bridge and the MS1 public-endpoint wrapper path, but should not force canonical landing replay if the theorem name and inequality direction stay fixed |
 | `ms_hash_binding_local_public_divergence_upper_mass_le_parameterized_upper_mass` | `ms_hash_binding_local_public_divergence_upper_mass` | `ms_hash_binding_local_public_divergence_upper_mass_parameterized` | public-endpoint replay | feeds only the MS1 public-observable divergence upper theorem and then the public-endpoint MS wrapper path; the canonical MS landing route stays untouched |
@@ -233,25 +239,9 @@ Expected reuse after lower replacements: mostly unchanged, except for any local 
 
 ## First True Production-Substitution Breakpoints
 
-When the parameterized counts diverge from the current demo counts, the first actual breakpoints are now the five localized comparison seams above, not the upper theorem routes above them.
+When the parameterized counts diverge from the current demo counts, the first actual breakpoints are now the four localized comparison seams above, not the upper theorem routes above them.
 
-### Breakpoint 1: LE rejection ticket-failure comparison
-
-Primary file: `le/LERejectionParameterized.ec`
-
-Current break cause:
-
-- `le_rejection_shadow_semantic_ticket_failure_probability_le_parameterized_budget`
-
-Smallest replacement theorem needed:
-
-- reprove `le_rejection_shadow_semantic_ticket_failure_probability_le_parameterized_budget` against genuinely independent `le_rej_param_*` counts
-
-Practical note:
-
-This is the cheapest honest first slice. The LE theorem names above it should remain unchanged if the theorem name and inequality direction are preserved.
-
-### Breakpoint 2: LE FS bad-branch comparison
+### Breakpoint 1: LE FS bad-branch comparison
 
 Primary file: `le/LEFsProgrammingParameterized.ec`
 
@@ -265,9 +255,9 @@ Smallest replacement theorem needed:
 
 Practical note:
 
-This remains a local semantic replay point on the LE side, but it is more branch-sensitive than the rejection seam.
+This is now the smallest remaining honest LE slice. The LE theorem names above it should remain unchanged if the theorem name and inequality direction are preserved.
 
-### Breakpoint 3: MS1 local failure comparison
+### Breakpoint 2: MS1 local failure comparison
 
 Primary file: `ms/source/SourceHashBindingSemanticBridgeParameterized.ec`
 
@@ -283,7 +273,7 @@ Practical note:
 
 The execution-owned and most public-endpoint theorem names above it should remain unchanged if this theorem name and inequality direction are preserved.
 
-### Breakpoint 4: MS1 public-divergence upper comparison
+### Breakpoint 3: MS1 public-divergence upper comparison
 
 Primary file: `ms/source/SourceHashBindingSemanticBridgeParameterized.ec`
 
@@ -299,7 +289,7 @@ Practical note:
 
 This is the only remaining localized seam whose natural replay class is public-endpoint-sensitive rather than a pure local-failure comparison.
 
-### Breakpoint 5: MS2 local failure comparison
+### Breakpoint 4: MS2 local failure comparison
 
 Primary file: `ms/comparison/ComparisonPayloadSemanticBridgeParameterized.ec`
 
@@ -322,18 +312,18 @@ The recommended replay order is:
 1. replace exactly one parameterized owner subfamily while preserving the current parameterized operator names and arithmetic structure
 2. replay the matching localized comparison seam for that owner subfamily
 3. verify that the upper wrappers above that seam survive unchanged
-4. start with the LE rejection ticket-failure comparison
-5. then replay the LE FS bad-branch comparison
-6. then replay the MS1 local failure comparison
-7. then replay the MS1 public-divergence upper comparison
-8. finally replay the MS2 local failure comparison
+4. start with the LE FS bad-branch comparison
+5. then replay the MS1 local failure comparison
+6. then replay the MS1 public-divergence upper comparison
+7. finally replay the MS2 local failure comparison
 9. rerun the checker and the zero-axiom / zero-admit validation
 10. only after the proof route is stable again, revisit readability or refactor work
 
 Reason for this order:
 
 - the first honest pilot should change only one owner subfamily so profile selection and proof replay stay coupled locally
-- the LE route is more locally contained and should validate the substitution process before touching the canonical MS path
+- the LE rejection live sampler route has already validated the substitution process on the LE side without disturbing the theorem-facing route
+- the remaining LE FS seam is more locally contained than the MS work and should be replayed before touching the canonical MS path
 - the MS1 public-divergence upper comparison is a separate public-endpoint-sensitive replay surface and should not be conflated with the MS1 local failure replay
 - the MS2 local failure comparison is the most globally visible MS dependency because it feeds both the public-endpoint route and the canonical landing
 - delaying readability work avoids mixing semantic substitutions with naming churn
@@ -377,14 +367,14 @@ These are intentionally deferred until after production-count substitution succe
 
 ### First actual production-substitution target
 
-Start with the LE rejection ticket-failure comparison.
+Start with the LE FS bad-branch comparison.
 
 Reason:
 
-- it is the smallest localized comparison seam conceptually
-- the expected proof touches are `primitives/ParameterizedBudgetParameters.ec` and `le/LERejectionParameterized.ec`
-- its upper wrapper chain appears the most reusable unchanged
-- it validates the substitution workflow before touching the more expensive MS2 canonical landing path
+- the LE rejection live sampler route already landed and validated the first honest lower-budget LE substitution slice
+- the remaining LE FS seam is the smallest local replay point still on the live queue
+- the expected proof touches stay below the theorem-facing wrappers
+- it validates the next LE parameterized component before touching the more expensive MS2 canonical landing path
 - `formal/PARAMETER_PROFILES.md` can be updated afterward once the first real profile choice is locked
 
 ### Most expensive replay points
@@ -403,6 +393,7 @@ Among these, `ms_rom_local_failure_mass_le_parameterized_budget` is the hardest 
 Current assessment:
 
 - the LE upper wrapper chain is now structurally de-aliased above the localized rejection and FS comparison seams
+- the LE rejection side has already moved past its former localized comparison seam onto a live parameterized sampler chain
 - the MS execution-owned and public-endpoint wrapper chain is now structurally de-aliased above the localized MS1 and MS2 comparison seams
 - `MainTheoremParameterized.ec` appears structurally stable
 - the duplicate MS2 charge appears architecturally unavoidable on the current route unless a future direct canonical landing theorem removes it honestly
