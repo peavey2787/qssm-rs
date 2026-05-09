@@ -26,6 +26,19 @@ op d_ms_hash_binding_semantic_coupled_state_parameterized
               BudgetParameters.ms_hash_binding_semantic_category) =>
       ms_hash_binding_semantic_state_of_category_source (fst p) (snd p)).
 
+op d_ms_hash_binding_public_semantic_observable_v2_parameterized
+  (x : ms_public_input) : ms_v2_transcript_observable distr =
+  dmap (d_ms_hash_binding_semantic_coupled_state_parameterized x)
+    (fun (st : ms_hash_binding_semantic_state) => st.`mshbss_observed_observable).
+
+op d_ms_hash_binding_public_divergence_upper_pair_choice_parameterized
+  (x : ms_public_input) : bool distr =
+  dmap ((d_ms3a_bitness_real_source x) `*`
+        d_ms_hash_binding_semantic_category_choice_parameterized)
+    (fun (p : ms3a_bitness_layer_source *
+              BudgetParameters.ms_hash_binding_semantic_category) =>
+       ms_hash_binding_public_divergence_upper_category_event_parameterized (snd p)).
+
 op d_ms_hash_binding_semantic_failure_state_choice_parameterized
   (x : ms_public_input) : bool distr =
   dmap (d_ms_hash_binding_semantic_coupled_state_parameterized x)
@@ -87,4 +100,32 @@ have Hbad :
   apply eq_dmap_in=> slot _ /=.
   by rewrite /(\o) /ms_hash_binding_semantic_bad_slot_parameterized.
 by rewrite Hbad.
+qed.
+
+lemma d_ms_hash_binding_public_divergence_upper_pair_choice_parameterizedE
+  (x : ms_public_input) :
+  d_ms_hash_binding_public_divergence_upper_pair_choice_parameterized x =
+  d_ms_hash_binding_public_divergence_upper_choice_parameterized.
+proof.
+rewrite /d_ms_hash_binding_public_divergence_upper_pair_choice_parameterized.
+rewrite -(dmap_comp snd ms_hash_binding_public_divergence_upper_category_event_parameterized
+  ((d_ms3a_bitness_real_source x) `*`
+   d_ms_hash_binding_semantic_category_choice_parameterized)).
+have Hsnd :
+  dmap ((d_ms3a_bitness_real_source x) `*`
+        d_ms_hash_binding_semantic_category_choice_parameterized) snd =
+  d_ms_hash_binding_semantic_category_choice_parameterized.
+  exact (ms_hash_binding_dmap_dprod_snd_lossless
+    (d_ms3a_bitness_real_source x)
+    d_ms_hash_binding_semantic_category_choice_parameterized
+    (d_ms3a_bitness_real_source_lossless x)).
+rewrite Hsnd.
+rewrite /d_ms_hash_binding_semantic_category_choice_parameterized.
+rewrite (dmap_comp
+  ms_hash_binding_semantic_category_of_slot_parameterized
+  ms_hash_binding_public_divergence_upper_category_event_parameterized
+  d_ms_hash_binding_semantic_slot_choice_parameterized).
+rewrite /d_ms_hash_binding_public_divergence_upper_choice_parameterized.
+apply eq_dmap_in=> slot _ /=.
+by rewrite /(\o) /ms_hash_binding_public_divergence_upper_slot_parameterized.
 qed.

@@ -3,6 +3,7 @@ require import QssmTypes.
 require import SourceTypes.
 require import TranscriptObservable.
 require import MSProbabilitySurface.
+require import SourceHashBindingSemanticSlotMassParameterized.
 require import SourceHashBindingSemanticBridgeParameterized.
 require import GameAdvantage.
 require import GameViews.
@@ -18,9 +19,9 @@ require ParameterizedBudgetParameters.
 lemma A_MS1_hash_binding_parameterized_stage_bound :
   forall (x : qssm_public_input) (s : seed) (xms : ms_public_input)
          (D : distinguisher),
-    game_pr_ms_public_endpoint_core x s xms MSPublicEndpointAfterBinding D -
+    game_pr_ms_public_endpoint_core_parameterized x s xms MSPublicEndpointAfterBinding D -
     ms_view_distinguish_pr (d_ms_after_binding_observable_v2 x s xms) D <=
-  MS.epsilon_ms_hash_binding_semantic.
+  ms_hash_binding_local_public_divergence_upper_mass_parameterized.
 proof.
 move=> x s xms D.
 exact (A_MS1_hash_binding_parameterized_game_advantage_bound x s xms D).
@@ -40,8 +41,8 @@ qed.
 lemma A_MS_public_endpoint_parameterized_stage_bound :
   forall (x : qssm_public_input) (s : seed) (xms : ms_public_input)
          (D : distinguisher),
-    Adv_ms_public_endpoint x s xms D <=
-  MS.epsilon_ms_hash_binding_semantic +
+    Adv_ms_public_endpoint_parameterized x s xms D <=
+  ms_hash_binding_local_public_divergence_upper_mass_parameterized +
       ParameterizedBudgetParameters.epsilon_ms_rom_programmability_parameterized.
 proof.
 move=> x s xms D.

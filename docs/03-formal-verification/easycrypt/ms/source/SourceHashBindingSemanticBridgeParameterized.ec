@@ -14,8 +14,8 @@ require import SourceHashBindingSemanticLiveParameterizedMass.
 import Ring.IntID StdOrder.IntOrder Range.
 
 (* Parallel MS1 semantic bridge against the parameterized owner surface.
-   Slice 1 retargets only the canonical execution-owned failure lane. The
-   staged public-divergence route remains demo-bound until a later replay. *)
+  The canonical execution-owned failure lane and the staged MS1
+  public-divergence upper lane both now run on the live parameterized owner. *)
 
 lemma ms_hash_binding_local_failure_mass_le_parameterized_budget :
   ms_hash_binding_local_failure_mass_parameterized <=
@@ -36,19 +36,19 @@ qed.
    coupled state and demo local upper mass. *)
 lemma ms_hash_binding_public_divergence_upper_pair_choice_mass_eq_local_upper_mass_parameterized
   (x : ms_public_input) :
-  mu1 (d_ms_hash_binding_public_divergence_upper_pair_choice x) true =
-  ms_hash_binding_local_public_divergence_upper_mass.
+  mu1 (d_ms_hash_binding_public_divergence_upper_pair_choice_parameterized x) true =
+  ms_hash_binding_local_public_divergence_upper_mass_parameterized.
 proof.
-exact (ms_hash_binding_public_divergence_upper_pair_choice_mass_eq_local_upper_mass x).
+exact (SourceHashBindingSemanticLiveParameterizedMass.ms_hash_binding_public_divergence_upper_pair_choice_mass_eq_local_upper_mass_live_parameterized x).
 qed.
 
 lemma ms_hash_binding_public_observable_divergence_mass_le_local_public_divergence_upper_mass_parameterized
   (x : ms_public_input) :
-  mu (d_ms_hash_binding_semantic_coupled_state x)
+  mu (d_ms_hash_binding_semantic_coupled_state_parameterized x)
     ms_hash_binding_public_observable_divergence_condition <=
-  ms_hash_binding_local_public_divergence_upper_mass.
+  ms_hash_binding_local_public_divergence_upper_mass_parameterized.
 proof.
-exact (ms_hash_binding_public_observable_divergence_mass_le_local_public_divergence_upper_mass x).
+exact (SourceHashBindingSemanticLiveParameterizedMass.ms_hash_binding_public_observable_divergence_mass_le_local_public_divergence_upper_mass_live_parameterized x).
 qed.
 
 lemma A_MS1_hash_binding_execution_owned_parameterized_bound
