@@ -39,6 +39,7 @@ FILES=(
   ms/comparison/ComparisonPayloadTypes.ec
   ms/comparison/ComparisonPayloadSeedTypes.ec
   ms/comparison/ComparisonPayloadFromSeed.ec
+  ms/comparison/ComparisonPayloadExecutionLaw.ec
   ms/comparison/ComparisonPayloadSemanticBridge.ec
   ms/comparison/ComparisonPayloadSeedAnchors.ec
   ms/comparison/ComparisonPayloadSeeds.ec
