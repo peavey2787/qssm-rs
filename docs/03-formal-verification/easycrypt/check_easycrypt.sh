@@ -142,6 +142,7 @@ FILES=(
   games/GameLEBridgeParameterized.ec
   games/Games.ec
   theorem/MainTheorem.ec
+  theorem/MainTheoremParameterized.ec
 )
 
 cd "$SCRIPT_DIR"
