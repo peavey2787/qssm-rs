@@ -19,6 +19,8 @@ fi
 FILES=(
   primitives/Domains.ec
   primitives/BudgetParameters.ec
+  primitives/ParameterizedBudgetParameters.ec
+  primitives/ParameterizedMassHelpers.ec
   primitives/ActionOwner.ec
   primitives/ScalarOwner.ec
   primitives/QssmTypes.ec
@@ -41,6 +43,7 @@ FILES=(
   ms/comparison/ComparisonPayloadExecutionSeedTypes.ec
   ms/comparison/ComparisonPayloadFromSeed.ec
   ms/comparison/ComparisonPayloadExecutionLaw.ec
+  ms/comparison/ComparisonPayloadSemanticSlotMassParameterized.ec
   ms/comparison/ComparisonPayloadSemanticSlotMass.ec
   ms/comparison/ComparisonPayloadSemanticBridge.ec
   ms/comparison/ComparisonPayloadSeedAnchors.ec
