@@ -122,21 +122,52 @@ Any concrete profile should fill the same slot template.
 
 The `*` placeholder stands for `demo`, `conservative`, `prod`, or `stress`.
 
+## Supported Profile Geometry
+
+The current parameterized owner/helper layer supports the following profile geometry without new helper lemmas or theorem-surface changes.
+
+- uniform finite-support profiles are supported through the current `drange 0 total` owner pattern
+- prefix failure layouts are supported for LE rejection, LE FS, MS1 local failure, and MS2 local failure
+- a contiguous interval layout is supported for the MS1 public-divergence upper mass
+- larger contiguous uniform supports are structurally supported
+- non-uniform weights are not yet supported
+- sparse or non-contiguous failure layouts are not yet supported
+- reordered MS1/MS2 category branches are not safe without proof changes in the slot-mass and bridge files
+- no upper theorem currently depends directly on a literal 16-slot enumeration, but the remaining localized comparison seams still reflect demo arithmetic until they are replayed against real counts
+
+## First Real Substitution Candidate
+
+The first honest production-count substitution candidate is the LE rejection profile slice.
+
+- change only the LE rejection owner subfamily first
+- do not change all parameter families or profile classes at once
+- preserve the theorem names above the seam so the LE wrapper chain remains reusable
+- the expected first proof touch is `ParameterizedBudgetParameters.ec` plus `LERejectionParameterized.ec`
+- update this document after that proof lands with the chosen concrete profile values or constraints
+
 ## Production-Count Substitution Checklist
 
 Before any profile is promoted from design to theorem-facing parameter selection, complete the following work:
 
 1. Choose actual counts for the parameterized MS1, MS2, LE rejection, and LE FS owners.
-2. Prove or replace the current alias-compatible lower bridge lemmas with real non-alias parameterized bridge proofs.
+2. Replay the matching localized comparison seams for any owner subfamily that changes, starting with the rejection ticket-failure comparison for the first pilot.
 3. Preserve the owner-layer parameterized arithmetic so theorem statements continue to consume the same budget structure.
 4. Rerun the full EasyCrypt checker and the zero-axiom / zero-admit validation.
 5. Update theorem-facing and release-facing docs after the new counts and bridge proofs are locked.
 
 ## Explicit Warning About The Current Proof Surface
 
-The current parameterized proof route is structurally complete, but many bridge lemmas still rely on alias-compatibility with demo counts until production-count substitution is performed.
+The current parameterized proof route is structurally complete, and its upper LE/MS bridge paths are now largely de-aliased above the lower comparison layer, but the remaining localized comparison seams still rely on demo arithmetic until production-count substitution is performed.
 
-That means the architecture and theorem composition are now in place, but future concrete parameter selection still requires lower-proof replacement work before any production-count claim is honest.
+The active seams are:
+
+- `le_rejection_shadow_semantic_ticket_failure_probability_le_parameterized_budget`
+- `le_fs_shadow_local_bad_branch_mass_le_parameterized_budget`
+- `ms_hash_binding_local_failure_mass_le_parameterized_budget`
+- `ms_hash_binding_local_public_divergence_upper_mass_le_parameterized_upper_mass`
+- `ms_rom_local_failure_mass_le_parameterized_budget`
+
+That means the architecture and theorem composition are now in place, but future concrete parameter selection still requires localized lower-proof replacement work before any production-count claim is honest.
 
 ## MS2 Refactor Candidates Before Production-Count Substitution
 
