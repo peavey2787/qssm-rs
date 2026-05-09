@@ -15,8 +15,8 @@ import Ring.IntID StdOrder.IntOrder Range.
    This leaves the existing semantic/demo bridge untouched and only adds a
    companion wrapper above the parameterized local mass owners. *)
 
-(* Alias-compatibility lemma: this closes only because the current
-   parameterized MS1 counts alias the live demo semantic counts. *)
+(* Compatibility-only alias lemma: this closes only because the current
+  parameterized MS1 counts alias the live demo semantic counts. *)
 lemma epsilon_ms_hash_binding_semantic_eq_epsilon_ms_hash_binding_parameterized :
   BudgetParameters.epsilon_ms_hash_binding_semantic =
   ParameterizedBudgetParameters.epsilon_ms_hash_binding_parameterized.
@@ -33,6 +33,27 @@ by rewrite /BudgetParameters.ms_hash_binding_failure_slot_count
   /BudgetParameters.ms_hash_binding_total_slot_count.
 qed.
 
+(* Main MS1 bridge below now avoids the compatibility-only semantic-to-
+   parameterized equality by comparing the live local failure mass directly
+   against the parameterized owner budget. *)
+lemma ms_hash_binding_local_failure_mass_le_parameterized_budget :
+  ms_hash_binding_local_failure_mass <=
+  ParameterizedBudgetParameters.epsilon_ms_hash_binding_parameterized.
+proof.
+rewrite ms_hash_binding_local_failure_mass_eq_epsilon_ms_hash_binding_semantic.
+rewrite BudgetParameters.epsilon_ms_hash_binding_semantic_closed_form.
+rewrite ParameterizedBudgetParameters.epsilon_ms_hash_binding_parameterized_closed_form.
+rewrite /ParameterizedBudgetParameters.ms1_param_failure_count.
+rewrite /ParameterizedBudgetParameters.ms1_param_total_count.
+rewrite /ParameterizedBudgetParameters.ms1_param_collision_count.
+rewrite /ParameterizedBudgetParameters.ms1_param_malformed_binding_count.
+rewrite /ParameterizedBudgetParameters.ms1_param_transcript_count.
+rewrite /ParameterizedBudgetParameters.ms1_param_clean_count.
+rewrite /BudgetParameters.ms_hash_binding_failure_slot_count.
+rewrite /BudgetParameters.ms_hash_binding_total_slot_count.
+by smt().
+qed.
+
 lemma ms_hash_binding_local_public_divergence_upper_mass_eq_parameterized :
   ms_hash_binding_local_public_divergence_upper_mass =
   ms_hash_binding_local_public_divergence_upper_mass_parameterized.
@@ -46,6 +67,24 @@ rewrite /ParameterizedBudgetParameters.ms1_param_clean_count.
 rewrite /ParameterizedBudgetParameters.ms1_param_failure_count.
 by rewrite /ParameterizedBudgetParameters.ms1_param_collision_count
   /BudgetParameters.ms_hash_binding_total_slot_count.
+qed.
+
+lemma ms_hash_binding_local_public_divergence_upper_mass_le_parameterized_upper_mass :
+  ms_hash_binding_local_public_divergence_upper_mass <=
+  ms_hash_binding_local_public_divergence_upper_mass_parameterized.
+proof.
+rewrite /ms_hash_binding_local_public_divergence_upper_mass.
+rewrite /ms_hash_binding_local_public_divergence_upper_mass_parameterized.
+rewrite /ParameterizedBudgetParameters.ms1_param_malformed_binding_count.
+rewrite /ParameterizedBudgetParameters.ms1_param_transcript_count.
+rewrite /ParameterizedBudgetParameters.ms1_param_total_count.
+rewrite /ParameterizedBudgetParameters.ms1_param_clean_count.
+rewrite /ParameterizedBudgetParameters.ms1_param_failure_count.
+rewrite /ParameterizedBudgetParameters.ms1_param_collision_count.
+rewrite /BudgetParameters.ms_hash_binding_malformed_binding_slot_count.
+rewrite /BudgetParameters.ms_hash_binding_transcript_mismatch_slot_count.
+rewrite /BudgetParameters.ms_hash_binding_total_slot_count.
+by smt().
 qed.
 
 lemma ms_hash_binding_execution_owned_semantic_failure_probability_eq_epsilon_ms_hash_binding_parameterized
@@ -75,8 +114,9 @@ lemma ms_hash_binding_public_observable_divergence_mass_le_local_public_divergen
 proof.
 have Hmass :=
   ms_hash_binding_public_observable_divergence_mass_le_local_public_divergence_upper_mass x.
-rewrite -ms_hash_binding_local_public_divergence_upper_mass_eq_parameterized.
-exact Hmass.
+have Hbridge :=
+  ms_hash_binding_local_public_divergence_upper_mass_le_parameterized_upper_mass.
+by smt().
 qed.
 
 lemma A_MS1_hash_binding_execution_owned_parameterized_bound
@@ -84,6 +124,6 @@ lemma A_MS1_hash_binding_execution_owned_parameterized_bound
   ms_hash_binding_execution_owned_semantic_failure_probability x <=
   ParameterizedBudgetParameters.epsilon_ms_hash_binding_parameterized.
 proof.
-rewrite (ms_hash_binding_execution_owned_semantic_failure_probability_eq_epsilon_ms_hash_binding_parameterized x).
-by [].
+rewrite ms_hash_binding_execution_owned_semantic_failure_probability_eq_local_mass.
+exact ms_hash_binding_local_failure_mass_le_parameterized_budget.
 qed.
