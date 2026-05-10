@@ -241,7 +241,7 @@ op le_rej_param_invalid_count : int =
   1.
 
 op le_rej_param_accept_count : int =
-  29.
+  61.
 
 op le_rej_param_failure_count : int =
   le_rej_param_soft_repair_count +
