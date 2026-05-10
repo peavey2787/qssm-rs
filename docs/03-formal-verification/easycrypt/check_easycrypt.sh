@@ -159,6 +159,7 @@ FILES=(
   theorem/MainTheorem.ec
   theorem/MainTheoremParameterized.ec
   theorem/MainTheoremRealWorld.ec
+  RealWorldBudgetInstantiation.ec
 )
 
 cd "$SCRIPT_DIR"
