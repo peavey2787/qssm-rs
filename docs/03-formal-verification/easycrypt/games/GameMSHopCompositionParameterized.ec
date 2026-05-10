@@ -113,7 +113,7 @@ lemma A_MS2_rom_programming_parameterized_staged_composition_bound :
   forall (x : qssm_public_input) (s : seed) (xms : ms_public_input)
          (D : distinguisher),
     ms_view_distinguish_pr (d_ms_after_binding_observable_v2 x s xms) D -
-    game_pr_ms_public_endpoint_core x s xms MSPublicEndpointAfterRom D <=
+    game_pr_ms_public_endpoint_core_parameterized x s xms MSPublicEndpointAfterRom D <=
       ParameterizedBudgetParameters.epsilon_ms_rom_programmability_parameterized.
 proof.
 move=> x s xms D.

@@ -24,7 +24,7 @@ op d_ms_public_endpoint_after_binding_observable_v2_parameterized
 op d_ms_public_endpoint_after_rom_observable_v2_parameterized
   (x : qssm_public_input) (s : seed) (xms : ms_public_input) :
   ms_v2_transcript_observable distr =
-  d_ms_after_rom_public_semantic_observable_v2 x s xms.
+  d_ms_after_rom_public_semantic_observable_v2_parameterized x s xms.
 
 op d_ms_public_endpoint_stage_observable_v2_parameterized
   (x : qssm_public_input) (s : seed) (xms : ms_public_input)
@@ -118,8 +118,8 @@ have -> :
     ms_view_distinguish_pr (d_ms_after_binding_observable_v2 x s xms) D -
     ms_view_distinguish_pr (d_ms_after_rom_observable_v2 x s xms) D =
     (ms_view_distinguish_pr (d_ms_after_binding_observable_v2 x s xms) D -
-     ms_view_distinguish_pr (d_ms_after_rom_public_semantic_observable_v2 x s xms) D) +
-    (ms_view_distinguish_pr (d_ms_after_rom_public_semantic_observable_v2 x s xms) D -
+   ms_view_distinguish_pr (d_ms_after_rom_public_semantic_observable_v2_parameterized x s xms) D) +
+  (ms_view_distinguish_pr (d_ms_after_rom_public_semantic_observable_v2_parameterized x s xms) D -
      ms_view_distinguish_pr (d_ms_after_rom_observable_v2 x s xms) D).
   by ring.
 exact (ler_add _ _ _ _ Hpublic Hland).
@@ -145,14 +145,14 @@ have -> :
     ms_view_distinguish_pr (d_ms_after_binding_public_semantic_observable_v2_parameterized x s xms) D -
     ms_view_distinguish_pr (d_ms_after_rom_observable_v2 x s xms) D =
     (ms_view_distinguish_pr (d_ms_after_binding_public_semantic_observable_v2_parameterized x s xms) D -
-     ms_view_distinguish_pr (d_ms_after_rom_public_semantic_observable_v2 x s xms) D) +
-    (ms_view_distinguish_pr (d_ms_after_rom_public_semantic_observable_v2 x s xms) D -
+   ms_view_distinguish_pr (d_ms_after_rom_public_semantic_observable_v2_parameterized x s xms) D) +
+  (ms_view_distinguish_pr (d_ms_after_rom_public_semantic_observable_v2_parameterized x s xms) D -
      ms_view_distinguish_pr (d_ms_after_rom_observable_v2 x s xms) D).
   by ring.
 have Hsum :
     (ms_view_distinguish_pr (d_ms_after_binding_public_semantic_observable_v2_parameterized x s xms) D -
-     ms_view_distinguish_pr (d_ms_after_rom_public_semantic_observable_v2 x s xms) D) +
-    (ms_view_distinguish_pr (d_ms_after_rom_public_semantic_observable_v2 x s xms) D -
+   ms_view_distinguish_pr (d_ms_after_rom_public_semantic_observable_v2_parameterized x s xms) D) +
+  (ms_view_distinguish_pr (d_ms_after_rom_public_semantic_observable_v2_parameterized x s xms) D -
      ms_view_distinguish_pr (d_ms_after_rom_observable_v2 x s xms) D) <=
     (ms_hash_binding_local_public_divergence_upper_mass_parameterized +
      ParameterizedBudgetParameters.epsilon_ms_rom_programmability_parameterized) +

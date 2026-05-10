@@ -114,16 +114,16 @@ by smt(ms1_param_failure_count_nonneg ms1_param_total_count_pos).
 qed.
 
 op ms2_param_global_digest_count : int =
-  BudgetParameters.ms_rom_query_collision_slot_count.
+  1.
 
 op ms2_param_query_digest_count : int =
-  BudgetParameters.ms_rom_programming_collision_slot_count.
+  1.
 
 op ms2_param_transcript_count : int =
-  BudgetParameters.ms_rom_transcript_mismatch_slot_count.
+  1.
 
 op ms2_param_clean_count : int =
-  BudgetParameters.ms_rom_clean_slot_count.
+  29.
 
 op ms2_param_failure_count : int =
   ms2_param_global_digest_count +
@@ -143,36 +143,31 @@ proof. by rewrite /ms2_param_failure_count. qed.
 lemma ms2_param_global_digest_count_nonneg :
   0 <= ms2_param_global_digest_count.
 proof.
-rewrite /ms2_param_global_digest_count.
-exact BudgetParameters.ms_rom_query_collision_slot_count_nonneg.
+by rewrite /ms2_param_global_digest_count.
 qed.
 
 lemma ms2_param_query_digest_count_nonneg :
   0 <= ms2_param_query_digest_count.
 proof.
-rewrite /ms2_param_query_digest_count.
-exact BudgetParameters.ms_rom_programming_collision_slot_count_nonneg.
+by rewrite /ms2_param_query_digest_count.
 qed.
 
 lemma ms2_param_transcript_count_nonneg :
   0 <= ms2_param_transcript_count.
 proof.
-rewrite /ms2_param_transcript_count.
-exact BudgetParameters.ms_rom_transcript_mismatch_slot_count_nonneg.
+by rewrite /ms2_param_transcript_count.
 qed.
 
 lemma ms2_param_clean_count_nonneg :
   0 <= ms2_param_clean_count.
 proof.
-rewrite /ms2_param_clean_count.
-exact BudgetParameters.ms_rom_clean_slot_count_nonneg.
+by rewrite /ms2_param_clean_count.
 qed.
 
 lemma ms2_param_clean_count_pos :
   0 < ms2_param_clean_count.
 proof.
-rewrite /ms2_param_clean_count.
-exact BudgetParameters.ms_rom_clean_slot_count_pos.
+by rewrite /ms2_param_clean_count.
 qed.
 
 lemma ms2_param_failure_count_nonneg :

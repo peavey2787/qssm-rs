@@ -14,6 +14,8 @@ require import ComparisonCouplingMarginals.
 require import SourceHashBindingSemanticBridgeParameterized.
 require import SourceHashBindingSemanticSlotMassParameterized.
 require import SourceHashBindingSemanticLiveParameterizedCore.
+require import ComparisonPayloadSemanticLiveParameterizedCore.
+require import ComparisonPayloadSemanticLiveParameterizedMass.
 require import ComparisonPayloadSemanticBridge.
 require import ComparisonPayloadSemanticBridgeParameterized.
 require ParameterizedBudgetParameters.
@@ -21,13 +23,18 @@ require ParameterizedBudgetParameters.
 (*---*) import RealOrder.
 
 (* Parallel parameterized MS probability surface.
-  Slice 2 retargets the staged MS1 public-endpoint compatibility lane onto the
-  live parameterized semantic owner while leaving the MS2 and demo routes intact. *)
+  This now routes both MS1 and MS2 through live parameterized lower lanes
+  while leaving the demo semantic and exact-zero routes untouched. *)
 
 op d_ms_after_binding_public_semantic_observable_v2_parameterized
   (x : qssm_public_input) (s : seed) (xms : ms_public_input) :
   ms_v2_transcript_observable distr =
   d_ms_hash_binding_public_semantic_observable_v2_parameterized xms.
+
+op d_ms_after_rom_public_semantic_observable_v2_parameterized
+  (x : qssm_public_input) (s : seed) (xms : ms_public_input) :
+  ms_v2_transcript_observable distr =
+  d_ms_after_rom_public_semantic_observable_v2_live_parameterized xms.
 
 lemma A_MS1_hash_binding_parameterized_bad_event_bound
   (x : qssm_public_input) (s : seed) (xms : ms_public_input) (D : distinguisher) :
@@ -150,16 +157,89 @@ apply (ler_trans _ _ _ Hdir).
 exact (ler_trans _ _ _ Hgap Hmass).
 qed.
 
+lemma d_ms_after_binding_observable_v2_public_semantic_clean_image_parameterizedE
+  (x : qssm_public_input) (s : seed) (xms : ms_public_input) :
+  d_ms_after_binding_observable_v2 x s xms =
+  dmap (d_ms_rom_semantic_coupled_state_parameterized xms)
+    (fun _ : ms_rom_semantic_state =>
+      ms_rom_semantic_after_rom_observable_of_failure_flag xms false).
+proof.
+rewrite d_ms_after_binding_observable_v2_canonical.
+rewrite (dmap_const_ll (d_ms_rom_semantic_coupled_state_parameterized xms)
+  (ms_rom_semantic_after_rom_observable_of_failure_flag xms false)
+  (d_ms_rom_semantic_coupled_state_parameterized_lossless xms)).
+by rewrite /ms_rom_semantic_after_rom_observable_of_failure_flag.
+qed.
+
+lemma L_ms2_public_after_rom_transition_le_execution_owned_live_parameterized_failure
+  (x : qssm_public_input) (s : seed) (xms : ms_public_input) (D : distinguisher) :
+  ms_view_distinguish_pr
+    (d_ms_after_binding_observable_v2 x s xms) D -
+  ms_view_distinguish_pr
+    (d_ms_after_rom_public_semantic_observable_v2_parameterized x s xms) D <=
+  ms_rom_execution_owned_parameterized_failure_probability xms.
+proof.
+have Hgap :
+    `|ms_view_distinguish_pr
+        (d_ms_after_binding_observable_v2 x s xms) D -
+      ms_view_distinguish_pr
+        (d_ms_after_rom_public_semantic_observable_v2_parameterized x s xms) D| <=
+    mu (d_ms_rom_semantic_coupled_state_parameterized xms)
+      (ms_rom_public_observable_divergence_condition xms).
+  rewrite d_ms_after_binding_observable_v2_public_semantic_clean_image_parameterizedE.
+  rewrite /d_ms_after_rom_public_semantic_observable_v2_parameterized.
+  rewrite /d_ms_after_rom_public_semantic_observable_v2_live_parameterized.
+  apply (ms_same_source_distinguisher_gap_le_bad_mass
+    (d_ms_rom_semantic_coupled_state_parameterized xms)
+    (fun _ : ms_rom_semantic_state =>
+      ms_rom_semantic_after_rom_observable_of_failure_flag xms false)
+    (ms_after_rom_public_semantic_observable_of_state xms)
+    (ms_rom_public_observable_divergence_condition xms) D).
+  move=> st Hnodiv.
+  have Hobs :=
+    ms_after_rom_public_semantic_observable_of_state_no_divergenceE xms st Hnodiv.
+  by smt().
+have Hdir :
+    ms_view_distinguish_pr
+      (d_ms_after_binding_observable_v2 x s xms) D -
+    ms_view_distinguish_pr
+      (d_ms_after_rom_public_semantic_observable_v2_parameterized x s xms) D <=
+    `|ms_view_distinguish_pr
+        (d_ms_after_binding_observable_v2 x s xms) D -
+      ms_view_distinguish_pr
+        (d_ms_after_rom_public_semantic_observable_v2_parameterized x s xms) D|.
+  exact (ler_norm
+    (ms_view_distinguish_pr
+       (d_ms_after_binding_observable_v2 x s xms) D -
+     ms_view_distinguish_pr
+       (d_ms_after_rom_public_semantic_observable_v2_parameterized x s xms) D)).
+have Hmass :=
+  ms_rom_public_observable_divergence_mass_le_execution_owned_live_parameterized_failure xms.
+apply (ler_trans _ _ _ Hdir).
+exact (ler_trans _ _ _ Hgap Hmass).
+qed.
+
+lemma L_ms2_rom_programming_transition_le_execution_owned_live_parameterized_failure
+  (x : qssm_public_input) (s : seed) (xms : ms_public_input) (D : distinguisher) :
+  ms_view_distinguish_pr
+    (d_ms_after_binding_observable_v2 x s xms) D -
+  ms_view_distinguish_pr
+    (d_ms_after_rom_public_semantic_observable_v2_parameterized x s xms) D <=
+  ms_rom_execution_owned_parameterized_failure_probability xms.
+proof.
+exact (L_ms2_public_after_rom_transition_le_execution_owned_live_parameterized_failure x s xms D).
+qed.
+
 lemma A_MS2_rom_programming_parameterized_public_endpoint_transition_bound
   (x : qssm_public_input) (s : seed) (xms : ms_public_input) (D : distinguisher) :
   ms_view_distinguish_pr
     (d_ms_after_binding_observable_v2 x s xms) D -
   ms_view_distinguish_pr
-    (d_ms_after_rom_public_semantic_observable_v2 x s xms) D
+    (d_ms_after_rom_public_semantic_observable_v2_parameterized x s xms) D
   <= ParameterizedBudgetParameters.epsilon_ms_rom_programmability_parameterized.
 proof.
 have Hsemantic :=
-  L_ms2_rom_programming_transition_le_execution_owned_semantic_failure x s xms D.
+  L_ms2_rom_programming_transition_le_execution_owned_live_parameterized_failure x s xms D.
 have Hbridge :=
   A_MS2_rom_programming_execution_owned_parameterized_bound xms.
 exact (ler_trans _ _ _ Hsemantic Hbridge).
@@ -168,7 +248,7 @@ qed.
 lemma A_MS_public_after_rom_to_canonical_after_rom_parameterized_transition_bound
   (x : qssm_public_input) (s : seed) (xms : ms_public_input) (D : distinguisher) :
   ms_view_distinguish_pr
-    (d_ms_after_rom_public_semantic_observable_v2 x s xms) D -
+    (d_ms_after_rom_public_semantic_observable_v2_parameterized x s xms) D -
   ms_view_distinguish_pr
     (d_ms_after_rom_observable_v2 x s xms) D
   <= ParameterizedBudgetParameters.epsilon_ms_rom_programmability_parameterized.
@@ -184,15 +264,16 @@ have Heq_canonical :
   exact (d_ms_after_rom_observable_v2_eq_after_binding x s xms).
 have Hgap :
     `|ms_view_distinguish_pr
-        (d_ms_after_rom_public_semantic_observable_v2 x s xms) D -
+        (d_ms_after_rom_public_semantic_observable_v2_parameterized x s xms) D -
       ms_view_distinguish_pr
         (d_ms_after_binding_observable_v2 x s xms) D| <=
-    mu (d_ms_rom_semantic_coupled_state xms)
+    mu (d_ms_rom_semantic_coupled_state_parameterized xms)
       (ms_rom_public_observable_divergence_condition xms).
-  rewrite d_ms_after_binding_observable_v2_public_semantic_clean_imageE.
-  rewrite /d_ms_after_rom_public_semantic_observable_v2.
+  rewrite d_ms_after_binding_observable_v2_public_semantic_clean_image_parameterizedE.
+  rewrite /d_ms_after_rom_public_semantic_observable_v2_parameterized.
+  rewrite /d_ms_after_rom_public_semantic_observable_v2_live_parameterized.
   apply (ms_same_source_distinguisher_gap_le_bad_mass
-    (d_ms_rom_semantic_coupled_state xms)
+    (d_ms_rom_semantic_coupled_state_parameterized xms)
     (ms_after_rom_public_semantic_observable_of_state xms)
     (fun _ : ms_rom_semantic_state =>
       ms_rom_semantic_after_rom_observable_of_failure_flag xms false)
@@ -203,20 +284,20 @@ have Hgap :
   by smt().
 have Hdir :
     ms_view_distinguish_pr
-      (d_ms_after_rom_public_semantic_observable_v2 x s xms) D -
+      (d_ms_after_rom_public_semantic_observable_v2_parameterized x s xms) D -
     ms_view_distinguish_pr
       (d_ms_after_binding_observable_v2 x s xms) D <=
     `|ms_view_distinguish_pr
-        (d_ms_after_rom_public_semantic_observable_v2 x s xms) D -
+        (d_ms_after_rom_public_semantic_observable_v2_parameterized x s xms) D -
       ms_view_distinguish_pr
         (d_ms_after_binding_observable_v2 x s xms) D|.
   exact (ler_norm
     (ms_view_distinguish_pr
-       (d_ms_after_rom_public_semantic_observable_v2 x s xms) D -
+       (d_ms_after_rom_public_semantic_observable_v2_parameterized x s xms) D -
      ms_view_distinguish_pr
        (d_ms_after_binding_observable_v2 x s xms) D)).
 have Hmass :=
-  ms_rom_public_observable_divergence_mass_le_execution_owned_semantic_failure xms.
+  ms_rom_public_observable_divergence_mass_le_execution_owned_live_parameterized_failure xms.
 have Hbridge :=
   A_MS2_rom_programming_execution_owned_parameterized_bound xms.
 rewrite Heq_canonical.
@@ -230,7 +311,7 @@ lemma A_MS_public_endpoint_parameterized_transition_bound
   ms_view_distinguish_pr
     (d_ms_after_binding_public_semantic_observable_v2_parameterized x s xms) D -
   ms_view_distinguish_pr
-    (d_ms_after_rom_public_semantic_observable_v2 x s xms) D
+    (d_ms_after_rom_public_semantic_observable_v2_parameterized x s xms) D
   <= ms_hash_binding_local_public_divergence_upper_mass_parameterized +
      ParameterizedBudgetParameters.epsilon_ms_rom_programmability_parameterized.
 proof.
@@ -242,7 +323,7 @@ have -> :
   ms_view_distinguish_pr
     (d_ms_after_binding_public_semantic_observable_v2_parameterized x s xms) D -
   ms_view_distinguish_pr
-    (d_ms_after_rom_public_semantic_observable_v2 x s xms) D =
+    (d_ms_after_rom_public_semantic_observable_v2_parameterized x s xms) D =
   (ms_view_distinguish_pr
      (d_ms_after_binding_public_semantic_observable_v2_parameterized x s xms) D -
    ms_view_distinguish_pr
@@ -250,7 +331,7 @@ have -> :
   (ms_view_distinguish_pr
      (d_ms_after_binding_observable_v2 x s xms) D -
    ms_view_distinguish_pr
-     (d_ms_after_rom_public_semantic_observable_v2 x s xms) D).
+     (d_ms_after_rom_public_semantic_observable_v2_parameterized x s xms) D).
   by ring.
 exact (ler_add _ _ _ _ Hms1 Hms2).
 qed.

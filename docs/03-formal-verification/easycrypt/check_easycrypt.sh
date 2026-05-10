@@ -46,6 +46,8 @@ FILES=(
   ms/comparison/ComparisonPayloadSemanticSlotMassParameterized.ec
   ms/comparison/ComparisonPayloadSemanticSlotMass.ec
   ms/comparison/ComparisonPayloadSemanticBridge.ec
+  ms/comparison/ComparisonPayloadSemanticLiveParameterizedCore.ec
+  ms/comparison/ComparisonPayloadSemanticLiveParameterizedMass.ec
   ms/comparison/ComparisonPayloadSemanticBridgeParameterized.ec
   ms/comparison/ComparisonPayloadSeedAnchors.ec
   ms/comparison/ComparisonPayloadSeeds.ec
