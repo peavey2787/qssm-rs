@@ -1,6 +1,35 @@
 require import AllCore Int List Distr.
 import Ring.IntID StdOrder.IntOrder.
 
+lemma drange_pred_true_mass (total : int) (p : int -> bool) :
+  0 < total =>
+  mu1 (dmap (drange 0 total) p) true =
+  (count p (range 0 total))%r / total%r.
+proof.
+move=> Htotal_pos.
+rewrite /mu1 dmapE /=.
+have Heq :
+    mu (drange 0 total) (fun slot : int => pred1 true (p slot)) =
+    mu (drange 0 total) (fun slot : int => p slot).
+  apply mu_eq=> slot /=.
+  by rewrite /pred1; case (p slot).
+rewrite Heq.
+rewrite drangeE.
+have -> : total - 0 = total by ring.
+by [].
+qed.
+
+lemma drange_pred_true_mass_le_bound (bound total : int) (p : int -> bool) :
+  0 < total =>
+  count p (range 0 total) <= bound =>
+  mu1 (dmap (drange 0 total) p) true <=
+  bound%r / total%r.
+proof.
+move=> Htotal_pos Hcount_bound.
+rewrite (drange_pred_true_mass total p Htotal_pos).
+by smt().
+qed.
+
 lemma count_range0_lt_prefix (bound total : int) :
   0 <= bound =>
   bound <= total =>

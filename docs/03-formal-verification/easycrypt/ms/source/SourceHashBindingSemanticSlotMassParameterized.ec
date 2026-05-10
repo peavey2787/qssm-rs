@@ -141,17 +141,22 @@ have Hcollision_le_failure :
   by smt(ParameterizedBudgetParameters.ms1_param_failure_count_component_sum
          ParameterizedBudgetParameters.ms1_param_malformed_binding_count_nonneg
          ParameterizedBudgetParameters.ms1_param_transcript_count_nonneg).
-rewrite (ParameterizedMassHelpers.drange_interval_true_mass
+rewrite (ParameterizedMassHelpers.drange_pred_true_mass
+  ParameterizedBudgetParameters.ms1_param_total_count
+  (fun slot : int =>
+     ParameterizedBudgetParameters.ms1_param_collision_count <= slot /\
+     slot < ParameterizedBudgetParameters.ms1_param_failure_count)
+  ParameterizedBudgetParameters.ms1_param_total_count_pos).
+rewrite (ParameterizedMassHelpers.count_range0_interval
   ParameterizedBudgetParameters.ms1_param_collision_count
   ParameterizedBudgetParameters.ms1_param_failure_count
   ParameterizedBudgetParameters.ms1_param_total_count
   ParameterizedBudgetParameters.ms1_param_collision_count_nonneg
   Hcollision_le_failure
-  ParameterizedBudgetParameters.ms1_param_failure_count_le_total_count
-  ParameterizedBudgetParameters.ms1_param_total_count_pos).
-  rewrite /ms_hash_binding_local_public_divergence_upper_mass_parameterized.
-  rewrite /ParameterizedBudgetParameters.ms1_param_failure_count.
-  by smt().
+  ParameterizedBudgetParameters.ms1_param_failure_count_le_total_count).
+rewrite /ms_hash_binding_local_public_divergence_upper_mass_parameterized.
+rewrite /ParameterizedBudgetParameters.ms1_param_failure_count.
+by smt().
 qed.
 
 lemma ms_hash_binding_local_public_divergence_upper_mass_le_epsilon_ms_hash_binding_parameterized :
