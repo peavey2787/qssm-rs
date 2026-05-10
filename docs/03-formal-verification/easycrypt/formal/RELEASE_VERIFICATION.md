@@ -30,7 +30,8 @@ At the current release checkpoint, the expected result is:
 - `qssm_main_theorem_parameterized_budget` present and documented as the full canonical parameterized theorem
 - canonical parameterized top budget documented as `epsilon_ms_hash_binding_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_le_parameterized`
 - active closed-form canonical parameterized top budget documented as `15%r / 64%r`
-- lower helper infrastructure documented as including `drange_pred_true_mass` and `drange_pred_true_mass_le_bound` for uniform predicate masses only, not as arbitrary-profile support
+- lower helper infrastructure documented as including `drange_pred_true_mass`, `drange_pred_true_mass_le_bound`, `drange_subset_true_mass`, `drange_subset_true_mass_le_bound`, and `drange_subset_complement_mass` for uniform-support masses only, not as arbitrary-profile support
+- routed MS1 upper-mass theorem documented as using subset-helper infrastructure without any theorem-surface change
 
 ## Checker Invocation
 
@@ -118,7 +119,8 @@ A release-ready checkpoint must preserve all of the following.
 - the explicit duplicated `epsilon_ms_rom_programmability_parameterized` term documented without simplification
 - active closed-form canonical parameterized top budget documented as `15%r / 64%r`
 - LE rejection, LE FS, MS1, and MS2 tuning documented as owner-only changes with no theorem-surface changes and no local proof repairs
-- lower helper infrastructure documented as including `drange_pred_true_mass` and `drange_pred_true_mass_le_bound` without implying non-uniform or sparse profile support
+- lower helper infrastructure documented as including `drange_pred_true_mass`, `drange_pred_true_mass_le_bound`, `drange_subset_true_mass`, `drange_subset_true_mass_le_bound`, and `drange_subset_complement_mass` without implying non-uniform or sparse profile support
+- routed MS1 upper-mass theorem documented as using subset-helper infrastructure without any theorem-surface change
 - staged/public-endpoint MS caveat documented explicitly as a charged bridge, not a zero bridge
 - no remaining localized replay seams expected on the current uniform finite-support / contiguous-layout profile family
 - arbitrary non-uniform parameter profiles still documented as unsupported

@@ -130,6 +130,7 @@ The active route is now live end to end.
 - MS2 closes through `ComparisonPayloadSemanticLiveParameterizedCore.ec -> ComparisonPayloadSemanticLiveParameterizedMass.ec -> ComparisonPayloadSemanticBridgeParameterized.ec`.
 - `MSProbabilitySurfaceParameterized.ec`, `GameAdvantageParameterized.ec`, `GameMSHopTypesParameterized.ec`, `GameMSHopCompositionParameterized.ec`, and `MainTheoremParameterized.ec` now consume those live lower lanes without reopening a demo/parameterized seam on the active family.
 - The active top budget remains `epsilon_ms_hash_binding_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_le_parameterized`, which evaluates to `15%r / 64%r` on the current frozen family.
+- `primitives/ParameterizedMassHelpers.ec` now also carries the uniform subset helpers `drange_subset_true_mass`, `drange_subset_true_mass_le_bound`, and `drange_subset_complement_mass`, and `SourceHashBindingSemanticSlotMassParameterized.ec : ms_hash_binding_public_divergence_upper_choice_mass_eq_local_upper_mass_parameterized` now routes through that subset-helper layer with unchanged theorem name, statement, and active `15%r / 64%r` closure.
 - The LE rejection, LE FS, MS1, and MS2 owner retunings to `3%r / 64%r` landed without theorem-surface changes or local proof repairs.
 - No remaining localized count-alias-sensitive seams are expected on the current uniform finite-support / contiguous-layout family.
 

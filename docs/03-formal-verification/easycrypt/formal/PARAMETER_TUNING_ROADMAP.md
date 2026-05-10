@@ -40,7 +40,7 @@ Active live profile:
 
 The MS1 staged public-divergence upper lane now closes at `2%r / 64%r = 1%r / 32%r`.
 
-Lower helper infrastructure now includes `primitives/ParameterizedMassHelpers.ec : drange_pred_true_mass` and `primitives/ParameterizedMassHelpers.ec : drange_pred_true_mass_le_bound`. Those lemmas support generic uniform predicate counts on `drange 0 total`, but they do not by themselves expand the supported profile family beyond the current uniform finite-support / contiguous-layout geometry.
+Lower helper infrastructure now includes `primitives/ParameterizedMassHelpers.ec : drange_pred_true_mass`, `primitives/ParameterizedMassHelpers.ec : drange_pred_true_mass_le_bound`, `primitives/ParameterizedMassHelpers.ec : drange_subset_true_mass`, `primitives/ParameterizedMassHelpers.ec : drange_subset_true_mass_le_bound`, and `primitives/ParameterizedMassHelpers.ec : drange_subset_complement_mass`. Those lemmas support generic uniform predicate and subset counts on `drange 0 total`, but they do not by themselves expand the supported profile family beyond the current uniform finite-support / contiguous-layout geometry or add non-uniform weights. `ms/source/SourceHashBindingSemanticSlotMassParameterized.ec : ms_hash_binding_public_divergence_upper_choice_mass_eq_local_upper_mass_parameterized` now delegates to the subset-helper sibling theorem while preserving the frozen `15%r / 64%r` route.
 
 The LE rejection, LE FS, MS1, and MS2 `3%r / 64%r` pilots are already landed. All four were owner-only retunings inside the current geometry, changed no theorem surface, and required no local proof repair.
 
@@ -48,7 +48,7 @@ The LE rejection, LE FS, MS1, and MS2 `3%r / 64%r` pilots are already landed. Al
 
 - uniform finite-support totals
 - prefix failure counts
-- the MS1 contiguous interval upper count
+- the current MS1 upper-mass theorem, still over the same contiguous interval support but now routed through subset-helper infrastructure
 - the current component ordering, preserved exactly as it is today
 
 Today's safe tuning surface is therefore: keep the existing owner shapes, keep the same theorem names, and change only one uniform count family at a time.
