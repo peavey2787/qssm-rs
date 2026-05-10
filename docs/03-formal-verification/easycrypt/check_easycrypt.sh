@@ -20,6 +20,8 @@ FILES=(
   primitives/Domains.ec
   primitives/BudgetParameters.ec
   primitives/ParameterizedBudgetParameters.ec
+  primitives/RealWorldBudgetParameters.ec
+  primitives/RealWorldBudgetObligations.ec
   primitives/ParameterizedMassHelpers.ec
   primitives/ActionOwner.ec
   primitives/ScalarOwner.ec
@@ -96,6 +98,7 @@ FILES=(
   ms/source/SourceTheorem.ec
   ms/MSProbabilitySurface.ec
   ms/MSProbabilitySurfaceParameterized.ec
+  ms/MSProbabilitySurfaceRealWorld.ec
   ms/MS.ec
   le/LERealExecution.ec
   le/LESurface.ec
@@ -133,6 +136,7 @@ FILES=(
   le/LEFsProgrammingParameterizedView.ec
   le/LEFsProgrammingParameterized.ec
   le/LEStatisticalDistanceParameterized.ec
+  le/LEStatisticalDistanceRealWorld.ec
   le/LEHVZK.ec
   le/LEHVZKParameterized.ec
   le/LEModel.ec
@@ -146,12 +150,15 @@ FILES=(
   games/GameMSHopTransitions.ec
   games/GameMSHopComposition.ec
   games/GameMSHopCompositionParameterized.ec
+  games/GameMSHopCompositionRealWorld.ec
   games/GameMSHops.ec
   games/GameLEBridge.ec
   games/GameLEBridgeParameterized.ec
+  games/GameLEBridgeRealWorld.ec
   games/Games.ec
   theorem/MainTheorem.ec
   theorem/MainTheoremParameterized.ec
+  theorem/MainTheoremRealWorld.ec
 )
 
 cd "$SCRIPT_DIR"
