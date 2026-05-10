@@ -86,6 +86,20 @@ The WASM package includes:
 
 All core crates are frozen and stable. APIs are semver‑locked.
 
+## Formal Verification
+
+QSSM’s EasyCrypt model is fully machine‑checked:
+
+- **149 theories**
+- **0 axioms**
+- **0 admits**
+- **fully reproducible** via `check_easycrypt.sh`
+
+The formal model covers the exact‑zero abstraction route, the semantic‑budget companion route, the frozen parameterized route, and a **concrete λ = 128 theorem** with a proved top bound of **5 / 2⁹⁸** (~95.68 bits), including all reduction‑facing obligations.
+
+Full details, theorem surfaces, and reproducibility steps:
+[Formal Verification Summary](docs/03-formal-verification/easycrypt/README.md)
+
 ### Documentation map
 
 - [Architecture overview](docs/01-architecture/architecture-overview.md)
