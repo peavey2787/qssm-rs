@@ -8,7 +8,7 @@ This document is the canonical external explanation of what the current EasyCryp
 
 The frozen concrete release surface is preserved at the May 2026 checkpoint. The current head additionally carries a parallel abstract real-world upper-bound theorem surface.
 
-- Current checker snapshot is `OK` over 143 checked theories, with `axiom_count=0` and `admit_count=0`.
+- Current checker snapshot is `OK` over 149 checked theories, with `axiom_count=0` and `admit_count=0`.
 - The exact-zero route remains unchanged.
 - The live demo semantic route remains unchanged and still closes at `3%r / 4%r`.
 - `qssm_main_theorem_le_parameterized_budget` exists and is closed as the LE-only intermediate theorem.
@@ -16,6 +16,8 @@ The frozen concrete release surface is preserved at the May 2026 checkpoint. The
 - `qssm_main_theorem_realworld_budget` exists and is closed as the abstract real-world upper-bound theorem.
 - `qssm_main_theorem_realworld_concrete_128` exists and is closed as the concrete external-bound real-world theorem over four explicit component-bound premises.
 - `qssm_main_theorem_realworld_concrete_128_5_over_2_98` exists and is closed as the concrete external-bound `5 / 2^98` companion theorem over the same four explicit premises.
+- `qssm_main_theorem_realworld_concrete_128_with_all_reductions` exists and is closed as the fully reduction-facing concrete real-world sibling theorem over four explicit reduction obligations.
+- `qssm_main_theorem_realworld_concrete_128_with_all_reductions_5_over_2_98` exists and is closed as the fully reduction-facing `5 / 2^98` companion theorem over the same four explicit reduction obligations.
 - The full parameterized top budget is `epsilon_ms_hash_binding_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_le_parameterized`.
 - Under the active live profiles, that full parameterized top budget closes at `15%r / 64%r`.
 - The lower MS public-endpoint distinction remains real: public AfterRom is budget-close to canonical AfterRom, not zero-equal, so the route closes through a charged bridge.
@@ -33,6 +35,8 @@ The frozen concrete release surface is preserved at the May 2026 checkpoint. The
 | `qssm_main_theorem_realworld_budget` | `theorem/MainTheoremRealWorld.ec` | Closed | Axiom-free abstract real-world upper-bound theorem over explicit obligation hypotheses |
 | `qssm_main_theorem_realworld_concrete_128` | `RealWorldBudgetInstantiation.ec` | Closed | Concrete external-bound theorem over `realworld_budget_concrete_128` with four explicit component-bound premises |
 | `qssm_main_theorem_realworld_concrete_128_5_over_2_98` | `RealWorldBudgetInstantiation.ec` | Closed | Concrete external-bound companion theorem exposing the closed form `5 / 2^98` under the same four explicit component-bound premises |
+| `qssm_main_theorem_realworld_concrete_128_with_all_reductions` | `RealWorldBudgetInstantiation.ec` | Closed | Fully reduction-facing concrete external-bound sibling theorem over four explicit reduction obligations |
+| `qssm_main_theorem_realworld_concrete_128_with_all_reductions_5_over_2_98` | `RealWorldBudgetInstantiation.ec` | Closed | Fully reduction-facing concrete companion theorem exposing `5 / 2^98` under the same four explicit reduction obligations |
 
 ## Route Split
 
@@ -45,7 +49,7 @@ The current theorem system has seven distinct routes.
 | LE-only parameterized route | `qssm_main_theorem_le_parameterized_budget` | Live | Keeps canonical/demo MS contribution and parameterizes only LE |
 | Full canonical parameterized route | `qssm_main_theorem_parameterized_budget` | Live | Closes through a budgeted public AfterRom to canonical AfterRom bridge with an explicit duplicated MS2 term |
 | Abstract real-world upper-bound route | `qssm_main_theorem_realworld_budget` | Live | Mirrors the charged canonical route over explicit real-world obligation hypotheses and externally supplied upper-bound budgets |
-| Concrete external-bound real-world route | `qssm_main_theorem_realworld_concrete_128`, `qssm_main_theorem_realworld_concrete_128_5_over_2_98` | Live | Instantiates the real-world budget record at component epsilon `1 / 2^98` and top epsilon `5 / 2^98`, still under four explicit component-bound premises |
+| Concrete external-bound real-world route | `qssm_main_theorem_realworld_concrete_128`, `qssm_main_theorem_realworld_concrete_128_5_over_2_98`, `qssm_main_theorem_realworld_concrete_128_with_all_reductions`, `qssm_main_theorem_realworld_concrete_128_with_all_reductions_5_over_2_98` | Live | Instantiates the real-world budget record at component epsilon `1 / 2^98` and top epsilon `5 / 2^98`; the original pair keeps explicit component-bound premises, while the newest sibling pair keeps the duplicate MS2 charge explicit and consumes four explicit reduction obligations |
 | Staged/public-endpoint MS parameterized route | No separate top theorem | Live as an internal route | Remains the internal public-endpoint subroute consumed by the canonical parameterized closure |
 
 For deployment-facing budget discussion, the four parallel public theorem families are the exact-zero route, the full concrete parameterized route, the abstract real-world upper-bound route, and the concrete external-bound real-world route. The demo semantic route and LE-only parameterized route remain checked companions, and the staged/public-endpoint MS lane remains internal only.
@@ -175,11 +179,12 @@ The real-world route is a parallel theorem surface. It does not replay weighted 
 | LE real-world wrapper | `le/LEStatisticalDistanceRealWorld.ec`, `games/GameLEBridgeRealWorld.ec` | `A_LE_semantic_view_advantage_bound_from_realworld_budget`, `A_G1_to_G2_le_semantic_realworld_budget_transition_bound` |
 | MS real-world wrapper | `ms/MSProbabilitySurfaceRealWorld.ec`, `games/GameMSHopCompositionRealWorld.ec` | `A_MS2_canonical_rom_programming_realworld_bound`, `A_G0_to_G1_ms_realworld_transition_bound` |
 | Top theorem | `theorem/MainTheoremRealWorld.ec` | `qssm_main_theorem_realworld_budget` |
-| Concrete instantiation layer | `RealWorldBudgetInstantiation.ec` | `realworld_budget_concrete_128`, `qssm_realworld_obligations_concrete_128_from_component_bounds`, `qssm_main_theorem_realworld_concrete_128`, `qssm_main_theorem_realworld_concrete_128_5_over_2_98` |
+| Concrete reduction-facing companions | `le/LERejectionConcreteReduction.ec`, `le/LEFsConcreteReduction.ec`, `le/LEConcreteReduction.ec`, `ms/MS1ConcreteReduction.ec`, `ms/MS2ConcreteReduction.ec`, `ms/MSConcreteReduction.ec` | explicit LE rejection, LE FS, MS1, and MS2 reduction obligations together with concrete LE and MS composition theorems |
+| Concrete instantiation layer | `RealWorldBudgetInstantiation.ec` | `realworld_budget_concrete_128`, `qssm_realworld_obligations_concrete_128_from_component_bounds`, the original concrete theorem pair, and additive sibling theorems ending at `qssm_main_theorem_realworld_concrete_128_with_all_reductions` |
 
 This route keeps the duplicate MS2 charge explicit, preserves the public AfterRom budget-close caveat, and remains axiom-free because the real-world obligations are theorem hypotheses rather than imported assumptions. It is already sufficient for real-world budget accounting when sampler-internal evidence is supplied externally.
 
-The concrete external-bound instantiation layer adds a concrete budget record with component epsilon `1 / 2^98` and a proved top closed form `5 / 2^98`. It still does not internally prove the four component reductions: both concrete theorems remain conditional on four explicit component-bound premises, the current live `3%r / 64%r` lower actuals do not satisfy that concrete budget, and no weighted or non-uniform sampler semantics are introduced by this layer.
+The concrete external-bound instantiation layer adds a concrete budget record with component epsilon `1 / 2^98` and a proved top closed form `5 / 2^98`. The original concrete theorem pair still does not internally prove the four component reductions: it remains conditional on four explicit component-bound premises, and the current live `3%r / 64%r` lower actuals do not satisfy that concrete budget. The newer sibling pair no longer depends on those toy component actuals, but it remains conditional on four explicit reduction obligations. No weighted or non-uniform sampler semantics are introduced by this layer.
 
 If weighted finite-support replay is ever added, it should discharge the same obligation bundle rather than replace `qssm_main_theorem_realworld_budget`. The weighted replay audit concluded that the preferred owner shape is normalized per-component category weights, not per-slot weights, and that component-failure-only records are too abstract because they mostly restate the existing obligation surface. The first safe weighted pilot is an LE rejection weighted category owner only.
 

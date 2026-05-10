@@ -8,15 +8,20 @@ Navigation: [EasyCrypt README](../README.md)
 - It is conditional on `qssm_realworld_obligations`, not a fully concrete theorem.
 - `qssm_main_theorem_realworld_concrete_128` exists in `RealWorldBudgetInstantiation.ec`.
 - `qssm_main_theorem_realworld_concrete_128_5_over_2_98` also exists in `RealWorldBudgetInstantiation.ec`.
+- `qssm_main_theorem_realworld_concrete_128_with_all_reductions` also exists in `RealWorldBudgetInstantiation.ec`.
+- `qssm_main_theorem_realworld_concrete_128_with_all_reductions_5_over_2_98` also exists in `RealWorldBudgetInstantiation.ec`.
 - The concrete budget record `realworld_budget_concrete_128` is formalized.
 - The concrete component epsilon is `1 / 2^98`.
 - The concrete top epsilon is `5 / 2^98`.
+- The equivalent bit level is `2^-95.67807190511263`.
 - The closed form `5 / 2^98` is proved in EasyCrypt.
-- Both concrete theorems remain conditional on four explicit component-bound premises.
-- The current live lower actuals still collapse to the live toy parameterized masses, currently `3%r / 64%r` per component.
-- Therefore component budgets such as `2^-98` cannot currently discharge the real-world obligations.
+- The original concrete theorem pair remains unchanged and still exposes four explicit component-bound premises.
+- The newest concrete sibling route now replaces those toy/live component premises with four explicit reduction-facing obligations.
+- Those reduction-facing obligations are theorem premises, not axioms.
+- The current live lower actuals still collapse to the live toy parameterized masses, currently `3%r / 64%r` per component, so they still cannot discharge the original component-bound route directly.
+- Weighted or non-uniform sampler internals are still not modeled in-tree.
 
-At the current May 2026 checkpoint, the real-world theorem surface has both an abstract upper-bound theorem and a concrete external-bound instantiation skeleton. The concrete instantiation is theorem-facing and machine-checked, but it still depends on four explicit component-bound premises rather than internally proved reductions.
+At the current May 2026 checkpoint, the real-world theorem surface has an abstract upper-bound theorem, an original concrete external-bound instantiation pair, and additive reduction-facing concrete siblings ending at a fully reduction-facing `lambda = 128` theorem pair. The concrete instantiation remains theorem-facing and machine-checked, but the newest route depends on four external reduction obligations rather than internally modeled weighted or non-uniform sampler proofs.
 
 ## Theorem Surface
 
@@ -29,6 +34,16 @@ The real-world theorem surface currently lives in:
 - `games/GameMSHopCompositionRealWorld.ec`
 - `games/GameLEBridgeRealWorld.ec`
 - `theorem/MainTheoremRealWorld.ec`
+- `RealWorldBudgetInstantiation.ec`
+
+The fully reduction-facing concrete companion layer currently lives in:
+
+- `le/LERejectionConcreteReduction.ec`
+- `le/LEFsConcreteReduction.ec`
+- `le/LEConcreteReduction.ec`
+- `ms/MS1ConcreteReduction.ec`
+- `ms/MS2ConcreteReduction.ec`
+- `ms/MSConcreteReduction.ec`
 - `RealWorldBudgetInstantiation.ec`
 
 The real-world budget record in `primitives/RealWorldBudgetParameters.ec` has four fields:
@@ -112,12 +127,19 @@ The concrete external-bound instantiation layer in `RealWorldBudgetInstantiation
 - `qssm_realworld_obligations_concrete_128_from_component_bounds`
 - `qssm_main_theorem_realworld_concrete_128`
 - `qssm_main_theorem_realworld_concrete_128_5_over_2_98`
+- `le_rejection_concrete_128_reduction_obligation`
+- `le_fs_concrete_128_reduction_obligation`
+- `ms1_concrete_128_reduction_obligation`
+- `ms2_concrete_128_reduction_obligation`
+- intermediate sibling theorems for LE-only and LE-plus-MS1 reduction-facing routes
+- `qssm_main_theorem_realworld_concrete_128_with_all_reductions`
+- `qssm_main_theorem_realworld_concrete_128_with_all_reductions_5_over_2_98`
 
-Those theorems package a concrete budget record and a concrete top bound, but they still require four explicit component-bound premises. They do not claim that those four component reductions are internally proved in the current tree.
+The original concrete theorem pair packages a concrete budget record and a concrete top bound under four explicit component-bound premises. The newest sibling pair keeps the same `1 / 2^98` component budget and `5 / 2^98` top bound, but no longer depends on the frozen toy component actuals; instead it depends on four explicit reduction-facing obligations. None of these theorems claim that the component reductions are internally proved in the current tree.
 
 ## Current Lower Actual Terms
 
-The current lower actual terms referred to by the real-world obligations are:
+The original real-world obligation route and the original concrete theorem pair refer to the following lower actual terms:
 
 - LE rejection actual: `le_rejection_parameterized_failure_probability x s`
 - LE FS actual: `LEFsProgrammingLiveParameterizedMass.le_fs_parameterized_local_bad_branch_mass`
@@ -138,6 +160,15 @@ MS1 + MS2 + MS2 + LE_rej + LE_fs = 15%r / 64%r
 ```
 
 This is why the current real-world theorem surface is honest as an abstract upper-bound theorem but is not yet a negligible concrete security theorem.
+
+The newest concrete sibling route does not require proving any of those four toy/live lower actuals are `<= 1 / 2^98`. Instead, it consumes these explicit reduction-facing premises:
+
+- LE rejection reduction obligation
+- LE FS reduction obligation
+- MS1 reduction obligation
+- MS2 reduction obligation
+
+Those obligations are explicit theorem premises, not axioms, and they leave the weighted or non-uniform sampler internals outside the current EasyCrypt tree.
 
 ## Why `lambda = 128` Cannot Be Plugged In Yet
 
@@ -236,6 +267,12 @@ The external-bound instantiation layer now exists explicitly in `RealWorldBudget
 What now exists:
 
 - `RealWorldBudgetInstantiation.ec`
+- `le/LERejectionConcreteReduction.ec`
+- `le/LEFsConcreteReduction.ec`
+- `le/LEConcreteReduction.ec`
+- `ms/MS1ConcreteReduction.ec`
+- `ms/MS2ConcreteReduction.ec`
+- `ms/MSConcreteReduction.ec`
 - `realworld_budget_concrete_128`
 - `epsilon_ms_hash_binding_concrete_128`
 - `epsilon_ms_rom_programmability_concrete_128`
@@ -244,11 +281,14 @@ What now exists:
 - `qssm_realworld_obligations_concrete_128_from_component_bounds`
 - `qssm_main_theorem_realworld_concrete_128`
 - `qssm_main_theorem_realworld_concrete_128_5_over_2_98`
+- additive concrete sibling theorems ending at `qssm_main_theorem_realworld_concrete_128_with_all_reductions`
+- `qssm_main_theorem_realworld_concrete_128_with_all_reductions_5_over_2_98`
 
 What is still missing:
 
-- internally proved component reductions for the four concrete component-bound premises
-- any theorem discharging those four premises from the current live `3%r / 64%r` lower actuals
+- internally proved sampler reductions that discharge the four reduction-facing obligations from weighted or non-uniform sampler internals
+- any theorem discharging the original four component-bound premises from the current live `3%r / 64%r` lower actuals
+- any theorem claiming the frozen toy component actuals are `<= 1 / 2^98`
 - any weighted or non-uniform sampler semantics below the current real-world obligation surface
 
 What the existing file already does:
@@ -301,12 +341,12 @@ Add the arithmetic and nonnegativity lemmas needed for the concrete record. This
 
 Step 5:
 
-Introduce the component-bound inputs as explicit theorems or explicit premises.
+Introduce the concrete inputs as explicit theorems or explicit premises.
 
-If the component reductions remain external to the current EasyCrypt tree, the honest shape is:
+If the component reductions remain external to the current EasyCrypt tree, the honest shapes are:
 
-- four explicit component-bound premises on the concrete theorem, or
-- a separate theorem proving those premises and then a derived obligation theorem
+- four explicit component-bound premises on the original concrete theorem pair, or
+- four explicit reduction-facing obligations on an additive sibling concrete theorem pair
 
 Step 6:
 
@@ -316,7 +356,11 @@ Step 7:
 
 Prove `qssm_main_theorem_realworld_concrete_128` by instantiating `qssm_main_theorem_realworld_budget` with `realworld_budget_concrete_128`. This step is now complete, together with the closed-form companion `qssm_main_theorem_realworld_concrete_128_5_over_2_98`.
 
-This path yields a formal theorem over explicit component-bound assumptions while leaving weighted sampler replay out of scope.
+Step 8:
+
+Add reduction-facing sibling routes for LE rejection, LE FS, MS1, and MS2, then compose them into `qssm_main_theorem_realworld_concrete_128_with_all_reductions` and the closed-form companion `qssm_main_theorem_realworld_concrete_128_with_all_reductions_5_over_2_98`. This step is now complete.
+
+This path now yields both an original formal theorem over explicit component-bound assumptions and a newer sibling theorem over four explicit reduction-facing obligations, while leaving weighted sampler replay out of scope.
 
 ## External-Bound Versus Internal Sampler Proof
 
@@ -329,6 +373,8 @@ This path proves a concrete top theorem over explicit component-bound premises.
 - define concrete component formulas from `lambda`, `q`, `n`, and `r`
 - state or prove the required component inequalities as explicit theorem premises
 - instantiate `qssm_main_theorem_realworld_budget` over a concrete record
+
+That path now exists in-tree as the original `qssm_main_theorem_realworld_concrete_128` pair. The newer sibling path keeps the same arithmetic but swaps those toy/live component premises for explicit reduction-facing obligations.
 
 This path can yield a concrete theorem over externally justified operational caps without modeling weighted or non-uniform sampler internals.
 
@@ -376,9 +422,12 @@ Recommendation:
 ## Caveats
 
 - weighted or non-uniform sampler internals are still not modeled
-- the current lower route still uses the frozen `3%r / 64%r` live owners
+- the current lower route still uses the frozen `3%r / 64%r` live owners on the original component-bound theorem pair
+- the fully reduction-facing sibling path depends on external reduction obligations rather than those toy/live component actuals
 - the duplicate MS2 charge remains explicit
 - public AfterRom remains budget-close to canonical AfterRom, not zero-equal
+- the original concrete theorem pair remains unchanged
+- no theorem claims the frozen toy component actuals are `<= 1 / 2^98`
 - this document does not claim fully internal weighted-sampler verification
 
 ## Current Bottom Line
@@ -386,8 +435,11 @@ Recommendation:
 - `qssm_main_theorem_realworld_budget` exists and is proved.
 - `qssm_main_theorem_realworld_concrete_128` exists and is proved.
 - `qssm_main_theorem_realworld_concrete_128_5_over_2_98` exists and is proved.
+- `qssm_main_theorem_realworld_concrete_128_with_all_reductions` exists and is proved.
+- `qssm_main_theorem_realworld_concrete_128_with_all_reductions_5_over_2_98` exists and is proved.
 - The current lower actuals still collapse to `3%r / 64%r` per component.
-- Therefore the placeholder bound `2^-98` cannot currently discharge the obligations.
+- Therefore the placeholder bound `2^-98` cannot currently discharge the original component-bound obligations directly.
 - The worked arithmetic for `lambda = 128`, `q = 2^20`, `n = 2^10`, `r = 1` gives `epsilon_component = 2^-98`, which is packaged concretely as `1 / 2^98`, and `epsilon_top = 5 / 2^98 ~= 2^-95.67807190511263`.
 - The closed form `5 / 2^98` is now proved in EasyCrypt.
-- The concrete theorem still remains conditional on four explicit component-bound premises.
+- The original concrete theorem pair remains conditional on four explicit component-bound premises.
+- The newest concrete sibling pair is fully reduction-facing across LE rejection, LE FS, MS1, and MS2, but those four reduction obligations remain external explicit premises rather than internally modeled sampler proofs.

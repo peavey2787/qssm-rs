@@ -28,6 +28,7 @@ The following facts are available on the current lower surface.
 - On the MS2 half, both the staged public-endpoint transition and the public-to-canonical landing are now routed through a live execution-owned parameterized lane at `epsilon_ms_rom_programmability_parameterized = 3%r / 64%r`.
 - The parameterized route can now land back in the canonical game chain by paying an explicit budgeted bridge charge.
 - The abstract real-world upper-bound route now mirrors that same charged landing shape through `A_MS_public_after_rom_to_canonical_after_rom_realworld_transition_bound`, `A_G0_to_G1_ms_realworld_transition_bound`, and `qssm_main_theorem_realworld_budget`.
+- The concrete reduction-facing sibling route now mirrors that same charged landing shape through `A_G0_to_G1_ms_concrete_reduction_transition_bound_from_obligations` and `qssm_main_theorem_realworld_concrete_128_with_all_reductions`.
 
 In practical theorem names, the strongest relevant current facts are:
 
@@ -38,6 +39,8 @@ In practical theorem names, the strongest relevant current facts are:
 - `A_MS_public_after_rom_to_canonical_after_rom_parameterized_transition_bound`
 - `A_G0_to_G1_ms_parameterized_transition_bound`
 - `qssm_main_theorem_parameterized_budget`
+- `A_G0_to_G1_ms_concrete_reduction_transition_bound_from_obligations`
+- `qssm_main_theorem_realworld_concrete_128_with_all_reductions`
 
 ## What Is Not Proved
 
@@ -94,7 +97,7 @@ This surface is axiom-free because those obligations are theorem premises, not i
 
 That abstract route is already sufficient when real-world budgets are supported by external evidence outside the EasyCrypt sampler internals. Weighted replay would only be needed if the tree must model those weighted sampler internals directly, and even then it should discharge the same obligations rather than replace `qssm_main_theorem_realworld_budget`.
 
-`RealWorldBudgetInstantiation.ec` now adds a concrete external-bound instantiation surface on top of that abstract route. It packages `realworld_budget_concrete_128` with concrete component epsilon `1 / 2^98`, proves the top closed form `5 / 2^98`, and closes `qssm_main_theorem_realworld_concrete_128` plus `qssm_main_theorem_realworld_concrete_128_5_over_2_98` under four explicit component-bound premises. This does not internally prove those four component reductions, does not change the current live `3%r / 64%r` lower actuals, and does not remove the public AfterRom caveat.
+`RealWorldBudgetInstantiation.ec` now adds a concrete external-bound instantiation surface on top of that abstract route. It packages `realworld_budget_concrete_128` with concrete component epsilon `1 / 2^98`, proves the top closed form `5 / 2^98`, keeps the original theorem pair `qssm_main_theorem_realworld_concrete_128` and `qssm_main_theorem_realworld_concrete_128_5_over_2_98` under four explicit component-bound premises, and now also closes the fully reduction-facing sibling pair `qssm_main_theorem_realworld_concrete_128_with_all_reductions` and `qssm_main_theorem_realworld_concrete_128_with_all_reductions_5_over_2_98` under four explicit reduction obligations. This still does not internally prove those reductions, does not claim the current live `3%r / 64%r` lower actuals satisfy `1 / 2^98`, and does not remove the public AfterRom caveat.
 
 ## Why The Blocker Is Semantic, Not Organizational
 
@@ -111,7 +114,7 @@ What remains missing is a stronger lower theorem about the actual relationship b
 
 The first honest owner boundary is still below the theorem surface if future work wants to tighten the new route.
 
-On the current tree, the live LE rejection and live LE FS `3%r / 64%r` lanes are already closed, the MS1 canonical failure plus staged/public-endpoint lanes are live parameterized at `3%r / 64%r` and `1%r / 32%r`, the MS2 staged/public-endpoint plus landing route is live parameterized at `3%r / 64%r`, the parallel abstract real-world upper-bound theorem surface is checker-green, and the concrete external-bound theorem skeleton is now checker-green at `1 / 2^98` component epsilon and `5 / 2^98` top epsilon under four explicit component-bound premises. The weighted replay audit is complete: weighted replay remains future work only for in-tree sampler modeling, the preferred future owner shape is normalized per-component category weights, per-slot weights are not the right first move, component-failure-only records mostly duplicate the current obligations, and the first safe pilot is an LE rejection weighted category owner only. No remaining localized replay seams are expected on the current uniform finite-support / contiguous-layout profile family, so the next focused step is either formalizing one explicit component-bound reduction, broader profile generalization, a stronger lower fusion law, or stop rather than another localized replay pass.
+On the current tree, the live LE rejection and live LE FS `3%r / 64%r` lanes are already closed, the MS1 canonical failure plus staged/public-endpoint lanes are live parameterized at `3%r / 64%r` and `1%r / 32%r`, the MS2 staged/public-endpoint plus landing route is live parameterized at `3%r / 64%r`, the parallel abstract real-world upper-bound theorem surface is checker-green, and the concrete external-bound theorem family is checker-green at `1 / 2^98` component epsilon and `5 / 2^98` top epsilon, including the fully reduction-facing sibling path over four explicit reduction obligations. The weighted replay audit is complete: weighted replay remains future work only for in-tree sampler modeling, the preferred future owner shape is normalized per-component category weights, per-slot weights are not the right first move, component-failure-only records mostly duplicate the current obligations, and the first safe pilot is an LE rejection weighted category owner only. No remaining localized replay seams are expected on the current uniform finite-support / contiguous-layout profile family, so the next focused step is either factoring shared concrete composition without hiding the duplicate MS2 charge, broader profile generalization, a stronger lower fusion law, or stop rather than another localized replay pass.
 
 - Start at `ms/MSProbabilitySurface.ec` or a sibling lower companion.
 - Do not start in `MainTheorem.ec`.
