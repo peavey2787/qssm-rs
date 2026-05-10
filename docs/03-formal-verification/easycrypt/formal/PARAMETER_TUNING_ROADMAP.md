@@ -25,7 +25,7 @@ Current checker snapshot:
 - demo semantic route unchanged
 - public AfterRom still budget-close to canonical AfterRom, not zero-equal
 - duplicated MS2 charge still explicit in the canonical parameterized route
-- the current `15%r / 32%r` route is frozen for release packaging
+- the current `3%r / 8%r` route is the checked post-LE-tuning checkpoint
 
 Active live profile:
 
@@ -33,12 +33,14 @@ Active live profile:
 |---|---|---|
 | MS1 | `collision=1`, `malformed_binding=1`, `transcript=1`, `clean=29`, `failure=3`, `total=32` | `3%r / 32%r` |
 | MS2 | `global_digest=1`, `query_digest=1`, `transcript=1`, `clean=29`, `failure=3`, `total=32` | `3%r / 32%r` |
-| LE rejection | `soft=1`, `hard=1`, `invalid=1`, `accept=29`, `failure=3`, `total=32` | `3%r / 32%r` |
-| LE FS | `query_collision=1`, `programming_collision=1`, `transcript=1`, `clean=29`, `failure=3`, `total=32` | `3%r / 32%r` |
-| LE combined | `epsilon_le_parameterized = epsilon_le_rej_parameterized + epsilon_le_fs_parameterized` | `6%r / 32%r = 3%r / 16%r` |
-| Top theorem | `epsilon_ms_hash_binding_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_le_parameterized` | `15%r / 32%r` |
+| LE rejection | `soft=1`, `hard=1`, `invalid=1`, `accept=61`, `failure=3`, `total=64` | `3%r / 64%r` |
+| LE FS | `query_collision=1`, `programming_collision=1`, `transcript=1`, `clean=61`, `failure=3`, `total=64` | `3%r / 64%r` |
+| LE combined | `epsilon_le_parameterized = epsilon_le_rej_parameterized + epsilon_le_fs_parameterized` | `6%r / 64%r = 3%r / 32%r` |
+| Top theorem | `epsilon_ms_hash_binding_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_le_parameterized` | `3%r / 8%r` |
 
 Lower helper infrastructure now includes `primitives/ParameterizedMassHelpers.ec : drange_pred_true_mass` and `primitives/ParameterizedMassHelpers.ec : drange_pred_true_mass_le_bound`. Those lemmas support generic uniform predicate counts on `drange 0 total`, but they do not by themselves expand the supported profile family beyond the current uniform finite-support / contiguous-layout geometry.
+
+The LE rejection and LE FS `3%r / 64%r` pilots are already landed. Both were owner-only retunings inside the current geometry, changed no theorem surface, and required no local proof repair.
 
 ## What Can Be Tuned Today Without New Proof Infrastructure
 
@@ -84,13 +86,13 @@ epsilon_top = epsilon_MS1 + 2 * epsilon_MS2 + epsilon_LE
 
 ## Concrete Example Table
 
-Only the frozen `3%r / 32%r` row below is a checked release baseline. The `3%r / 64%r` and `3%r / 128%r` rows are planning placeholders only.
+Only the `Current checked baseline` row below is checker-validated today. The remaining rows are planning placeholders only.
 
 | Profile sketch | `epsilon_MS1` | `epsilon_MS2` | `epsilon_LE_rej` | `epsilon_LE_fs` | `epsilon_LE` | `epsilon_top` |
 |---|---:|---:|---:|---:|---:|---|
-| Frozen current | `3%r / 32%r` | `3%r / 32%r` | `3%r / 32%r` | `3%r / 32%r` | `3%r / 32%r + 3%r / 32%r` | `3%r / 32%r + 2 * (3%r / 32%r) + (3%r / 32%r + 3%r / 32%r)` |
-| Candidate 64 | `3%r / 64%r` | `3%r / 64%r` | `3%r / 64%r` | `3%r / 64%r` | `3%r / 64%r + 3%r / 64%r` | `3%r / 64%r + 2 * (3%r / 64%r) + (3%r / 64%r + 3%r / 64%r)` |
-| Candidate 128 | `3%r / 128%r` | `3%r / 128%r` | `3%r / 128%r` | `3%r / 128%r` | `3%r / 128%r + 3%r / 128%r` | `3%r / 128%r + 2 * (3%r / 128%r) + (3%r / 128%r + 3%r / 128%r)` |
+| Current checked baseline | `3%r / 32%r` | `3%r / 32%r` | `3%r / 64%r` | `3%r / 64%r` | `3%r / 64%r + 3%r / 64%r` | `3%r / 32%r + 2 * (3%r / 32%r) + (3%r / 64%r + 3%r / 64%r)` |
+| All-components 64 candidate | `3%r / 64%r` | `3%r / 64%r` | `3%r / 64%r` | `3%r / 64%r` | `3%r / 64%r + 3%r / 64%r` | `3%r / 64%r + 2 * (3%r / 64%r) + (3%r / 64%r + 3%r / 64%r)` |
+| All-components 128 candidate | `3%r / 128%r` | `3%r / 128%r` | `3%r / 128%r` | `3%r / 128%r` | `3%r / 128%r + 3%r / 128%r` | `3%r / 128%r + 2 * (3%r / 128%r) + (3%r / 128%r + 3%r / 128%r)` |
 
 ## Stop Conditions
 
@@ -99,15 +101,18 @@ Only the frozen `3%r / 32%r` row below is a checked release baseline. The `3%r /
 - if the duplicated MS2 charge is accidentally hidden, stop
 - if any public AfterRom zero-equality claim appears, stop
 
-## Recommended First Pilot
+## Completed And Next Pilots
 
-The first concrete tuning pilot should keep each failure count fixed at `3` and increase only one component's clean suffix support from the current 32-slot family to a 64-slot family.
+The first two concrete tuning pilots kept each failure count fixed at `3` and increased only the LE clean suffix supports from `32` to `64`.
 
-Recommended order:
+Completed order:
 
 1. LE rejection
 2. LE FS
-3. MS1
-4. MS2
+
+Next recommended order:
+
+1. MS1
+2. MS2
 
 This keeps the lower replays local, preserves the frozen theorem surface, and makes any geometry break visible as soon as it appears.

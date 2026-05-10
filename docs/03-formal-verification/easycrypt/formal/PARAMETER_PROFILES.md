@@ -40,16 +40,17 @@ epsilon_top_parameterized =
   epsilon_MS1 + 2 * epsilon_MS2 + epsilon_LE
 ```
 
-Under the active live profiles, that symbolic top budget evaluates to `15%r / 32%r`.
+Under the active live profiles, that symbolic top budget evaluates to `3%r / 8%r`.
 
 ## Current Checked Snapshot
 
 - `./check_easycrypt.sh` is `OK` over 135 checked theories; `axiom_count=0`; `admit_count=0`.
 - The unchanged demo semantic LE rejection route still uses `soft=1`, `hard=1`, `invalid=1`, `accept=13`, so `epsilon_le_rej_semantic = 3%r / 16%r`.
-- The active parameterized LE rejection profile is `soft=1`, `hard=1`, `invalid=1`, `accept=29`, `failure=3`, `total=32`, so `epsilon_le_rej_parameterized = 3%r / 32%r`.
-- The active parameterized LE FS profile is `query_collision=1`, `programming_collision=1`, `transcript=1`, `clean=29`, `failure=3`, `total=32`, so `epsilon_le_fs_parameterized = 3%r / 32%r`.
+- The active parameterized LE rejection profile is `soft=1`, `hard=1`, `invalid=1`, `accept=61`, `failure=3`, `total=64`, so `epsilon_le_rej_parameterized = 3%r / 64%r`.
+- The active parameterized LE FS profile is `query_collision=1`, `programming_collision=1`, `transcript=1`, `clean=61`, `failure=3`, `total=64`, so `epsilon_le_fs_parameterized = 3%r / 64%r`.
 - Those paired `3%r / 32%r` LE profiles now reach `qssm_main_theorem_parameterized_budget` through `LERejectionSamplerParameterizedCore.ec`, `LERejectionSamplerMassLiveParameterized.ec`, `LEFsProgrammingLiveParameterizedCore.ec`, `LEFsProgrammingLiveParameterizedMass.ec`, `LEFsProgrammingParameterizedView.ec`, `LERejectionParameterized.ec`, `LEFsProgrammingParameterized.ec`, and `LEStatisticalDistanceParameterized.ec`.
-- Together they give `epsilon_le_parameterized = 6%r / 32%r = 3%r / 16%r`.
+- Together they give `epsilon_le_parameterized = 6%r / 64%r = 3%r / 32%r`.
+- Those LE retunings were owner-only changes. They changed no theorem surface and required no local proof repairs.
 - The active parameterized MS1 profile is `collision=1`, `malformed_binding=1`, `transcript=1`, `clean=29`, `failure=3`, `total=32`, so `epsilon_ms_hash_binding_parameterized = 3%r / 32%r`.
 - The MS1 canonical failure lane now closes live at `3%r / 32%r`, and the staged public-divergence upper lane now closes live at `2%r / 32%r = 1%r / 16%r`.
 - `SourceHashBindingSemanticLiveParameterizedCore.ec` owns the live MS1 coupled-state/public-observable core, `SourceHashBindingSemanticLiveParameterizedMass.ec` owns the live MS1 canonical failure and public-divergence upper mass closure, and `MSProbabilitySurfaceParameterized.ec`, `GameAdvantageParameterized.ec`, `GameMSHopTypesParameterized.ec`, and `GameMSHopCompositionParameterized.ec` now carry the live staged/public-endpoint MS1 route.
@@ -140,7 +141,7 @@ The current parameterized owner/helper layer supports the following geometry wit
 - a contiguous interval layout is supported for the MS1 public-divergence upper mass
 - larger contiguous uniform supports are structurally supported
 - those generic predicate helpers are lower helper infrastructure only; they do not add non-uniform weights, sparse support, or theorem-surface support for arbitrary profile families
-- the current frozen live family is a 32-slot uniform finite-support / contiguous-layout profile with three failure slots on each active parameterized owner
+- the current frozen live family is a mixed 64-slot LE and 32-slot MS uniform finite-support / contiguous-layout profile with three failure slots on each active parameterized owner
 - non-uniform weights are not yet supported
 - sparse or non-contiguous failure layouts are not yet supported
 - reordered MS1/MS2 category branches are not safe without proof changes in the slot-mass and bridge files
@@ -150,11 +151,11 @@ The current parameterized owner/helper layer supports the following geometry wit
 
 The active parameterized theorem route is fully live on LE, MS1, and MS2.
 
-- LE rejection: `LERejectionSamplerParameterizedCore.ec` and `LERejectionSamplerMassLiveParameterized.ec` own the live parameterized rejection core and mass/sdist closure at `3%r / 32%r`.
-- LE FS: `LEFsProgrammingLiveParameterizedCore.ec` and `LEFsProgrammingLiveParameterizedMass.ec` own the live parameterized FS branch/midpoint core and bad-branch mass/sdist closure at `3%r / 32%r`.
+- LE rejection: `LERejectionSamplerParameterizedCore.ec` and `LERejectionSamplerMassLiveParameterized.ec` own the live parameterized rejection core and mass/sdist closure at `3%r / 64%r`.
+- LE FS: `LEFsProgrammingLiveParameterizedCore.ec` and `LEFsProgrammingLiveParameterizedMass.ec` own the live parameterized FS branch/midpoint core and bad-branch mass/sdist closure at `3%r / 64%r`.
 - MS1: `SourceHashBindingSemanticLiveParameterizedCore.ec` and `SourceHashBindingSemanticLiveParameterizedMass.ec` own the live MS1 canonical failure and staged/public-endpoint route at `3%r / 32%r` and `1%r / 16%r`.
 - MS2: `ComparisonPayloadSemanticLiveParameterizedCore.ec` and `ComparisonPayloadSemanticLiveParameterizedMass.ec` own the live MS2 staged/public-endpoint and landing route at `3%r / 32%r`.
-- The resulting top budget remains `epsilon_MS1 + 2 * epsilon_MS2 + epsilon_LE`, which evaluates to `15%r / 32%r` on the active live family.
+- The resulting top budget remains `epsilon_MS1 + 2 * epsilon_MS2 + epsilon_LE`, which evaluates to `3%r / 8%r` on the active live family.
 
 ## Profile Generalization Checklist
 
@@ -168,7 +169,7 @@ Before any profile is promoted beyond the current frozen family, complete the fo
 
 ## Explicit Warning About The Current Proof Surface
 
-The current parameterized proof route is structurally complete for the active uniform finite-support / contiguous-layout `3%r / 32%r` family. That does not imply arbitrary non-uniform, sparse, or reordered profiles are supported, and it does not remove the semantic caveat that public AfterRom is only budget-close to canonical AfterRom.
+The current parameterized proof route is structurally complete for the active uniform finite-support / contiguous-layout live family. That does not imply arbitrary non-uniform, sparse, or reordered profiles are supported, and it does not remove the semantic caveat that public AfterRom is only budget-close to canonical AfterRom.
 
 Future work therefore starts from profile generalization or stronger lower semantics, not from replaying a currently open localized seam on the active route.
 

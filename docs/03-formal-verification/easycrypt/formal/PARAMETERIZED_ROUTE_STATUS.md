@@ -17,11 +17,11 @@ Current checker snapshot: `OK` over 135 checked theories; `axiom_count=0`; `admi
 | MS2 parameterized owner | Yes | Yes, live owner surface | No | Yes, through the live bridge lane | No by itself | `ParameterizedBudgetParameters.ec` plus `ComparisonPayloadSemanticSlotMassParameterized.ec` fix the active `global_digest=1`, `query_digest=1`, `transcript=1`, `clean=29`, `failure=3`, `total=32` profile |
 | MS2 live parameterized bridge lane | Yes | Yes, live parameterized | No | Yes, via staged public-endpoint and canonical landing wrappers | No by itself | `ComparisonPayloadSemanticLiveParameterizedCore.ec`, `ComparisonPayloadSemanticLiveParameterizedMass.ec`, and `ComparisonPayloadSemanticBridgeParameterized.ec` now carry the live MS2 execution-owned/public-AfterRom route at `3%r / 32%r` |
 | Combined MS parameterized public-endpoint lane | Yes | Yes, live MS1 plus live MS2 | Yes, as an internal route | Consumed by canonical closure | No by itself | `MSProbabilitySurfaceParameterized.ec` through `GameMSHopCompositionParameterized.ec` now use live MS1 and live MS2 lower lanes while preserving the explicit duplicated MS2 charge |
-| LE rejection parameterized lane | Yes | Yes, live parameterized sampler route | No | Yes, inside `G1 -> G2` | No by itself | `LERejectionSamplerParameterizedCore.ec` plus `LERejectionSamplerMassLiveParameterized.ec` own the live 3/32 rejection lane; `LERejectionParameterized.ec` and `LEStatisticalDistanceParameterized.ec` now route through `d_le_parameterized_post_rejection_view` rather than the demo rejection midpoint |
-| LE FS parameterized lane | Yes | Yes, live parameterized branch/mass route | No | Yes, inside `G1 -> G2` | No by itself | `LEFsProgrammingLiveParameterizedCore.ec` plus `LEFsProgrammingLiveParameterizedMass.ec` own the live 3/32 FS lane, while `LEFsProgrammingParameterizedView.ec` and `LEFsProgrammingParameterized.ec` route the theorem-facing FS bridge through that midpoint and mass closure |
+| LE rejection parameterized lane | Yes | Yes, live parameterized sampler route | No | Yes, inside `G1 -> G2` | No by itself | `LERejectionSamplerParameterizedCore.ec` plus `LERejectionSamplerMassLiveParameterized.ec` own the live 3/64 rejection lane; `LERejectionParameterized.ec` and `LEStatisticalDistanceParameterized.ec` now route through `d_le_parameterized_post_rejection_view` rather than the demo rejection midpoint |
+| LE FS parameterized lane | Yes | Yes, live parameterized branch/mass route | No | Yes, inside `G1 -> G2` | No by itself | `LEFsProgrammingLiveParameterizedCore.ec` plus `LEFsProgrammingLiveParameterizedMass.ec` own the live 3/64 FS lane, while `LEFsProgrammingParameterizedView.ec` and `LEFsProgrammingParameterized.ec` route the theorem-facing FS bridge through that midpoint and mass closure |
 | LE parameterized umbrella | Yes | Yes | No | Yes, for `G1 -> G2` | Indirectly yes | `LEStatisticalDistanceParameterized.ec`, `LEHVZKParameterized.ec`, and `GameLEBridgeParameterized.ec` now compose over the parameterized rejection midpoint plus the FS-facing parameterized view bridge |
 | LE-only parameterized top theorem | Yes | Yes | No | Yes, with canonical MS retained | Yes | `qssm_main_theorem_le_parameterized_budget` remains the LE-only intermediate theorem |
-| Full canonical parameterized QSSM theorem | Yes | Yes, with live MS1, live MS2, and explicit extra MS2 charge | Not applicable | Yes | Yes | `qssm_main_theorem_parameterized_budget` closes through live MS1, live MS2, a budgeted public AfterRom to canonical AfterRom bridge, and an explicit duplicated MS2 term at active closed form `15%r / 32%r` |
+| Full canonical parameterized QSSM theorem | Yes | Yes, with live MS1, live MS2, and explicit extra MS2 charge | Not applicable | Yes | Yes | `qssm_main_theorem_parameterized_budget` closes through live MS1, live MS2, a budgeted public AfterRom to canonical AfterRom bridge, and an explicit duplicated MS2 term at active closed form `3%r / 8%r` |
 
 ## Structurally Durable Versus Temporary Layers
 
@@ -56,15 +56,16 @@ These files should remain part of the architecture even after production-count d
 
 ### Demo-alias temporary wrappers
 
-None are expected on the active uniform finite-support / contiguous-layout `3%r / 32%r` profile family. The current theorem-facing MS1, MS2, and LE parameterized routes are now all carried by live lower lanes rather than active demo/parameterized alias bridges.
+None are expected on the active uniform finite-support / contiguous-layout live family. The current theorem-facing MS1, MS2, and LE parameterized routes are now all carried by live lower lanes rather than active demo/parameterized alias bridges.
 
 ## What Is Complete Today
 
 - Parameterized owner definitions are present for MS1, MS2, LE rejection, LE FS, and the parameterized LE umbrella.
-- The LE parameterized lane now carries a live rejection route with counts `soft=1`, `hard=1`, `invalid=1`, `accept=29`, `failure=3`, `total=32`, so `epsilon_le_rej_parameterized = 3%r / 32%r`.
-- The LE parameterized lane now also carries a live FS route with counts `query_collision=1`, `programming_collision=1`, `transcript=1`, `clean=29`, `failure=3`, `total=32`, so `epsilon_le_fs_parameterized = 3%r / 32%r`.
+- The LE parameterized lane now carries a live rejection route with counts `soft=1`, `hard=1`, `invalid=1`, `accept=61`, `failure=3`, `total=64`, so `epsilon_le_rej_parameterized = 3%r / 64%r`.
+- The LE parameterized lane now also carries a live FS route with counts `query_collision=1`, `programming_collision=1`, `transcript=1`, `clean=61`, `failure=3`, `total=64`, so `epsilon_le_fs_parameterized = 3%r / 64%r`.
 - `LERejectionParameterized.ec`, `LEFsProgrammingParameterized.ec`, `LEFsProgrammingParameterizedView.ec`, and `LEStatisticalDistanceParameterized.ec` now route through those live LE midpoints without changing the demo semantic theorem path.
-- `epsilon_le_parameterized = 6%r / 32%r = 3%r / 16%r` now reaches the closed theorem surface.
+- `epsilon_le_parameterized = 6%r / 64%r = 3%r / 32%r` now reaches the closed theorem surface.
+- Those LE owner retunings changed no theorem-facing surface and required no local proof repair.
 - The MS1 parameterized lane now carries a live canonical failure route with counts `collision=1`, `malformed_binding=1`, `transcript=1`, `clean=29`, `failure=3`, `total=32`, so `epsilon_ms_hash_binding_parameterized = 3%r / 32%r`.
 - The MS1 staged public-divergence upper lane is now live parameterized at `malformed_binding + transcript = 2%r / 32%r = 1%r / 16%r`, and the staged/public-endpoint MS1 route is no longer demo-bound.
 - `SourceHashBindingSemanticLiveParameterizedCore.ec` owns the live MS1 coupled-state/public-observable core, `SourceHashBindingSemanticLiveParameterizedMass.ec` owns live MS1 canonical failure and public-divergence upper mass closure, and `SourceHashBindingSemanticBridgeParameterized.ec`, `MSProbabilitySurfaceParameterized.ec`, `GameAdvantageParameterized.ec`, `GameMSHopTypesParameterized.ec`, and `GameMSHopCompositionParameterized.ec` now carry that live staged route.
@@ -72,7 +73,7 @@ None are expected on the active uniform finite-support / contiguous-layout `3%r 
 - `ComparisonPayloadSemanticLiveParameterizedCore.ec` owns the live MS2 category/coupled-state/public-AfterRom core, `ComparisonPayloadSemanticLiveParameterizedMass.ec` owns the live MS2 execution-owned failure mass and public-divergence/failure closure, and `ComparisonPayloadSemanticBridgeParameterized.ec`, `MSProbabilitySurfaceParameterized.ec`, `GameAdvantageParameterized.ec`, `GameMSHopTypesParameterized.ec`, and `GameMSHopCompositionParameterized.ec` now carry the live staged/public-endpoint MS2 transition and budgeted landing route.
 - The LE parameterized lane closes all the way to `qssm_main_theorem_le_parameterized_budget`.
 - The full canonical parameterized route closes all the way to `qssm_main_theorem_parameterized_budget`.
-- Under the active live profiles, the full canonical parameterized top budget closes at `15%r / 32%r`.
+- Under the active live profiles, the full canonical parameterized top budget closes at `3%r / 8%r`.
 - The staged/public-endpoint caveat is still explicit and part of the frozen proof claim because the canonical closure still factors through a charged public-endpoint landing.
 - The exact-zero route and live demo semantic route remain unchanged.
 - No remaining localized replay seams are expected on the current uniform finite-support / contiguous-layout profile family.

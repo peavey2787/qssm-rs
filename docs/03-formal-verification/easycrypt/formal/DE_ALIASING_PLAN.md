@@ -6,7 +6,7 @@ Navigation: [EasyCrypt README](../README.md)
 
 This document audits the current parameterized proof lane for profile-generalization readiness.
 
-The current de-aliasing/live replay campaign is complete for the active uniform finite-support / contiguous-layout `3%r / 32%r` family. What remains is not a pending localized seam replay; it is future work for broader profile families or tighter lower semantics.
+The current de-aliasing/live replay campaign is complete for the active uniform finite-support / contiguous-layout live family. What remains is not a pending localized seam replay; it is future work for broader profile families or tighter lower semantics.
 
 This is a docs-only roadmap.
 
@@ -129,7 +129,8 @@ The active route is now live end to end.
 - MS1 closes through `SourceHashBindingSemanticLiveParameterizedCore.ec -> SourceHashBindingSemanticLiveParameterizedMass.ec -> SourceHashBindingSemanticBridgeParameterized.ec`.
 - MS2 closes through `ComparisonPayloadSemanticLiveParameterizedCore.ec -> ComparisonPayloadSemanticLiveParameterizedMass.ec -> ComparisonPayloadSemanticBridgeParameterized.ec`.
 - `MSProbabilitySurfaceParameterized.ec`, `GameAdvantageParameterized.ec`, `GameMSHopTypesParameterized.ec`, `GameMSHopCompositionParameterized.ec`, and `MainTheoremParameterized.ec` now consume those live lower lanes without reopening a demo/parameterized seam on the active family.
-- The active top budget remains `epsilon_ms_hash_binding_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_le_parameterized`, which evaluates to `15%r / 32%r` on the current frozen family.
+- The active top budget remains `epsilon_ms_hash_binding_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_le_parameterized`, which evaluates to `3%r / 8%r` on the current frozen family.
+- The LE rejection and LE FS owner retunings to `3%r / 64%r` landed without theorem-surface changes or local proof repairs.
 - No remaining localized count-alias-sensitive seams are expected on the current uniform finite-support / contiguous-layout family.
 
 ## Compatibility-Only Equalities Kept For History

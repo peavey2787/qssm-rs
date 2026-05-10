@@ -14,7 +14,7 @@ The proof surface is frozen at the May 2026 release checkpoint.
 - `qssm_main_theorem_le_parameterized_budget` exists and is closed as the LE-only intermediate theorem.
 - `qssm_main_theorem_parameterized_budget` exists and is closed as the full canonical parameterized theorem.
 - The full parameterized top budget is `epsilon_ms_hash_binding_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_le_parameterized`.
-- Under the active live profiles, that full parameterized top budget closes at `15%r / 32%r`.
+- Under the active live profiles, that full parameterized top budget closes at `3%r / 8%r`.
 - The lower MS public-endpoint distinction remains real: public AfterRom is budget-close to canonical AfterRom, not zero-equal, so the route closes through a charged bridge.
 
 ## Public Theorem Surface
@@ -111,15 +111,15 @@ The LE-only parameterized route is complete and intentionally narrow.
 | Layer | File | Main symbols |
 |---|---|---|
 | Parameterized owners | `primitives/ParameterizedBudgetParameters.ec` | `epsilon_le_rej_parameterized`, `epsilon_le_fs_parameterized`, `epsilon_le_parameterized` |
-| Rejection parameterized lane | `le/LERejectionSamplerParameterizedCore.ec`, `le/LERejectionSamplerMassLiveParameterized.ec`, `le/LERejectionParameterized.ec` | live parameterized rejection core, mass/sdist closure, and theorem-facing bridge at `epsilon_le_rej_parameterized = 3%r / 32%r` |
-| FS parameterized lane | `le/LEFsProgrammingFailureProbabilityParameterized.ec`, `le/LEFsProgrammingLiveParameterizedCore.ec`, `le/LEFsProgrammingLiveParameterizedMass.ec`, `le/LEFsProgrammingParameterizedView.ec`, `le/LEFsProgrammingParameterized.ec` | live parameterized FS owner/midpoint/mass closure and theorem-facing bridge at `epsilon_le_fs_parameterized = 3%r / 32%r` |
+| Rejection parameterized lane | `le/LERejectionSamplerParameterizedCore.ec`, `le/LERejectionSamplerMassLiveParameterized.ec`, `le/LERejectionParameterized.ec` | live parameterized rejection core, mass/sdist closure, and theorem-facing bridge at `epsilon_le_rej_parameterized = 3%r / 64%r` |
+| FS parameterized lane | `le/LEFsProgrammingFailureProbabilityParameterized.ec`, `le/LEFsProgrammingLiveParameterizedCore.ec`, `le/LEFsProgrammingLiveParameterizedMass.ec`, `le/LEFsProgrammingParameterizedView.ec`, `le/LEFsProgrammingParameterized.ec` | live parameterized FS owner/midpoint/mass closure and theorem-facing bridge at `epsilon_le_fs_parameterized = 3%r / 64%r` |
 | LE parameterized additive bridge | `le/LEStatisticalDistanceParameterized.ec`, `le/LEHVZKParameterized.ec` | parameterized LE advantage closure |
 | Game bridge | `games/GameLEBridgeParameterized.ec` | `A_G1_to_G2_le_semantic_parameterized_budget_transition_bound` |
 | Top theorem | `theorem/MainTheoremParameterized.ec` | `qssm_main_theorem_le_parameterized_budget` |
 
 This route keeps the MS contribution on `A_G0_to_G1_ms_semantic_transition_bound` and swaps only the LE side.
 
-Both LE rejection and LE FS have moved below the demo `3%r / 16%r` profile on the active parameterized lane. The demo route remains unchanged, `epsilon_le_rej_parameterized = 3%r / 32%r`, `epsilon_le_fs_parameterized = 3%r / 32%r`, and therefore `epsilon_le_parameterized = 3%r / 16%r`.
+Both LE rejection and LE FS have moved below the demo `3%r / 16%r` profile on the active parameterized lane. The demo route remains unchanged, `epsilon_le_rej_parameterized = 3%r / 64%r`, `epsilon_le_fs_parameterized = 3%r / 64%r`, and therefore `epsilon_le_parameterized = 3%r / 32%r`. Those two retunings changed no theorem surface and required no local proof repair.
 
 ## Full Canonical Parameterized Route
 
