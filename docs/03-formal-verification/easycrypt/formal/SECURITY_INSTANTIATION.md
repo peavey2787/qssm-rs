@@ -234,8 +234,60 @@ The critical blocker is explicit:
 
 - `qssm_realworld_obligations_concrete_128` cannot be proved until the component bounds are either proved in EasyCrypt or supplied as explicit theorem premises
 - if the component reductions are external to this EasyCrypt tree, they must appear as explicit premises, not axioms
+- the current theorem surface already supports this architecture cleanly, because `qssm_main_theorem_realworld_budget` already packages the concrete top-level composition over explicit obligation predicates
 
 In other words, the next honest concrete theorem is not a zero-premise theorem unless the component reductions themselves are formalized in-tree.
+
+## Concrete External-Bound Instantiation Path
+
+The intended external-bound path is sequential and does not require weighted sampler replay.
+
+Step 1:
+
+Add `RealWorldBudgetInstantiation.ec`.
+
+Step 2:
+
+Define the concrete component formulas separately for:
+
+- MS1
+- MS2
+- LE rejection
+- LE FS
+
+That should produce the concrete owner terms:
+
+- `epsilon_ms_hash_binding_concrete_128`
+- `epsilon_ms_rom_programmability_concrete_128`
+- `epsilon_le_rej_concrete_128`
+- `epsilon_le_fs_concrete_128`
+
+Step 3:
+
+Build `realworld_budget_concrete_128` from those four concrete component formulas.
+
+Step 4:
+
+Add the arithmetic and nonnegativity lemmas needed for the concrete record.
+
+Step 5:
+
+Introduce the component-bound inputs as explicit theorems or explicit premises.
+
+If the component reductions remain external to the current EasyCrypt tree, the honest shape is:
+
+- four explicit component-bound premises on the concrete theorem, or
+- a separate theorem proving those premises and then a derived obligation theorem
+
+Step 6:
+
+Derive `qssm_realworld_obligations_concrete_128` from those explicit component-bound inputs.
+
+Step 7:
+
+Prove `qssm_main_theorem_realworld_concrete_128` by instantiating `qssm_main_theorem_realworld_budget` with `realworld_budget_concrete_128`.
+
+This path yields a formal theorem over explicit component-bound assumptions while leaving weighted sampler replay out of scope.
 
 ## External-Bound Versus Internal Sampler Proof
 
@@ -286,6 +338,19 @@ This is the recommended next step if the goal is a concrete theorem over externa
 - replay the lower live sampler proofs over weighted finite-support distributions
 
 This is the correct next step only if sampler-internal weighted semantics must be formalized.
+
+Recommendation:
+
+- start with Option A if the goal is a concrete theorem over externally justified operational caps
+- start with Option B only if sampler-internal weighted semantics must be formalized
+
+## Caveats
+
+- weighted or non-uniform sampler internals are still not modeled
+- the current lower route still uses the frozen `3%r / 64%r` live owners
+- the duplicate MS2 charge remains explicit
+- public AfterRom remains budget-close to canonical AfterRom, not zero-equal
+- this document does not claim fully internal weighted-sampler verification
 
 ## Current Bottom Line
 
