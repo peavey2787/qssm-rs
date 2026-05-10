@@ -6,11 +6,17 @@ Navigation: [EasyCrypt README](../README.md)
 
 - `qssm_main_theorem_realworld_budget` is proved in `theorem/MainTheoremRealWorld.ec`.
 - It is conditional on `qssm_realworld_obligations`, not a fully concrete theorem.
-- `qssm_main_theorem_realworld_concrete_128` does not exist yet.
+- `qssm_main_theorem_realworld_concrete_128` exists in `RealWorldBudgetInstantiation.ec`.
+- `qssm_main_theorem_realworld_concrete_128_5_over_2_98` also exists in `RealWorldBudgetInstantiation.ec`.
+- The concrete budget record `realworld_budget_concrete_128` is formalized.
+- The concrete component epsilon is `1 / 2^98`.
+- The concrete top epsilon is `5 / 2^98`.
+- The closed form `5 / 2^98` is proved in EasyCrypt.
+- Both concrete theorems remain conditional on four explicit component-bound premises.
 - The current live lower actuals still collapse to the live toy parameterized masses, currently `3%r / 64%r` per component.
 - Therefore component budgets such as `2^-98` cannot currently discharge the real-world obligations.
 
-At the current May 2026 checkpoint, the real-world theorem surface is an honest abstract upper-bound theorem over explicit obligations. It is not yet a machine-checked concrete `lambda = 128` theorem.
+At the current May 2026 checkpoint, the real-world theorem surface has both an abstract upper-bound theorem and a concrete external-bound instantiation skeleton. The concrete instantiation is theorem-facing and machine-checked, but it still depends on four explicit component-bound premises rather than internally proved reductions.
 
 ## Theorem Surface
 
@@ -23,6 +29,7 @@ The real-world theorem surface currently lives in:
 - `games/GameMSHopCompositionRealWorld.ec`
 - `games/GameLEBridgeRealWorld.ec`
 - `theorem/MainTheoremRealWorld.ec`
+- `RealWorldBudgetInstantiation.ec`
 
 The real-world budget record in `primitives/RealWorldBudgetParameters.ec` has four fields:
 
@@ -93,6 +100,20 @@ lemma qssm_main_theorem_realworld_budget
 ```
 
 This theorem is proved. The point of this document is that it is not yet a concrete `lambda = 128` instantiation theorem.
+
+The concrete external-bound instantiation layer in `RealWorldBudgetInstantiation.ec` now adds:
+
+- `realworld_budget_concrete_128`
+- `epsilon_ms_hash_binding_concrete_128`
+- `epsilon_ms_rom_programmability_concrete_128`
+- `epsilon_le_rej_concrete_128`
+- `epsilon_le_fs_concrete_128`
+- `epsilon_top_concrete_128_eq_5_over_2_98`
+- `qssm_realworld_obligations_concrete_128_from_component_bounds`
+- `qssm_main_theorem_realworld_concrete_128`
+- `qssm_main_theorem_realworld_concrete_128_5_over_2_98`
+
+Those theorems package a concrete budget record and a concrete top bound, but they still require four explicit component-bound premises. They do not claim that those four component reductions are internally proved in the current tree.
 
 ## Current Lower Actual Terms
 
@@ -206,13 +227,13 @@ So the placeholder arithmetic gives:
 epsilon_top = 2^-95.67807190511263
 ```
 
-Again: this arithmetic is correct, but the current theorem surface does not yet prove it.
+That arithmetic is now reflected in the concrete external-bound instantiation file: the component epsilon is packaged as `1 / 2^98`, the top epsilon is proved as `5 / 2^98`, and the concrete theorem remains conditional on four explicit component-bound premises.
 
-## What Is Missing For Concrete External-Bound Instantiation
+## What Exists And What Is Still Missing For Concrete External-Bound Instantiation
 
-The missing external-bound instantiation layer should be added explicitly rather than implied.
+The external-bound instantiation layer now exists explicitly in `RealWorldBudgetInstantiation.ec`.
 
-Expected future files and theorems:
+What now exists:
 
 - `RealWorldBudgetInstantiation.ec`
 - `realworld_budget_concrete_128`
@@ -220,23 +241,31 @@ Expected future files and theorems:
 - `epsilon_ms_rom_programmability_concrete_128`
 - `epsilon_le_rej_concrete_128`
 - `epsilon_le_fs_concrete_128`
-- `qssm_realworld_obligations_concrete_128`
+- `qssm_realworld_obligations_concrete_128_from_component_bounds`
 - `qssm_main_theorem_realworld_concrete_128`
+- `qssm_main_theorem_realworld_concrete_128_5_over_2_98`
 
-What that file would need to do:
+What is still missing:
+
+- internally proved component reductions for the four concrete component-bound premises
+- any theorem discharging those four premises from the current live `3%r / 64%r` lower actuals
+- any weighted or non-uniform sampler semantics below the current real-world obligation surface
+
+What the existing file already does:
 
 - define the concrete component formulas
 - package them into a concrete `realworld_budget` record
-- prove or assume the component-specific inequalities required by `qssm_realworld_obligations`
+- derive `qssm_realworld_obligations` from explicit component-bound premises
 - instantiate `qssm_main_theorem_realworld_budget` with that concrete record
 
 The critical blocker is explicit:
 
-- `qssm_realworld_obligations_concrete_128` cannot be proved until the component bounds are either proved in EasyCrypt or supplied as explicit theorem premises
+- the four concrete component-bound premises are not internally proved in the current tree
+- the current live `3%r / 64%r` lower actuals do not themselves satisfy the `1 / 2^98` concrete component budget
 - if the component reductions are external to this EasyCrypt tree, they must appear as explicit premises, not axioms
 - the current theorem surface already supports this architecture cleanly, because `qssm_main_theorem_realworld_budget` already packages the concrete top-level composition over explicit obligation predicates
 
-In other words, the next honest concrete theorem is not a zero-premise theorem unless the component reductions themselves are formalized in-tree.
+In other words, the new concrete theorem surface exists, but it is still a theorem over explicit component-bound assumptions rather than a zero-premise internal reduction.
 
 ## Concrete External-Bound Instantiation Path
 
@@ -244,7 +273,7 @@ The intended external-bound path is sequential and does not require weighted sam
 
 Step 1:
 
-Add `RealWorldBudgetInstantiation.ec`.
+Add `RealWorldBudgetInstantiation.ec`. This step is now complete.
 
 Step 2:
 
@@ -264,11 +293,11 @@ That should produce the concrete owner terms:
 
 Step 3:
 
-Build `realworld_budget_concrete_128` from those four concrete component formulas.
+Build `realworld_budget_concrete_128` from those four concrete component formulas. This step is now complete.
 
 Step 4:
 
-Add the arithmetic and nonnegativity lemmas needed for the concrete record.
+Add the arithmetic and nonnegativity lemmas needed for the concrete record. This step is now complete for the current `1 / 2^98` and `5 / 2^98` closed forms.
 
 Step 5:
 
@@ -281,11 +310,11 @@ If the component reductions remain external to the current EasyCrypt tree, the h
 
 Step 6:
 
-Derive `qssm_realworld_obligations_concrete_128` from those explicit component-bound inputs.
+Derive the concrete obligation bundle from those explicit component-bound inputs. This now exists as `qssm_realworld_obligations_concrete_128_from_component_bounds`.
 
 Step 7:
 
-Prove `qssm_main_theorem_realworld_concrete_128` by instantiating `qssm_main_theorem_realworld_budget` with `realworld_budget_concrete_128`.
+Prove `qssm_main_theorem_realworld_concrete_128` by instantiating `qssm_main_theorem_realworld_budget` with `realworld_budget_concrete_128`. This step is now complete, together with the closed-form companion `qssm_main_theorem_realworld_concrete_128_5_over_2_98`.
 
 This path yields a formal theorem over explicit component-bound assumptions while leaving weighted sampler replay out of scope.
 
@@ -355,8 +384,10 @@ Recommendation:
 ## Current Bottom Line
 
 - `qssm_main_theorem_realworld_budget` exists and is proved.
-- `qssm_main_theorem_realworld_concrete_128` does not exist.
+- `qssm_main_theorem_realworld_concrete_128` exists and is proved.
+- `qssm_main_theorem_realworld_concrete_128_5_over_2_98` exists and is proved.
 - The current lower actuals still collapse to `3%r / 64%r` per component.
 - Therefore the placeholder bound `2^-98` cannot currently discharge the obligations.
-- The worked arithmetic for `lambda = 128`, `q = 2^20`, `n = 2^10`, `r = 1` gives `epsilon_component = 2^-98` and `epsilon_top = 5 / 2^98 ~= 2^-95.67807190511263`.
-- That arithmetic is documentation-only today, not a proved concrete theorem.
+- The worked arithmetic for `lambda = 128`, `q = 2^20`, `n = 2^10`, `r = 1` gives `epsilon_component = 2^-98`, which is packaged concretely as `1 / 2^98`, and `epsilon_top = 5 / 2^98 ~= 2^-95.67807190511263`.
+- The closed form `5 / 2^98` is now proved in EasyCrypt.
+- The concrete theorem still remains conditional on four explicit component-bound premises.

@@ -10,7 +10,7 @@ This document explains how to reproduce the frozen May 2026 release checkpoint a
 
 At the current release checkpoint, the expected result is:
 
-- full checker: `OK: checked 142 theories`
+- full checker: `OK: checked 143 theories`
 - `axiom_count=0`
 - `admit_count=0`
 - worktree clean after restoring generated `.eco` churn
@@ -29,6 +29,11 @@ At the current release checkpoint, the expected result is:
 - `qssm_main_theorem_le_parameterized_budget` present and documented as the LE-only intermediate theorem
 - `qssm_main_theorem_parameterized_budget` present and documented as the full canonical parameterized theorem
 - `qssm_main_theorem_realworld_budget` present and documented as the abstract real-world upper-bound theorem
+- `RealWorldBudgetInstantiation.ec` present and documented as the concrete external-bound instantiation surface
+- `qssm_main_theorem_realworld_concrete_128` present and documented as the concrete external-bound theorem over four explicit component-bound premises
+- `qssm_main_theorem_realworld_concrete_128_5_over_2_98` present and documented as the closed-form `5 / 2^98` companion theorem over the same four explicit component-bound premises
+- concrete component epsilon documented as `1 / 2^98`
+- concrete top epsilon documented as `5 / 2^98`
 - canonical parameterized top budget documented as `epsilon_ms_hash_binding_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_le_parameterized`
 - active closed-form canonical parameterized top budget documented as `15%r / 64%r`
 - lower helper infrastructure documented as including `drange_pred_true_mass`, `drange_pred_true_mass_le_bound`, `drange_subset_true_mass`, `drange_subset_true_mass_le_bound`, and `drange_subset_complement_mass` for uniform-support masses only, not as arbitrary-profile support
@@ -51,7 +56,7 @@ cd docs/03-formal-verification/easycrypt
 Expected terminal tail:
 
 ```text
-OK: checked 142 theories in .../docs/03-formal-verification/easycrypt
+OK: checked 143 theories in .../docs/03-formal-verification/easycrypt
 ```
 
 The compile-order authority remains [../check_easycrypt.sh](../check_easycrypt.sh).
@@ -123,6 +128,11 @@ A release-ready checkpoint must preserve all of the following.
 - `qssm_main_theorem_le_parameterized_budget` documented as the LE-only intermediate theorem
 - `qssm_main_theorem_parameterized_budget` documented as the full canonical parameterized theorem
 - `qssm_main_theorem_realworld_budget` documented as the abstract real-world upper-bound theorem over explicit obligation hypotheses
+- `RealWorldBudgetInstantiation.ec` documented as the concrete external-bound instantiation surface
+- `qssm_main_theorem_realworld_concrete_128` documented as a concrete external-bound theorem over four explicit component-bound premises rather than internally proved component reductions
+- `qssm_main_theorem_realworld_concrete_128_5_over_2_98` documented as the closed-form `5 / 2^98` companion theorem under the same four explicit premises
+- concrete component epsilon documented as `1 / 2^98`
+- concrete top epsilon documented as `5 / 2^98`
 - the explicit duplicated `epsilon_ms_rom_programmability_parameterized` term documented without simplification
 - active closed-form canonical parameterized top budget documented as `15%r / 64%r`
 - LE rejection, LE FS, MS1, and MS2 tuning documented as owner-only changes with no theorem-surface changes and no local proof repairs
@@ -131,6 +141,7 @@ A release-ready checkpoint must preserve all of the following.
 - `RealWorldBudgetParameters.ec`, `RealWorldBudgetObligations.ec`, `LEStatisticalDistanceRealWorld.ec`, `MSProbabilitySurfaceRealWorld.ec`, `GameLEBridgeRealWorld.ec`, `GameMSHopCompositionRealWorld.ec`, and `MainTheoremRealWorld.ec` documented as a parallel axiom-free abstract upper-bound surface
 - `le_realworld_obligations`, `ms_realworld_obligations`, and `qssm_realworld_obligations` documented as theorem hypotheses rather than axioms
 - the abstract real-world surface documented as already sufficient for externally justified upper bounds without in-tree weighted sampler replay
+- the concrete external-bound instantiation surface documented as theorem-facing only, with the four component-bound premises still explicit and not internally discharged
 - any future weighted replay documented as preferring normalized per-component category weights rather than per-slot weights
 - component-failure-only weighted records documented as too abstract because they mostly duplicate the current obligation bundle
 - the first safe weighted pilot documented as an LE rejection weighted category owner only
@@ -148,6 +159,7 @@ The release does not claim a zero-cost public-to-canonical MS fusion.
 - The canonical parameterized route closes by paying an explicit extra `epsilon_ms_rom_programmability_parameterized` term.
 - The staged/public-endpoint MS lane remains visible as the internal route consumed by that charged closure, with both the MS1 and MS2 halves now live parameterized.
 - The real-world theorem surface does not claim weighted or non-uniform sampler replay; it packages externally supplied upper-bound budgets as explicit theorem hypotheses only.
+- The concrete external-bound instantiation surface does not claim internally proved component reductions; it packages `1 / 2^98` component budgets and `5 / 2^98` top closure only under four explicit component-bound premises.
 - If weighted replay is ever pursued later, it should stay below `qssm_main_theorem_realworld_budget`, prefer normalized per-component category weights over per-slot weights, and begin with an LE rejection weighted category pilot rather than a full-route rewrite.
 
 ## Recommended Release Stop
