@@ -9,6 +9,7 @@ on:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  FUZZ_RUST_TOOLCHAIN: nightly-2025-06-27
 
 jobs:
   verifier-fuzz-1h:
@@ -18,20 +19,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install nightly Rust
-        uses: dtolnay/rust-toolchain@nightly
+      - name: Install pinned Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ env.FUZZ_RUST_TOOLCHAIN }}
 
       - name: Install cargo-fuzz
-        run: cargo install cargo-fuzz --locked
+        run: cargo +${{ env.FUZZ_RUST_TOOLCHAIN }} install cargo-fuzz --locked
 
       - name: Verify fuzz target exists
         working-directory: truth-engine/qssm-ms
-        run: cargo +nightly fuzz list
+        run: cargo +${{ env.FUZZ_RUST_TOOLCHAIN }} fuzz list
 
       - name: Run verifier fuzzing for 1 hour
         working-directory: truth-engine/qssm-ms
         run: |
-          cargo +nightly fuzz run verify_predicate_only_v2 -- \
+          cargo +${{ env.FUZZ_RUST_TOOLCHAIN }} fuzz run verify_predicate_only_v2 -- \
             -max_total_time=3600 \
             -print_final_stats=1 \
             -rss_limit_mb=4096
