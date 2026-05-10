@@ -167,8 +167,8 @@ impl MsisBound {
 /// effective challenge space size.
 ///
 /// - Ref: \[KLS18\] Theorem 1 — Fiat-Shamir in ROM
-/// - |C_eff| = (2·C_POLY_SPAN+1)^C_POLY_SIZE = 33^64
-/// - log₂(|C_eff|) = 64·log₂(33) ≈ 322.8
+/// - |C_eff| = (2·C_POLY_SPAN+1)^C_POLY_SIZE = 17^48
+/// - log₂(|C_eff|) = 48·log₂(17) ≈ 196.2
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct FsReductionBound {
     pub claim_type: ClaimType,
@@ -272,8 +272,8 @@ impl LeCommitmentSoundnessTheorem {
 /// q = 8,380,417 (since q ≡ 1 mod 512), so R_q ≅ F_q^{256} via NTT and
 /// every nonzero element is a unit.
 ///
-/// Knowledge error κ = 1/|C_eff| = 1/33^{64}.
-/// log₂(1/κ) = 64·log₂(33) ≈ 322.8 bits.
+/// Knowledge error κ = 1/|C_eff| = 1/17^{48}.
+/// log₂(1/κ) = 48·log₂(17) ≈ 196.2 bits.
 ///
 /// - Ref: \[Lyu12\] §3, Theorem 3.1 — special soundness for Σ-protocol
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -382,13 +382,13 @@ mod tests {
     fn fs_reduction_challenge_space() {
         let fs = FsReductionBound::for_current_params();
         assert_eq!(fs.claim_type, ClaimType::Soundness);
-        // log2(33^64) ≈ 322.8
+        // log2(17^48) ≈ 196.2
         assert!(
-            (fs.challenge_space_log2 - 322.8).abs() < 1.0,
-            "challenge_space_log2 = {:.2}, expected ≈322.8",
+            (fs.challenge_space_log2 - 196.2).abs() < 1.0,
+            "challenge_space_log2 = {:.2}, expected ≈196.2",
             fs.challenge_space_log2
         );
-        // advantage = 64 - 322.8 ≈ -258.8
+        // advantage = 64 - 196.2 ≈ -132.2
         assert!(
             fs.advantage_log2 < -128.0,
             "FS advantage_log2 = {:.1}, should be < -128",
@@ -400,16 +400,16 @@ mod tests {
     fn le_commitment_soundness_meets_128() {
         let thm = LeCommitmentSoundnessTheorem::for_current_params();
         assert_eq!(thm.claim_type, ClaimType::Soundness);
-        // MSIS = ∞, FS ≈ 259 → min = 259
+        // MSIS = ∞, FS ≈ 132.2 → min = 132.2
         assert!(
             thm.security_bits() >= 128.0,
             "LE soundness bits {:.1} < 128",
             thm.security_bits()
         );
-        // Should be ≈ 258.8 (FS-dominated)
+        // Should be FS-dominated and close to 132.2 bits.
         assert!(
-            thm.security_bits() > 200.0,
-            "LE soundness {:.1} should be FS-dominated (≈259)",
+            thm.security_bits() < 140.0,
+            "LE soundness {:.1} should be FS-dominated (≈132.2)",
             thm.security_bits()
         );
     }
@@ -425,9 +425,9 @@ mod tests {
             "knowledge_error_log2 = {:.1}, expected ≤ -128",
             ext.knowledge_error_log2
         );
-        // Specifically ≈ -322.8
+        // Specifically ≈ -196.2
         assert!(
-            (ext.challenge_space_log2 - 322.8).abs() < 1.0,
+            (ext.challenge_space_log2 - 196.2).abs() < 1.0,
             "challenge_space_log2 = {:.2}",
             ext.challenge_space_log2
         );
@@ -439,6 +439,6 @@ mod tests {
     fn syncs_to_current_modulus() {
         let m = LatticeSoundnessModel::default();
         assert_eq!(m.modulus_q, 8_380_417);
-        assert_eq!(m.challenge_poly_size, 64);
+        assert_eq!(m.challenge_poly_size, 48);
     }
 }

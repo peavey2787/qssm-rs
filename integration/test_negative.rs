@@ -57,27 +57,27 @@ fn missing_claim_field_rejected() {
     assert!(matches!(err, ZkError::PredicateFailed(_)));
 }
 
-// ── Tampered MS root ─────────────────────────────────────────────────
+// ── Tampered MS proof (statement digest) ─────────────────────────────
 
 #[test]
-fn tampered_ms_root_rejected_via_api() {
+fn tampered_ms_proof_statement_digest_rejected_via_api() {
     let (ctx, template, claim, proof, binding_ctx) = make_proof();
     let mut bundle = ProofBundle::from_proof(&proof);
-    let mut root = hex::decode(&bundle.ms_root_hex).unwrap();
-    root[0] ^= 0xFF;
-    bundle.ms_root_hex = hex::encode(root);
+    let mut dig = hex::decode(&bundle.ms_v2_proof_statement_digest_hex).unwrap();
+    dig[0] ^= 0xFF;
+    bundle.ms_v2_proof_statement_digest_hex = hex::encode(dig);
     let tampered = bundle.to_proof().unwrap();
     let err = verify(&ctx, &template, &claim, &tampered, binding_ctx).unwrap_err();
     assert!(matches!(err, ZkError::MsVerifyFailed));
 }
 
 #[test]
-fn tampered_ms_root_rejected_via_local_verifier() {
+fn tampered_ms_proof_statement_digest_rejected_via_local_verifier() {
     let (ctx, template, claim, proof, binding_ctx) = make_proof();
     let mut bundle = ProofBundle::from_proof(&proof);
-    let mut root = hex::decode(&bundle.ms_root_hex).unwrap();
-    root[0] ^= 0xFF;
-    bundle.ms_root_hex = hex::encode(root);
+    let mut dig = hex::decode(&bundle.ms_v2_proof_statement_digest_hex).unwrap();
+    dig[0] ^= 0xFF;
+    bundle.ms_v2_proof_statement_digest_hex = hex::encode(dig);
     let tampered = bundle.to_proof().unwrap();
     let result = verify_proof_with_template(&ctx, &template, &claim, &tampered, binding_ctx);
     assert!(result.is_err());
@@ -111,7 +111,9 @@ fn tampered_binding_entropy_rejected() {
     let mut bundle = ProofBundle::from_proof(&proof);
     let mut ent = hex::decode(&bundle.binding_entropy_hex).unwrap();
     ent[0] ^= 0xFF;
-    bundle.binding_entropy_hex = hex::encode(ent);
+    let ent_hex = hex::encode(ent);
+    bundle.binding_entropy_hex = ent_hex.clone();
+    bundle.ms_v2_binding_entropy_hex = ent_hex;
     let tampered = bundle.to_proof().unwrap();
     let result = verify(&ctx, &template, &claim, &tampered, binding_ctx);
     assert!(result.is_err());
@@ -123,7 +125,7 @@ fn tampered_binding_entropy_rejected() {
 fn swapped_value_target_rejected() {
     let (ctx, template, claim, proof, binding_ctx) = make_proof();
     let mut bundle = ProofBundle::from_proof(&proof);
-    std::mem::swap(&mut bundle.value, &mut bundle.target);
+    std::mem::swap(&mut bundle.value, &mut bundle.ms_v2_target);
     let tampered = bundle.to_proof().unwrap();
     let err = verify(&ctx, &template, &claim, &tampered, binding_ctx).unwrap_err();
     assert!(matches!(err, ZkError::MsVerifyFailed));

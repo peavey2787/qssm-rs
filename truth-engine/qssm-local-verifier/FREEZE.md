@@ -30,9 +30,11 @@ Any change that violates these invariants requires a new security review and a m
 
 Four improvements were implemented for the freeze:
 
-### 1. `MsGhostMirrorOp` relocated to qssm-gadget (Layer 3)
+### 1. Gadget MS bridge vs this crate’s MS verify
 
-`ms_verifier.rs` implemented `LatticePolyOp` (a Layer 3 gadget trait) inside Layer 4. This was the only `LatticePolyOp` implementation outside of `qssm-gadget`. It has been relocated to `qssm-gadget/src/circuit/operators/ms_ghost_mirror.rs` (gadget v1.1.0), and `qssm-gadget` + `qssm-ms` dependencies have been removed from qssm-local-verifier.
+Historically, a cleartext MS `LatticePolyOp` adapter lived in the gadget tree under `ms_ghost_mirror.rs`. **Current gadget policy:** the active MS bridge is **`MsPredicateOnlyV2BridgeOp`** (`verify_predicate_only_v2` + `ms_v2_*` seam observables); the orphan GhostMirror adapter file has been **removed** from `qssm-gadget`.
+
+**Current crate behavior:** packaged proof verification in `src/lib.rs` uses MS v2 predicate-only statement/proof objects and `verify_predicate_only_v2`, aligned with the gadget bridge seam.
 
 ### 2. `#![forbid(unsafe_code)]` added
 

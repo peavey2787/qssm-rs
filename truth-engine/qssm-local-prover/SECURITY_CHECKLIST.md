@@ -67,7 +67,7 @@ Zeroization is best-effort within Rust's compilation and optimization model; no 
 
 All zeroize calls are on the happy path. Production code has no panic-based early exits — every fallible operation uses `?` / `.map_err()` and returns `Result`. There is no code path where a panic could bypass a zeroize call.
 
-[x] `ms_seed` — derived at `lib.rs:L49` via `hash_domain(DOMAIN_SDK_MS_SEED, ...)`, consumed by `qssm_ms::commit()` at `L54`, zeroized at `L56`. Lifetime: 7 lines.
+[x] `ms_seed` — derived via `hash_domain(DOMAIN_SDK_MS_SEED, ...)`, consumed by MS v2 commitment generation (`commit_value_v2` path), then zeroized before returning. Lifetime remains short and explicit in prover flow.
 
 [x] `le_mask_seed` — derived at `lib.rs:L86` via `hash_domain(DOMAIN_SDK_LE_MASK, ...)`, consumed by `qssm_le::prove_arithmetic()` at `L89`, zeroized at `L92`. Lifetime: 6 lines.
 

@@ -14,17 +14,19 @@ use zeroize::{Zeroize, ZeroizeOnDrop};
 use qssm_utils::hashing::hash_domain;
 use std::fmt;
 
-const DOMAIN_SEAM_COMMIT_V1: &str = "QSSM-SEAM-COMMIT-v1";
-const DOMAIN_SEAM_OPEN_V1: &str = "QSSM-SEAM-OPEN-v1";
-const DOMAIN_SEAM_BINDING_V1: &str = "QSSM-SEAM-BINDING-v1";
+const DOMAIN_SEAM_COMMIT_V1: &str = "QSSM-SEAM-MS-V2-COMMIT-v1";
+const DOMAIN_SEAM_OPEN_V1: &str = "QSSM-SEAM-MS-V2-OPEN-v1";
+const DOMAIN_SEAM_BINDING_V1: &str = "QSSM-SEAM-MS-V2-BINDING-v1";
 
 /// Input envelope for Engine-B -> Engine-A commit-then-open seam binding.
 #[derive(Clone, Zeroize, ZeroizeOnDrop)]
 pub struct EngineABindingInput {
     pub state_root: [u8; 32],
-    pub ms_root: [u8; 32],
-    pub relation_digest: [u8; 32],
-    pub ms_fs_v2_challenge: [u8; 32],
+    pub ms_v2_statement_digest: [u8; 32],
+    pub ms_v2_result_bit: u8,
+    pub ms_v2_bitness_global_challenges_digest: [u8; 32],
+    pub ms_v2_comparison_global_challenge: [u8; 32],
+    pub ms_v2_transcript_digest: [u8; 32],
     pub binding_context: [u8; 32],
     pub device_entropy_link: [u8; 32],
     /// Truth digest from [`TruthWitness`] — bound into the seam commitment.
@@ -42,9 +44,11 @@ impl fmt::Debug for EngineABindingInput {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("EngineABindingInput")
             .field("state_root", &"[REDACTED]")
-            .field("ms_root", &"[REDACTED]")
-            .field("relation_digest", &"[REDACTED]")
-            .field("ms_fs_v2_challenge", &"[REDACTED]")
+            .field("ms_v2_statement_digest", &"[REDACTED]")
+            .field("ms_v2_result_bit", &self.ms_v2_result_bit)
+            .field("ms_v2_bitness_global_challenges_digest", &"[REDACTED]")
+            .field("ms_v2_comparison_global_challenge", &"[REDACTED]")
+            .field("ms_v2_transcript_digest", &"[REDACTED]")
             .field("binding_context", &"[REDACTED]")
             .field("device_entropy_link", &"[REDACTED]")
             .field("truth_digest", &"[REDACTED]")
@@ -69,18 +73,20 @@ pub struct EngineABindingOp;
 
 impl EngineABindingOp {
     /// Commit digest:
-    /// `H(DOMAIN_SEAM_COMMIT_V1 || state_root || ms_root || relation_digest || device_entropy_link || binding_context || ms_fs_v2_challenge || truth_digest || entropy_anchor)`.
+    /// `H(DOMAIN_SEAM_COMMIT_V1 || state_root || ms_v2_statement_digest || ms_v2_result_bit || ms_v2_bitness_global_challenges_digest || ms_v2_comparison_global_challenge || ms_v2_transcript_digest || device_entropy_link || binding_context || truth_digest || entropy_anchor)`.
     #[must_use]
     pub fn commitment_digest(input: &EngineABindingInput) -> [u8; 32] {
         hash_domain(
             DOMAIN_SEAM_COMMIT_V1,
             &[
                 input.state_root.as_slice(),
-                input.ms_root.as_slice(),
-                input.relation_digest.as_slice(),
+                input.ms_v2_statement_digest.as_slice(),
+                &[input.ms_v2_result_bit],
+                input.ms_v2_bitness_global_challenges_digest.as_slice(),
+                input.ms_v2_comparison_global_challenge.as_slice(),
+                input.ms_v2_transcript_digest.as_slice(),
                 input.device_entropy_link.as_slice(),
                 input.binding_context.as_slice(),
-                input.ms_fs_v2_challenge.as_slice(),
                 input.truth_digest.as_slice(),
                 input.entropy_anchor.as_slice(),
             ],
@@ -93,7 +99,9 @@ impl EngineABindingOp {
             DOMAIN_SEAM_OPEN_V1,
             &[
                 seam_commitment.as_slice(),
-                input.ms_fs_v2_challenge.as_slice(),
+                input.ms_v2_statement_digest.as_slice(),
+                &[input.ms_v2_result_bit],
+                input.ms_v2_comparison_global_challenge.as_slice(),
                 input.binding_context.as_slice(),
             ],
         )
@@ -105,7 +113,7 @@ impl EngineABindingOp {
             DOMAIN_SEAM_BINDING_V1,
             &[
                 seam_open.as_slice(),
-                input.ms_root.as_slice(),
+                input.ms_v2_transcript_digest.as_slice(),
                 input.state_root.as_slice(),
             ],
         )
@@ -123,9 +131,37 @@ impl LatticePolyOp for EngineABindingOp {
         let mut c = PublicBindingContract::default();
         c.nominations.push((
             BindingPhase::PublicBinding,
-            BindingLabel("ms_fs_v2_challenge".into()),
+            BindingLabel("ms_v2_statement_digest".into()),
             Nomination {
-                bytes: input.ms_fs_v2_challenge.to_vec(),
+                bytes: input.ms_v2_statement_digest.to_vec(),
+            },
+        ));
+        c.nominations.push((
+            BindingPhase::PublicBinding,
+            BindingLabel("ms_v2_result_bit".into()),
+            Nomination {
+                bytes: vec![input.ms_v2_result_bit],
+            },
+        ));
+        c.nominations.push((
+            BindingPhase::PublicBinding,
+            BindingLabel("ms_v2_bitness_global_challenges_digest".into()),
+            Nomination {
+                bytes: input.ms_v2_bitness_global_challenges_digest.to_vec(),
+            },
+        ));
+        c.nominations.push((
+            BindingPhase::PublicBinding,
+            BindingLabel("ms_v2_comparison_global_challenge".into()),
+            Nomination {
+                bytes: input.ms_v2_comparison_global_challenge.to_vec(),
+            },
+        ));
+        c.nominations.push((
+            BindingPhase::PublicBinding,
+            BindingLabel("ms_v2_transcript_digest".into()),
+            Nomination {
+                bytes: input.ms_v2_transcript_digest.to_vec(),
             },
         ));
         c.nominations.push((
@@ -165,14 +201,14 @@ impl LatticePolyOp for EngineABindingOp {
                 "engine_a seam: state_root is all-zero".into(),
             ));
         }
-        if bool::from(input.ms_root.ct_eq(&zero)) {
+        if bool::from(input.ms_v2_statement_digest.ct_eq(&zero)) {
             return Err(PolyOpError::Binding(
-                "engine_a seam: ms_root is all-zero".into(),
+                "engine_a seam: ms_v2_statement_digest is all-zero".into(),
             ));
         }
-        if bool::from(input.relation_digest.ct_eq(&zero)) {
+        if input.ms_v2_result_bit > 1 {
             return Err(PolyOpError::Binding(
-                "engine_a seam: relation_digest is all-zero".into(),
+                "engine_a seam: ms_v2_result_bit must be 0 or 1".into(),
             ));
         }
         if bool::from(input.device_entropy_link.ct_eq(&zero)) {
@@ -185,9 +221,19 @@ impl LatticePolyOp for EngineABindingOp {
                 "engine_a seam: binding_context is all-zero".into(),
             ));
         }
-        if bool::from(input.ms_fs_v2_challenge.ct_eq(&zero)) {
+        if bool::from(input.ms_v2_bitness_global_challenges_digest.ct_eq(&zero)) {
             return Err(PolyOpError::Binding(
-                "engine_a seam: ms_fs_v2_challenge is all-zero".into(),
+                "engine_a seam: ms_v2_bitness_global_challenges_digest is all-zero".into(),
+            ));
+        }
+        if bool::from(input.ms_v2_comparison_global_challenge.ct_eq(&zero)) {
+            return Err(PolyOpError::Binding(
+                "engine_a seam: ms_v2_comparison_global_challenge is all-zero".into(),
+            ));
+        }
+        if bool::from(input.ms_v2_transcript_digest.ct_eq(&zero)) {
+            return Err(PolyOpError::Binding(
+                "engine_a seam: ms_v2_transcript_digest is all-zero".into(),
             ));
         }
         if bool::from(input.truth_digest.ct_eq(&zero)) {

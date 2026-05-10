@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "worst_case_cr_inf_norm": 3072,
+  "required_eta_for_hvzk": 185785.5678771417,
+  "minimum_gamma_for_support_containment": 199680,
+  "challenge_space_log2": 196.19821638001628,
+  "fs_security_bits": 132.19821638001628,
+  "abort_probability_estimate": 0.0
+}

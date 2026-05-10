@@ -5,11 +5,12 @@
 //! Accept if ‖z‖_∞ ≤ γ where z = y + cr.
 //!
 //! - y ~ Uniform\[-η, η\]^N, ‖r‖_∞ ≤ β = 8
-//! - c has C_POLY_SIZE = 64 nonzero coefficients in \[-16, 16\]
+//! - c has C_POLY_SIZE = 48 coefficients in \[-8, 8\]
 //!
-//! Worst-case ‖cr‖_∞ ≤ C_POLY_SIZE · C_POLY_SPAN · β = 64 · 16 · 8 = 8192.
+//! Worst-case ‖cr‖_∞ ≤ C_POLY_SIZE · C_POLY_SPAN · β = 48 · 8 · 8 = 3072.
 //!
-//! Since 8192 > γ = 4096, some honest attempts abort (expected and correct).
+//! With the committed Set B parameters, γ = η + ‖cr‖_∞ = 199680,
+//! so the encoded support-containment rule is met exactly.
 //!
 //! Standard Lyubashevsky HVZK (\[Lyu12\] Lemma 3.2) requires:
 //!
@@ -17,12 +18,13 @@
 //!
 //! For ε = 2^{-128}, N = 256:
 //!
-//!   η ≥ 11 · 8192 · √(ln(512 · 2^{128}) / π) ≈ 483,000
+//!   η ≥ 11 · 3072 · √(ln(512 · 2^{128}) / π) ≈ 185,786
 //!
-//! Our η = 2048 does NOT meet this.  **We do not claim HVZK.**
+//! Our committed Set B uses η = 196608, so the encoded HVZK template is met.
 //!
-//! We claim: the rejection sampling produces **witness-hiding** transcripts
-//! (see [`crate::reduction_witness_hiding::WitnessHidingClaim`]).
+//! This does not by itself complete the full LE zero-knowledge proof. It means
+//! the concrete eta/gamma/challenge parameters now satisfy the exact template
+//! encoded in the formal crate.
 //!
 //! - Ref: \[Lyu12\] §3, Lemma 3.2 — simulation requirement
 //! - Ref: \[DDLL13\] §3.1 — bimodal rejection sampling framework
@@ -33,8 +35,8 @@ use serde::{Deserialize, Serialize};
 
 /// Rejection sampling correctness claim.
 ///
-/// Documents the concrete parameters and proves that HVZK is NOT achieved
-/// under the current parameterization.  The scheme is witness-hiding only.
+/// Documents the concrete parameters and checks whether the encoded HVZK
+/// template is met under the current parameterization.
 ///
 /// - Ref: \[Lyu12\] §3, Lemma 3.2
 /// - Ref: \[DDLL13\] §3.1
@@ -104,7 +106,7 @@ impl RejectionSamplingClaim {
         };
 
         Self {
-            claim_type: ClaimType::WitnessHiding,
+            claim_type: ClaimType::ZeroKnowledge,
             eta,
             gamma,
             beta,
@@ -123,7 +125,6 @@ impl RejectionSamplingClaim {
     }
 
     /// Returns `true` if the current η meets the HVZK requirement.
-    /// For our parameters this returns `false`.
     #[must_use]
     pub fn meets_hvzk_requirement(&self) -> bool {
         f64::from(self.eta) >= self.required_eta_for_hvzk
@@ -137,60 +138,53 @@ mod tests {
     #[test]
     fn worst_case_cr_norm() {
         let rs = RejectionSamplingClaim::for_current_params();
-        // 64 · 16 · 8 = 8192
-        assert_eq!(rs.worst_case_cr_inf_norm, 8192);
+        // 48 · 8 · 8 = 3072
+        assert_eq!(rs.worst_case_cr_inf_norm, 3072);
     }
 
     #[test]
-    fn hvzk_not_met() {
+    fn hvzk_requirement_is_met() {
         let rs = RejectionSamplingClaim::for_current_params();
-        assert_eq!(rs.claim_type, ClaimType::WitnessHiding);
+        assert_eq!(rs.claim_type, ClaimType::ZeroKnowledge);
         assert!(
-            rs.required_eta_for_hvzk > f64::from(rs.eta),
-            "required η for HVZK = {:.0}, actual η = {} — HVZK should NOT be met",
+            rs.required_eta_for_hvzk <= f64::from(rs.eta),
+            "required η for HVZK = {:.0}, actual η = {} — HVZK should be met",
             rs.required_eta_for_hvzk,
             rs.eta
         );
         assert!(
-            !rs.meets_hvzk_requirement(),
-            "meets_hvzk_requirement() must return false for current params"
+            rs.meets_hvzk_requirement(),
+            "meets_hvzk_requirement() must return true for current params"
         );
     }
 
     #[test]
     fn required_eta_in_expected_range() {
         let rs = RejectionSamplingClaim::for_current_params();
-        // Expected ≈ 483,000; allow 400,000–600,000
+        // Expected ≈ 185,786; allow 180,000–190,000
         assert!(
-            rs.required_eta_for_hvzk > 400_000.0 && rs.required_eta_for_hvzk < 600_000.0,
-            "required_eta_for_hvzk = {:.0}, expected ≈ 483,000",
+            rs.required_eta_for_hvzk > 180_000.0 && rs.required_eta_for_hvzk < 190_000.0,
+            "required_eta_for_hvzk = {:.0}, expected ≈ 185,786",
             rs.required_eta_for_hvzk
         );
     }
 
     #[test]
-    fn abort_probability_is_positive() {
+    fn abort_probability_is_zero_under_support_containment() {
         let rs = RejectionSamplingClaim::for_current_params();
-        // Since ‖cr‖_∞ = 8192 > γ = 4096, worst-case abort is certain
         assert!(
-            rs.abort_probability_estimate > 0.0,
-            "abort probability should be > 0 when ‖cr‖_∞ > γ"
-        );
-        // In fact, worst_case_cr > gamma means abort probability = 1.0
-        assert!(
-            (rs.abort_probability_estimate - 1.0).abs() < f64::EPSILON,
-            "abort probability should be 1.0 when worst-case shift exceeds γ, got {}",
-            rs.abort_probability_estimate
+            rs.abort_probability_estimate.abs() < f64::EPSILON,
+            "abort probability should be 0 when γ >= η + ‖cr‖_∞"
         );
     }
 
     #[test]
     fn params_sync_with_qssm_le() {
         let rs = RejectionSamplingClaim::for_current_params();
-        assert_eq!(rs.eta, 2048);
-        assert_eq!(rs.gamma, 4096);
+        assert_eq!(rs.eta, 196_608);
+        assert_eq!(rs.gamma, 199_680);
         assert_eq!(rs.beta, 8);
-        assert_eq!(rs.c_poly_span, 16);
-        assert_eq!(rs.c_poly_size, 64);
+        assert_eq!(rs.c_poly_span, 8);
+        assert_eq!(rs.c_poly_size, 48);
     }
 }

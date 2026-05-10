@@ -86,19 +86,18 @@ contact the QSSM project maintainers.
 
 ## Layer 3 Adapter Policy (v1.1.0+)
 
-At v1.1.0, `MsGhostMirrorOp` was added — a `LatticePolyOp` adapter that wraps
-`qssm_ms::verify` for composition with the gadget operator pipeline. This was
-relocated from `qssm-local-verifier` (Layer 4) to enforce the architectural rule that
-all `LatticePolyOp` implementations live alongside the trait definition.
+**Active MS bridge (current):** `MsPredicateOnlyV2BridgeOp` — a `LatticePolyOp`
+adapter that calls `qssm_ms::verify_predicate_only_v2` on
+`PredicateOnlyStatementV2` + `PredicateOnlyProofV2`, then exposes verifier-visible
+`ms_v2_*` observables for seam binding (`EngineABindingOp`).
 
-**Why this is allowed under the freeze:**
+**Legacy (removed from active gadget path):** an earlier cleartext bridge adapter
+(`MsGhostMirrorOp`) is fully removed; the gadget ships only the MS v2 bridge path.
 
-- No frozen invariant was modified. The 12 invariants listed above remain locked.
-- No existing transcript, algebraic relation, or domain separator was changed.
-- No existing type signature was altered. The change is purely **additive** — new
-  module, new types, new re-exports.
-- `qssm-ms` was promoted from `[dev-dependencies]` to `[dependencies]` — this adds
-  a runtime dependency but does not change any existing code path.
+**Why adapter additions remain allowed under the freeze:**
+
+- No frozen invariant was modified without audit. The invariants listed above remain the contract.
+- Adapters must not weaken transcript layout locks, domain separation, or algebraic checks without a new freeze cycle.
 
 **Rules for future adapters:**
 
@@ -108,8 +107,8 @@ may be added post-freeze under these conditions:
 1. The adapter **must not** modify any frozen invariant, transcript layout,
    domain separator, algebraic relation, or constraint count.
 2. The adapter **must not** alter any existing type signature or remove any
-   existing re-export.
-3. The adapter **must** be additive only — new module, new types, new re-exports.
+   existing re-export without semver and audit.
+3. The adapter **must** be additive or explicitly replace-only with tests proving parity.
 4. The adapter **must** include its own tests (at minimum: happy-path synthesis,
    rejection on invalid input, and public binding contract validation).
 5. Each adapter addition **must** bump the minor version (e.g. 1.1.0 → 1.2.0)
@@ -118,6 +117,7 @@ may be added post-freeze under these conditions:
 
 **Adapter changelog:**
 
-| Version | Adapter | Source |
+| Version | Adapter | Notes |
 |---------|---------|--------|
-| 1.1.0 | `MsGhostMirrorOp` | Relocated from `qssm-local-verifier/src/ms_verifier.rs`. Wraps `qssm_ms::verify` as a `LatticePolyOp`. 3 tests (synthesize, rejection, binding contract). |
+| 1.1.0 | `MsGhostMirrorOp` (removed) | Historical cleartext bridge; file removed when MS v2 bridge became the only active gadget bridge. |
+| (current) | `MsPredicateOnlyV2BridgeOp` | MS v2 predicate-only verify; feeds `ms_v2_*` seam material. |

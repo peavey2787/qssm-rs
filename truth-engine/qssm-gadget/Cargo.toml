@@ -63,6 +63,10 @@ path = "unit_tests/backend_conformance_tests.rs"
 name = "adversarial_expanded_tests"
 path = "unit_tests/adversarial_expanded_tests.rs"
 
+[[test]]
+name = "ms_v2_bridge_tests"
+path = "unit_tests/ms_v2_bridge_tests.rs"
+
 [[bench]]
 name = "gadget_benches"
 harness = false

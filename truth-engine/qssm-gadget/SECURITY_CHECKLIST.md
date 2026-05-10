@@ -35,13 +35,13 @@ Entropy Safety
 
 2. COMMITMENT & BINDING CORRECTNESS
 Commitment Binding
-[x] Commitments bind value + index + salt + context -- Seam commit includes state_root, ms_root, relation_digest, binding_context, ms_fs_v2_challenge, device_entropy_link, truth_digest, entropy_anchor.
+[x] Commitments bind value + index + salt + context -- Seam commit includes state_root, ms_v2_statement_digest, ms_v2_result_bit, ms_v2_bitness_global_challenges_digest, ms_v2_comparison_global_challenge, ms_v2_transcript_digest, device_entropy_link, binding_context, truth_digest, entropy_anchor (domains `QSSM-SEAM-MS-V2-*-v1`).
 
 [x] No bit-swapping attack possible -- Tested: engine_b_binding_tests::byte_swap_within_field_detected.
 
-[x] No index-substitution attack possible -- Tested: merkle::assert_ms_leaf_index_matches_opening + ms_merkle_roundtrip tests.
+[x] No index-substitution attack possible — tested: `merkle::assert_ms_leaf_index_matches_opening` (where used) + `ms_merkle_roundtrip` (MS v2 truth-metadata bind/validate + Merkle phase-0 bounds).
 
-[x] No missing domain separators in hash prefixes -- All hash calls use hash_domain() with unique domain strings (DOMAIN_SEAM_COMMIT_V1, DOMAIN_SEAM_OPEN_V1, DOMAIN_SEAM_BINDING_V1, DOMAIN_TRUTH_LIMB_V2, DOMAIN_MERKLE_PARENT).
+[x] No missing domain separators in hash prefixes -- All hash calls use hash_domain() with unique domain strings (`QSSM-SEAM-MS-V2-COMMIT-v1`, `QSSM-SEAM-MS-V2-OPEN-v1`, `QSSM-SEAM-MS-V2-BINDING-v1`, DOMAIN_TRUTH_LIMB_V2, DOMAIN_MERKLE_PARENT).
 
 Timing Side-Channel Safety
 [x] All digest comparisons are constant-time -- `subtle::ConstantTimeEq` (ct_eq) used for all `[u8; 32]` digest, `[u32; 16]` compression output, `Vec<u8>` metadata, `[u32; 64]` coefficient vector, `[bool; 32]` limb bit, and `u64` limb comparisons in verifier-reachable paths. Covers: EngineABindingOp (seam commitment + 8 all-zero checks), TruthWitness::validate() (metadata, digest, coeffs, limbs), CompressionWitness::validate() (output words), TruthLimbV2Stage (entropy zero-check). Added 2026-04-17.
@@ -55,12 +55,14 @@ Merkle Logic
 
 [x] Merkle path tampering is detected -- Tested: merkle_adversarial_tests (sibling swap, duplicate, leaf substitution, off-by-one, out-of-range) + proptest-driven random bit-flip in adversarial_expanded_tests.
 
-Ghost-Mirror / TruthLimb
+MS v2 bridge / TruthLimb
 [x] TruthLimb operators cannot be bypassed -- TruthLimbV2Stage is only constructible via TruthLimbV2Stage::new(params) and validates through TruthWitness::validate().
 
-[x] Ghost-Mirror commitments bind bit positions correctly -- k, bit_at_k encoded into proof_metadata and bound into truth_digest.
+[x] Truth limb binds Engine A challenge metadata correctly -- n, k, bit_at_k and challenge bytes are encoded into proof_metadata and bound into truth_digest (LE sovereign limb); this path is independent of the MS v2 seam observables.
 
 [x] No "floating bit" or "unconstrained limb" paths exist -- TruthWitness::validate() recomputes digest, coefficients, and limb bits from scratch; any mismatch returns Err.
+
+[x] Active gadget MS path is v2-only -- `MsPredicateOnlyV2BridgeOp` verifies `PredicateOnlyProofV2` via `verify_predicate_only_v2`; no legacy cleartext bridge remains in the gadget operator surface.
 
 3. SEAM / ENGINE BOUNDARY VERIFICATION
 Engine A -> Engine B Seam
@@ -70,17 +72,17 @@ Engine A -> Engine B Seam
 
 [x] All seam inputs validated:
 
-[x] ms_root -- Tested: engine_a_binding_rejects_tweaked_ms_root, engine_a_binding_rejects_all_zero_ms_root.
+[x] ms_v2_statement_digest -- Tested: engine_a_binding_rejects_tweaked_ms_root (tampers statement digest), engine_a_binding_rejects_all_zero_ms_root.
 
-[x] relation_digest -- Tested: engine_a_binding_rejects_tweaked_relation_digest.
+[x] ms_v2_result_bit -- Tested: engine_a_binding_rejects_tweaked_result_bit.
 
 [x] binding_context -- Tested: engine_a_binding_rejects_tweaked_binding_context.
 
-[x] ms_fs_v2_challenge -- Tested: engine_a_binding_rejects_tweaked_ms_fs_v2_challenge.
+[x] ms_v2_bitness_global_challenges_digest -- Tested: engine_a_binding_rejects_tweaked_ms_v2_bitness_global_challenges_digest, engine_a_binding_rejects_all_zero_ms_v2_bitness_global_challenges_digest.
 
-[x] truth_digest -- Bound into seam commitment via DOMAIN_SEAM_COMMIT_V1.
+[x] truth_digest -- Bound into seam commitment via `QSSM-SEAM-MS-V2-COMMIT-v1`.
 
-[x] entropy_anchor -- Bound into seam commitment via DOMAIN_SEAM_COMMIT_V1.
+[x] entropy_anchor -- Bound into seam commitment via `QSSM-SEAM-MS-V2-COMMIT-v1`.
 
 Tampering Tests
 [x] Tampering with any seam input causes failure -- 10+ dedicated tamper tests in engine_b_binding_tests + 200-case proptest in adversarial_expanded_tests.
@@ -132,7 +134,7 @@ Transcript Rules
 
 [x] No ambiguous transcript material -- Serialize impl on EngineAPublicJson emits keys in fixed order via serialize_map.
 
-[x] All transcript inputs domain-separated -- DOMAIN_TRUTH_LIMB_V2, DOMAIN_SEAM_COMMIT_V1, DOMAIN_SEAM_OPEN_V1, DOMAIN_SEAM_BINDING_V1, DOMAIN_MERKLE_PARENT, DOMAIN_MS.
+[x] All transcript inputs domain-separated -- DOMAIN_TRUTH_LIMB_V2, `QSSM-SEAM-MS-V2-COMMIT-v1`, `QSSM-SEAM-MS-V2-OPEN-v1`, `QSSM-SEAM-MS-V2-BINDING-v1`, DOMAIN_MERKLE_PARENT, DOMAIN_MS.
 
 [x] No cross-version transcript confusion -- TRANSCRIPT_MAP_LAYOUT_VERSION compile-time assert matches LE_FS_PUBLIC_BINDING_LAYOUT_VERSION.
 
@@ -142,7 +144,7 @@ Transcript Rules
 Entropy Guarantees
 [x] Entropy is validated before use -- EntropyInjectionOp::new() calls validate_entropy_full (density + chi-squared).
 
-[x] Entropy anchors are bound into commitments -- entropy_anchor included in seam commitment preimage (DOMAIN_SEAM_COMMIT_V1).
+[x] Entropy anchors are bound into commitments -- entropy_anchor included in seam commitment preimage (`QSSM-SEAM-MS-V2-COMMIT-v1`).
 
 [x] No entropy reuse across proofs -- Caller responsibility: The gadget is stateless by design. Nonce/entropy freshness is enforced at the orchestration layer (governor, sequencer). The gadget processes one proof at a time and retains no state between calls.
 

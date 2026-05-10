@@ -35,6 +35,13 @@ pub use circuit::binding::{
     DOMAIN_TRUTH_LIMB_V2,
 };
 
+// circuit::binding_ms_v2 (MS v2 predicate-only → LE; no v1 coordinates)
+pub use circuit::binding_ms_v2::{
+    digest_bitness_global_challenges_v2, encode_ms_v2_truth_metadata,
+    encode_ms_v2_truth_metadata_from_statement_proof, truth_digest_ms_v2, TruthWitnessMsV2,
+    DOMAIN_TRUTH_LIMB_MS_V2, MS_V2_TRUTH_METADATA_LEN,
+};
+
 // circuit::binding_contract
 pub use circuit::binding_contract::{
     BindingLabel, BindingPhase, BindingReservoir, Nomination, PublicBindingContract,
@@ -62,9 +69,9 @@ pub use circuit::operators::{
     TruthLimbV2Params, TruthLimbV2Stage,
 };
 
-// circuit::operators::ms_ghost_mirror (v1.1.0 — post-freeze adapter)
-pub use circuit::operators::ms_ghost_mirror::{
-    MsGhostMirrorInput, MsGhostMirrorOp, MsGhostMirrorOutput,
+// circuit::operators::ms_predicate_v2_bridge
+pub use circuit::operators::ms_predicate_v2_bridge::{
+    MsPredicateOnlyV2BridgeInput, MsPredicateOnlyV2BridgeOp, MsPredicateOnlyV2BridgeOutput,
 };
 
 // primitives::entropy

@@ -1,63 +1,52 @@
 # qssm-ms
 
-Internal Mirror-Shift engine crate for the QSSM truth-engine workspace.
+Internal MS implementation crate for the truth-engine workspace.
 
-This crate is frozen for institutional use, but developers still need a short
-map of what lives here and what must not move.
+## Scope
 
-## What This Crate Does
+`qssm-ms` is **v2-only**:
 
-- Builds a 128-leaf Ghost-Mirror commitment from deterministic salts and
-  binding entropy.
-- Produces succinct proofs of the public predicate `value > target`.
-- Verifies Merkle opening, Fiat-Shamir binding, and the crossing predicate.
+- commitment construction for predicate proofs (`commit_value_v2`)
+- predicate-only prove/verify (`prove_predicate_only_v2`, `verify_predicate_only_v2`)
+- simulator + programmed-oracle verification (`simulate_predicate_only_v2`, `verify_predicate_only_v2_with_programming`)
+- wire reconstruction helpers under `wire_constructors`
 
-This is not a general-purpose proving system and it is not zero-knowledge.
-Both `value` and `target` are verifier-known inputs.
+This crate is **not** the product boundary. The user-facing API boundary is `qssm-api`.
 
 ## Public Surface
 
-Primary types and functions are re-exported from [src/lib.rs](src/lib.rs):
+Re-exported from `src/lib.rs`:
 
-- `commit(seed, binding_entropy)`
-- `prove(value, target, salts, binding_entropy, context, binding_context)`
-- `verify(root, proof, binding_entropy, value, target, context, binding_context)`
-- `Root`
-- `GhostMirrorProof`
-- `Salts`
+- `ValueCommitmentV2`
+- `PredicateWitnessV2`
+- `PredicateOnlyStatementV2`
+- `PredicateOnlyProofV2`
+- `PredicateOnlySimulationV2`
+- `BitnessProofV2`
+- `ComparisonProofV2`
+- `ComparisonClauseProofV2`
+- `EqualitySubproofV2`
+- `ProgrammedOracleQueryV2`
+- `commit_value_v2`
+- `predicate_relation_holds_v2`
+- `prove_predicate_only_v2`
+- `verify_predicate_only_v2`
+- `simulate_predicate_only_v2`
+- `verify_predicate_only_v2_with_programming`
+- `wire_constructors`
 - `MsError`
 
 ## Internal Layout
 
-- [src/lib.rs](src/lib.rs): public facade and proof flow
-- [src/core.rs](src/core.rs): rotation and highest-differing-bit logic
-- [src/transcript.rs](src/transcript.rs): Fiat-Shamir challenge derivation
-- [src/commitment/leaves.rs](src/commitment/leaves.rs): salt derivation and leaf construction
-- [src/commitment/tree.rs](src/commitment/tree.rs): Merkle path verification
-- [src/error.rs](src/error.rs): stable error surface
+- `src/lib.rs` — facade
+- `src/v2/mod.rs` — v2 module wiring and exports
+- `src/v2/types.rs` — v2 data types and digest helpers
+- `src/v2/protocol.rs` — commit/prove/verify/simulate paths
+- `src/v2/internals.rs` — shared crypto/query helpers and challenge oracles
+- `src/v2/wire_constructors.rs` — wire reconstruction constructors
+- `src/v2/tests.rs` — v2 unit tests
+- `src/error.rs` — error types
 
-## Contributor Rules
+## Invariants
 
-- Do not widen the public API casually. This crate is frozen.
-- Do not change transcript layout, tree size, path length, domain separators,
-  or leaf/salt derivation without a new audit cycle.
-- Keep secret-bearing types scrubbed with `zeroize` where applicable.
-- Keep proof and root encapsulation intact. Use constructors/accessors instead
-  of exposing raw fields.
-- Keep verifier comparisons constant-time where they compare digests.
-
-## Verification
-
-Run the crate tests:
-
-```sh
-cargo test -p qssm-ms
-```
-
-Before changing behavior, review:
-
-- [FREEZE.md](FREEZE.md)
-- [SECURITY_CHECKLIST.md](SECURITY_CHECKLIST.md)
-
-If a change would alter a frozen invariant, stop and treat it as a new review
-item rather than a routine refactor.
+Do not change cryptographic semantics, domain labels, XOF framing, or wire layout without a security review.

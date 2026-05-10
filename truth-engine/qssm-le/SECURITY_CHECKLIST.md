@@ -182,9 +182,9 @@ Not Constant-Time (by design)
 
 [x] Challenge polynomial derived from BLAKE3 with domain `DOMAIN_LE_CHALLENGE_POLY` = `"QSSM-LE-CHALLENGE-POLY-v1.0"`. Counter-mode: `BLAKE3(domain ‖ seed ‖ ctr_le)` → 32 bytes → 8 coefficients per block. — Evidence: `challenge_poly()` in `commit.rs`.
 
-[x] 64 coefficients (`C_POLY_SIZE`) each in $[-16, 16]$ (`C_POLY_SPAN = 16`). $2 \times 16 + 1 = 33$ possible values per coefficient.
+[x] 48 coefficients (`C_POLY_SIZE`) each in $[-8, 8]$ (`C_POLY_SPAN = 8`). $2 \times 8 + 1 = 17$ possible values per coefficient.
 
-[x] Challenge entropy: $\log_2(33^{64}) \approx 323$ bits — far exceeds 128-bit soundness requirement.
+[x] Challenge entropy: $\log_2(17^{48}) \approx 196.2$ bits — exceeds 128-bit soundness requirement.
 
 [x] Deterministic: same seed → same challenge polynomial. Essential for Fiat-Shamir: verifier recomputes identical challenge.
 

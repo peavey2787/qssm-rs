@@ -96,7 +96,7 @@ This section replaces any notion of “take **`root % 2^{30}`**” or other **un
 
 ## Sovereign integration path (end state)
 
-1. **`qssm-gadget`** verifies Engine B where applicable (`qssm_ms::verify` / Merkle).
+1. **`qssm-gadget`** verifies Engine B (MS v2) where applicable via **`verify_predicate_only_v2`** in **`MsPredicateOnlyV2BridgeOp`**, and Merkle Phase 0 paths as documented; legacy GhostMirror cleartext verification is not part of the active gadget bridge surface.
 2. **Phase 0** enforces **leaf_index** ↔ **LE bit path** ↔ **sibling orientation** before any **`merkle_parent`** chain.
 3. **Phase 1** (**`bits.rs`**) uses **degree‑2** XOR and **ripple** witnesses **from day one**—**always** with LE decomposition.
 4. **`SovereignDigest`** (§3, §5) is computed; **30‑bit** **`m`** follows **only** from that digest.
@@ -291,7 +291,7 @@ with **no** implicit reordering. **Normative mapping:**
 1. **`n`** — **`u8`** (MS nonce),  
 2. **`k`** — **`u8`** (bit index),  
 3. **`bit_at_k`** — **`u8`**,  
-4. **`challenge`** — **`[u8; 32]`** (Fiat–Shamir bytes from **`GhostMirrorProof`**),  
+4. **`challenge`** — **`[u8; 32]`** (Fiat–Shamir / FS seed bytes bound into sovereign **`ProofMetadata`**; on cleartext MS v1 wire this equals the legacy proof challenge accessor — **separate** from the gadget **`ms_v2_*`** seam observables, which come only from MS v2 verification),  
 5. **`sovereign_entropy`** — **`[u8; 32]`** (**`BLAKE3(Kaspa‖local)`**, optionally XOR NIST pulse — see **Phase 8**),  
 6. **`nist_included`** — **`u8`** (**0** / **1**).
 
@@ -358,8 +358,8 @@ Let **`D = SovereignDigest`** be **`[u8; 32]`** (**256** bits).
 | [`crates/qssm-gadget/src/lattice_bridge.rs`](crates/qssm-gadget/src/lattice_bridge.rs) | **Phase 7**: **`BRIDGE_Q`**, **`verify_limb_binding_json`** (+ **`nist_beacon_included`** vs **`public.nist_included`**), **`verify_handshake_with_le`** (feature **`lattice-bridge`**). |
 | [`crates/qssm-gadget/src/error.rs`](crates/qssm-gadget/src/error.rs) | **`GadgetError`** variants. |
 | [`crates/qssm-gadget/examples/l2_handshake.rs`](crates/qssm-gadget/examples/l2_handshake.rs) | **Phase 6+8** demo via **`poly_ops::ProverPackageBuilder`** + **`L2MerkleSovereignPipe`** (no manual package `json!`); Phase 8 NIST up/down simulation + production **`EntropyProvider::default()`**; **`verify_limb_binding_json`**; optional **`verify_handshake_with_le`** with **`--features lattice-bridge`**. |
-| [`crates/qssm-gadget/src/circuit/poly_ops.rs`](crates/qssm-gadget/src/circuit/poly_ops.rs) | **Poly‑Ops:** context/degree rails, reservoir, transcript map, builder, generic **`OpPipe<A,B>`** (one **`ConstraintSystem`** + cumulative **`PolyOpContext`**), **`LatticePolyOp::synthesize_with_context(input, cs, ctx)`**, lazy **`public_binding_requirements_for_input`**, **`PublicBindingContract::merge`**, **`EntropyInjectionOp`**, optional **`MsGhostMirrorOp`** (feature **`ms-engine-b`**), **`EngineABindingOp`** stub seam. |
-| [`crates/qssm-gadget/tests/`](crates/qssm-gadget/tests/) | MS + digest golden + **`full_merkle_parent_parity`** + **`l2_polyops_package`** (golden **`engine_a_public`** vs direct bind); **`ms_ghost_mirror_polyop`** with **`--features ms-engine-b`**. |
+| [`crates/qssm-gadget/src/circuit/poly_ops.rs`](crates/qssm-gadget/src/circuit/poly_ops.rs) | **Poly‑Ops (historical layout):** context/degree rails, reservoir, transcript map, builder, **`OpPipe<A,B>`**, **`LatticePolyOp`**, **`EntropyInjectionOp`**, **`EngineABindingOp`**. **Current tree:** operators live under `src/circuit/operators/`; active MS bridge is **`MsPredicateOnlyV2BridgeOp`** (MS v2), not **`MsGhostMirrorOp`**. |
+| [`crates/qssm-gadget/tests/`](crates/qssm-gadget/tests/) | MS + digest golden + **`full_merkle_parent_parity`** + **`l2_polyops_package`** (golden **`engine_a_public`** vs direct bind). **Legacy** `ms_ghost_mirror_polyop` / **`ms-engine-b`** narrative is **obsolete** — see **`unit_tests/ms_v2_bridge_tests.rs`** for active-surface guards. |
 
 ---
 
@@ -395,7 +395,7 @@ Let **`D = SovereignDigest`** be **`[u8; 32]`** (**256** bits).
 | **`L2MerkleSovereignPipe`** | Type alias **`OpPipe<MerkleParentBlake3Op, SovereignLimbV2Stage>`**; typed **`StateRoot32`** handoff; build via **`l2_merkle_sovereign_pipe`** or **`MerkleParentBlake3Op::pipe_sovereign`**. |
 | **`SovereignLimbV2Params::device_entropy_link`** | Optional **32**‑byte digest (e.g. BLAKE3 of device raw bytes). Normative mix into the sovereign floor: **`effective_entropy = sovereign_entropy XOR link`** (via **`effective_sovereign_entropy`**) **before** **`SovereignWitness::bind`** so the value in **`ProofMetadata_v2`** matches digest binding. |
 | **`qssm_utils::validate_entropy_distribution`** | Byte histogram χ² vs uniform (**df = 255**), critical ≈ **340** (**p ≈ 0.001**), plus minimum **distinct** byte count; sub‑256‑byte buffers **skip** (no false reject). Wired as **`PolyOpError::WeakEntropy`** from **`EntropyInjectionOp`** when enabled; optional **`L2BuildOptions::reject_weak_entropy_sample`**. |
-| **`ms-engine-b` + `MsGhostMirrorOp`** | Wraps **`qssm_ms::verify`**; **`public_binding_requirements_for_input`** nominates **`ms_fs_v2_challenge`**. **`qssm_ms::verify`** remains **public‑input**; cleartext MS is **not** a ZK privacy claim — see **`EngineABindingOp`** for the planned LE‑only public surface. |
+| **`MsPredicateOnlyV2BridgeOp` + `EngineABindingOp`** | Bridge calls **`verify_predicate_only_v2`**; seam hashes use **`ms_v2_*`** observables and domains **`QSSM-SEAM-MS-V2-COMMIT-v1`** / **`OPEN`** / **`BINDING`**. Legacy GhostMirror cleartext verification is not part of the current workspace operator path. |
 | **Black‑box + golden tests** | [`crates/qssm-gadget/tests/l2_polyops_package.rs`](../../crates/qssm-gadget/tests/l2_polyops_package.rs) (large stack thread); compares **`engine_a_public`** to direct **`SovereignWitness::bind`** (same floor bytes when **`device_entropy_link`** is **`None`**). |
 
 **`l2_handshake` example:** uses only **`ProverPackageBuilder`** + pipe (no hand-built package JSON).

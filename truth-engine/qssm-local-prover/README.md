@@ -2,17 +2,23 @@
 
 Internal deterministic proving crate for the QSSM workspace.
 
-This crate is frozen and security-reviewed, but it is not the public SDK entry
-point. Application code should treat it as an internal proving component that
-works alongside `qssm-api` types.
+This crate is frozen and security-reviewed, but it is not a user-facing API.
+`qssm-api` is the only user-facing API boundary.
 
 ## What This Crate Does
 
-- Runs the prove pipeline: predicate check -> MS commit/prove -> truth binding
-  -> LE proof
+- Runs the internal prove pipeline for the canonical MS v2 predicate-only path
+  and LE proof composition
 - Derives all internal secrets deterministically from `entropy_seed` and
   `binding_ctx`
-- Returns `qssm_api::Proof` for downstream wire-format or verification use
+- Produces internal proof artifacts consumed by workspace crates
+
+## Boundary and Canonical Protocol Notes
+
+- `qssm-local-prover` is an internal implementation crate.
+- `qssm-api` is the only public boundary for applications.
+- MS v2 predicate-only is the canonical active MS path.
+- Legacy GhostMirror/v1 is removed from active code.
 
 ## Contributor Rules
 
