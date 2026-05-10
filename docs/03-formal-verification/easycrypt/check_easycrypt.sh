@@ -159,6 +159,7 @@ FILES=(
   le/LEFsConcreteReduction.ec
   le/LEConcreteReduction.ec
   ms/MS1ConcreteReduction.ec
+  ms/MS2ConcreteReduction.ec
   ms/MSConcreteReduction.ec
   games/Games.ec
   theorem/MainTheorem.ec
