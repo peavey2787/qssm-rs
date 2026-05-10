@@ -1,209 +1,78 @@
-# EasyCrypt Formalization
+# QSSM Formal Verification Summary
 
-This directory contains the EasyCrypt proof development for the QSSM theorem stack. It includes the theorem-facing MS, LE, simulator, game, and main-theorem layers, together with the lower proof surfaces used to stage constructive refinements before they are routed into the stable theorem path.
+QSSM is an EasyCrypt formalization of the QSSM theorem stack, covering the exact-zero abstraction route, the semantic-budget companion route, the frozen parameterized route, and a concrete real-world `lambda = 128` companion route with explicit external reduction obligations. This page is the release-facing entrypoint for experienced formal methods engineers and cryptographers; the detailed architecture, proof history, and route-by-route notes now live under [formal/README.md](formal/README.md).
 
-Current status: the tree checks cleanly with `./check_easycrypt.sh`; the current checker snapshot is `OK` over 149 checked theories; `axiom_count=0`; `admit_count=0`; the exact-zero route is unchanged; the live demo semantic route still closes at `qssm_main_theorem_semantic_budget = 3%r / 4%r`; the head tree carries `qssm_main_theorem_realworld_budget` as an axiom-free abstract real-world upper-bound companion; and it now also carries `RealWorldBudgetInstantiation.ec` with the original concrete theorem pair `qssm_main_theorem_realworld_concrete_128` and `qssm_main_theorem_realworld_concrete_128_5_over_2_98`, together with additive reduction-facing siblings ending at `qssm_main_theorem_realworld_concrete_128_with_all_reductions` and `qssm_main_theorem_realworld_concrete_128_with_all_reductions_5_over_2_98`. The concrete arithmetic is still component epsilon `1 / 2^98` and top epsilon `5 / 2^98`; the duplicate MS2 charge remains explicit; public AfterRom remains budget-close to canonical AfterRom, not zero-equal; the newest sibling route takes four explicit reduction-facing obligations rather than the frozen toy component actuals; and weighted or non-uniform samplers are still not modeled internally. This remains a machine-checked statement about the current abstraction boundary, not yet a production-count cryptographic security estimate for the deployed system.
+## Formal Verification Status
 
-Freeze checkpoint, May 2026: theorem-route implementation now closes on four public lanes plus one internal staged MS lane.
+- `149` EasyCrypt theories checked
+- `0` axioms
+- `0` admits
+- worktree clean at the current freeze checkpoint
+- fully reproducible via [check_easycrypt.sh](check_easycrypt.sh)
 
-- The canonical/demo theorem route remains the public baseline in `theorem/MainTheorem.ec`; `BudgetParameters.ec` stays unchanged, `qssm_main_theorem` stays exact-zero, and the live semantic demo route stays `qssm_main_theorem_semantic_budget` at `3%r / 4%r`.
-- The LE-only parameterized route remains checker-green through `GameLEBridgeParameterized.ec` and `theorem/MainTheoremParameterized.ec`, where `qssm_main_theorem_le_parameterized_budget` keeps the canonical/demo MS contribution unchanged and parameterizes only the LE side.
-- The parameterized LE route now carries live rejection and live FS companions below the theorem-facing wrappers: `LERejectionSamplerParameterizedCore.ec` owns the parameterized rejection branch/marginal core, `LERejectionSamplerMassLiveParameterized.ec` owns the live parameterized rejection mass and `sdist` facts, `LEFsProgrammingLiveParameterizedCore.ec` owns the live parameterized FS branch/midpoint core, `LEFsProgrammingLiveParameterizedMass.ec` owns the live parameterized FS bad-branch mass and `sdist` facts, `LEFsProgrammingParameterizedView.ec` and `LEFsProgrammingParameterized.ec` retarget the theorem-facing FS bridge to that lane, and `LEStatisticalDistanceParameterized.ec` now composes over both live LE midpoints. The active parameterized rejection profile is `soft=1`, `hard=1`, `invalid=1`, `accept=61`, `failure=3`, `total=64`, so `epsilon_le_rej_parameterized = 3%r / 64%r`; the active parameterized FS profile is `query_collision=1`, `programming_collision=1`, `transcript=1`, `clean=61`, `failure=3`, `total=64`, so `epsilon_le_fs_parameterized = 3%r / 64%r`; therefore `epsilon_le_parameterized = 6%r / 64%r = 3%r / 32%r`. Those two LE tuning steps changed only owner counts, did not change any theorem surface, and did not require local proof repairs. The demo semantic route and exact-zero route remain unchanged.
-- The parameterized MS1 route is now fully live below the theorem-facing wrappers: `SourceHashBindingSemanticLiveParameterizedCore.ec` owns the live coupled-state/public-observable core, `SourceHashBindingSemanticLiveParameterizedMass.ec` owns live canonical failure and public-divergence upper mass closure, and `SourceHashBindingSemanticBridgeParameterized.ec`, `MSProbabilitySurfaceParameterized.ec`, `GameAdvantageParameterized.ec`, `GameMSHopTypesParameterized.ec`, and `GameMSHopCompositionParameterized.ec` now carry that live route. The active MS1 profile is `collision=1`, `malformed_binding=1`, `transcript=1`, `clean=61`, `failure=3`, `total=64`, so `epsilon_ms_hash_binding_parameterized = 3%r / 64%r`; the staged public-divergence upper lane is `2%r / 64%r = 1%r / 32%r`, and the staged/public-endpoint MS1 lane is no longer demo-bound.
-- The parameterized MS2 route is now fully live below the theorem-facing wrappers: `ComparisonPayloadSemanticLiveParameterizedCore.ec` owns the live MS2 category/coupled-state/public-AfterRom core, `ComparisonPayloadSemanticLiveParameterizedMass.ec` owns the live MS2 execution-owned failure mass and public-divergence/failure closure, `ComparisonPayloadSemanticBridgeParameterized.ec` delegates the theorem-facing MS2 bridge to that lane, and `MSProbabilitySurfaceParameterized.ec`, `GameAdvantageParameterized.ec`, `GameMSHopTypesParameterized.ec`, and `GameMSHopCompositionParameterized.ec` now route both the staged MS2 public-endpoint transition and the budgeted public-to-canonical landing through that live lane. The active MS2 profile is `global_digest=1`, `query_digest=1`, `transcript=1`, `clean=61`, `failure=3`, `total=64`, so `epsilon_ms_rom_programmability_parameterized = 3%r / 64%r`.
-- The full canonical parameterized route is now checker-green through `MSProbabilitySurfaceParameterized.ec`, `GameAdvantageParameterized.ec`, `GameMSHopTypesParameterized.ec`, `GameMSHopCompositionParameterized.ec`, and `theorem/MainTheoremParameterized.ec`, where `qssm_main_theorem_parameterized_budget` closes with the explicit top budget `epsilon_ms_hash_binding_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_le_parameterized`.
-- Under the active live profiles, that explicit top budget now evaluates to `3%r / 64%r + 3%r / 64%r + 3%r / 64%r + 6%r / 64%r = 15%r / 64%r`. The duplicated MS2 charge remains explicit and is not a formatting artifact.
-- The staged/public-endpoint MS lane remains part of the proof story as an internal route, but it no longer stops below the theorem surface: the public AfterRom endpoint lands in the canonical route through a charged bridge rather than a zero-cost identification.
+## Top-Level Theorems
 
-The semantic distinction remains explicit. Public AfterRom is still only budget-close to canonical AfterRom, not zero-equal, and there is still no zero-cost `public AfterRom -> canonical AfterRom` landing theorem on the lower MS surface. What now exists instead is a budgeted landing theorem, so the full canonical parameterized route closes honestly with an explicit extra MS2/ROM charge.
+- [theorem/MainTheorem.ec](theorem/MainTheorem.ec): `qssm_main_theorem` for the exact-zero abstraction route
+- [theorem/MainTheorem.ec](theorem/MainTheorem.ec): `qssm_main_theorem_semantic_budget` for the semantic-budget companion route
+- [theorem/MainTheoremParameterized.ec](theorem/MainTheoremParameterized.ec): `qssm_main_theorem_parameterized_budget = 15%r / 64%r`
+- [RealWorldBudgetInstantiation.ec](RealWorldBudgetInstantiation.ec): `qssm_main_theorem_realworld_concrete_128_with_all_reductions`
+- [RealWorldBudgetInstantiation.ec](RealWorldBudgetInstantiation.ec): `qssm_main_theorem_realworld_concrete_128_with_all_reductions_5_over_2_98`
 
-The main live refinement track is the LE shadow lane. Rejection and FS theorem-facing component bounds already route through lower shadow surfaces, and the branch-sensitive FS shadow post constructor is now landed and checker-validated on the current exact-zero model. The lower FS surface now splits into two internal lanes. The exported projected-post lane still proves the theorem-facing bridge theorems consumed by `LEFsProgramming.ec`, keeps the active FS endpoint unchanged, and still closes with `epsilon_le_fs = 0%r`. Beside it, `LEFsProgrammingSurface.ec` now carries a shadow-local semantic branch experiment with a genuine two-branch good/bad sampler, semantic post marginal, and local bad-branch mass that closes in owned form to `epsilon_le_fs_semantic = le_fs_failure_slot_count%r / le_fs_total_slot_count%r = 3%r / 16%r`. The rejection shadow lane now likewise splits into two checked modes: the exact-zero theorem-facing quantity `LERejectionSampler.le_rejection_shadow_failure_probability` still closes to `0%r`, while the semantic rejection quantity `LERejectionSampler.le_rejection_shadow_semantic_failure_probability` closes to the owned budget `epsilon_le_rej_semantic = le_rejection_semantic_ticket_failure_probability = le_rej_failure_slot_count%r / le_rej_total_slot_count%r = 3%r / 16%r`. `BudgetParameters.ec` owns both primitive semantic LE laws and now also a parallel primitive MS ROM semantic skeleton: rejection uses the category support `soft_repair`, `hard_repair`, `invalid`, `accept`, failure predicate “non-accept”, and the named count constants `le_rej_soft_repair_slot_count`, `le_rej_hard_repair_slot_count`, `le_rej_invalid_slot_count`, `le_rej_accept_slot_count`, `le_rej_failure_slot_count`, and `le_rej_total_slot_count`; FS uses the category support `clean`, `query_collision`, `programming_collision`, `transcript_mismatch`, failure predicate “non-clean”, and the named count constants `le_fs_clean_slot_count`, `le_fs_query_collision_slot_count`, `le_fs_programming_collision_slot_count`, `le_fs_transcript_mismatch_slot_count`, `le_fs_failure_slot_count`, and `le_fs_total_slot_count`; MS ROM now mirrors that category shape with `ms_rom_semantic_category_support`, `ms_rom_semantic_category_is_failure`, the named counts `ms_rom_clean_slot_count`, `ms_rom_query_collision_slot_count`, `ms_rom_programming_collision_slot_count`, `ms_rom_transcript_mismatch_slot_count`, `ms_rom_failure_slot_count`, and `ms_rom_total_slot_count`, and the parallel owner term `epsilon_ms_rom_programmability_semantic = ms_rom_failure_slot_count%r / ms_rom_total_slot_count%r = 3%r / 16%r`. `primitives/FS.ec` now re-exports that semantic MS ROM owner as `epsilon_ms_rom_programmability_semantic` together with the nonnegativity lemma `A2_ms_rom_programmability_semantic_nonneg`, and the lower/game MS2 route now also carries the semantic sibling chain `A_MS2_rom_programming_semantic_transition_bound`, `A_MS2_rom_programming_semantic_game_pr_core_bound`, `A_MS2_rom_programming_semantic_concrete_pair_advantage_bound`, `A_MS2_canonical_rom_programming_semantic_bound`, `A_MS2_rom_programming_semantic_transition`, and `A_G0_to_G1_ms_semantic_transition_bound`, each closing against `epsilon_ms_rom_programmability_semantic`. The current rejection demo instance is `soft_repair=1`, `hard_repair=1`, `invalid=1`, and `accept=13`, so `le_rej_failure_slot_count = 3` and `le_rej_total_slot_count = 16`; the compatibility aliases `le_rejection_semantic_reject_slot_count` and `le_rejection_semantic_total_slot_count` remain preserved for the downstream rejection bridge surface. The current FS demo instance is `clean=13`, `query_collision=1`, `programming_collision=1`, and `transcript_mismatch=1`, so `le_fs_failure_slot_count = 3` and `le_fs_total_slot_count = 16`; the compatibility aliases `bad_slot_count` and `total_slot_count` remain preserved for the downstream bridge surface. The current MS ROM semantic demo instance is `clean=13`, `query_collision=1`, `programming_collision=1`, and `transcript_mismatch=1`, so `ms_rom_failure_slot_count = 3` and `ms_rom_total_slot_count = 16`, and `theorem/MainTheorem.ec` now routes the semantic theorem variants through `A_G0_to_G1_ms_semantic_transition_bound`, so the semantic top-level path adds `epsilon_ms_rom_programmability_semantic` while the exact-zero `qssm_main_theorem_skeleton` / `qssm_main_theorem` route still consumes `epsilon_ms_rom_programmability = 0%r`. `LERealExecution.ec` only interprets the primitive rejection categories into the existing reject/repair surface, `LERejectionSampler.ec` exports `d_le_semantic_post_rejection_view`, and `LEFsProgrammingSurface.ec` feeds that semantic post-rejection view into `d_le_pre_fs_semantic_programming_view` and `d_le_post_fs_semantic_programmed_view`, now interpreting the primitive FS categories on a category-coupled shadow state. The exact lower names are `d_le_fs_shadow_category_choice`, `le_fs_shadow_state_of_category_observable`, `le_fs_shadow_clean_condition`, `le_fs_shadow_query_collision_condition`, `le_fs_shadow_programming_collision_condition`, `le_fs_shadow_transcript_mismatch_condition`, and the witness lemmas `le_fs_shadow_clean_condition_clean_categoryE`, `le_fs_shadow_query_collision_condition_query_collision_categoryE`, `le_fs_shadow_programming_collision_condition_programming_collision_categoryE`, and `le_fs_shadow_transcript_mismatch_condition_transcript_mismatch_categoryE`. `le/LERejectionSamplerCore.ec` owns core definitions/helpers, `le/LERejectionSamplerSemanticMarginals.ec` owns semantic marginal/image helpers, `le/LERejectionSamplerMass.ec` owns semantic failure-probability / mass-budget closure, and `le/LERejectionSamplerSemanticFacts.ec` owns semantic event/category/support facts, while `le/LERejectionSampler.ec` remains the public facade. `le/LEFsProgrammingHiddenState.ec` owns hidden-state reconstruction/update/projection and the lower FS programming proofs, while `le/LEFsProgrammingSurface.ec` remains the stable lower FS public surface. On the lower rejection lane, `LERealExecution.ec` gives the semantic ticket categories their execution-owned interpretation while `LERejectionSampler.ec` preserves the exact bridge to `epsilon_le_rej_semantic`; on the lower FS lane, `clean` is the no-failure branch whose semantic post observable collapses to the theorem-facing programmed view, `query_collision` witnesses bad-branch query-row alignment, `programming_collision` witnesses bad-branch programmed-response digest/log alignment, and `transcript_mismatch` witnesses bad-branch visible-shell agreement with a cleared semantic bad flag. The preserved compatibility views still export the derived boolean bad-branch images, so the theorem-facing wrappers remain unchanged. Both semantic LE subterms are still intentionally loose demo/surrogate laws at the mass level in `BudgetParameters.ec`, even though the rejection and FS categories now have execution-owned meanings below the theorem surface. The semantic umbrella LE budget therefore currently evaluates to `epsilon_le_semantic = epsilon_le_rej_semantic + epsilon_le_fs_semantic = 3%r / 8%r`, and that value should not be read as a final cryptographic reduction. The MS semantic owners are likewise primitive surrogate laws today: the retargeted live semantic MainTheorem path now closes at `epsilon_ms_hash_binding_semantic + epsilon_ms_rom_programmability_semantic + epsilon_le_semantic = 3%r / 16%r + 3%r / 16%r + 3%r / 8%r = 3%r / 4%r`, `ms/MSProbabilitySurface.ec` now also defines the semantic AfterRom endpoint `d_ms_after_rom_semantic_observable_v2` from `d_ms_rom_semantic_coupled_state` through the bridge projection `ms_rom_semantic_after_rom_observable_of_state`, proves the non-identity local lemma `L_ms2_rom_programming_transition_le_execution_owned_semantic_failure`, and still closes `A_MS2_rom_programming_semantic_transition_bound` against the strengthened execution-owned divergence bridge `A_MS2_rom_programming_execution_owned_semantic_bound` while the exact-zero `A_MS2_rom_programming_transition_bound` stays unchanged. `games/GameMSHopComposition.ec : A_G0_to_G1_ms_semantic_transition_bound` plus the semantic `theorem/MainTheorem.ec` route therefore continue to consume the full-MS semantic path without any routing change. `LERejectionSampler.ec` proves the semantic rejection lane closes to its owned budget, `LEFsProgrammingSurface.ec` proves the local FS bad-branch mass equals the owned FS budget, `GameLEBridge.ec` bridges the semantic projected-simulation advantage over that execution-owned rejection-to-FS chain, and the theorem-facing semantic chain closes both at the local-mass level and at the owned component-sum / umbrella levels. The public theorem surface is now normalized: cite `qssm_main_theorem` for the exact-zero abstraction theorem, and cite `qssm_main_theorem_semantic_budget` for the semantic-budget theorem. `qssm_main_theorem_nonzero_budget` is a façade alias to the same semantic umbrella theorem, while `qssm_main_theorem_semantic_budget_local_mass`, `qssm_main_theorem_semantic_budget_owned`, and `qssm_main_theorem_semantic_budget_umbrella` are retained as comparison or compatibility lemmas. The theorem-surface corollary phase is complete: `theorem/MainTheorem.ec` already owns the public corollary surface through `qssm_main_theorem`, `qssm_main_theorem_semantic_budget`, `qssm_main_theorem_semantic_budget_umbrella`, and `qssm_main_theorem_nonzero_budget`, so no separate `Corollaries.ec` file is needed. `A_G1_to_G2_le_transition_bound` and `qssm_main_theorem_skeleton` remain unchanged, so the exact-zero model stays live beside the semantic budget path.
+## Formal Verification Summary
 
-`BudgetParameters.ec` now also carries a parallel semantic MS1 hash-binding owner skeleton beside the live theorem route. Its category support is `clean`, `collision`, `malformed_binding`, and `transcript_mismatch`; the current demo counts are `13,1,1,1`, so `ms_hash_binding_failure_slot_count = 3`, `ms_hash_binding_total_slot_count = 16`, and `epsilon_ms_hash_binding_semantic = 3%r / 16%r`. `primitives/FS.ec` re-exports that owner, `ms/MS.ec` now adds the staged MS-side alias/nonneg surface, `ms/source/SourceHashBindingSemanticSlotMass.ec` owns the local slot/mass law for that semantic MS1 owner, and `ms/source/SourceHashBindingSemanticBridge.ec` consumes that owner to give the term a source-local execution-owned bridge with the staged sibling chain `A_MS1_hash_binding_semantic_bad_event_bound`, `A_MS1_hash_binding_semantic_game_pr_core_bound`, `A_MS1_hash_binding_semantic_concrete_pair_advantage_bound`, `A_MS1_canonical_hash_binding_semantic_bound`, `A_MS1_hash_binding_semantic_transition`, and `A_G0_to_G1_ms_hash_binding_semantic_transition_bound`. The staged sibling remains present, and the live semantic theorem route now also consumes semantic MS1: `games/GameMSHopComposition.ec : A_G0_to_G1_ms_semantic_transition_bound` and the semantic variants in `theorem/MainTheorem.ec` now consume `epsilon_ms_hash_binding_semantic`, so the current semantic top formula is `epsilon_ms_hash_binding_semantic + epsilon_ms_rom_programmability_semantic + epsilon_le_semantic = 3%r / 4%r`. The exact-zero `qssm_main_theorem_skeleton` / `qssm_main_theorem` route still consumes `epsilon_ms_hash_binding = 0%r`.
+- [formal/README.md](formal/README.md): formal verification overview
+- [formal/RELEASE_VERIFICATION.md](formal/RELEASE_VERIFICATION.md): release verification
+- [formal/SECURITY_INSTANTIATION.md](formal/SECURITY_INSTANTIATION.md): security instantiation
+- [../../../CONCRETE_128_REDUCTION_FREEZE.md](../../../CONCRETE_128_REDUCTION_FREEZE.md): stable, audit-ready release boundary for the concrete all-reductions checkpoint
 
-The MS ROM gap is now narrower than before. `ms/comparison/ComparisonPayloadExecutionSeedTypes.ec` owns the execution-seed package/types/laws, `ms/comparison/ComparisonPayloadExecutionLaw.ec` owns the execution payload law transport, and `ms/comparison/ComparisonPayloadFromSeed.ec` remains the stable payload/schedule facade. `ms/comparison/ComparisonPayloadSemanticSlotMass.ec` owns the local slot/mass law for the semantic MS2 ROM owner, and `ms/comparison/ComparisonPayloadSemanticBridge.ec` consumes that owner to give the semantic owner a comparison-local execution-owned bridge surface: it defines `ms_rom_semantic_state_of_category_execution_seed`, the category predicates `ms_rom_clean_condition`, `ms_rom_query_collision_condition`, `ms_rom_programming_collision_condition`, `ms_rom_transcript_mismatch_condition`, the semantic AfterRom projection `ms_rom_semantic_after_rom_observable_of_state`, and the lower bound `A_MS2_rom_programming_execution_owned_semantic_bound`. That bridge is checker-green, included in `./check_easycrypt.sh`, and is now consumed locally by `ms/MSProbabilitySurface.ec` both through the semantic endpoint `d_ms_after_rom_semantic_observable_v2` and through the semantic lower bound `L_ms2_rom_programming_transition_le_execution_owned_semantic_failure`, while the exact-zero MS2 stage route remains unchanged. Since then, `games/GameMSHopComposition.ec : A_G0_to_G1_ms_semantic_transition_bound` and the semantic `theorem/MainTheorem.ec` route have been retargeted to the full-MS semantic composition, while the exact-zero route remains unchanged.
-
-## What This Directory Covers
-
-- EasyCrypt theories under `primitives/`, `ms/`, `le/`, `sim/`, `games/`, and `theorem/`
-- The checked QSSM theorem skeleton and its lower proof surfaces
-- Architecture, status, and proof-history documentation for the current May 2026 state
-- No direct Rust implementation changes; this tree is the formal model and proof development
-
-## Verification Boundary
-
-- The current proof closes on a concrete exact-zero model, not yet on a nonzero cryptographic reduction.
-- There is no machine-checked refinement link from these EasyCrypt theories to the Rust implementation today.
-- Correctness of the EasyCrypt checker, the imported foundations, and the human model-to-implementation correspondence remain external trust boundaries.
-- The exact meaning of the current `0 axioms` and `0%r` budget state is documented in [formal/PROOF_STATUS.md](formal/PROOF_STATUS.md) and [formal/ASSUMPTIONS.md](formal/ASSUMPTIONS.md).
-
-## Install EasyCrypt
-
-If `easycrypt` is not already in `PATH`, install it with OPAM using the upstream instructions:
-
-- [EasyCrypt INSTALL.md](https://github.com/EasyCrypt/easycrypt/blob/main/INSTALL.md)
-- [Setting up EasyCrypt](https://easycrypt.gitlab.io/easycrypt-web/docs/guides/setting-up-easycrypt/)
-
-If your installation exposes the binary as `ec` instead of `easycrypt`, the local checker script falls back automatically.
-
-The repo-local import allowlist is in [../easycrypt-import-allowlist.md](../easycrypt-import-allowlist.md).
-
-## How to Run the Checker
-
-From this directory:
+## Reproducibility
 
 ```bash
-chmod +x check_easycrypt.sh   # once, if needed
+cd docs/03-formal-verification/easycrypt
 ./check_easycrypt.sh
 ```
 
-Or with an explicit binary path:
+The checker runs the EasyCrypt files in dependency order and reproduces the current `149`-theory, `0`-axiom, `0`-admit baseline.
 
-```bash
-EASYCRYPT=/path/to/easycrypt ./check_easycrypt.sh
-```
+## Concrete `lambda = 128` Theorem Summary
 
-The script type-checks theories in dependency order with `easycrypt compile -R . <path>`, so imports resolve by basename. The compile-order authority is [check_easycrypt.sh](check_easycrypt.sh); if any prose summary disagrees with the script, follow the script.
+The concrete all-reductions theorem route closes in [RealWorldBudgetInstantiation.ec](RealWorldBudgetInstantiation.ec) with component epsilon `1 / 2^98`, top epsilon `5 / 2^98`, and effective security of approximately `95.67807190511263` bits. It is reduction-facing on LE rejection, LE FS, MS1, and MS2; the duplicate MS2 charge remains explicit; and public AfterRom remains budget-close to canonical AfterRom rather than zero-equal. Full theorem-route details and caveats live in [formal/SECURITY_INSTANTIATION.md](formal/SECURITY_INSTANTIATION.md) and [formal/FORMAL_THEOREM_MAP.md](formal/FORMAL_THEOREM_MAP.md).
 
-To inspect the current load order directly:
+Reduction-facing premises:
 
-```bash
-sed -n '/^FILES=(/,/^)/p' check_easycrypt.sh
-```
+- LE rejection reduction obligation
+- LE FS reduction obligation
+- MS1 reduction obligation
+- MS2 reduction obligation
 
-Single-file top-of-stack check:
+## Verification Boundary
 
-```bash
-easycrypt compile -R . theorem/MainTheorem.ec
-```
+- protocol-level EasyCrypt model fully verified at the current checkpoint
+- weighted or non-uniform sampler internals are not modeled
+- external reductions remain explicit external obligations
+- no machine-checked refinement link to the Rust implementation exists today
 
-## Architecture Summary
-
-High-level dependency flow:
+## Directory Map
 
 ```text
-primitives/
-  -> ms/ foundations, source, true-clause, comparison, wrapper
-  -> le/ real-execution, rejection, FS, HVZK
-ms/ + le/ -> sim/
-ms/ + le/ + sim/ -> games/
-games/ -> theorem/MainTheorem.ec
+easycrypt/
+├── check_easycrypt.sh
+├── primitives/
+├── ms/
+├── le/
+├── sim/
+├── games/
+├── theorem/
+├── RealWorldBudgetInstantiation.ec
+├── formal/
+└── plans/
 ```
 
-Operationally:
+## Pointers to Deep Docs
 
-- `primitives/` owns shared domains, types, algebra, Fiat-Shamir surface, and budget parameters.
-- `ms/` carries the MS proof stack, including the split MS-3a, MS-3b, and MS-3c surfaces.
-- `le/` carries the LE real-execution, rejection, FS-programming, and HVZK stack.
-- `sim/Simulator.ec` bridges the MS public surface into the LE-facing real view.
-- `games/` packages the game views, advantage arithmetic, MS hops, and LE bridge.
-- `theorem/MainTheorem.ec` is the top-level additive theorem layer.
-
-Stable theorem-facing facades include:
-
-- `ms/TrueClause.ec`
-- `ms/Comparison.ec`
-- `ms/SourceModel.ec`
-- `ms/MS.ec`
-- `le/LEModel.ec`
-- `games/Games.ec`
-- `theorem/MainTheorem.ec`
-
-Split-heavy subtree guides live in:
-
-- [ms/source/README.md](ms/source/README.md)
-- [ms/comparison/README.md](ms/comparison/README.md)
-- [games/README.md](games/README.md)
-
-The deeper architecture and file-map material moved to [formal/ARCHITECTURE.md](formal/ARCHITECTURE.md).
-
-## Documentation Map
-
-- [formal/PROOF_STATUS.md](formal/PROOF_STATUS.md): current theorem status, checker state, and the exact meaning of the `0 axioms` claim
-- [formal/ASSUMPTIONS.md](formal/ASSUMPTIONS.md): current model boundary, budget semantics, and what remains intentionally exact-zero
-- [formal/ARCHITECTURE.md](formal/ARCHITECTURE.md): module breakdown, dependency flow, directory structure
-- [formal/FORMAL_THEOREM_MAP.md](formal/FORMAL_THEOREM_MAP.md): canonical external map from owner layers to the public theorem surface
-- [formal/PARAMETERIZED_ROUTE_STATUS.md](formal/PARAMETERIZED_ROUTE_STATUS.md): status table for the parameterized lanes, including what is complete and what remains intentionally unstated
-- [formal/PROOF_DEPENDENCY_GRAPH.md](formal/PROOF_DEPENDENCY_GRAPH.md): route-by-route dependency graphs for MS, LE, and parameterized companions
-- [formal/PARAMETER_PROFILES.md](formal/PARAMETER_PROFILES.md): active live parameter profiles, supported profile geometry, and future profile-generalization constraints
-- [formal/PARAMETER_TUNING_ROADMAP.md](formal/PARAMETER_TUNING_ROADMAP.md): frozen release baseline plus the next safe one-component-at-a-time parameter-tuning process
-- [formal/DE_ALIASING_PLAN.md](formal/DE_ALIASING_PLAN.md): completion status for the current de-aliasing/live replay campaign and the remaining profile-generalization backlog
-- [formal/RELEASE_VERIFICATION.md](formal/RELEASE_VERIFICATION.md): reproducibility steps, expected checker output, and `.eco` cleanup procedure for release validation
-- [formal/SEMANTIC_GAP_ANALYSIS.md](formal/SEMANTIC_GAP_ANALYSIS.md): explanation of the public AfterRom versus canonical AfterRom semantic distinction and the budgeted bridge that now closes the parameterized route
-- [formal/SECURITY_INSTANTIATION.md](formal/SECURITY_INSTANTIATION.md): status and blocker map for the concrete `lambda/q/n/r` external-bound theorem surface, including the proved `1 / 2^98` component budget, the proved `5 / 2^98` top bound, the fully reduction-facing all-reductions sibling route, and the remaining split between external reduction obligations and internal weighted-sampler proofs
-- [formal/PROOF_HISTORY.md](formal/PROOF_HISTORY.md): preserved May 2026 audit log, closure notes, and long-form research history moved out of this entrypoint
-
-Release externalization docs are intentionally documentation-only. They do not add new theorem claims, do not weaken the staged/public-endpoint caveat, and do not change the frozen theorem surface.
-
-The formal-doc release baseline remains:
-
-- exact-zero route unchanged
-- live demo semantic route unchanged at `3%r / 4%r`
-- `qssm_main_theorem_le_parameterized_budget` closed as the LE-only intermediate parameterized theorem
-- `qssm_main_theorem_parameterized_budget` closed as the full canonical parameterized theorem
-- `qssm_main_theorem_realworld_budget` closed as the abstract real-world upper-bound theorem over explicit obligation hypotheses
-- the canonical parameterized top budget is `epsilon_ms_hash_binding_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_le_parameterized`
-- the active closed-form canonical parameterized top budget is `15%r / 64%r`
-- no remaining localized replay seams are expected on the current uniform finite-support / contiguous-layout live family
-- public AfterRom remains budget-close to canonical AfterRom, not zero-equal, so the route closes through an explicit charged bridge rather than a zero bridge
-
-### Release Checkpoint Summary
-
-May 2026 release checkpoint plus concrete external-bound real-world extension: the EasyCrypt tree is checker-green at `149` checked theories, with `axiom_count=0` and `admit_count=0`. `qssm_main_theorem` remains unchanged on the exact-zero route, `qssm_main_theorem_semantic_budget` remains unchanged on the demo semantic route, `qssm_main_theorem_parameterized_budget` remains the frozen concrete parameterized theorem at `15%r / 64%r`, `qssm_main_theorem_realworld_budget` remains the abstract upper-bound theorem surface, and `RealWorldBudgetInstantiation.ec` now adds the original concrete theorem pair together with additive reduction-facing siblings ending at `qssm_main_theorem_realworld_concrete_128_with_all_reductions` and `qssm_main_theorem_realworld_concrete_128_with_all_reductions_5_over_2_98`, without mutating those earlier routes.
-
-On the active live parameterized profile, the routed component budgets are `MS1 = 3%r / 64%r`, `MS2 = 3%r / 64%r`, `LE rejection = 3%r / 64%r`, and `LE FS = 3%r / 64%r`, so `LE combined = 6%r / 64%r = 3%r / 32%r` and the top parameterized budget is `15%r / 64%r`. The live route now includes the parameterized LE rejection lane, the parameterized LE FS lane, the live MS1 canonical and public-endpoint lanes, and the live MS2 staged plus public-to-canonical landing lanes. The duplicated MS2 charge remains explicit in the theorem route and is not a presentation artifact.
-
-All four component retunings to `3%r / 64%r` were owner-only changes made after the live lower lanes were installed. No theorem-surface rename or wrapper rewrite was needed, and no local proof repair was required.
-
-The lower helper layer now also includes `primitives/ParameterizedMassHelpers.ec : drange_pred_true_mass`, `primitives/ParameterizedMassHelpers.ec : drange_pred_true_mass_le_bound`, `primitives/ParameterizedMassHelpers.ec : drange_subset_true_mass`, `primitives/ParameterizedMassHelpers.ec : drange_subset_true_mass_le_bound`, and `primitives/ParameterizedMassHelpers.ec : drange_subset_complement_mass`. These are generic uniform-support helpers for the current `drange 0 total` owner pattern only; they do not broaden supported profiles beyond the frozen uniform finite-support / contiguous-layout family or add non-uniform weights. `ms/source/SourceHashBindingSemanticSlotMassParameterized.ec : ms_hash_binding_public_divergence_upper_choice_mass_eq_local_upper_mass_parameterized` now routes the MS1 upper-mass theorem through that subset-helper layer without changing any routed theorem name or the active `15%r / 64%r` closure.
-
-The tree now also carries a separate abstract real-world upper-bound surface through `primitives/RealWorldBudgetParameters.ec`, `primitives/RealWorldBudgetObligations.ec`, `le/LEStatisticalDistanceRealWorld.ec`, `ms/MSProbabilitySurfaceRealWorld.ec`, `games/GameLEBridgeRealWorld.ec`, `games/GameMSHopCompositionRealWorld.ec`, and `theorem/MainTheoremRealWorld.ec`. `qssm_main_theorem_realworld_budget` closes only under explicit `le_realworld_obligations`, `ms_realworld_obligations`, and `qssm_realworld_obligations` hypotheses over externally supplied upper-bound budgets. Those obligations are theorem premises, not axioms, and this surface is already sufficient when real-world sampler evidence stays external to the EasyCrypt tree.
-
-The tree now also carries a concrete external-bound instantiation surface in `RealWorldBudgetInstantiation.ec`. It packages `realworld_budget_concrete_128` with component budget `1 / 2^98`, proves the top closed form `5 / 2^98`, keeps the original theorem pair `qssm_main_theorem_realworld_concrete_128` and `qssm_main_theorem_realworld_concrete_128_5_over_2_98` unchanged under four explicit component-bound premises, and now also closes the fully reduction-facing sibling pair `qssm_main_theorem_realworld_concrete_128_with_all_reductions` and `qssm_main_theorem_realworld_concrete_128_with_all_reductions_5_over_2_98` under four explicit reduction-facing obligations. Those obligations are theorem hypotheses, not axioms; they do not model weighted or non-uniform samplers internally.
-
-The weighted finite-support replay audit concluded that weighted replay is only needed if this repository must model weighted sampler internals directly. If that work is ever approved, the preferred owner shape is normalized per-component category weights. Per-slot weights are not the right first move, component-failure-only records mostly duplicate the existing obligation surface, and the first safe weighted pilot is an LE rejection weighted category owner only. None of that changes the current top theorem: `qssm_main_theorem_realworld_budget` remains the correct theorem-facing endpoint.
-
-The main caveat is unchanged: public AfterRom is budget-close to canonical AfterRom, not zero-equal, so this checkpoint does not claim a zero-cost public AfterRom landing. The exact-zero route is unchanged, the demo semantic route is unchanged, the frozen concrete parameterized route remains unchanged at `15%r / 64%r`, and supported concrete parameter profiles remain limited to the current uniform finite-support contiguous-layout geometry. Arbitrary non-uniform profile generalization and weighted finite-support replay remain future work.
-
-The frozen release note for the concrete all-reductions `lambda = 128` checkpoint is [../../../CONCRETE_128_REDUCTION_FREEZE.md](../../../CONCRETE_128_REDUCTION_FREEZE.md).
-
-## Plan Index
-
-- [plans/G0_G1_G2_game_plan.md](plans/G0_G1_G2_game_plan.md): top-level `G0 -> G1 -> G2` game-hop composition plan
-- [plans/LE_HVZK_proof_plan.md](plans/LE_HVZK_proof_plan.md): LE HVZK decomposition, obligation map, and theorem-path packaging notes
-- [plans/LE_REFINEMENT_PLAN.md](plans/LE_REFINEMENT_PLAN.md): next-stage LE rejection / FS shadow refinement plan
-- [plans/MS_3a_proof_plan.md](plans/MS_3a_proof_plan.md): MS-3a exact bitness-simulation plan and residual lower-layer debt
-- [plans/MS_3b_proof_plan.md](plans/MS_3b_proof_plan.md): MS-3b true-clause / highest-differing-bit characterization plan
-- [plans/MS_3c_proof_plan.md](plans/MS_3c_proof_plan.md): MS-3c comparison-lane plan and game-boundary closure history
-- [plans/MS_3d_proof_plan.md](plans/MS_3d_proof_plan.md): post-MS-3c MS game-layer cleanup and residual budget-facing work
-
-Every plan file and local subtree guide linked from this README includes a return link back here.
-
-## Current Truth in One View
-
-- The EasyCrypt tree is checker-green today: `./check_easycrypt.sh` currently reports `OK` over 149 checked theories.
-- Repo-local named axioms in `*.ec` files under this directory are currently at `0`, and the current repo-local `admit` count is `0`.
-- For deployment-facing budget discussion, the tree now has four parallel theorem families: the exact-zero route in `theorem/MainTheorem.ec`, the frozen concrete parameterized route in `theorem/MainTheoremParameterized.ec`, the abstract real-world upper-bound route in `theorem/MainTheoremRealWorld.ec`, and the concrete external-bound instantiation route in `RealWorldBudgetInstantiation.ec`. The live demo semantic theorem remains unchanged as a separate demo companion.
-- `primitives/RealWorldBudgetParameters.ec`, `primitives/RealWorldBudgetObligations.ec`, `le/LEStatisticalDistanceRealWorld.ec`, `ms/MSProbabilitySurfaceRealWorld.ec`, `games/GameLEBridgeRealWorld.ec`, and `games/GameMSHopCompositionRealWorld.ec` now route `qssm_main_theorem_realworld_budget` through explicit `le_realworld_obligations`, `ms_realworld_obligations`, and `qssm_realworld_obligations` hypotheses rather than axioms.
-- `RealWorldBudgetInstantiation.ec` now packages `realworld_budget_concrete_128`, proves `epsilon_top_concrete_128_eq_5_over_2_98`, keeps `qssm_main_theorem_realworld_concrete_128` and `qssm_main_theorem_realworld_concrete_128_5_over_2_98` as the original component-bound pair, and also exposes additive sibling theorems ending at `qssm_main_theorem_realworld_concrete_128_with_all_reductions` and `qssm_main_theorem_realworld_concrete_128_with_all_reductions_5_over_2_98` under four explicit reduction-facing obligations.
-- The reduction-facing concrete companion files are `le/LERejectionConcreteReduction.ec`, `le/LEFsConcreteReduction.ec`, `le/LEConcreteReduction.ec`, `ms/MS1ConcreteReduction.ec`, `ms/MS2ConcreteReduction.ec`, and `ms/MSConcreteReduction.ec`; they keep the duplicate MS2 charge explicit and preserve the public AfterRom budget-close caveat.
-- The abstract real-world surface packages externally supplied upper-bound budgets only. That is already sufficient when sampler internals are supported by external evidence. It does not implement weighted or non-uniform sampler semantics, and weighted finite-support replay remains future work only for in-tree sampler modeling.
-- The concrete external-bound instantiation surface is still conditional: the original theorem pair keeps four explicit component-bound premises, the current live `3%r / 64%r` lower actuals do not satisfy the `1 / 2^98` component budget, the newest sibling pair instead consumes four explicit reduction-facing obligations, and no weighted or non-uniform sampler semantics are introduced by that theorem layer.
-- If weighted replay is ever pursued, the preferred owner shape is normalized per-component category weights; per-slot weights are not the right first move, component-failure-only records mostly duplicate the existing obligation surface, and the first safe pilot is LE rejection only.
-- The active parameterized LE route now reaches `qssm_main_theorem_parameterized_budget` through live rejection and live FS branch/mass chains: `epsilon_le_rej_parameterized = 3%r / 64%r`, `epsilon_le_fs_parameterized = 3%r / 64%r`, and `epsilon_le_parameterized = 3%r / 32%r`.
-- The active parameterized MS1 route is now fully live on both the canonical failure lane and the staged/public-endpoint lane. The active MS1 profile is `collision=1`, `malformed_binding=1`, `transcript=1`, `clean=61`, `failure=3`, `total=64`, so `epsilon_ms_hash_binding_parameterized = 3%r / 64%r`; the staged public-divergence upper interval is `malformed_binding + transcript = 2%r / 64%r = 1%r / 32%r`, and the staged MS1 public-endpoint route is no longer demo-bound.
-- `SourceHashBindingSemanticLiveParameterizedCore.ec` now owns the live MS1 coupled-state/public-observable core, `SourceHashBindingSemanticLiveParameterizedMass.ec` owns the live MS1 canonical failure and public-divergence upper mass closure, and `SourceHashBindingSemanticBridgeParameterized.ec`, `MSProbabilitySurfaceParameterized.ec`, `GameAdvantageParameterized.ec`, `GameMSHopTypesParameterized.ec`, and `GameMSHopCompositionParameterized.ec` now carry that live MS1 staged route.
-- The active parameterized MS2 route is now also fully live. The active MS2 profile is `global_digest=1`, `query_digest=1`, `transcript=1`, `clean=61`, `failure=3`, `total=64`, so `epsilon_ms_rom_programmability_parameterized = 3%r / 64%r`, and both the staged MS2 public-endpoint transition and the public-to-canonical landing now consume that live lane.
-- `ComparisonPayloadSemanticLiveParameterizedCore.ec` now owns the live MS2 category/coupled-state/public-AfterRom core, `ComparisonPayloadSemanticLiveParameterizedMass.ec` owns the live MS2 execution-owned failure mass and public-divergence/failure closure, and `ComparisonPayloadSemanticBridgeParameterized.ec`, `MSProbabilitySurfaceParameterized.ec`, `GameAdvantageParameterized.ec`, `GameMSHopTypesParameterized.ec`, and `GameMSHopCompositionParameterized.ec` now carry that live MS2 route without changing the demo semantic or exact-zero routes.
-- The active full canonical parameterized route therefore now closes at `15%r / 64%r = 3%r / 64%r + 3%r / 64%r + 3%r / 64%r + 6%r / 64%r`, with the duplicated MS2 charge kept explicit.
-- No remaining localized replay seams are expected on the current uniform finite-support / contiguous-layout profile family.
-- The public AfterRom endpoint is still only budget-close to the canonical AfterRom endpoint, not zero-equal; the new route closes because the proof now pays an explicit extra `epsilon_ms_rom_programmability_parameterized` term instead of claiming a zero bridge.
-- The active theorem path is exact-zero because the current budget model sets the MS and LE component budgets to `0%r` and the lower proof lanes close by exact distribution equality or identity transport.
-- The LE FS shadow surface now has two checker-validated internal lanes: an exported projected-post lane that still proves the theorem-facing zero-budget bridge lemmas, and a separate shadow-local semantic branch experiment with a genuine good/bad branch split. On that local semantic lane, the good branch image is exactly the theorem-facing programmed view, the bad branch image is a separate semantic programmed post view, the semantic-post marginal is the branch-choice pushforward over those two images, and its `sdist` from the theorem-facing programmed view is locally bounded by `le_fs_shadow_local_bad_branch_mass`. `BudgetParameters.ec` now owns the corresponding primitive structured FS category law with support `clean`, `query_collision`, `programming_collision`, `transcript_mismatch`, failure predicate “non-clean”, and named count constants `le_fs_clean_slot_count`, `le_fs_query_collision_slot_count`, `le_fs_programming_collision_slot_count`, `le_fs_transcript_mismatch_slot_count`, `le_fs_failure_slot_count`, and `le_fs_total_slot_count`. The current demo instance is `clean=13`, `query_collision=1`, `programming_collision=1`, and `transcript_mismatch=1`, so `le_fs_failure_slot_count = 3` and `le_fs_total_slot_count = 16`; the compatibility aliases `bad_slot_count` and `total_slot_count` remain in place. The exact interpretation ops are `d_le_fs_shadow_category_choice`, `le_fs_shadow_state_of_category_observable`, `le_fs_shadow_clean_condition`, `le_fs_shadow_query_collision_condition`, `le_fs_shadow_programming_collision_condition`, and `le_fs_shadow_transcript_mismatch_condition`. The category witness lemmas are `le_fs_shadow_clean_condition_clean_categoryE`, `le_fs_shadow_query_collision_condition_query_collision_categoryE`, `le_fs_shadow_programming_collision_condition_programming_collision_categoryE`, `le_fs_shadow_transcript_mismatch_condition_transcript_mismatch_categoryE`, and `le_fs_shadow_semantic_category_condition_stateE`. `LEFsProgrammingSurface.ec` now interprets those primitive categories on a category-coupled shadow state: `clean` is the no-failure/programmed-view branch, `query_collision` is bad-branch query-row alignment, `programming_collision` is bad-branch programmed-response digest/log alignment, and `transcript_mismatch` is bad-branch visible-shell agreement with a cleared semantic bad flag. The preserved compatibility view still exports `d_le_fs_semantic_branch_choice` as the derived boolean bad-branch image and keeps `epsilon_le_fs_semantic = mu1 d_le_fs_semantic_branch_choice true = le_fs_failure_slot_count%r / le_fs_total_slot_count%r`, which therefore now closes to `3%r / 16%r` in the current model. `LEFsProgrammingSurface.ec` proves the local equality `le_fs_shadow_local_bad_branch_mass = epsilon_le_fs_semantic`, while theorem-facing wrappers consume the corresponding `<=` bound.
-- The theorem-surface corollary phase is complete. Cite `qssm_main_theorem` for the exact-zero abstraction theorem. Cite `qssm_main_theorem_semantic_budget` for the nonzero semantic-budget theorem. `qssm_main_theorem_semantic_budget_umbrella` and `qssm_main_theorem_nonzero_budget` remain the umbrella / discoverability aliases, while `qssm_main_theorem_semantic_budget_local_mass` and `qssm_main_theorem_semantic_budget_owned` remain comparison lemmas. No separate `Corollaries.ec` file is needed because `theorem/MainTheorem.ec` already owns the public corollary surface.
-- The proof stack is therefore machine-checked as a formal scaffold with concrete lower carriers, not yet as a nonzero end-to-end cryptographic bound.
-- The active exact-zero route is still unchanged: `epsilon_le_fs` and `epsilon_le` remain `0%r`, `A_G1_to_G2_le_transition_bound` still closes on `epsilon_le`, and `qssm_main_theorem` still rewrites all the way down to `<= 0%r`.
-- The semantic FS demo-count owner is intentionally frozen for now: the canonical owner count names in `BudgetParameters.ec` are `le_fs_clean_slot_count`, `le_fs_query_collision_slot_count`, `le_fs_programming_collision_slot_count`, `le_fs_transcript_mismatch_slot_count`, `le_fs_failure_slot_count`, and `le_fs_total_slot_count`, while `total_slot_count` and `bad_slot_count` remain preserved compatibility aliases for the downstream bridge surface. Any later move to `primitives/ProtocolParameters.ec` is deferred until a real shared parameter source exists.
-- The semantic rejection lane is now execution-owned below the theorem surface: `LERealExecution.ec` owns the rejection branch/material, `LERejectionSampler.d_le_semantic_post_rejection_view` is the semantic midpoint, and `LEFsProgrammingSurface.d_le_pre_fs_semantic_programming_view` plus `d_le_post_fs_semantic_programmed_view` now feed that midpoint into the semantic FS lane while the exact-zero rejection route remains unchanged.
-- The richer execution-owned semantic rejection repair is now landed: `LERealExecution.ec` now carries a semantic rejection decision/ticket and a repaired reject-branch observable whose hidden query material is realigned with the repaired visible challenge/programmed-query digests, while `LERejectionSampler.ec`, `LEFsProgrammingSurface.ec`, and `games/GameLEBridge.ec` replay that richer surface without changing the exact-zero route or the public theorem names.
-- The public semantic rejection budget is now grounded in a primitive multi-category ticket-failure law rather than a single boolean repair slot: `BudgetParameters.ec` now samples primitive ticket categories `soft_repair`, `hard_repair`, `invalid`, and `accept`, treats every non-`accept` category as failure, and owns the resulting rejection mass law through `le_rej_soft_repair_slot_count`, `le_rej_hard_repair_slot_count`, `le_rej_invalid_slot_count`, `le_rej_accept_slot_count`, `le_rej_failure_slot_count`, and `le_rej_total_slot_count`. The current demo instance is `1,1,1,13`, so `le_rej_failure_slot_count = 3` and `le_rej_total_slot_count = 16`, while the preserved aliases `le_rejection_semantic_reject_slot_count` and `le_rejection_semantic_total_slot_count` keep the bridge surface unchanged. `LERealExecution.le_real_execution_semantic_rejection_ticket_failure_probability` proves the concrete execution-owned ticket sampler matches that primitive law, and `LERejectionSampler.le_rejection_shadow_semantic_failure_probability` is now proved equal to that ticket-failure quantity. The current theorem-facing budget therefore closes to `epsilon_le_rej_semantic = le_rej_failure_slot_count%r / le_rej_total_slot_count%r = 3%r / 16%r`, while the exact-zero route remains unchanged. The next meaningful modeling refinement is still not a theorem-surface move; with both rejection and FS semantic counts now parameterized under stable owner names in `BudgetParameters.ec`, the remaining local target is to protocol-source or otherwise justify those counts without changing the theorem API.
+- [formal/README.md](formal/README.md): full reference entrypoint that previously lived at the top level
+- [formal/ARCHITECTURE.md](formal/ARCHITECTURE.md): architecture and file-map details
+- [formal/FORMAL_THEOREM_MAP.md](formal/FORMAL_THEOREM_MAP.md): theorem inventory and route map
+- [formal/PARAMETERIZED_ROUTE_STATUS.md](formal/PARAMETERIZED_ROUTE_STATUS.md): frozen parameterized-route status
+- [formal/DE_ALIASING_PLAN.md](formal/DE_ALIASING_PLAN.md): de-aliasing and profile-generalization audit
+- [formal/PROOF_STATUS.md](formal/PROOF_STATUS.md): current proof-status and theorem-boundary notes
