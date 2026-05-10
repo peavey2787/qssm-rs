@@ -4,9 +4,9 @@ Navigation: [EasyCrypt README](../README.md)
 
 ## Purpose
 
-This document audits the current parameterized proof lane for production-count substitution readiness.
+This document audits the current parameterized proof lane for profile-generalization readiness.
 
-Its purpose is to isolate every alias-dependent bridge, identify the first breakpoints once parameterized counts diverge from the demo counts, and record which higher layers should survive unchanged after the lower replacements land.
+The current de-aliasing/live replay campaign is complete for the active uniform finite-support / contiguous-layout `3%r / 32%r` family. What remains is not a pending localized seam replay; it is future work for broader profile families or tighter lower semantics.
 
 This is a docs-only roadmap.
 
@@ -26,7 +26,11 @@ This layer owns parameterized counts, derived epsilons, and local mass identitie
 
 - `primitives/ParameterizedBudgetParameters.ec`
 - `ms/source/SourceHashBindingSemanticSlotMassParameterized.ec`
+- `ms/source/SourceHashBindingSemanticLiveParameterizedCore.ec`
+- `ms/source/SourceHashBindingSemanticLiveParameterizedMass.ec`
 - `ms/comparison/ComparisonPayloadSemanticSlotMassParameterized.ec`
+- `ms/comparison/ComparisonPayloadSemanticLiveParameterizedCore.ec`
+- `ms/comparison/ComparisonPayloadSemanticLiveParameterizedMass.ec`
 - `le/LERejectionSamplerParameterizedCore.ec`
 - `le/LERejectionSamplerMassLiveParameterized.ec`
 - `le/LEFsProgrammingFailureProbabilityParameterized.ec`
@@ -35,7 +39,7 @@ This layer owns parameterized counts, derived epsilons, and local mass identitie
 
 ### Bridge layer
 
-This layer packages lower parameterized facts into theorem-facing parameterized lanes. Some MS entries still re-export demo-derived lower facts; the live LE rejection and live LE FS routes no longer do.
+This layer packages lower parameterized facts into theorem-facing parameterized lanes.
 
 - `ms/source/SourceHashBindingSemanticBridgeParameterized.ec`
 - `ms/comparison/ComparisonPayloadSemanticBridgeParameterized.ec`
@@ -56,7 +60,7 @@ This layer packages lower bounds into reusable parameterized MS and LE wrappers.
 
 ### Game layer
 
-This layer re-enters the canonical game hop with the now-explicit duplicated MS2 landing charge.
+This layer re-enters the canonical game hop with the explicit duplicated MS2 landing charge.
 
 - `games/GameMSHopCompositionParameterized.ec`
 
@@ -66,223 +70,117 @@ This layer exposes the public parameterized theorem surface.
 
 - `theorem/MainTheoremParameterized.ec`
 
-## Theorem Classes
+## Classification Vocabulary
 
 This audit uses three classes.
 
-- `genuinely parameterized`: the theorem is phrased over parameterized operators and should remain provable without semantic-demo equalities once the parameterized counts diverge.
-- `alias-dependent`: the theorem currently closes only because it directly proves or rewrites an equality between demo semantic quantities and parameterized quantities.
-- `mixed`: the theorem does not directly prove the alias equality itself, but it still depends on one or more alias-dependent lower theorems and therefore is not yet production-ready by itself.
+- `live-route`: the theorem or file is part of the active live parameterized route on the current frozen family.
+- `compatibility-only`: the theorem is an equality or exact companion kept for compatibility/history, not required by the active live route.
+- `future-generalization hotspot`: the theorem or file is likely to need replay if the supported profile geometry changes.
 
-## Fully Production-Ready Components
+## Structurally Durable Components
 
-These components are the structurally durable parts of the parameterized lane. They are the pieces that should remain unchanged, or need only trivial replay, once real production counts replace the current demo aliases.
+These components should remain part of the architecture even if broader profile families are introduced later.
 
 ### Parameterized owner arithmetic
 
-`primitives/ParameterizedBudgetParameters.ec` is structurally ready even though its current count operators still alias `BudgetParameters`.
+`primitives/ParameterizedBudgetParameters.ec` now carries active non-demo parameter values directly for LE, MS1, and MS2.
 
 - Component-sum lemmas such as `ms1_param_failure_count_component_sum` and `ms2_param_failure_count_component_sum` are genuine arithmetic.
 - Nonnegativity and positivity lemmas such as `epsilon_ms_hash_binding_parameterized_nonneg`, `epsilon_ms_rom_programmability_parameterized_nonneg`, `epsilon_le_rej_parameterized_nonneg`, `epsilon_le_fs_parameterized_nonneg`, and `epsilon_le_parameterized_nonneg` are genuine arithmetic over the parameterized operators.
 - The owner-layer additive structure `epsilon_le_parameterized = epsilon_le_rej_parameterized + epsilon_le_fs_parameterized` is already the right long-term architecture.
 
-Classification: `mixed` at file level because the current count operators still alias demo counts, but the arithmetic lemmas themselves are structurally production-ready.
+Classification: `live-route` and structurally durable.
 
-### Parameterized helper lemmas and local mass theorems
+### Live lower owners and mass closures
 
-The local mass files are mostly already expressed over parameterized operators and should survive a future count substitution unchanged.
+The active lower route is now live on LE, MS1, and MS2.
 
-- `ms/source/SourceHashBindingSemanticSlotMassParameterized.ec`
-  - `ms_hash_binding_semantic_failure_choice_mass_true_parameterized`
-  - `ms_hash_binding_local_failure_mass_eq_epsilon_ms_hash_binding_parameterized`
-  - `ms_hash_binding_local_failure_mass_le_epsilon_ms_hash_binding_parameterized`
-  - `ms_hash_binding_public_divergence_upper_choice_mass_eq_local_upper_mass_parameterized`
-  - `ms_hash_binding_local_public_divergence_upper_mass_le_epsilon_ms_hash_binding_parameterized`
-- `ms/comparison/ComparisonPayloadSemanticSlotMassParameterized.ec`
-  - `ms_rom_semantic_failure_choice_mass_true_parameterized`
-  - `ms_rom_local_failure_mass_eq_epsilon_ms_rom_programmability_parameterized`
-  - `ms_rom_local_failure_mass_le_epsilon_ms_rom_programmability_parameterized`
-- `le/LERejectionSamplerParameterizedCore.ec`
-  - `d_le_rejection_parameterized_pre_marginal_matches_execution_view`
-  - `d_le_rejection_parameterized_post_marginal_fixed_branch_imageE`
-  - `d_le_rejection_parameterized_reject_event_image_branch_choice`
-- `le/LERejectionSamplerMassLiveParameterized.ec`
-  - `le_rejection_parameterized_ticket_failure_probability_eq_epsilon_le_rej_parameterized`
-  - `le_rejection_parameterized_failure_probability_eq_ticket_failure_probability`
-  - `le_rejection_parameterized_failure_probability_le_epsilon_le_rej_parameterized`
-  - `A_LE_rejection_parameterized_sampler_semantic_experiment_sdist_bound`
-  - `A_LE_rejection_parameterized_sampler_semantic_sdist_bound`
-- `le/LEFsProgrammingFailureProbabilityParameterized.ec`
-  - `le_fs_failure_probability_eq_epsilon_le_fs_parameterized`
-  - `le_fs_failure_probability_le_epsilon_le_fs_parameterized`
-- `le/LEFsProgrammingLiveParameterizedCore.ec`
-  - `d_le_parameterized_post_fs_semantic_programmed_view_pairE`
-  - `d_le_fs_parameterized_shadow_semantic_post_marginal_branch_split_pairE`
-- `le/LEFsProgrammingLiveParameterizedMass.ec`
-  - `le_fs_parameterized_local_bad_branch_mass_eq_epsilon_le_fs_parameterized`
-  - `le_fs_parameterized_local_bad_branch_mass_le_epsilon_le_fs_parameterized`
-  - `A_LE_fs_parameterized_shadow_semantic_post_marginal_sdist_le_bad_branch_mass`
-  - `A_LE_fs_parameterized_shadow_semantic_post_marginal_sdist_le_parameterized_budget`
+- `SourceHashBindingSemanticSlotMassParameterized.ec`, `SourceHashBindingSemanticLiveParameterizedCore.ec`, and `SourceHashBindingSemanticLiveParameterizedMass.ec` own the live MS1 lower route.
+- `ComparisonPayloadSemanticSlotMassParameterized.ec`, `ComparisonPayloadSemanticLiveParameterizedCore.ec`, and `ComparisonPayloadSemanticLiveParameterizedMass.ec` own the live MS2 lower route.
+- `LERejectionSamplerParameterizedCore.ec` and `LERejectionSamplerMassLiveParameterized.ec` own the live LE rejection route.
+- `LEFsProgrammingFailureProbabilityParameterized.ec`, `LEFsProgrammingLiveParameterizedCore.ec`, and `LEFsProgrammingLiveParameterizedMass.ec` own the live LE FS route.
 
-These results are all parameterized-operator first. The live LE rejection and live LE FS slices no longer depend on semantic-demo equality lemmas on the active route; the remaining MS items still inherit the current aliasing owner definitions, but they already expose the right theorem-facing operators for a later replay.
-
-Classification: mostly `genuinely parameterized` at theorem level.
+Classification: `live-route`.
 
 ### Upper wrapper structure
 
-The upper wrapper architecture is already the right one and appears reusable once the bridge layer is repaired.
+The upper wrapper architecture is the right long-term one.
 
 - `le/LEStatisticalDistanceParameterized.ec`
 - `le/LEHVZKParameterized.ec`
 - `games/GameLEBridgeParameterized.ec`
-- most of `games/GameAdvantageParameterized.ec`
-- most of `games/GameMSHopCompositionParameterized.ec`
+- `games/GameAdvantageParameterized.ec`
+- `games/GameMSHopTypesParameterized.ec`
+- `games/GameMSHopCompositionParameterized.ec`
+- `theorem/MainTheoremParameterized.ec`
 
-These files mostly add bounds, perform triangle-inequality composition, or forward lower theorems. Their current weakness is lower-input dependence, not architectural shape.
+These files primarily compose lower bounds and preserve the explicit theorem-facing budget structure.
 
-Classification: generally `mixed`.
+Classification: `live-route` and structurally stable.
 
-### LE combined wrapper chain
+## Active Route Completion State
 
-The LE chain appears especially reusable once lower LE bridges are de-aliased.
+The active route is now live end to end.
 
-- `A_LE_semantic_combined_hiding_bounds_sdist_parameterized_budget`
-- `A_LE_semantic_view_advantage_bound_from_parameterized_budget`
-- `A_LE_HVZK_semantic_parameterized_budget_transition_bound`
-- `A_G1_to_G2_le_semantic_parameterized_budget_transition_bound`
+- LE rejection closes through `LERejectionSamplerParameterizedCore.ec -> LERejectionSamplerMassLiveParameterized.ec -> LERejectionParameterized.ec`.
+- LE FS closes through `LEFsProgrammingLiveParameterizedCore.ec -> LEFsProgrammingLiveParameterizedMass.ec -> LEFsProgrammingParameterized.ec`.
+- MS1 closes through `SourceHashBindingSemanticLiveParameterizedCore.ec -> SourceHashBindingSemanticLiveParameterizedMass.ec -> SourceHashBindingSemanticBridgeParameterized.ec`.
+- MS2 closes through `ComparisonPayloadSemanticLiveParameterizedCore.ec -> ComparisonPayloadSemanticLiveParameterizedMass.ec -> ComparisonPayloadSemanticBridgeParameterized.ec`.
+- `MSProbabilitySurfaceParameterized.ec`, `GameAdvantageParameterized.ec`, `GameMSHopTypesParameterized.ec`, `GameMSHopCompositionParameterized.ec`, and `MainTheoremParameterized.ec` now consume those live lower lanes without reopening a demo/parameterized seam on the active family.
+- The active top budget remains `epsilon_ms_hash_binding_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_le_parameterized`, which evaluates to `15%r / 32%r` on the current frozen family.
+- No remaining localized count-alias-sensitive seams are expected on the current uniform finite-support / contiguous-layout family.
 
-These theorems combine already-packaged LE components and should survive if the lower rejection and FS bridges keep their current theorem names and inequality directions.
+## Compatibility-Only Equalities Kept For History
 
-Classification: `mixed`, but structurally stable.
+The following equalities may still exist as compatibility shims or proof-history artifacts, but they are not part of the active live route.
 
-### Canonical top-level theorem architecture
+| Theorem | Current role | Guidance if profiles broaden |
+|---|---|---|
+| `epsilon_ms_hash_binding_semantic_eq_epsilon_ms_hash_binding_parameterized` | compatibility-only equality between demo semantic and parameterized MS1 owners | keep only as a compatibility shim or retire it from the active route |
+| `ms_hash_binding_local_public_divergence_upper_mass_eq_parameterized` | compatibility-only equality for the staged MS1 upper mass | prefer replaying the live comparison theorem rather than routing through this equality |
+| `epsilon_ms_rom_programmability_semantic_eq_epsilon_ms_rom_programmability_parameterized` | compatibility-only equality between demo semantic and parameterized MS2 owners | keep only as a compatibility shim or retire it from the active route |
+| `ms_rom_local_failure_mass_eq_parameterized` | compatibility-only equality between demo local failure mass and the parameterized owner | do not treat it as an active-route dependency |
+| `ms_rom_execution_owned_semantic_failure_probability_eq_epsilon_ms_rom_programmability_parameterized` | compatibility-only exact companion above the old comparison surface | prefer replaying the live MS2 route instead |
+| `epsilon_le_fs_semantic_eq_epsilon_le_fs_parameterized` | compatibility-only equality between demo semantic and parameterized LE FS owners | keep only as a compatibility shim if still useful for proof history |
 
-`theorem/MainTheoremParameterized.ec` appears structurally stable.
+Classification: `compatibility-only`.
 
-- `qssm_main_theorem_le_parameterized_budget` remains the LE-only intermediate theorem.
-- `qssm_main_theorem_parameterized_budget` already exposes the intended long-term architecture for the full parameterized route.
-- The canonical top-level bound remains explicit:
+## Future Generalization Hotspots
 
-```text
-epsilon_ms_hash_binding_parameterized
-+ epsilon_ms_rom_programmability_parameterized
-+ epsilon_ms_rom_programmability_parameterized
-+ epsilon_le_parameterized
-```
+If the profile family changes, there is no single currently open seam to replay. The first breakpoints will be the owner geometry and the lower files that interpret it.
 
-The theorem architecture should remain untouched during production-count substitution.
+Primary hotspots:
 
-Classification: `mixed`, but structurally stable.
+- `primitives/ParameterizedBudgetParameters.ec` when counts, weights, or support geometry change
+- `ms/source/SourceHashBindingSemanticSlotMassParameterized.ec`, `SourceHashBindingSemanticLiveParameterizedCore.ec`, and `SourceHashBindingSemanticLiveParameterizedMass.ec` for MS1 geometry changes
+- `ms/comparison/ComparisonPayloadSemanticSlotMassParameterized.ec`, `ComparisonPayloadSemanticLiveParameterizedCore.ec`, and `ComparisonPayloadSemanticLiveParameterizedMass.ec` for MS2 geometry changes
+- `le/LERejectionSamplerParameterizedCore.ec` and `LERejectionSamplerMassLiveParameterized.ec` for LE rejection geometry changes
+- `le/LEFsProgrammingFailureProbabilityParameterized.ec`, `LEFsProgrammingLiveParameterizedCore.ec`, and `LEFsProgrammingLiveParameterizedMass.ec` for LE FS geometry changes
 
-## Structurally De-Aliased Upper Paths
+These are the files most likely to require real replay if future work moves beyond the current uniform finite-support / contiguous-layout family or introduces non-uniform weights.
 
-The recent LE rejection, LE FS, MS1, and MS2 bridge pilots pushed the broad semantic-to-parameterized epsilon rewrites downward into localized comparison theorems.
+Classification: `future-generalization hotspot`.
 
-Since then, LE rejection has moved beyond that localized-comparison shape entirely: the active rejection route now uses the live sampler chain `LERejectionSamplerParameterizedCore.ec -> LERejectionSamplerMassLiveParameterized.ec -> LERejectionParameterized.ec`, and `LEFsProgrammingParameterizedView.ec` plus `LEStatisticalDistanceParameterized.ec` carry the resulting midpoint into the combined LE route. LE rejection is therefore no longer one of the remaining localized count-alias-sensitive seams.
+## Recommended Future Order
 
-The following theorem paths should now be treated as structurally de-aliased upper consumers.
+If parameterized work resumes here, the recommended order is:
 
-- `A_LE_rejection_sampler_semantic_sdist_parameterized_bound` now closes through the live parameterized rejection sampler chain `LERejectionSamplerParameterizedCore.ec -> LERejectionSamplerMassLiveParameterized.ec -> LERejectionParameterized.ec`; `LEStatisticalDistanceParameterized.ec` then composes that midpoint through `LEFsProgrammingParameterizedView.ec`, so the active rejection lane no longer depends on a demo-semantic/parameterized equality.
-- `A_LE_fs_semantic_programming_sampler_sdist_le_parameterized_budget` now closes through the live FS chain `LEFsProgrammingLiveParameterizedCore.ec -> LEFsProgrammingLiveParameterizedMass.ec -> LEFsProgrammingParameterized.ec`, while `LEFsProgrammingParameterizedView.ec` carries the same live midpoint into `LEStatisticalDistanceParameterized.ec`; the active FS lane no longer depends on a demo-semantic/parameterized equality.
-- `A_MS1_hash_binding_execution_owned_parameterized_bound` now routes through the live chain `SourceHashBindingSemanticLiveParameterizedCore.ec -> SourceHashBindingSemanticLiveParameterizedMass.ec -> SourceHashBindingSemanticBridgeParameterized.ec`, so the former MS1 local-failure comparison is no longer an active seam.
-- `ms_hash_binding_public_observable_divergence_mass_le_local_public_divergence_upper_mass_parameterized` now routes through the same live MS1 chain, and the staged/public-endpoint wrapper path no longer depends on a demo semantic-to-parameterized upper-mass comparison.
-- `A_MS2_rom_programming_execution_owned_parameterized_bound` now routes through `ms_rom_local_failure_mass_le_parameterized_budget`, not the broad semantic-to-parameterized epsilon equality.
-- `A_MS2_rom_programming_parameterized_public_endpoint_transition_bound` now composes `L_ms2_rom_programming_transition_le_execution_owned_semantic_failure` with `A_MS2_rom_programming_execution_owned_parameterized_bound`; it no longer rewrites the broad MS2 semantic/parameterized epsilon equality directly.
-- `A_MS_public_endpoint_parameterized_transition_bound` now composes the live MS1 staged/public-endpoint theorem with the repaired MS2 public-endpoint theorem instead of directly rewriting broad semantic/parameterized equalities.
-
-Classification: `mixed`, but structurally de-aliased above the remaining localized comparison seams.
-
-## Alias-Dependent Components
-
-The following theorems are the compatibility-only equalities and exact-equality companions that still close only because the current parameterized counts alias the demo counts.
-
-The structurally de-aliased upper theorem paths listed above are no longer direct members of this class.
-
-| Theorem | Current alias dependency | Demo theorem reused | Future replacement obligation | Replay complexity |
-|---|---|---|---|---|
-| `epsilon_ms_hash_binding_semantic_eq_epsilon_ms_hash_binding_parameterized` | direct equality between `BudgetParameters.epsilon_ms_hash_binding_semantic` and `ParameterizedBudgetParameters.epsilon_ms_hash_binding_parameterized` by expanding both closed forms | none; closes by algebra over aliased counts | keep only as a compatibility shim, or retire it from the active route once production counts diverge | low |
-| `ms_hash_binding_local_public_divergence_upper_mass_eq_parameterized` | rewrites the demo upper-mass closed form to the parameterized one because counts coincide | `ms_hash_binding_local_public_divergence_upper_mass` owner from the demo lane | keep only as a compatibility equality; the active route should continue to consume the `<=` comparison theorem instead | medium |
-| `ms_hash_binding_execution_owned_semantic_failure_probability_eq_epsilon_ms_hash_binding_parameterized` | chains `ms_hash_binding_execution_owned_semantic_failure_probability_eq_local_mass`, `ms_hash_binding_local_failure_mass_eq_epsilon_ms_hash_binding_semantic`, and `epsilon_ms_hash_binding_semantic_eq_epsilon_ms_hash_binding_parameterized` | `ms_hash_binding_execution_owned_semantic_failure_probability_eq_local_mass` | keep only as a compatibility exact-equality companion; the active route should continue to use `A_MS1_hash_binding_execution_owned_parameterized_bound` | medium |
-| `epsilon_ms_rom_programmability_semantic_eq_epsilon_ms_rom_programmability_parameterized` | direct equality between demo semantic MS2 epsilon and parameterized MS2 epsilon by expanding aliased counts | none; closes by algebra over aliased counts | keep only as a compatibility shim, or retire it from the active route once production counts diverge | low |
-| `ms_rom_local_failure_mass_eq_parameterized` | rewrites the demo local failure mass to the parameterized one through the alias equality | `ms_rom_local_failure_mass_eq_epsilon_ms_rom_programmability_semantic` | keep only as a compatibility equality; the active route should continue to consume `ms_rom_local_failure_mass_le_parameterized_budget` | medium |
-| `ms_rom_execution_owned_semantic_failure_probability_eq_epsilon_ms_rom_programmability_parameterized` | chains `ms_rom_execution_owned_semantic_failure_probability_eq_local_mass`, `ms_rom_local_failure_mass_eq_parameterized`, and the semantic-to-parameterized equality | `ms_rom_execution_owned_semantic_failure_probability_eq_local_mass` | keep only as a compatibility exact-equality companion; the active route should continue to use `A_MS2_rom_programming_execution_owned_parameterized_bound` | medium |
-| `epsilon_le_fs_semantic_eq_epsilon_le_fs_parameterized` | direct equality between demo semantic FS epsilon and parameterized FS epsilon | none; closes by algebra over aliased counts | keep only as a compatibility shim, or retire it from the active route once production counts diverge | low |
-
-## Remaining Localized Count-Alias-Sensitive Seams
-
-The following theorem is now the real production-count substitution boundary. The only remaining localized count-alias-sensitive seam is MS2 local failure.
-
-| Theorem | Live/demo quantity compared | Parameterized target | Replay class | Upward blast radius |
-|---|---|---|---|---|
-| `ms_rom_local_failure_mass_le_parameterized_budget` | `ms_rom_local_failure_mass` | `ParameterizedBudgetParameters.epsilon_ms_rom_programmability_parameterized` | canonical-sensitive replay | feeds the MS2 execution-owned bridge, the MS2 public-endpoint theorem, the public-to-canonical landing theorem, and the explicit duplicated-charge canonical MS route |
-
-## Mixed Components That Should Become Reusable Once Lower Replacements Land
-
-These components are not production-ready today, but they mostly forward lower theorems and should remain unchanged if the lower replacement theorems keep their current names and inequality directions.
-
-### LE wrapper chain
-
-- `A_LE_rejection_semantic_contributes_to_sdist_parameterized_budget`
-- `A_LE_fs_semantic_contributes_to_sdist_parameterized_budget`
-- `A_LE_semantic_combined_hiding_bounds_sdist_parameterized_budget`
-- `A_LE_semantic_view_advantage_bound_from_parameterized_budget`
-- `A_LE_HVZK_semantic_parameterized_budget_transition_bound`
-- `A_G1_to_G2_le_semantic_parameterized_budget_transition_bound`
-
-Expected reuse after lower replacements: unchanged.
-
-### MS wrapper chain above repaired bridges
-
-- `A_MS1_hash_binding_parameterized_game_advantage_bound`
-- `A_MS2_rom_programming_parameterized_game_advantage_bound`
-- `A_MS_public_endpoint_parameterized_game_advantage_bound`
-- `A_MS_public_after_rom_to_canonical_after_rom_parameterized_bound`
-- `A_MS_public_endpoint_to_canonical_parameterized_game_bound`
-- `A_MS2_canonical_rom_programming_parameterized_bound`
-- `A_G0_to_G1_ms_parameterized_transition_bound`
-- `qssm_main_theorem_parameterized_budget`
-
-Expected reuse after lower replacements: mostly unchanged, except for any local replay needed if the MS1 canonical or MS2 canonical theorem names change.
-
-## First True Production-Substitution Breakpoint
-
-When the parameterized counts diverge from the current demo counts, the first actual breakpoint is now the single localized comparison seam above, not the upper theorem routes above it.
-
-### Breakpoint 1: MS2 local failure comparison
-
-Primary file: `ms/comparison/ComparisonPayloadSemanticBridgeParameterized.ec`
-
-Current break cause:
-
-- `ms_rom_local_failure_mass_le_parameterized_budget`
-
-Smallest replacement theorem needed:
-
-- reprove `ms_rom_local_failure_mass_le_parameterized_budget` against genuinely independent `ms2_param_*` counts
-
-Practical note:
-
-This remains the most globally visible localized seam because the MS2 execution-owned bridge, the public-endpoint MS2 theorem, and the public-to-canonical landing theorem all consume it.
-
-## Recommended Production-Substitution Order
-
-The recommended replay order is:
-
-1. preserve the current parameterized operator names, theorem names, and arithmetic structure
-2. replay the remaining localized comparison seam `ms_rom_local_failure_mass_le_parameterized_budget`
-3. verify that the upper wrappers above that seam survive unchanged
-4. rerun the checker and the zero-axiom / zero-admit validation
-5. only after the proof route is stable again, revisit readability or refactor work
+1. Preserve the current parameterized operator names, theorem names, arithmetic structure, and the explicit duplicated MS2 charge.
+2. Generalize one owner family at a time and replay the affected lower slot-mass, coupled-state, and public-observable theorems.
+3. Verify that the upper wrappers above the changed owner survive unchanged.
+4. Rerun the checker and the zero-axiom / zero-admit validation.
+5. Only after the proof route is stable again, revisit readability or refactor work.
 
 Reason for this order:
 
-- the live LE rejection, live LE FS, live MS1 canonical failure, and live MS1 staged/public-endpoint routes have already validated the substitution process without disturbing the theorem-facing route
-- the MS2 local failure comparison is now the only remaining localized seam and the most globally visible MS dependency because it feeds both the public-endpoint route and the canonical landing
-- delaying readability work avoids mixing semantic substitutions with naming churn
+- the live LE rejection, live LE FS, live MS1, and live MS2 routes have already validated the substitution process on the current family without disturbing the theorem-facing route
+- future risk now comes from changing the supported family itself, not from an already-identified missing bridge on the active route
+- delaying readability work avoids mixing mathematical changes with naming churn
 
 ## Structural Invariants That Must Remain Frozen
 
-The following invariants must stay unchanged during de-aliasing work.
+The following invariants must stay unchanged during future generalization work.
 
 - `BudgetParameters.ec` unchanged
 - `MainTheorem.ec` unchanged
@@ -300,50 +198,50 @@ No production counts are chosen here, but the following symbolic placeholders ar
 | Planning target | Symbolic placeholder | Constraint shape |
 |---|---|---|
 | target security level budget | `epsilon_top_target` | `epsilon_MS1 + 2 * epsilon_MS2 + epsilon_LE <= epsilon_top_target` |
-| target LE semantic budget | `epsilon_LE_target` | `epsilon_LE_rej + epsilon_LE_fs <= epsilon_LE_target` |
+| target LE budget | `epsilon_LE_target` | `epsilon_LE_rej + epsilon_LE_fs <= epsilon_LE_target` |
 | acceptable MS2 landing penalty | `epsilon_MS2_landing_target` | `epsilon_MS2_landing <= epsilon_MS2_landing_target` |
 
 These are planning variables only. They are not proof constants and are not yet production-selected values.
 
 ## Optional Future Cleanup Candidates
 
-These are intentionally deferred until after production-count substitution succeeds.
+These are intentionally deferred until after any future profile generalization succeeds.
 
 - naming cleanup for the parameterized bridge theorems
-- MS2 readability cleanup in `MSProbabilitySurfaceParameterized.ec`, `GameAdvantageParameterized.ec`, and `GameMSHopCompositionParameterized.ec`
+- readability cleanup in `MSProbabilitySurfaceParameterized.ec`, `GameAdvantageParameterized.ec`, and `GameMSHopCompositionParameterized.ec`
 - factoring the second MS2 charge into a named landing term if that can be done without hiding the duplicated charge
 - theorem inventory tooling for parameterized versus demo routes
 - import-graph tooling for the EasyCrypt proof tree
 
 ## Recommendations
 
-### First actual production-substitution target
+### First future audit target
 
-Start with the MS2 local failure comparison.
+Start with a profile-generalization audit, not a localized replay audit.
 
 Reason:
 
-- the LE rejection, LE FS, and both MS1 parameterized replay slices are already landed and checker-green
-- `ms_rom_local_failure_mass_le_parameterized_budget` is now the only remaining localized seam on the live parameterized route
-- the expected proof touches stay below the theorem-facing wrappers even though the MS2 blast radius is larger than the finished MS1 slices
-- the next proof phase should be the MS2 live parameterized replay audit, not a readability refactor or theorem-surface mutation
+- the LE rejection, LE FS, MS1, and MS2 live parameterized routes are already landed and checker-green
+- no remaining localized seam is expected on the current frozen family
+- the next nontrivial work item is broadening the supported family or tightening lower semantics without mutating the theorem surface
 
-### Most expensive replay points
+### Most expensive future replay points
 
-The likely highest-cost remaining seam and theorem replay points are:
+If profile geometry changes materially, the likely highest-cost replay points are:
 
-- `ms_rom_local_failure_mass_le_parameterized_budget`
-- `A_MS2_rom_programming_parameterized_canonical_game_pr_core_bound`
-- `A_G0_to_G1_ms_parameterized_transition_bound`
+- `ComparisonPayloadSemanticLiveParameterizedCore.ec`
+- `ComparisonPayloadSemanticLiveParameterizedMass.ec`
+- `MSProbabilitySurfaceParameterized.ec`
+- `GameAdvantageParameterized.ec`
+- `GameMSHopCompositionParameterized.ec`
 
-Among these, `ms_rom_local_failure_mass_le_parameterized_budget` is the hardest remaining localized seam, and the MS2 canonical game-pr core theorem remains the most architecture-sensitive theorem above it because it is where the duplicate MS2 charge becomes explicit at the canonical game layer.
+These are the files where lower-geometry changes are most likely to surface again as theorem-routing work.
 
 ### Upper-chain stability assessment
 
 Current assessment:
 
-- the LE upper wrapper chain is now structurally de-aliased above the localized rejection and FS comparison seams
-- the LE rejection side has already moved past its former localized comparison seam onto a live parameterized sampler chain
-- the MS execution-owned and public-endpoint wrapper chain is now structurally de-aliased above the localized MS1 and MS2 comparison seams
+- the LE upper wrapper chain is structurally de-aliased on the active route
+- the MS execution-owned and public-endpoint wrapper chain is structurally de-aliased on the active route
 - `MainTheoremParameterized.ec` appears structurally stable
 - the duplicate MS2 charge appears architecturally unavoidable on the current route unless a future direct canonical landing theorem removes it honestly

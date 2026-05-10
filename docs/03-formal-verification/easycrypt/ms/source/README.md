@@ -15,7 +15,8 @@ Internal grouping is by proof role:
 
 - `SourceTypes.ec` and `SourceConstructors.ec` define the source records and Phase-1 constructors.
 - `SourcePayloadDistributions.ec`, `SourceCoupling*.ec`, `SourceBitnessDistributions.ec`, `SourceDistributionLemmas.ec`, and `SourceObservableDistributions.ec` implement the distribution layer surfaced by `SourceDistributions.ec`.
-- `SourceHashBindingSemanticSlotMass.ec` owns the MS1 hash-binding semantic local slot/mass law, and `SourceHashBindingSemanticBridge.ec` consumes that owner to package the source-local execution-owned bridge used by the staged sibling chain.
+- `SourceHashBindingSemanticSlotMass.ec` owns the demo semantic MS1 hash-binding local slot/mass law, and `SourceHashBindingSemanticBridge.ec` consumes that owner to package the source-local execution-owned bridge used by the staged sibling chain.
+- `SourceHashBindingSemanticSlotMassParameterized.ec` owns the parameterized MS1 local slot/mass owner, `SourceHashBindingSemanticLiveParameterizedCore.ec` owns the live parameterized MS1 coupled-state/public-observable core, `SourceHashBindingSemanticLiveParameterizedMass.ec` owns the live parameterized MS1 canonical failure and public-divergence upper mass closure, and `SourceHashBindingSemanticBridgeParameterized.ec` now delegates the theorem-facing MS1 parameterized bridge to that live lane.
 - `SourceExecutionLink.ec`, `SourcePublicBitness*.ec`, `SourceRealExecutionGameLink.ec`, and `SourceRealExecutionSeed.ec` sit on the execution/public-spine boundary.
 - `SourceProgrammedObligations.ec`, `SourcePublicFieldObligations.ec`, `SourceSchedule*.ec`, and `SourceObligations.ec` package the proof obligations consumed by `SourceTheorem.ec`.
 

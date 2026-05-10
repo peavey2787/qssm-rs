@@ -6,7 +6,7 @@ Navigation: [EasyCrypt README](../README.md)
 
 This document records which parameterized lanes are complete, which ones are only staged, and which ones remain intentionally unstated at the frozen May 2026 checkpoint.
 
-Current checker snapshot: `OK` over 133 checked theories; `axiom_count=0`; `admit_count=0`.
+Current checker snapshot: `OK` over 135 checked theories; `axiom_count=0`; `admit_count=0`.
 
 ## Route Status Table
 
@@ -14,14 +14,14 @@ Current checker snapshot: `OK` over 133 checked theories; `axiom_count=0`; `admi
 |---|---|---|---|---|---|---|
 | MS1 parameterized owner | Yes | Yes, live owner surface | No | Yes, inside the MS route | No by itself | `ParameterizedBudgetParameters.ec` plus `SourceHashBindingSemanticSlotMassParameterized.ec` fix the active `collision=1`, `malformed_binding=1`, `transcript=1`, `clean=29`, `failure=3`, `total=32` profile and both local MS1 masses |
 | MS1 live parameterized bridge lane | Yes | Yes, live parameterized | No | Yes, via canonical failure and staged public-endpoint wrappers | No by itself | `SourceHashBindingSemanticLiveParameterizedCore.ec`, `SourceHashBindingSemanticLiveParameterizedMass.ec`, and `SourceHashBindingSemanticBridgeParameterized.ec` now carry canonical failure at `3%r / 32%r` and the staged public-divergence upper lane at `1%r / 16%r` |
-| MS2 parameterized owner | Yes | Local owner only | No | No | No | `ParameterizedBudgetParameters.ec` plus `ComparisonPayloadSemanticSlotMassParameterized.ec` are real parameterized owner surfaces |
-| MS2 parameterized bridge companion | Yes | Yes, alias-based | Yes | No | No | `ComparisonPayloadSemanticBridgeParameterized.ec` still relies on equality between semantic and parameterized demo counts |
-| Combined MS parameterized public-endpoint lane | Yes | Mixed: live MS1 plus alias-based MS2 | Yes | Consumed by canonical closure | No by itself | `MSProbabilitySurfaceParameterized.ec` through `GameMSHopCompositionParameterized.ec` now use the live MS1 staged lane while MS2 remains the only localized replay seam |
+| MS2 parameterized owner | Yes | Yes, live owner surface | No | Yes, through the live bridge lane | No by itself | `ParameterizedBudgetParameters.ec` plus `ComparisonPayloadSemanticSlotMassParameterized.ec` fix the active `global_digest=1`, `query_digest=1`, `transcript=1`, `clean=29`, `failure=3`, `total=32` profile |
+| MS2 live parameterized bridge lane | Yes | Yes, live parameterized | No | Yes, via staged public-endpoint and canonical landing wrappers | No by itself | `ComparisonPayloadSemanticLiveParameterizedCore.ec`, `ComparisonPayloadSemanticLiveParameterizedMass.ec`, and `ComparisonPayloadSemanticBridgeParameterized.ec` now carry the live MS2 execution-owned/public-AfterRom route at `3%r / 32%r` |
+| Combined MS parameterized public-endpoint lane | Yes | Yes, live MS1 plus live MS2 | Yes, as an internal route | Consumed by canonical closure | No by itself | `MSProbabilitySurfaceParameterized.ec` through `GameMSHopCompositionParameterized.ec` now use live MS1 and live MS2 lower lanes while preserving the explicit duplicated MS2 charge |
 | LE rejection parameterized lane | Yes | Yes, live parameterized sampler route | No | Yes, inside `G1 -> G2` | No by itself | `LERejectionSamplerParameterizedCore.ec` plus `LERejectionSamplerMassLiveParameterized.ec` own the live 3/32 rejection lane; `LERejectionParameterized.ec` and `LEStatisticalDistanceParameterized.ec` now route through `d_le_parameterized_post_rejection_view` rather than the demo rejection midpoint |
 | LE FS parameterized lane | Yes | Yes, live parameterized branch/mass route | No | Yes, inside `G1 -> G2` | No by itself | `LEFsProgrammingLiveParameterizedCore.ec` plus `LEFsProgrammingLiveParameterizedMass.ec` own the live 3/32 FS lane, while `LEFsProgrammingParameterizedView.ec` and `LEFsProgrammingParameterized.ec` route the theorem-facing FS bridge through that midpoint and mass closure |
 | LE parameterized umbrella | Yes | Yes | No | Yes, for `G1 -> G2` | Indirectly yes | `LEStatisticalDistanceParameterized.ec`, `LEHVZKParameterized.ec`, and `GameLEBridgeParameterized.ec` now compose over the parameterized rejection midpoint plus the FS-facing parameterized view bridge |
 | LE-only parameterized top theorem | Yes | Yes | No | Yes, with canonical MS retained | Yes | `qssm_main_theorem_le_parameterized_budget` remains the LE-only intermediate theorem |
-| Full canonical parameterized QSSM theorem | Yes | Yes, with live MS1 and explicit extra MS2 charge | Not applicable | Yes | Yes | `qssm_main_theorem_parameterized_budget` closes through a live MS1 route, a budgeted public AfterRom to canonical AfterRom bridge, and an explicit duplicated MS2 term |
+| Full canonical parameterized QSSM theorem | Yes | Yes, with live MS1, live MS2, and explicit extra MS2 charge | Not applicable | Yes | Yes | `qssm_main_theorem_parameterized_budget` closes through live MS1, live MS2, a budgeted public AfterRom to canonical AfterRom bridge, and an explicit duplicated MS2 term at active closed form `15%r / 32%r` |
 
 ## Structurally Durable Versus Temporary Layers
 
@@ -35,6 +35,9 @@ These files should remain part of the architecture even after production-count d
 - `ms/source/SourceHashBindingSemanticLiveParameterizedMass.ec`
 - `ms/source/SourceHashBindingSemanticBridgeParameterized.ec`
 - `ms/comparison/ComparisonPayloadSemanticSlotMassParameterized.ec`
+- `ms/comparison/ComparisonPayloadSemanticLiveParameterizedCore.ec`
+- `ms/comparison/ComparisonPayloadSemanticLiveParameterizedMass.ec`
+- `ms/comparison/ComparisonPayloadSemanticBridgeParameterized.ec`
 - `ms/MSProbabilitySurfaceParameterized.ec`
 - `le/LERejectionSamplerParameterizedCore.ec`
 - `le/LERejectionSamplerMassLiveParameterized.ec`
@@ -53,9 +56,7 @@ These files should remain part of the architecture even after production-count d
 
 ### Demo-alias temporary wrappers
 
-These files are architecturally useful today, but their current proofs still depend on alias equalities between the demo semantic owners and the parameterized owners.
-
-- `ms/comparison/ComparisonPayloadSemanticBridgeParameterized.ec`
+None are expected on the active uniform finite-support / contiguous-layout `3%r / 32%r` profile family. The current theorem-facing MS1, MS2, and LE parameterized routes are now all carried by live lower lanes rather than active demo/parameterized alias bridges.
 
 ## What Is Complete Today
 
@@ -67,37 +68,38 @@ These files are architecturally useful today, but their current proofs still dep
 - The MS1 parameterized lane now carries a live canonical failure route with counts `collision=1`, `malformed_binding=1`, `transcript=1`, `clean=29`, `failure=3`, `total=32`, so `epsilon_ms_hash_binding_parameterized = 3%r / 32%r`.
 - The MS1 staged public-divergence upper lane is now live parameterized at `malformed_binding + transcript = 2%r / 32%r = 1%r / 16%r`, and the staged/public-endpoint MS1 route is no longer demo-bound.
 - `SourceHashBindingSemanticLiveParameterizedCore.ec` owns the live MS1 coupled-state/public-observable core, `SourceHashBindingSemanticLiveParameterizedMass.ec` owns live MS1 canonical failure and public-divergence upper mass closure, and `SourceHashBindingSemanticBridgeParameterized.ec`, `MSProbabilitySurfaceParameterized.ec`, `GameAdvantageParameterized.ec`, `GameMSHopTypesParameterized.ec`, and `GameMSHopCompositionParameterized.ec` now carry that live staged route.
+- The MS2 parameterized lane now also carries a live execution-owned route with counts `global_digest=1`, `query_digest=1`, `transcript=1`, `clean=29`, `failure=3`, `total=32`, so `epsilon_ms_rom_programmability_parameterized = 3%r / 32%r`.
+- `ComparisonPayloadSemanticLiveParameterizedCore.ec` owns the live MS2 category/coupled-state/public-AfterRom core, `ComparisonPayloadSemanticLiveParameterizedMass.ec` owns the live MS2 execution-owned failure mass and public-divergence/failure closure, and `ComparisonPayloadSemanticBridgeParameterized.ec`, `MSProbabilitySurfaceParameterized.ec`, `GameAdvantageParameterized.ec`, `GameMSHopTypesParameterized.ec`, and `GameMSHopCompositionParameterized.ec` now carry the live staged/public-endpoint MS2 transition and budgeted landing route.
 - The LE parameterized lane closes all the way to `qssm_main_theorem_le_parameterized_budget`.
 - The full canonical parameterized route closes all the way to `qssm_main_theorem_parameterized_budget`.
+- Under the active live profiles, the full canonical parameterized top budget closes at `15%r / 32%r`.
 - The staged/public-endpoint caveat is still explicit and part of the frozen proof claim because the canonical closure still factors through a charged public-endpoint landing.
 - The exact-zero route and live demo semantic route remain unchanged.
-- The only remaining localized replay seam is the MS2 local failure comparison `ms_rom_local_failure_mass_le_parameterized_budget`.
+- No remaining localized replay seams are expected on the current uniform finite-support / contiguous-layout profile family.
 
 ## What Is Intentionally Incomplete
 
 - No zero-cost public-endpoint landing theorem from public AfterRom to canonical AfterRom.
 - No theorem claiming public AfterRom is zero-equal to canonical AfterRom.
-- No replay of the remaining MS2 local failure comparison.
 - No support for arbitrary non-uniform parameter profiles.
 
-## Minimum Future Work For True Production-Count Substitution
+## Minimum Future Work For Profile Generalization
 
-The next research phase, if reopened, starts below the theorem surface.
+The next research phase, if reopened, starts below the theorem surface, but it is no longer a localized seam replay campaign.
 
 1. Keep `BudgetParameters.ec`, `MainTheorem.ec`, demo MS files, and the exact-zero/demo semantic routes unchanged.
-2. Replace the alias-based MS2 local-failure bridge companion with a real execution-owned parameterized bridge proof.
-3. Re-validate the public-endpoint landing and canonical composition theorems above that seam without hiding the duplicated MS2 charge.
+2. Generalize the current uniform finite-support / contiguous-layout parameter geometry if broader profile families are desired.
+3. Re-validate the public-endpoint landing and canonical composition theorems above any generalized lower owner without hiding the duplicated MS2 charge.
 4. Re-evaluate the remaining MS semantic distinction only if a zero-cost or tighter landing is required later.
 
-The next recommended audit is the MS2 live parameterized replay audit.
+The next recommended audit is therefore a profile-generalization audit rather than another localized replay audit.
 
 ## Research Backlog
 
 These items are backlog only. They are not active proof obligations at the frozen release checkpoint.
 
 - public AfterRom to canonical AfterRom semantic reconciliation
-- true production-count substitution
-- removal of alias-based parameterized bridge equalities
+- profile generalization beyond the current uniform finite-support / contiguous-layout family
 - tighter public AfterRom to canonical AfterRom bridge
 - possible removal of the duplicated MS2 landing charge
 - semantic/public observable reconciliation strategy

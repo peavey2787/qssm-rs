@@ -10,7 +10,7 @@ This document explains how to reproduce the frozen May 2026 release checkpoint a
 
 At the current release checkpoint, the expected result is:
 
-- full checker: `OK: checked 133 theories`
+- full checker: `OK: checked 135 theories`
 - `axiom_count=0`
 - `admit_count=0`
 - worktree clean after restoring generated `.eco` churn
@@ -23,10 +23,13 @@ At the current release checkpoint, the expected result is:
 - MS1 canonical failure lane documented as live at `3%r / 32%r`
 - MS1 public-divergence upper lane documented as live at `2%r / 32%r = 1%r / 16%r`
 - staged MS1 public-endpoint route documented as live parameterized rather than demo-bound
-- the only remaining localized replay seam documented as `ms_rom_local_failure_mass_le_parameterized_budget`
+- active parameterized MS2 profile documented as `global_digest=1`, `query_digest=1`, `transcript=1`, `clean=29`, `failure=3`, `total=32`, so `epsilon_ms_rom_programmability_parameterized = 3%r / 32%r`
+- staged MS2 public-endpoint route documented as live parameterized rather than demo-bound
+- no remaining localized replay seams expected on the current uniform finite-support / contiguous-layout profile family
 - `qssm_main_theorem_le_parameterized_budget` present and documented as the LE-only intermediate theorem
 - `qssm_main_theorem_parameterized_budget` present and documented as the full canonical parameterized theorem
 - canonical parameterized top budget documented as `epsilon_ms_hash_binding_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_le_parameterized`
+- active closed-form canonical parameterized top budget documented as `15%r / 32%r`
 
 ## Checker Invocation
 
@@ -40,7 +43,7 @@ cd docs/03-formal-verification/easycrypt
 Expected terminal tail:
 
 ```text
-OK: checked 133 theories in .../docs/03-formal-verification/easycrypt
+OK: checked 135 theories in .../docs/03-formal-verification/easycrypt
 ```
 
 The compile-order authority remains [../check_easycrypt.sh](../check_easycrypt.sh).
@@ -107,11 +110,14 @@ A release-ready checkpoint must preserve all of the following.
 - MS1 canonical failure lane documented as live at `3%r / 32%r`
 - MS1 public-divergence upper lane documented as live at `2%r / 32%r = 1%r / 16%r`
 - staged MS1 public-endpoint route documented as live parameterized rather than demo-bound
+- active parameterized MS2 profile documented as `global_digest=1`, `query_digest=1`, `transcript=1`, `clean=29`, `failure=3`, `total=32`
+- staged MS2 public-endpoint route documented as live parameterized rather than demo-bound
 - `qssm_main_theorem_le_parameterized_budget` documented as the LE-only intermediate theorem
 - `qssm_main_theorem_parameterized_budget` documented as the full canonical parameterized theorem
 - the explicit duplicated `epsilon_ms_rom_programmability_parameterized` term documented without simplification
+- active closed-form canonical parameterized top budget documented as `15%r / 32%r`
 - staged/public-endpoint MS caveat documented explicitly as a charged bridge, not a zero bridge
-- remaining localized replay seam documented as MS2 local failure only
+- no remaining localized replay seams expected on the current uniform finite-support / contiguous-layout profile family
 - arbitrary non-uniform parameter profiles still documented as unsupported
 
 ## What The Release Does Not Claim
@@ -121,7 +127,7 @@ The release does not claim a zero-cost public-to-canonical MS fusion.
 - Public AfterRom is still budget-close to canonical AfterRom, not zero-equal.
 - There is still no theorem claiming `public AfterRom = canonical AfterRom` or `sdist(public AfterRom, canonical AfterRom) = 0`.
 - The canonical parameterized route closes by paying an explicit extra `epsilon_ms_rom_programmability_parameterized` term.
-- The staged/public-endpoint MS lane remains visible as the internal route consumed by that charged closure, with the MS1 half now live parameterized and the MS2 half still pending replay.
+- The staged/public-endpoint MS lane remains visible as the internal route consumed by that charged closure, with both the MS1 and MS2 halves now live parameterized.
 
 ## Recommended Release Stop
 

@@ -6,7 +6,7 @@ Navigation: [EasyCrypt README](../README.md)
 
 This document gives external reviewers a route-by-route view of how the frozen EasyCrypt proof surface composes.
 
-Checkpoint snapshot: `./check_easycrypt.sh` is `OK` over 133 checked theories, with `axiom_count=0` and `admit_count=0`.
+Checkpoint snapshot: `./check_easycrypt.sh` is `OK` over 135 checked theories, with `axiom_count=0` and `admit_count=0`.
 
 ## Global Split
 
@@ -115,8 +115,12 @@ ParameterizedBudgetParameters.epsilon_ms_hash_binding_parameterized
 
 ParameterizedBudgetParameters.epsilon_ms_rom_programmability_parameterized
   -> ms/comparison/ComparisonPayloadSemanticSlotMassParameterized.ec
+  -> ms/comparison/ComparisonPayloadSemanticLiveParameterizedCore.ec
+  -> ms/comparison/ComparisonPayloadSemanticLiveParameterizedMass.ec
   -> ms/comparison/ComparisonPayloadSemanticBridgeParameterized.ec
+  -> ms/MSProbabilitySurfaceParameterized.ec : A_MS2_rom_programming_parameterized_public_endpoint_transition_bound
   -> ms/MSProbabilitySurfaceParameterized.ec : A_MS_public_after_rom_to_canonical_after_rom_parameterized_transition_bound
+  -> games/GameAdvantageParameterized.ec : A_MS2_rom_programming_parameterized_canonical_game_pr_core_bound
   -> games/GameAdvantageParameterized.ec : A_MS_public_after_rom_to_canonical_after_rom_parameterized_bound
   -> games/GameMSHopTypesParameterized.ec : A_MS2_canonical_rom_programming_parameterized_bound
 
@@ -138,9 +142,11 @@ ParameterizedBudgetParameters.epsilon_ms_hash_binding_parameterized
 
 ParameterizedBudgetParameters.epsilon_ms_rom_programmability_parameterized
   -> ms/comparison/ComparisonPayloadSemanticSlotMassParameterized.ec
+  -> ms/comparison/ComparisonPayloadSemanticLiveParameterizedCore.ec
+  -> ms/comparison/ComparisonPayloadSemanticLiveParameterizedMass.ec
   -> ms/comparison/ComparisonPayloadSemanticBridgeParameterized.ec
 
-Live MS1 staged route + remaining MS2 companion
+Live MS1 staged route + live MS2 staged/landing companion
   -> ms/MSProbabilitySurfaceParameterized.ec
   -> games/GameAdvantageParameterized.ec
   -> games/GameMSHopTypesParameterized.ec
@@ -223,4 +229,4 @@ ParameterizedBudgetParameters.epsilon_ms_hash_binding_parameterized
 
 ## Honest Boundary
 
-The dependency graph remains intentionally split. The public theorem surface now includes both the LE-only intermediate parameterized theorem and the full canonical parameterized theorem, while the internal staged/public-endpoint MS route remains visible because the canonical closure still depends on a charged public-to-canonical bridge rather than a zero-cost identification. On the MS1 half, that staged route is now live parameterized; the only remaining localized replay seam is MS2 local failure.
+The dependency graph remains intentionally split. The public theorem surface now includes both the LE-only intermediate parameterized theorem and the full canonical parameterized theorem, while the internal staged/public-endpoint MS route remains visible because the canonical closure still depends on a charged public-to-canonical bridge rather than a zero-cost identification. On both the MS1 and MS2 halves, that staged route is now carried by live parameterized lower lanes. No remaining localized replay seams are expected on the current uniform finite-support / contiguous-layout profile family.
