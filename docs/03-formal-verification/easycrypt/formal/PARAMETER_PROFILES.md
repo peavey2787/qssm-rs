@@ -135,9 +135,11 @@ The `*` placeholder stands for `demo`, `conservative`, `prod`, or `stress`.
 The current parameterized owner/helper layer supports the following geometry without new helper lemmas or theorem-surface changes.
 
 - uniform finite-support profiles are supported through the current `drange 0 total` owner pattern
+- generic uniform predicate masses on `dmap (drange 0 total)` are now supported through `primitives/ParameterizedMassHelpers.ec : drange_pred_true_mass` and `primitives/ParameterizedMassHelpers.ec : drange_pred_true_mass_le_bound`
 - prefix failure layouts are supported for LE rejection, LE FS, MS1 local failure, and MS2 local failure
 - a contiguous interval layout is supported for the MS1 public-divergence upper mass
 - larger contiguous uniform supports are structurally supported
+- those generic predicate helpers are lower helper infrastructure only; they do not add non-uniform weights, sparse support, or theorem-surface support for arbitrary profile families
 - the current frozen live family is a 32-slot uniform finite-support / contiguous-layout profile with three failure slots on each active parameterized owner
 - non-uniform weights are not yet supported
 - sparse or non-contiguous failure layouts are not yet supported

@@ -89,6 +89,7 @@ These components should remain part of the architecture even if broader profile 
 - Component-sum lemmas such as `ms1_param_failure_count_component_sum` and `ms2_param_failure_count_component_sum` are genuine arithmetic.
 - Nonnegativity and positivity lemmas such as `epsilon_ms_hash_binding_parameterized_nonneg`, `epsilon_ms_rom_programmability_parameterized_nonneg`, `epsilon_le_rej_parameterized_nonneg`, `epsilon_le_fs_parameterized_nonneg`, and `epsilon_le_parameterized_nonneg` are genuine arithmetic over the parameterized operators.
 - The owner-layer additive structure `epsilon_le_parameterized = epsilon_le_rej_parameterized + epsilon_le_fs_parameterized` is already the right long-term architecture.
+- `primitives/ParameterizedMassHelpers.ec` now also carries `drange_pred_true_mass` and `drange_pred_true_mass_le_bound`, which package generic uniform predicate masses and upper bounds for the current `drange 0 total` owner pattern without widening theorem-surface support beyond the current uniform finite-support / contiguous-layout family.
 
 Classification: `live-route` and structurally durable.
 

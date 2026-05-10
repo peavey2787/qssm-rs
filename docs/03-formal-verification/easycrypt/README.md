@@ -126,6 +126,7 @@ The deeper architecture and file-map material moved to [formal/ARCHITECTURE.md](
 - [formal/PARAMETERIZED_ROUTE_STATUS.md](formal/PARAMETERIZED_ROUTE_STATUS.md): status table for the parameterized lanes, including what is complete and what remains intentionally unstated
 - [formal/PROOF_DEPENDENCY_GRAPH.md](formal/PROOF_DEPENDENCY_GRAPH.md): route-by-route dependency graphs for MS, LE, and parameterized companions
 - [formal/PARAMETER_PROFILES.md](formal/PARAMETER_PROFILES.md): active live parameter profiles, supported profile geometry, and future profile-generalization constraints
+- [formal/PARAMETER_TUNING_ROADMAP.md](formal/PARAMETER_TUNING_ROADMAP.md): frozen release baseline plus the next safe one-component-at-a-time parameter-tuning process
 - [formal/DE_ALIASING_PLAN.md](formal/DE_ALIASING_PLAN.md): completion status for the current de-aliasing/live replay campaign and the remaining profile-generalization backlog
 - [formal/RELEASE_VERIFICATION.md](formal/RELEASE_VERIFICATION.md): reproducibility steps, expected checker output, and `.eco` cleanup procedure for release validation
 - [formal/SEMANTIC_GAP_ANALYSIS.md](formal/SEMANTIC_GAP_ANALYSIS.md): explanation of the public AfterRom versus canonical AfterRom semantic distinction and the budgeted bridge that now closes the parameterized route
@@ -149,6 +150,8 @@ The formal-doc release baseline remains:
 May 2026 release checkpoint: the EasyCrypt tree is checker-green at `135` checked theories, with `axiom_count=0` and `admit_count=0`. `qssm_main_theorem` remains unchanged on the exact-zero route, and `qssm_main_theorem_semantic_budget` remains unchanged on the demo semantic route. `qssm_main_theorem_parameterized_budget` now closes through fully live parameterized LE and MS routes while preserving the existing theorem-facing wrapper names.
 
 On the active live parameterized profile, the routed component budgets are `MS1 = 3%r / 32%r`, `MS2 = 3%r / 32%r`, `LE rejection = 3%r / 32%r`, and `LE FS = 3%r / 32%r`, so `LE combined = 6%r / 32%r` and the top parameterized budget is `15%r / 32%r`. The live route now includes the parameterized LE rejection lane, the parameterized LE FS lane, the live MS1 canonical and public-endpoint lanes, and the live MS2 staged plus public-to-canonical landing lanes. The duplicated MS2 charge remains explicit in the theorem route and is not a presentation artifact.
+
+The lower helper layer now also includes `primitives/ParameterizedMassHelpers.ec : drange_pred_true_mass` and `primitives/ParameterizedMassHelpers.ec : drange_pred_true_mass_le_bound`. These are generic uniform predicate mass helpers for the current `drange 0 total` owner pattern only; they do not broaden supported profiles beyond the frozen uniform finite-support / contiguous-layout family.
 
 The main caveat is unchanged: public AfterRom is budget-close to canonical AfterRom, not zero-equal, so this checkpoint does not claim a zero-cost public AfterRom landing. The exact-zero route is unchanged, the demo semantic route is unchanged, and supported parameter profiles remain limited to the current uniform finite-support contiguous-layout geometry. Arbitrary non-uniform profile generalization remains future work.
 

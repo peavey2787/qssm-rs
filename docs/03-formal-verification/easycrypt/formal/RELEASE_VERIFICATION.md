@@ -30,6 +30,7 @@ At the current release checkpoint, the expected result is:
 - `qssm_main_theorem_parameterized_budget` present and documented as the full canonical parameterized theorem
 - canonical parameterized top budget documented as `epsilon_ms_hash_binding_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_le_parameterized`
 - active closed-form canonical parameterized top budget documented as `15%r / 32%r`
+- lower helper infrastructure documented as including `drange_pred_true_mass` and `drange_pred_true_mass_le_bound` for uniform predicate masses only, not as arbitrary-profile support
 
 ## Checker Invocation
 
@@ -116,6 +117,7 @@ A release-ready checkpoint must preserve all of the following.
 - `qssm_main_theorem_parameterized_budget` documented as the full canonical parameterized theorem
 - the explicit duplicated `epsilon_ms_rom_programmability_parameterized` term documented without simplification
 - active closed-form canonical parameterized top budget documented as `15%r / 32%r`
+- lower helper infrastructure documented as including `drange_pred_true_mass` and `drange_pred_true_mass_le_bound` without implying non-uniform or sparse profile support
 - staged/public-endpoint MS caveat documented explicitly as a charged bridge, not a zero bridge
 - no remaining localized replay seams expected on the current uniform finite-support / contiguous-layout profile family
 - arbitrary non-uniform parameter profiles still documented as unsupported
