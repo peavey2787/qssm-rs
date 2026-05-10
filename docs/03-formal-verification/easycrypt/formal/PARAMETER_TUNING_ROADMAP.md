@@ -17,7 +17,7 @@ It is a docs-only planning surface.
 
 Current checker snapshot:
 
-- `./check_easycrypt.sh`: `OK` over 135 checked theories
+- `./check_easycrypt.sh`: `OK` over 142 checked theories
 - `axiom_count=0`
 - `admit_count=0`
 - `qssm_main_theorem_parameterized_budget` closed
@@ -39,6 +39,8 @@ Active live profile:
 | Top theorem | `epsilon_ms_hash_binding_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_le_parameterized` | `15%r / 64%r` |
 
 The MS1 staged public-divergence upper lane now closes at `2%r / 64%r = 1%r / 32%r`.
+
+Current head also carries a parallel abstract real-world upper-bound theorem surface through `primitives/RealWorldBudgetParameters.ec`, `primitives/RealWorldBudgetObligations.ec`, `le/LEStatisticalDistanceRealWorld.ec`, `ms/MSProbabilitySurfaceRealWorld.ec`, `games/GameLEBridgeRealWorld.ec`, `games/GameMSHopCompositionRealWorld.ec`, and `theorem/MainTheoremRealWorld.ec`. That surface ends at `qssm_main_theorem_realworld_budget`, is hypothesis-driven rather than axiom-driven, and does not change the concrete tuning surface documented here. It also does not add weighted or non-uniform sampler support.
 
 Lower helper infrastructure now includes `primitives/ParameterizedMassHelpers.ec : drange_pred_true_mass`, `primitives/ParameterizedMassHelpers.ec : drange_pred_true_mass_le_bound`, `primitives/ParameterizedMassHelpers.ec : drange_subset_true_mass`, `primitives/ParameterizedMassHelpers.ec : drange_subset_true_mass_le_bound`, and `primitives/ParameterizedMassHelpers.ec : drange_subset_complement_mass`. Those lemmas support generic uniform predicate and subset counts on `drange 0 total`, but they do not by themselves expand the supported profile family beyond the current uniform finite-support / contiguous-layout geometry or add non-uniform weights. `ms/source/SourceHashBindingSemanticSlotMassParameterized.ec : ms_hash_binding_public_divergence_upper_choice_mass_eq_local_upper_mass_parameterized` now delegates to the subset-helper sibling theorem while preserving the frozen `15%r / 64%r` route.
 
@@ -115,7 +117,7 @@ Completed order:
 
 Next recommended phase:
 
-1. Freeze-route release packaging checkpoint
-2. Release packaging / tag candidate
+1. Weighted finite-support replay design audit if non-uniform or externally measured sampler semantics are required
+2. Stop at the current split surfaces if the frozen concrete route and abstract upper-bound route are sufficient
 
 This keeps the lower replays local, preserves the frozen theorem surface, and makes any geometry break visible as soon as it appears.

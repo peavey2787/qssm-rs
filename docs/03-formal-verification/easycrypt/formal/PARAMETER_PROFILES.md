@@ -44,7 +44,7 @@ Under the active live profiles, that symbolic top budget evaluates to `15%r / 64
 
 ## Current Checked Snapshot
 
-- `./check_easycrypt.sh` is `OK` over 135 checked theories; `axiom_count=0`; `admit_count=0`.
+- `./check_easycrypt.sh` is `OK` over 142 checked theories; `axiom_count=0`; `admit_count=0`.
 - The unchanged demo semantic LE rejection route still uses `soft=1`, `hard=1`, `invalid=1`, `accept=13`, so `epsilon_le_rej_semantic = 3%r / 16%r`.
 - The active parameterized LE rejection profile is `soft=1`, `hard=1`, `invalid=1`, `accept=61`, `failure=3`, `total=64`, so `epsilon_le_rej_parameterized = 3%r / 64%r`.
 - The active parameterized LE FS profile is `query_collision=1`, `programming_collision=1`, `transcript=1`, `clean=61`, `failure=3`, `total=64`, so `epsilon_le_fs_parameterized = 3%r / 64%r`.
@@ -58,6 +58,16 @@ Under the active live profiles, that symbolic top budget evaluates to `15%r / 64
 - The LE rejection, LE FS, MS1, and MS2 retunings were owner-only changes. They changed no theorem surface and required no local proof repairs.
 - `qssm_main_theorem_parameterized_budget` remains closed with the explicit duplicated MS2 charge.
 - No remaining localized replay seams are expected on the current uniform finite-support / contiguous-layout profile family.
+
+## Parallel Abstract Real-World Surface
+
+The current head also carries a separate axiom-free abstract upper-bound theorem surface.
+
+- `primitives/RealWorldBudgetParameters.ec` defines the explicit `realworld_budget` bundle and the operators `epsilon_ms_hash_binding_realworld`, `epsilon_ms_rom_programmability_realworld`, `epsilon_le_rej_realworld`, `epsilon_le_fs_realworld`, `epsilon_le_realworld`, and `epsilon_top_realworld`.
+- `primitives/RealWorldBudgetObligations.ec` packages `le_realworld_obligations`, `ms_realworld_obligations`, and `qssm_realworld_obligations`.
+- `le/LEStatisticalDistanceRealWorld.ec`, `ms/MSProbabilitySurfaceRealWorld.ec`, `games/GameLEBridgeRealWorld.ec`, `games/GameMSHopCompositionRealWorld.ec`, and `theorem/MainTheoremRealWorld.ec` lift those hypotheses into `qssm_main_theorem_realworld_budget`.
+- Those obligations are theorem hypotheses, not axioms.
+- This surface models externally supplied upper-bound budgets only. It does not yet implement weighted or non-uniform sampler semantics, and it leaves the frozen concrete `15%r / 64%r` route unchanged.
 
 ## Why The MS2 Charge Appears Twice
 
@@ -170,7 +180,7 @@ Before any profile is promoted beyond the current frozen family, complete the fo
 
 ## Explicit Warning About The Current Proof Surface
 
-The current parameterized proof route is structurally complete for the active uniform finite-support / contiguous-layout live family. That does not imply arbitrary non-uniform, sparse, or reordered profiles are supported, and it does not remove the semantic caveat that public AfterRom is only budget-close to canonical AfterRom.
+The current parameterized proof route is structurally complete for the active uniform finite-support / contiguous-layout live family. That does not imply arbitrary non-uniform, sparse, or reordered profiles are supported, and it does not remove the semantic caveat that public AfterRom is only budget-close to canonical AfterRom. The parallel real-world theorem surface does not change that interpretation: it consumes externally supplied upper-bound budgets as hypotheses and still does not justify weighted/non-uniform sampler claims.
 
 Future work therefore starts from profile generalization or stronger lower semantics, not from replaying a currently open localized seam on the active route.
 

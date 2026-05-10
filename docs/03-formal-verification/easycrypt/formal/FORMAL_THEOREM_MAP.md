@@ -6,13 +6,14 @@ Navigation: [EasyCrypt README](../README.md)
 
 This document is the canonical external explanation of what the current EasyCrypt tree proves, how the theorem routes compose, which parameterized lanes are complete, which are intentionally incomplete, and why the current stopping point is mathematically honest.
 
-The proof surface is frozen at the May 2026 release checkpoint.
+The frozen concrete release surface is preserved at the May 2026 checkpoint. The current head additionally carries a parallel abstract real-world upper-bound theorem surface.
 
-- Current checker snapshot is `OK` over 135 checked theories, with `axiom_count=0` and `admit_count=0`.
+- Current checker snapshot is `OK` over 142 checked theories, with `axiom_count=0` and `admit_count=0`.
 - The exact-zero route remains unchanged.
 - The live demo semantic route remains unchanged and still closes at `3%r / 4%r`.
 - `qssm_main_theorem_le_parameterized_budget` exists and is closed as the LE-only intermediate theorem.
 - `qssm_main_theorem_parameterized_budget` exists and is closed as the full canonical parameterized theorem.
+- `qssm_main_theorem_realworld_budget` exists and is closed as the abstract real-world upper-bound theorem.
 - The full parameterized top budget is `epsilon_ms_hash_binding_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_le_parameterized`.
 - Under the active live profiles, that full parameterized top budget closes at `15%r / 64%r`.
 - The lower MS public-endpoint distinction remains real: public AfterRom is budget-close to canonical AfterRom, not zero-equal, so the route closes through a charged bridge.
@@ -27,10 +28,11 @@ The proof surface is frozen at the May 2026 release checkpoint.
 | `qssm_main_theorem_nonzero_budget` | `theorem/MainTheorem.ec` | Closed | Discoverability alias of the live demo semantic theorem |
 | `qssm_main_theorem_le_parameterized_budget` | `theorem/MainTheoremParameterized.ec` | Closed | LE-only parameterized theorem that keeps the MS contribution on the canonical/demo semantic route |
 | `qssm_main_theorem_parameterized_budget` | `theorem/MainTheoremParameterized.ec` | Closed | Full canonical parameterized theorem with explicit budget `epsilon_ms_hash_binding_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_le_parameterized` |
+| `qssm_main_theorem_realworld_budget` | `theorem/MainTheoremRealWorld.ec` | Closed | Axiom-free abstract real-world upper-bound theorem over explicit obligation hypotheses |
 
 ## Route Split
 
-The current theorem system has five distinct routes.
+The current theorem system has six distinct routes.
 
 | Route | Top surface | Current status | Notes |
 |---|---|---|---|
@@ -38,7 +40,10 @@ The current theorem system has five distinct routes.
 | Demo semantic route | `qssm_main_theorem_semantic_budget` | Live | Canonical demo semantic route with top `3%r / 4%r` |
 | LE-only parameterized route | `qssm_main_theorem_le_parameterized_budget` | Live | Keeps canonical/demo MS contribution and parameterizes only LE |
 | Full canonical parameterized route | `qssm_main_theorem_parameterized_budget` | Live | Closes through a budgeted public AfterRom to canonical AfterRom bridge with an explicit duplicated MS2 term |
+| Abstract real-world upper-bound route | `qssm_main_theorem_realworld_budget` | Live | Mirrors the charged canonical route over explicit real-world obligation hypotheses and externally supplied upper-bound budgets |
 | Staged/public-endpoint MS parameterized route | No separate top theorem | Live as an internal route | Remains the internal public-endpoint subroute consumed by the canonical parameterized closure |
+
+For deployment-facing budget discussion, the three parallel public theorem families are the exact-zero route, the full concrete parameterized route, and the abstract real-world upper-bound route. The demo semantic route and LE-only parameterized route remain checked companions, and the staged/public-endpoint MS lane remains internal only.
 
 ## Exact-Zero Route
 
@@ -154,6 +159,20 @@ epsilon_ms_hash_binding_parameterized
 + epsilon_le_parameterized
 ```
 
+## Abstract Real-World Upper-Bound Route
+
+The real-world route is a parallel theorem surface. It does not replay weighted or non-uniform samplers; it packages externally supplied upper-bound budgets as explicit theorem hypotheses.
+
+| Layer | File | Main symbols |
+|---|---|---|
+| Real-world budget owner | `primitives/RealWorldBudgetParameters.ec` | `realworld_budget`, `epsilon_ms_hash_binding_realworld`, `epsilon_ms_rom_programmability_realworld`, `epsilon_le_rej_realworld`, `epsilon_le_fs_realworld`, `epsilon_le_realworld`, `epsilon_top_realworld` |
+| Real-world obligation bundle | `primitives/RealWorldBudgetObligations.ec` | `le_realworld_obligations`, `ms_realworld_obligations`, `qssm_realworld_obligations` |
+| LE real-world wrapper | `le/LEStatisticalDistanceRealWorld.ec`, `games/GameLEBridgeRealWorld.ec` | `A_LE_semantic_view_advantage_bound_from_realworld_budget`, `A_G1_to_G2_le_semantic_realworld_budget_transition_bound` |
+| MS real-world wrapper | `ms/MSProbabilitySurfaceRealWorld.ec`, `games/GameMSHopCompositionRealWorld.ec` | `A_MS2_canonical_rom_programming_realworld_bound`, `A_G0_to_G1_ms_realworld_transition_bound` |
+| Top theorem | `theorem/MainTheoremRealWorld.ec` | `qssm_main_theorem_realworld_budget` |
+
+This route keeps the duplicate MS2 charge explicit, preserves the public AfterRom budget-close caveat, and remains axiom-free because the real-world obligations are theorem hypotheses rather than imported assumptions.
+
 ## Staged/Public-Endpoint MS Parameterized Route
 
 The MS parameterized lane still factors through a staged public-endpoint route, but that route is now an internal component of the closed canonical parameterized theorem.
@@ -176,6 +195,7 @@ This lane still carries `A_MS_public_endpoint_parameterized_staged_composition_b
 - There is no zero-cost canonicalization theorem from public AfterRom to canonical AfterRom.
 - There is no theorem claim that the staged/public-endpoint MS route has re-entered the canonical `Adv_G0_G1_MS` telescope.
 - There is no theorem claiming `public AfterRom = canonical AfterRom` or `sdist(public AfterRom, canonical AfterRom) = 0`.
+- There is no weighted or non-uniform sampler replay theorem for arbitrary real-world parameters; the real-world route is abstract upper-bound only.
 
 ## Why The Current Stopping Point Is Honest
 
@@ -185,5 +205,6 @@ The frozen theorem surface matches the proofs that actually close.
 - The demo semantic route is claimed only where the current demo semantic owners have been routed through the canonical theorem stack.
 - The LE-only parameterized theorem remains claimed because the LE parameterized lane closes and the MS contribution can still be left on the already-closed canonical/demo semantic route.
 - The full canonical parameterized theorem is now claimed only because the semantic public-to-canonical MS gap was closed honestly by paying an explicit extra `epsilon_ms_rom_programmability_parameterized` term rather than by asserting a zero bridge.
+- The abstract real-world upper-bound theorem is claimed only as a hypothesis-driven theorem surface over explicit obligation predicates. It does not claim weighted/non-uniform sampler replay or stronger semantics than the current lower route proves.
 
 That semantic distinction and its charged closure are analyzed in [SEMANTIC_GAP_ANALYSIS.md](SEMANTIC_GAP_ANALYSIS.md). No remaining localized replay seams are expected on the current uniform finite-support / contiguous-layout profile family.

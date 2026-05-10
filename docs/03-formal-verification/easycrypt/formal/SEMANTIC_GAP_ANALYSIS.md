@@ -27,6 +27,7 @@ The following facts are available on the current lower surface.
 - On the MS1 half, that staged/public-endpoint route is now live parameterized at `2%r / 64%r = 1%r / 32%r` rather than demo-bound.
 - On the MS2 half, both the staged public-endpoint transition and the public-to-canonical landing are now routed through a live execution-owned parameterized lane at `epsilon_ms_rom_programmability_parameterized = 3%r / 64%r`.
 - The parameterized route can now land back in the canonical game chain by paying an explicit budgeted bridge charge.
+- The abstract real-world upper-bound route now mirrors that same charged landing shape through `A_MS_public_after_rom_to_canonical_after_rom_realworld_transition_bound`, `A_G0_to_G1_ms_realworld_transition_bound`, and `qssm_main_theorem_realworld_budget`.
 
 In practical theorem names, the strongest relevant current facts are:
 
@@ -85,6 +86,12 @@ epsilon_ms_hash_binding_parameterized
 
 Under the active live profiles, that charged top budget evaluates to `15%r / 64%r`.
 
+## What The Abstract Real-World Surface Adds
+
+`RealWorldBudgetParameters.ec`, `RealWorldBudgetObligations.ec`, `LEStatisticalDistanceRealWorld.ec`, `MSProbabilitySurfaceRealWorld.ec`, `GameLEBridgeRealWorld.ec`, `GameMSHopCompositionRealWorld.ec`, and `MainTheoremRealWorld.ec` now package the same charged landing story under explicit `le_realworld_obligations`, `ms_realworld_obligations`, and `qssm_realworld_obligations` hypotheses over externally supplied upper-bound budgets.
+
+This surface is axiom-free because those obligations are theorem premises, not imported assumptions. It does not model weighted or non-uniform samplers, does not remove the public AfterRom caveat, and keeps the duplicate MS2 charge explicit in the theorem-facing statement.
+
 ## Why The Blocker Is Semantic, Not Organizational
 
 The missing piece is not a forgotten wrapper in the game layer.
@@ -100,7 +107,7 @@ What remains missing is a stronger lower theorem about the actual relationship b
 
 The first honest owner boundary is still below the theorem surface if future work wants to tighten the new route.
 
-On the current tree, the live LE rejection and live LE FS `3%r / 64%r` lanes are already closed, the MS1 canonical failure plus staged/public-endpoint lanes are live parameterized at `3%r / 64%r` and `1%r / 32%r`, and the MS2 staged/public-endpoint plus landing route is live parameterized at `3%r / 64%r`. No remaining localized replay seams are expected on the current uniform finite-support / contiguous-layout profile family, so the next focused audit is freeze-route release packaging, profile generalization, or a stronger lower fusion law rather than another localized replay pass.
+On the current tree, the live LE rejection and live LE FS `3%r / 64%r` lanes are already closed, the MS1 canonical failure plus staged/public-endpoint lanes are live parameterized at `3%r / 64%r` and `1%r / 32%r`, the MS2 staged/public-endpoint plus landing route is live parameterized at `3%r / 64%r`, and the parallel abstract real-world upper-bound theorem surface is checker-green. No remaining localized replay seams are expected on the current uniform finite-support / contiguous-layout profile family, so the next focused audit is weighted finite-support replay design, broader profile generalization, a stronger lower fusion law, or stop rather than another localized replay pass.
 
 - Start at `ms/MSProbabilitySurface.ec` or a sibling lower companion.
 - Do not start in `MainTheorem.ec`.

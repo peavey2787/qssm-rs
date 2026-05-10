@@ -8,6 +8,8 @@ This document audits the current parameterized proof lane for profile-generaliza
 
 The current de-aliasing/live replay campaign is complete for the active uniform finite-support / contiguous-layout live family. What remains is not a pending localized seam replay; it is future work for broader profile families or tighter lower semantics.
 
+Current head also carries a parallel abstract real-world upper-bound theorem surface above the same live lower masses. That additive route does not change the de-aliasing verdict here and does not implement weighted or non-uniform sampler semantics.
+
 This is a docs-only roadmap.
 
 - It does not change any EasyCrypt proof file.
@@ -69,6 +71,25 @@ This layer re-enters the canonical game hop with the explicit duplicated MS2 lan
 This layer exposes the public parameterized theorem surface.
 
 - `theorem/MainTheoremParameterized.ec`
+
+## Parallel Abstract Real-World Surface
+
+The current head additionally carries an axiom-free abstract upper-bound route.
+
+### Real-world budget and obligation layer
+
+- `primitives/RealWorldBudgetParameters.ec`
+- `primitives/RealWorldBudgetObligations.ec`
+
+### Real-world wrapper, game, and top layers
+
+- `le/LEStatisticalDistanceRealWorld.ec`
+- `ms/MSProbabilitySurfaceRealWorld.ec`
+- `games/GameLEBridgeRealWorld.ec`
+- `games/GameMSHopCompositionRealWorld.ec`
+- `theorem/MainTheoremRealWorld.ec`
+
+That route ends at `qssm_main_theorem_realworld_budget`, consumes explicit `le_realworld_obligations`, `ms_realworld_obligations`, and `qssm_realworld_obligations` hypotheses, keeps the duplicate MS2 charge explicit, and preserves the public AfterRom budget-close caveat. It is additive only: it does not replay weighted/non-uniform samplers and therefore does not remove the future-generalization hotspots listed below.
 
 ## Classification Vocabulary
 
@@ -161,7 +182,7 @@ Primary hotspots:
 - `le/LERejectionSamplerParameterizedCore.ec` and `LERejectionSamplerMassLiveParameterized.ec` for LE rejection geometry changes
 - `le/LEFsProgrammingFailureProbabilityParameterized.ec`, `LEFsProgrammingLiveParameterizedCore.ec`, and `LEFsProgrammingLiveParameterizedMass.ec` for LE FS geometry changes
 
-These are the files most likely to require real replay if future work moves beyond the current uniform finite-support / contiguous-layout family or introduces non-uniform weights.
+These are the files most likely to require real replay if future work moves beyond the current uniform finite-support / contiguous-layout family or introduces non-uniform weights. The parallel abstract real-world surface does not reduce that replay cost because it packages upper bounds rather than new sampler semantics.
 
 Classification: `future-generalization hotspot`.
 

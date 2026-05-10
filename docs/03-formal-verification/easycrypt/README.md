@@ -2,7 +2,7 @@
 
 This directory contains the EasyCrypt proof development for the QSSM theorem stack. It includes the theorem-facing MS, LE, simulator, game, and main-theorem layers, together with the lower proof surfaces used to stage constructive refinements before they are routed into the stable theorem path.
 
-Current status: the tree checks cleanly with `./check_easycrypt.sh`; the current checker snapshot is `OK` over 135 checked theories; `axiom_count=0`; `admit_count=0`; the exact-zero route is unchanged; and the live demo semantic route still closes at `qssm_main_theorem_semantic_budget = 3%r / 4%r`. That is a machine-checked statement about the current abstraction boundary, not yet a production-count cryptographic security estimate for the deployed system.
+Current status: the tree checks cleanly with `./check_easycrypt.sh`; the current checker snapshot is `OK` over 142 checked theories; `axiom_count=0`; `admit_count=0`; the exact-zero route is unchanged; the live demo semantic route still closes at `qssm_main_theorem_semantic_budget = 3%r / 4%r`; and the head tree now also carries `qssm_main_theorem_realworld_budget` as an axiom-free abstract real-world upper-bound companion. That new surface is hypothesis-driven and does not yet model weighted or non-uniform samplers. This remains a machine-checked statement about the current abstraction boundary, not yet a production-count cryptographic security estimate for the deployed system.
 
 Freeze checkpoint, May 2026: theorem-route implementation now closes on four public lanes plus one internal staged MS lane.
 
@@ -140,6 +140,7 @@ The formal-doc release baseline remains:
 - live demo semantic route unchanged at `3%r / 4%r`
 - `qssm_main_theorem_le_parameterized_budget` closed as the LE-only intermediate parameterized theorem
 - `qssm_main_theorem_parameterized_budget` closed as the full canonical parameterized theorem
+- `qssm_main_theorem_realworld_budget` closed as the abstract real-world upper-bound theorem over explicit obligation hypotheses
 - the canonical parameterized top budget is `epsilon_ms_hash_binding_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_le_parameterized`
 - the active closed-form canonical parameterized top budget is `15%r / 64%r`
 - no remaining localized replay seams are expected on the current uniform finite-support / contiguous-layout live family
@@ -147,7 +148,7 @@ The formal-doc release baseline remains:
 
 ### Release Checkpoint Summary
 
-May 2026 release checkpoint: the EasyCrypt tree is checker-green at `135` checked theories, with `axiom_count=0` and `admit_count=0`. `qssm_main_theorem` remains unchanged on the exact-zero route, and `qssm_main_theorem_semantic_budget` remains unchanged on the demo semantic route. `qssm_main_theorem_parameterized_budget` now closes through fully live parameterized LE and MS routes while preserving the existing theorem-facing wrapper names.
+May 2026 release checkpoint plus abstract real-world extension: the EasyCrypt tree is checker-green at `142` checked theories, with `axiom_count=0` and `admit_count=0`. `qssm_main_theorem` remains unchanged on the exact-zero route, `qssm_main_theorem_semantic_budget` remains unchanged on the demo semantic route, `qssm_main_theorem_parameterized_budget` remains the frozen concrete parameterized theorem at `15%r / 64%r`, and `qssm_main_theorem_realworld_budget` now adds a parallel abstract upper-bound theorem surface without mutating those earlier routes.
 
 On the active live parameterized profile, the routed component budgets are `MS1 = 3%r / 64%r`, `MS2 = 3%r / 64%r`, `LE rejection = 3%r / 64%r`, and `LE FS = 3%r / 64%r`, so `LE combined = 6%r / 64%r = 3%r / 32%r` and the top parameterized budget is `15%r / 64%r`. The live route now includes the parameterized LE rejection lane, the parameterized LE FS lane, the live MS1 canonical and public-endpoint lanes, and the live MS2 staged plus public-to-canonical landing lanes. The duplicated MS2 charge remains explicit in the theorem route and is not a presentation artifact.
 
@@ -155,7 +156,9 @@ All four component retunings to `3%r / 64%r` were owner-only changes made after 
 
 The lower helper layer now also includes `primitives/ParameterizedMassHelpers.ec : drange_pred_true_mass`, `primitives/ParameterizedMassHelpers.ec : drange_pred_true_mass_le_bound`, `primitives/ParameterizedMassHelpers.ec : drange_subset_true_mass`, `primitives/ParameterizedMassHelpers.ec : drange_subset_true_mass_le_bound`, and `primitives/ParameterizedMassHelpers.ec : drange_subset_complement_mass`. These are generic uniform-support helpers for the current `drange 0 total` owner pattern only; they do not broaden supported profiles beyond the frozen uniform finite-support / contiguous-layout family or add non-uniform weights. `ms/source/SourceHashBindingSemanticSlotMassParameterized.ec : ms_hash_binding_public_divergence_upper_choice_mass_eq_local_upper_mass_parameterized` now routes the MS1 upper-mass theorem through that subset-helper layer without changing any routed theorem name or the active `15%r / 64%r` closure.
 
-The main caveat is unchanged: public AfterRom is budget-close to canonical AfterRom, not zero-equal, so this checkpoint does not claim a zero-cost public AfterRom landing. The exact-zero route is unchanged, the demo semantic route is unchanged, and supported parameter profiles remain limited to the current uniform finite-support contiguous-layout geometry. Arbitrary non-uniform profile generalization remains future work.
+The tree now also carries a separate abstract real-world upper-bound surface through `primitives/RealWorldBudgetParameters.ec`, `primitives/RealWorldBudgetObligations.ec`, `le/LEStatisticalDistanceRealWorld.ec`, `ms/MSProbabilitySurfaceRealWorld.ec`, `games/GameLEBridgeRealWorld.ec`, `games/GameMSHopCompositionRealWorld.ec`, and `theorem/MainTheoremRealWorld.ec`. `qssm_main_theorem_realworld_budget` closes only under explicit `le_realworld_obligations`, `ms_realworld_obligations`, and `qssm_realworld_obligations` hypotheses over externally supplied upper-bound budgets. Those obligations are theorem premises, not axioms, and this surface does not replay weighted or non-uniform sampler semantics.
+
+The main caveat is unchanged: public AfterRom is budget-close to canonical AfterRom, not zero-equal, so this checkpoint does not claim a zero-cost public AfterRom landing. The exact-zero route is unchanged, the demo semantic route is unchanged, the frozen concrete parameterized route remains unchanged at `15%r / 64%r`, and supported concrete parameter profiles remain limited to the current uniform finite-support contiguous-layout geometry. Arbitrary non-uniform profile generalization and weighted finite-support replay remain future work.
 
 ## Plan Index
 
@@ -171,9 +174,11 @@ Every plan file and local subtree guide linked from this README includes a retur
 
 ## Current Truth in One View
 
-- The EasyCrypt tree is checker-green today: `./check_easycrypt.sh` currently reports `OK` over 135 checked theories.
+- The EasyCrypt tree is checker-green today: `./check_easycrypt.sh` currently reports `OK` over 142 checked theories.
 - Repo-local named axioms in `*.ec` files under this directory are currently at `0`, and the current repo-local `admit` count is `0`.
-- The theorem split is intentionally frozen: the canonical/demo route remains live, `qssm_main_theorem_le_parameterized_budget` remains the LE-only intermediate parameterized theorem, and `qssm_main_theorem_parameterized_budget` is now the full canonical parameterized theorem.
+- For deployment-facing budget discussion, the tree now has three parallel theorem families: the exact-zero route in `theorem/MainTheorem.ec`, the frozen concrete parameterized route in `theorem/MainTheoremParameterized.ec`, and the abstract real-world upper-bound route in `theorem/MainTheoremRealWorld.ec`. The live demo semantic theorem remains unchanged as a separate demo companion.
+- `primitives/RealWorldBudgetParameters.ec`, `primitives/RealWorldBudgetObligations.ec`, `le/LEStatisticalDistanceRealWorld.ec`, `ms/MSProbabilitySurfaceRealWorld.ec`, `games/GameLEBridgeRealWorld.ec`, and `games/GameMSHopCompositionRealWorld.ec` now route `qssm_main_theorem_realworld_budget` through explicit `le_realworld_obligations`, `ms_realworld_obligations`, and `qssm_realworld_obligations` hypotheses rather than axioms.
+- The abstract real-world surface packages externally supplied upper-bound budgets only. It does not implement weighted or non-uniform sampler semantics, and weighted finite-support replay remains future work.
 - The active parameterized LE route now reaches `qssm_main_theorem_parameterized_budget` through live rejection and live FS branch/mass chains: `epsilon_le_rej_parameterized = 3%r / 64%r`, `epsilon_le_fs_parameterized = 3%r / 64%r`, and `epsilon_le_parameterized = 3%r / 32%r`.
 - The active parameterized MS1 route is now fully live on both the canonical failure lane and the staged/public-endpoint lane. The active MS1 profile is `collision=1`, `malformed_binding=1`, `transcript=1`, `clean=61`, `failure=3`, `total=64`, so `epsilon_ms_hash_binding_parameterized = 3%r / 64%r`; the staged public-divergence upper interval is `malformed_binding + transcript = 2%r / 64%r = 1%r / 32%r`, and the staged MS1 public-endpoint route is no longer demo-bound.
 - `SourceHashBindingSemanticLiveParameterizedCore.ec` now owns the live MS1 coupled-state/public-observable core, `SourceHashBindingSemanticLiveParameterizedMass.ec` owns the live MS1 canonical failure and public-divergence upper mass closure, and `SourceHashBindingSemanticBridgeParameterized.ec`, `MSProbabilitySurfaceParameterized.ec`, `GameAdvantageParameterized.ec`, `GameMSHopTypesParameterized.ec`, and `GameMSHopCompositionParameterized.ec` now carry that live MS1 staged route.

@@ -6,7 +6,9 @@ Navigation: [EasyCrypt README](../README.md)
 
 This document records which parameterized lanes are complete, which ones are only staged, and which ones remain intentionally unstated at the frozen May 2026 checkpoint.
 
-Current checker snapshot: `OK` over 135 checked theories; `axiom_count=0`; `admit_count=0`.
+Current checker snapshot: `OK` over 142 checked theories; `axiom_count=0`; `admit_count=0`.
+
+This document tracks only the concrete parameterized route. The parallel abstract real-world upper-bound surface lives in `RealWorldBudgetParameters.ec`, `RealWorldBudgetObligations.ec`, `LEStatisticalDistanceRealWorld.ec`, `MSProbabilitySurfaceRealWorld.ec`, `GameLEBridgeRealWorld.ec`, `GameMSHopCompositionRealWorld.ec`, and `MainTheoremRealWorld.ec`; it is obligation-driven and axiom-free, but it does not change the frozen `15%r / 64%r` concrete route summarized here and does not add weighted/non-uniform sampler semantics.
 
 ## Route Status Table
 
@@ -76,6 +78,7 @@ None are expected on the active uniform finite-support / contiguous-layout live 
 - The LE parameterized lane closes all the way to `qssm_main_theorem_le_parameterized_budget`.
 - The full canonical parameterized route closes all the way to `qssm_main_theorem_parameterized_budget`.
 - Under the active live profiles, the full canonical parameterized top budget closes at `15%r / 64%r`.
+- A parallel abstract real-world upper-bound theorem surface now also closes at head, but it leaves this parameterized status table unchanged and does not widen supported sampler geometry.
 - The staged/public-endpoint caveat is still explicit and part of the frozen proof claim because the canonical closure still factors through a charged public-endpoint landing.
 - The exact-zero route and live demo semantic route remain unchanged.
 - No remaining localized replay seams are expected on the current uniform finite-support / contiguous-layout profile family.
@@ -85,6 +88,7 @@ None are expected on the active uniform finite-support / contiguous-layout live 
 - No zero-cost public-endpoint landing theorem from public AfterRom to canonical AfterRom.
 - No theorem claiming public AfterRom is zero-equal to canonical AfterRom.
 - No support for arbitrary non-uniform parameter profiles.
+- No weighted/non-uniform sampler replay on the parallel real-world surface; that surface is abstract upper-bound only.
 
 ## Minimum Future Work For Profile Generalization
 

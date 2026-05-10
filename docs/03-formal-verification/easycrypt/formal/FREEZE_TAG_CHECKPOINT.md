@@ -2,6 +2,8 @@
 
 This note marks `a873168` as the frozen additive-live-profile checkpoint for the EasyCrypt parameterized theorem route. It is documentation-only and does not change any theorem statement, owner definition, or proof path.
 
+Current head later moved to `OK: checked 142 theories` and added a parallel abstract real-world upper-bound theorem surface, but that later work is additive only and does not change the historical frozen concrete checkpoint recorded here.
+
 ## Verification Snapshot
 
 - `./check_easycrypt.sh`: `OK: checked 135 theories`

@@ -10,7 +10,7 @@ This document explains how to reproduce the frozen May 2026 release checkpoint a
 
 At the current release checkpoint, the expected result is:
 
-- full checker: `OK: checked 135 theories`
+- full checker: `OK: checked 142 theories`
 - `axiom_count=0`
 - `admit_count=0`
 - worktree clean after restoring generated `.eco` churn
@@ -28,10 +28,14 @@ At the current release checkpoint, the expected result is:
 - no remaining localized replay seams expected on the current uniform finite-support / contiguous-layout profile family
 - `qssm_main_theorem_le_parameterized_budget` present and documented as the LE-only intermediate theorem
 - `qssm_main_theorem_parameterized_budget` present and documented as the full canonical parameterized theorem
+- `qssm_main_theorem_realworld_budget` present and documented as the abstract real-world upper-bound theorem
 - canonical parameterized top budget documented as `epsilon_ms_hash_binding_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_le_parameterized`
 - active closed-form canonical parameterized top budget documented as `15%r / 64%r`
 - lower helper infrastructure documented as including `drange_pred_true_mass`, `drange_pred_true_mass_le_bound`, `drange_subset_true_mass`, `drange_subset_true_mass_le_bound`, and `drange_subset_complement_mass` for uniform-support masses only, not as arbitrary-profile support
 - routed MS1 upper-mass theorem documented as using subset-helper infrastructure without any theorem-surface change
+- `RealWorldBudgetParameters.ec`, `RealWorldBudgetObligations.ec`, `LEStatisticalDistanceRealWorld.ec`, `MSProbabilitySurfaceRealWorld.ec`, `GameLEBridgeRealWorld.ec`, `GameMSHopCompositionRealWorld.ec`, and `MainTheoremRealWorld.ec` documented as the real-world abstract-budget surface
+- `le_realworld_obligations`, `ms_realworld_obligations`, and `qssm_realworld_obligations` documented as theorem hypotheses, not axioms
+- abstract real-world budgets documented as externally supplied upper bounds only, with weighted/non-uniform sampler semantics still unsupported
 
 ## Checker Invocation
 
@@ -45,7 +49,7 @@ cd docs/03-formal-verification/easycrypt
 Expected terminal tail:
 
 ```text
-OK: checked 135 theories in .../docs/03-formal-verification/easycrypt
+OK: checked 142 theories in .../docs/03-formal-verification/easycrypt
 ```
 
 The compile-order authority remains [../check_easycrypt.sh](../check_easycrypt.sh).
@@ -116,14 +120,18 @@ A release-ready checkpoint must preserve all of the following.
 - staged MS2 public-endpoint route documented as live parameterized rather than demo-bound
 - `qssm_main_theorem_le_parameterized_budget` documented as the LE-only intermediate theorem
 - `qssm_main_theorem_parameterized_budget` documented as the full canonical parameterized theorem
+- `qssm_main_theorem_realworld_budget` documented as the abstract real-world upper-bound theorem over explicit obligation hypotheses
 - the explicit duplicated `epsilon_ms_rom_programmability_parameterized` term documented without simplification
 - active closed-form canonical parameterized top budget documented as `15%r / 64%r`
 - LE rejection, LE FS, MS1, and MS2 tuning documented as owner-only changes with no theorem-surface changes and no local proof repairs
 - lower helper infrastructure documented as including `drange_pred_true_mass`, `drange_pred_true_mass_le_bound`, `drange_subset_true_mass`, `drange_subset_true_mass_le_bound`, and `drange_subset_complement_mass` without implying non-uniform or sparse profile support
 - routed MS1 upper-mass theorem documented as using subset-helper infrastructure without any theorem-surface change
+- `RealWorldBudgetParameters.ec`, `RealWorldBudgetObligations.ec`, `LEStatisticalDistanceRealWorld.ec`, `MSProbabilitySurfaceRealWorld.ec`, `GameLEBridgeRealWorld.ec`, `GameMSHopCompositionRealWorld.ec`, and `MainTheoremRealWorld.ec` documented as a parallel axiom-free abstract upper-bound surface
+- `le_realworld_obligations`, `ms_realworld_obligations`, and `qssm_realworld_obligations` documented as theorem hypotheses rather than axioms
 - staged/public-endpoint MS caveat documented explicitly as a charged bridge, not a zero bridge
 - no remaining localized replay seams expected on the current uniform finite-support / contiguous-layout profile family
 - arbitrary non-uniform parameter profiles still documented as unsupported
+- weighted/non-uniform sampler semantics still documented as unsupported on the real-world surface
 
 ## What The Release Does Not Claim
 
@@ -133,6 +141,7 @@ The release does not claim a zero-cost public-to-canonical MS fusion.
 - There is still no theorem claiming `public AfterRom = canonical AfterRom` or `sdist(public AfterRom, canonical AfterRom) = 0`.
 - The canonical parameterized route closes by paying an explicit extra `epsilon_ms_rom_programmability_parameterized` term.
 - The staged/public-endpoint MS lane remains visible as the internal route consumed by that charged closure, with both the MS1 and MS2 halves now live parameterized.
+- The real-world theorem surface does not claim weighted or non-uniform sampler replay; it packages externally supplied upper-bound budgets as explicit theorem hypotheses only.
 
 ## Recommended Release Stop
 
