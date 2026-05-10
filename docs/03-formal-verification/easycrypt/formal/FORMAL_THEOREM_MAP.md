@@ -171,7 +171,9 @@ The real-world route is a parallel theorem surface. It does not replay weighted 
 | MS real-world wrapper | `ms/MSProbabilitySurfaceRealWorld.ec`, `games/GameMSHopCompositionRealWorld.ec` | `A_MS2_canonical_rom_programming_realworld_bound`, `A_G0_to_G1_ms_realworld_transition_bound` |
 | Top theorem | `theorem/MainTheoremRealWorld.ec` | `qssm_main_theorem_realworld_budget` |
 
-This route keeps the duplicate MS2 charge explicit, preserves the public AfterRom budget-close caveat, and remains axiom-free because the real-world obligations are theorem hypotheses rather than imported assumptions.
+This route keeps the duplicate MS2 charge explicit, preserves the public AfterRom budget-close caveat, and remains axiom-free because the real-world obligations are theorem hypotheses rather than imported assumptions. It is already sufficient for real-world budget accounting when sampler-internal evidence is supplied externally.
+
+If weighted finite-support replay is ever added, it should discharge the same obligation bundle rather than replace `qssm_main_theorem_realworld_budget`. The weighted replay audit concluded that the preferred owner shape is normalized per-component category weights, not per-slot weights, and that component-failure-only records are too abstract because they mostly restate the existing obligation surface. The first safe weighted pilot is an LE rejection weighted category owner only.
 
 ## Staged/Public-Endpoint MS Parameterized Route
 
@@ -196,6 +198,7 @@ This lane still carries `A_MS_public_endpoint_parameterized_staged_composition_b
 - There is no theorem claim that the staged/public-endpoint MS route has re-entered the canonical `Adv_G0_G1_MS` telescope.
 - There is no theorem claiming `public AfterRom = canonical AfterRom` or `sdist(public AfterRom, canonical AfterRom) = 0`.
 - There is no weighted or non-uniform sampler replay theorem for arbitrary real-world parameters; the real-world route is abstract upper-bound only.
+- Weighted replay would only be needed if the EasyCrypt tree must model sampler internals directly rather than consume externally justified upper-bound budgets.
 
 ## Why The Current Stopping Point Is Honest
 
@@ -205,6 +208,6 @@ The frozen theorem surface matches the proofs that actually close.
 - The demo semantic route is claimed only where the current demo semantic owners have been routed through the canonical theorem stack.
 - The LE-only parameterized theorem remains claimed because the LE parameterized lane closes and the MS contribution can still be left on the already-closed canonical/demo semantic route.
 - The full canonical parameterized theorem is now claimed only because the semantic public-to-canonical MS gap was closed honestly by paying an explicit extra `epsilon_ms_rom_programmability_parameterized` term rather than by asserting a zero bridge.
-- The abstract real-world upper-bound theorem is claimed only as a hypothesis-driven theorem surface over explicit obligation predicates. It does not claim weighted/non-uniform sampler replay or stronger semantics than the current lower route proves.
+- The abstract real-world upper-bound theorem is claimed only as a hypothesis-driven theorem surface over explicit obligation predicates. It does not claim weighted/non-uniform sampler replay or stronger semantics than the current lower route proves, and it remains the correct top theorem even if future weighted replay is added below it.
 
 That semantic distinction and its charged closure are analyzed in [SEMANTIC_GAP_ANALYSIS.md](SEMANTIC_GAP_ANALYSIS.md). No remaining localized replay seams are expected on the current uniform finite-support / contiguous-layout profile family.

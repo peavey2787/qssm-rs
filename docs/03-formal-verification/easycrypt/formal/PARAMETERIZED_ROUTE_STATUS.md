@@ -8,7 +8,7 @@ This document records which parameterized lanes are complete, which ones are onl
 
 Current checker snapshot: `OK` over 142 checked theories; `axiom_count=0`; `admit_count=0`.
 
-This document tracks only the concrete parameterized route. The parallel abstract real-world upper-bound surface lives in `RealWorldBudgetParameters.ec`, `RealWorldBudgetObligations.ec`, `LEStatisticalDistanceRealWorld.ec`, `MSProbabilitySurfaceRealWorld.ec`, `GameLEBridgeRealWorld.ec`, `GameMSHopCompositionRealWorld.ec`, and `MainTheoremRealWorld.ec`; it is obligation-driven and axiom-free, but it does not change the frozen `15%r / 64%r` concrete route summarized here and does not add weighted/non-uniform sampler semantics.
+This document tracks only the concrete parameterized route. The parallel abstract real-world upper-bound surface lives in `RealWorldBudgetParameters.ec`, `RealWorldBudgetObligations.ec`, `LEStatisticalDistanceRealWorld.ec`, `MSProbabilitySurfaceRealWorld.ec`, `GameLEBridgeRealWorld.ec`, `GameMSHopCompositionRealWorld.ec`, and `MainTheoremRealWorld.ec`; it is obligation-driven and axiom-free, already sufficient for externally justified real-world budgets, but it does not change the frozen `15%r / 64%r` concrete route summarized here and does not add weighted/non-uniform sampler semantics.
 
 ## Route Status Table
 
@@ -89,6 +89,16 @@ None are expected on the active uniform finite-support / contiguous-layout live 
 - No theorem claiming public AfterRom is zero-equal to canonical AfterRom.
 - No support for arbitrary non-uniform parameter profiles.
 - No weighted/non-uniform sampler replay on the parallel real-world surface; that surface is abstract upper-bound only.
+
+## Weighted Replay Boundary
+
+The weighted replay audit does not change the concrete route status above.
+
+- Weighted replay is only needed if the EasyCrypt tree must model weighted sampler internals directly.
+- The preferred future owner shape is normalized per-component category weights.
+- Per-slot weights are not the right first move.
+- Component-failure-only records are too abstract because they mostly duplicate the current real-world obligation bundle.
+- The first safe weighted pilot, if work ever resumes here, is an LE rejection weighted category owner only.
 
 ## Minimum Future Work For Profile Generalization
 

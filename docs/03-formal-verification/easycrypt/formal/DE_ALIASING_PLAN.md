@@ -89,7 +89,7 @@ The current head additionally carries an axiom-free abstract upper-bound route.
 - `games/GameMSHopCompositionRealWorld.ec`
 - `theorem/MainTheoremRealWorld.ec`
 
-That route ends at `qssm_main_theorem_realworld_budget`, consumes explicit `le_realworld_obligations`, `ms_realworld_obligations`, and `qssm_realworld_obligations` hypotheses, keeps the duplicate MS2 charge explicit, and preserves the public AfterRom budget-close caveat. It is additive only: it does not replay weighted/non-uniform samplers and therefore does not remove the future-generalization hotspots listed below.
+That route ends at `qssm_main_theorem_realworld_budget`, consumes explicit `le_realworld_obligations`, `ms_realworld_obligations`, and `qssm_realworld_obligations` hypotheses, keeps the duplicate MS2 charge explicit, and preserves the public AfterRom budget-close caveat. It is additive only: it does not replay weighted/non-uniform samplers and therefore does not remove the future-generalization hotspots listed below. It is already sufficient when real-world sampler evidence stays external to the EasyCrypt tree.
 
 ## Classification Vocabulary
 
@@ -186,6 +186,17 @@ These are the files most likely to require real replay if future work moves beyo
 
 Classification: `future-generalization hotspot`.
 
+## Weighted Replay Audit Conclusion
+
+The weighted finite-support replay audit is now complete.
+
+- Weighted replay is only needed if this repository must model weighted sampler internals directly.
+- The preferred future owner shape is normalized per-component category weights.
+- Per-slot weights are not the right first move because they widen the replay surface without improving the theorem boundary.
+- Component-failure-only weighted records are too abstract because they mostly duplicate `le_realworld_obligations`, `ms_realworld_obligations`, and `qssm_realworld_obligations`.
+- The first safe weighted pilot, if ever approved, is an LE rejection weighted category owner only.
+- `qssm_main_theorem_realworld_budget` remains the correct top theorem; any weighted replay should discharge obligations below it rather than replace it.
+
 ## Recommended Future Order
 
 If parameterized work resumes here, the recommended order is:
@@ -241,13 +252,16 @@ These are intentionally deferred until after any future profile generalization s
 
 ### First future audit target
 
-Start with a profile-generalization audit, not a localized replay audit.
+No further audit is required unless sampler-internal weighted semantics become a hard requirement.
 
 Reason:
 
 - the LE rejection, LE FS, MS1, and MS2 live parameterized routes are already landed and checker-green
+- the abstract real-world upper-bound theorem is already sufficient for externally justified bounds
 - no remaining localized seam is expected on the current frozen family
-- the next nontrivial work item is broadening the supported family or tightening lower semantics without mutating the theorem surface
+- the next nontrivial work item, if reopened, is either broadening the supported family or starting a narrowly scoped weighted pilot below the theorem surface
+
+If weighted replay is ever reopened, start with an LE rejection weighted category owner rather than a full-route or per-slot rewrite.
 
 ### Most expensive future replay points
 

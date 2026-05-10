@@ -67,7 +67,17 @@ The current head also carries a separate axiom-free abstract upper-bound theorem
 - `primitives/RealWorldBudgetObligations.ec` packages `le_realworld_obligations`, `ms_realworld_obligations`, and `qssm_realworld_obligations`.
 - `le/LEStatisticalDistanceRealWorld.ec`, `ms/MSProbabilitySurfaceRealWorld.ec`, `games/GameLEBridgeRealWorld.ec`, `games/GameMSHopCompositionRealWorld.ec`, and `theorem/MainTheoremRealWorld.ec` lift those hypotheses into `qssm_main_theorem_realworld_budget`.
 - Those obligations are theorem hypotheses, not axioms.
-- This surface models externally supplied upper-bound budgets only. It does not yet implement weighted or non-uniform sampler semantics, and it leaves the frozen concrete `15%r / 64%r` route unchanged.
+- This surface models externally supplied upper-bound budgets only. That is already sufficient when sampler internals are justified by external evidence. It does not yet implement weighted or non-uniform sampler semantics, and it leaves the frozen concrete `15%r / 64%r` route unchanged.
+
+## Weighted Replay Audit Conclusion
+
+The weighted finite-support replay audit is complete.
+
+- Weighted replay is only needed if this repository must model weighted sampler internals directly rather than consume externally justified upper-bound budgets.
+- The preferred future owner shape is normalized per-component category weights.
+- Per-slot weights are not the right first move because they widen replay cost without improving the theorem surface.
+- Component-failure-only records are too abstract because they mostly duplicate the current real-world obligations.
+- The first safe weighted pilot, if later approved, is an LE rejection weighted category owner only.
 
 ## Why The MS2 Charge Appears Twice
 
@@ -180,7 +190,7 @@ Before any profile is promoted beyond the current frozen family, complete the fo
 
 ## Explicit Warning About The Current Proof Surface
 
-The current parameterized proof route is structurally complete for the active uniform finite-support / contiguous-layout live family. That does not imply arbitrary non-uniform, sparse, or reordered profiles are supported, and it does not remove the semantic caveat that public AfterRom is only budget-close to canonical AfterRom. The parallel real-world theorem surface does not change that interpretation: it consumes externally supplied upper-bound budgets as hypotheses and still does not justify weighted/non-uniform sampler claims.
+The current parameterized proof route is structurally complete for the active uniform finite-support / contiguous-layout live family. That does not imply arbitrary non-uniform, sparse, or reordered profiles are supported, and it does not remove the semantic caveat that public AfterRom is only budget-close to canonical AfterRom. The parallel real-world theorem surface does not change that interpretation: it consumes externally supplied upper-bound budgets as hypotheses and still does not justify weighted/non-uniform sampler claims. If weighted replay is ever pursued, it should discharge those hypotheses below `qssm_main_theorem_realworld_budget` rather than replace that theorem surface.
 
 Future work therefore starts from profile generalization or stronger lower semantics, not from replaying a currently open localized seam on the active route.
 

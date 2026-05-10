@@ -36,6 +36,8 @@ At the current release checkpoint, the expected result is:
 - `RealWorldBudgetParameters.ec`, `RealWorldBudgetObligations.ec`, `LEStatisticalDistanceRealWorld.ec`, `MSProbabilitySurfaceRealWorld.ec`, `GameLEBridgeRealWorld.ec`, `GameMSHopCompositionRealWorld.ec`, and `MainTheoremRealWorld.ec` documented as the real-world abstract-budget surface
 - `le_realworld_obligations`, `ms_realworld_obligations`, and `qssm_realworld_obligations` documented as theorem hypotheses, not axioms
 - abstract real-world budgets documented as externally supplied upper bounds only, with weighted/non-uniform sampler semantics still unsupported
+- the abstract real-world route documented as already sufficient when sampler-internal evidence stays external to the EasyCrypt tree
+- any future weighted replay documented as below the current theorem surface rather than a replacement for `qssm_main_theorem_realworld_budget`
 
 ## Checker Invocation
 
@@ -128,6 +130,10 @@ A release-ready checkpoint must preserve all of the following.
 - routed MS1 upper-mass theorem documented as using subset-helper infrastructure without any theorem-surface change
 - `RealWorldBudgetParameters.ec`, `RealWorldBudgetObligations.ec`, `LEStatisticalDistanceRealWorld.ec`, `MSProbabilitySurfaceRealWorld.ec`, `GameLEBridgeRealWorld.ec`, `GameMSHopCompositionRealWorld.ec`, and `MainTheoremRealWorld.ec` documented as a parallel axiom-free abstract upper-bound surface
 - `le_realworld_obligations`, `ms_realworld_obligations`, and `qssm_realworld_obligations` documented as theorem hypotheses rather than axioms
+- the abstract real-world surface documented as already sufficient for externally justified upper bounds without in-tree weighted sampler replay
+- any future weighted replay documented as preferring normalized per-component category weights rather than per-slot weights
+- component-failure-only weighted records documented as too abstract because they mostly duplicate the current obligation bundle
+- the first safe weighted pilot documented as an LE rejection weighted category owner only
 - staged/public-endpoint MS caveat documented explicitly as a charged bridge, not a zero bridge
 - no remaining localized replay seams expected on the current uniform finite-support / contiguous-layout profile family
 - arbitrary non-uniform parameter profiles still documented as unsupported
@@ -142,6 +148,7 @@ The release does not claim a zero-cost public-to-canonical MS fusion.
 - The canonical parameterized route closes by paying an explicit extra `epsilon_ms_rom_programmability_parameterized` term.
 - The staged/public-endpoint MS lane remains visible as the internal route consumed by that charged closure, with both the MS1 and MS2 halves now live parameterized.
 - The real-world theorem surface does not claim weighted or non-uniform sampler replay; it packages externally supplied upper-bound budgets as explicit theorem hypotheses only.
+- If weighted replay is ever pursued later, it should stay below `qssm_main_theorem_realworld_budget`, prefer normalized per-component category weights over per-slot weights, and begin with an LE rejection weighted category pilot rather than a full-route rewrite.
 
 ## Recommended Release Stop
 

@@ -92,6 +92,8 @@ Under the active live profiles, that charged top budget evaluates to `15%r / 64%
 
 This surface is axiom-free because those obligations are theorem premises, not imported assumptions. It does not model weighted or non-uniform samplers, does not remove the public AfterRom caveat, and keeps the duplicate MS2 charge explicit in the theorem-facing statement.
 
+That abstract route is already sufficient when real-world budgets are supported by external evidence outside the EasyCrypt sampler internals. Weighted replay would only be needed if the tree must model those weighted sampler internals directly, and even then it should discharge the same obligations rather than replace `qssm_main_theorem_realworld_budget`.
+
 ## Why The Blocker Is Semantic, Not Organizational
 
 The missing piece is not a forgotten wrapper in the game layer.
@@ -107,7 +109,7 @@ What remains missing is a stronger lower theorem about the actual relationship b
 
 The first honest owner boundary is still below the theorem surface if future work wants to tighten the new route.
 
-On the current tree, the live LE rejection and live LE FS `3%r / 64%r` lanes are already closed, the MS1 canonical failure plus staged/public-endpoint lanes are live parameterized at `3%r / 64%r` and `1%r / 32%r`, the MS2 staged/public-endpoint plus landing route is live parameterized at `3%r / 64%r`, and the parallel abstract real-world upper-bound theorem surface is checker-green. No remaining localized replay seams are expected on the current uniform finite-support / contiguous-layout profile family, so the next focused audit is weighted finite-support replay design, broader profile generalization, a stronger lower fusion law, or stop rather than another localized replay pass.
+On the current tree, the live LE rejection and live LE FS `3%r / 64%r` lanes are already closed, the MS1 canonical failure plus staged/public-endpoint lanes are live parameterized at `3%r / 64%r` and `1%r / 32%r`, the MS2 staged/public-endpoint plus landing route is live parameterized at `3%r / 64%r`, and the parallel abstract real-world upper-bound theorem surface is checker-green. The weighted replay audit is complete: weighted replay remains future work only for in-tree sampler modeling, the preferred future owner shape is normalized per-component category weights, per-slot weights are not the right first move, component-failure-only records mostly duplicate the current obligations, and the first safe pilot is an LE rejection weighted category owner only. No remaining localized replay seams are expected on the current uniform finite-support / contiguous-layout profile family, so the next focused step is broader profile generalization, a stronger lower fusion law, or stop rather than another localized replay pass.
 
 - Start at `ms/MSProbabilitySurface.ec` or a sibling lower companion.
 - Do not start in `MainTheorem.ec`.
@@ -121,6 +123,7 @@ These items remain future research only.
 
 - tighter public AfterRom to canonical AfterRom semantic reconciliation
 - profile generalization beyond the current uniform finite-support / contiguous-layout family
+- weighted sampler-internal replay below the existing real-world obligation surface
 - potential removal of the duplicated MS2 landing charge
 - semantic/public observable reconciliation strategy
 - stronger non-demo parameter semantics

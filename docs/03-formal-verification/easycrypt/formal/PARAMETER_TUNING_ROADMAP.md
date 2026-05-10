@@ -40,7 +40,7 @@ Active live profile:
 
 The MS1 staged public-divergence upper lane now closes at `2%r / 64%r = 1%r / 32%r`.
 
-Current head also carries a parallel abstract real-world upper-bound theorem surface through `primitives/RealWorldBudgetParameters.ec`, `primitives/RealWorldBudgetObligations.ec`, `le/LEStatisticalDistanceRealWorld.ec`, `ms/MSProbabilitySurfaceRealWorld.ec`, `games/GameLEBridgeRealWorld.ec`, `games/GameMSHopCompositionRealWorld.ec`, and `theorem/MainTheoremRealWorld.ec`. That surface ends at `qssm_main_theorem_realworld_budget`, is hypothesis-driven rather than axiom-driven, and does not change the concrete tuning surface documented here. It also does not add weighted or non-uniform sampler support.
+Current head also carries a parallel abstract real-world upper-bound theorem surface through `primitives/RealWorldBudgetParameters.ec`, `primitives/RealWorldBudgetObligations.ec`, `le/LEStatisticalDistanceRealWorld.ec`, `ms/MSProbabilitySurfaceRealWorld.ec`, `games/GameLEBridgeRealWorld.ec`, `games/GameMSHopCompositionRealWorld.ec`, and `theorem/MainTheoremRealWorld.ec`. That surface ends at `qssm_main_theorem_realworld_budget`, is hypothesis-driven rather than axiom-driven, is already sufficient when sampler bounds are justified by external evidence, and does not change the concrete tuning surface documented here. It also does not add weighted or non-uniform sampler support.
 
 Lower helper infrastructure now includes `primitives/ParameterizedMassHelpers.ec : drange_pred_true_mass`, `primitives/ParameterizedMassHelpers.ec : drange_pred_true_mass_le_bound`, `primitives/ParameterizedMassHelpers.ec : drange_subset_true_mass`, `primitives/ParameterizedMassHelpers.ec : drange_subset_true_mass_le_bound`, and `primitives/ParameterizedMassHelpers.ec : drange_subset_complement_mass`. Those lemmas support generic uniform predicate and subset counts on `drange 0 total`, but they do not by themselves expand the supported profile family beyond the current uniform finite-support / contiguous-layout geometry or add non-uniform weights. `ms/source/SourceHashBindingSemanticSlotMassParameterized.ec : ms_hash_binding_public_divergence_upper_choice_mass_eq_local_upper_mass_parameterized` now delegates to the subset-helper sibling theorem while preserving the frozen `15%r / 64%r` route.
 
@@ -63,6 +63,16 @@ Today's safe tuning surface is therefore: keep the existing owner shapes, keep t
 - arbitrary weighted semantic budgets
 
 If any candidate profile needs one of those changes, it is no longer a tuning-only task. That work returns to profile generalization.
+
+## Weighted Replay Audit Conclusion
+
+The weighted finite-support replay audit is complete.
+
+- Weighted replay is only needed if this repository must model weighted sampler internals directly.
+- The preferred future owner shape is normalized per-component category weights.
+- Per-slot weights are not the right first move.
+- Component-failure-only weighted records are too abstract because they mostly duplicate the existing real-world obligation bundle.
+- The first safe weighted pilot, if ever approved, is an LE rejection weighted category owner only.
 
 ## Safe Concrete Tuning Process
 
@@ -117,7 +127,7 @@ Completed order:
 
 Next recommended phase:
 
-1. Weighted finite-support replay design audit if non-uniform or externally measured sampler semantics are required
-2. Stop at the current split surfaces if the frozen concrete route and abstract upper-bound route are sufficient
+1. Stop at the current split surfaces unless sampler-internal weighted semantics become a hard requirement
+2. If weighted replay is ever required, start with an LE rejection weighted category owner using normalized per-component category weights
 
 This keeps the lower replays local, preserves the frozen theorem surface, and makes any geometry break visible as soon as it appears.
