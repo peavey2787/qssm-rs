@@ -1,0 +1,297 @@
+# Security Instantiation Blocker Map
+
+Navigation: [EasyCrypt README](../README.md)
+
+## Status Summary
+
+- `qssm_main_theorem_realworld_budget` is proved in `theorem/MainTheoremRealWorld.ec`.
+- It is conditional on `qssm_realworld_obligations`, not a fully concrete theorem.
+- `qssm_main_theorem_realworld_concrete_128` does not exist yet.
+- The current live lower actuals still collapse to the live toy parameterized masses, currently `3%r / 64%r` per component.
+- Therefore component budgets such as `2^-98` cannot currently discharge the real-world obligations.
+
+At the current May 2026 checkpoint, the real-world theorem surface is an honest abstract upper-bound theorem over explicit obligations. It is not yet a machine-checked concrete `lambda = 128` theorem.
+
+## Theorem Surface
+
+The real-world theorem surface currently lives in:
+
+- `primitives/RealWorldBudgetParameters.ec`
+- `primitives/RealWorldBudgetObligations.ec`
+- `ms/MSProbabilitySurfaceRealWorld.ec`
+- `le/LEStatisticalDistanceRealWorld.ec`
+- `games/GameMSHopCompositionRealWorld.ec`
+- `games/GameLEBridgeRealWorld.ec`
+- `theorem/MainTheoremRealWorld.ec`
+
+The real-world budget record in `primitives/RealWorldBudgetParameters.ec` has four fields:
+
+- `rwb_epsilon_ms_hash_binding`
+- `rwb_epsilon_ms_rom_programmability`
+- `rwb_epsilon_le_rej`
+- `rwb_epsilon_le_fs`
+
+These correspond to the four theorem-facing real-world budget components:
+
+- MS1 hash binding
+- MS2 ROM programmability
+- LE rejection
+- LE FS
+
+The top-level real-world structure is additive and keeps the duplicate MS2 charge explicit:
+
+```text
+epsilon_top_realworld b =
+  epsilon_ms_hash_binding_realworld b +
+  epsilon_ms_rom_programmability_realworld b +
+  epsilon_ms_rom_programmability_realworld b +
+  epsilon_le_realworld b
+```
+
+with
+
+```text
+epsilon_le_realworld b =
+  epsilon_le_rej_realworld b + epsilon_le_fs_realworld b
+```
+
+The exact obligation predicates in `primitives/RealWorldBudgetObligations.ec` are:
+
+```text
+le_realworld_obligations b epsilon_le_rej_actual epsilon_le_fs_actual =
+  epsilon_le_rej_actual <= epsilon_le_rej_realworld b /\
+  epsilon_le_fs_actual <= epsilon_le_fs_realworld b
+
+ms_realworld_obligations b epsilon_ms_hash_binding_actual epsilon_ms_rom_actual =
+  epsilon_ms_hash_binding_actual <= epsilon_ms_hash_binding_realworld b /\
+  epsilon_ms_rom_actual <= epsilon_ms_rom_programmability_realworld b
+
+qssm_realworld_obligations b
+  epsilon_le_rej_actual epsilon_le_fs_actual
+  epsilon_ms_hash_binding_actual epsilon_ms_rom_actual =
+  le_realworld_obligations b epsilon_le_rej_actual epsilon_le_fs_actual /\
+  ms_realworld_obligations b epsilon_ms_hash_binding_actual epsilon_ms_rom_actual
+```
+
+The exact theorem statement in `theorem/MainTheoremRealWorld.ec` is:
+
+```text
+lemma qssm_main_theorem_realworld_budget
+  (b : realworld_budget) (x : qssm_public_input) (s : seed) (D : distinguisher) :
+  qssm_realworld_obligations b
+    (le_rejection_parameterized_failure_probability x s)
+    LEFsProgrammingLiveParameterizedMass.le_fs_parameterized_local_bad_branch_mass
+    (ms_hash_binding_execution_owned_parameterized_failure_probability (extract_ms_public x))
+    (ms_rom_execution_owned_parameterized_failure_probability (extract_ms_public x)) =>
+  set_b_parameter_well_formed =>
+  le_real_sim_transcript_equiv x s =>
+  Adv_G0_G2_QSSM x (extract_ms_public x) s D <=
+    epsilon_ms_hash_binding_realworld b +
+    epsilon_ms_rom_programmability_realworld b +
+    epsilon_ms_rom_programmability_realworld b +
+    epsilon_le_realworld b.
+```
+
+This theorem is proved. The point of this document is that it is not yet a concrete `lambda = 128` instantiation theorem.
+
+## Current Lower Actual Terms
+
+The current lower actual terms referred to by the real-world obligations are:
+
+- LE rejection actual: `le_rejection_parameterized_failure_probability x s`
+- LE FS actual: `LEFsProgrammingLiveParameterizedMass.le_fs_parameterized_local_bad_branch_mass`
+- MS1 actual: `ms_hash_binding_execution_owned_parameterized_failure_probability (extract_ms_public x)`
+- MS2 actual: `ms_rom_execution_owned_parameterized_failure_probability (extract_ms_public x)`
+
+Today each of those lower actuals collapses to the current live parameterized owner value `3%r / 64%r`.
+
+- MS1: `epsilon_ms_hash_binding_parameterized = 3%r / 64%r`
+- MS2: `epsilon_ms_rom_programmability_parameterized = 3%r / 64%r`
+- LE rejection: `epsilon_le_rej_parameterized = 3%r / 64%r`
+- LE FS: `epsilon_le_fs_parameterized = 3%r / 64%r`
+
+So the currently reachable concrete routed sum is still:
+
+```text
+MS1 + MS2 + MS2 + LE_rej + LE_fs = 15%r / 64%r
+```
+
+This is why the current real-world theorem surface is honest as an abstract upper-bound theorem but is not yet a negligible concrete security theorem.
+
+## Why `lambda = 128` Cannot Be Plugged In Yet
+
+Suppose a future concrete instantiation proposes the placeholder component bound:
+
+```text
+epsilon_component = q * n * r * 2^-lambda
+```
+
+With `lambda = 128`, `q = 2^20`, `n = 2^10`, and `r = 1`, that placeholder budget is:
+
+```text
+epsilon_component = 2^-98
+```
+
+That does not discharge the current real-world obligations, because today the theorem is comparing those budget fields against current lower actuals that still collapse to `3%r / 64%r`.
+
+The required inequality would therefore be:
+
+```text
+3%r / 64%r <= 2^-98
+```
+
+That inequality is false.
+
+- `3 / 64 = 0.046875`
+- `2^-98 ~= 3.1554436208840472e-30`
+
+So the current blocker is not only missing arithmetic infrastructure. The immediate blocker is semantic: the present real-world theorem still ranges over the live toy lower masses.
+
+## Worked Arithmetic For `lambda = 128`
+
+This section records the worked arithmetic only. It does not claim that the bound is currently proved in EasyCrypt.
+
+Use:
+
+- `lambda = 128`
+- `q = 2^20`
+- `n = 2^10`
+- `r = 1`
+
+Placeholder component formula:
+
+```text
+epsilon_component = q * n * r * 2^-lambda
+```
+
+Then:
+
+- `q * n * r = 2^20 * 2^10 * 1 = 2^30`
+- `epsilon_component = 2^30 * 2^-128 = 2^-98`
+
+The current top-level theorem structure is:
+
+```text
+epsilon_top = MS1 + 2 * MS2 + LE_rej + LE_fs
+```
+
+If all four component budgets are taken to be `2^-98`, then:
+
+- `MS1 = 2^-98`
+- `MS2 = 2^-98`, charged twice
+- `LE_rej = 2^-98`
+- `LE_fs = 2^-98`
+- `epsilon_top = 5 * 2^-98`
+
+Exact rational form:
+
+```text
+epsilon_top = 5 / 2^98
+```
+
+That is:
+
+- `5 / 2^98 = 5 / 316912650057057350374175801344`
+- decimal `~= 1.5777218104420236e-29`
+
+Equivalent `2^-k` form:
+
+```text
+k = 98 - log2(5) ~= 95.67807190511263
+```
+
+So the placeholder arithmetic gives:
+
+```text
+epsilon_top = 2^-95.67807190511263
+```
+
+Again: this arithmetic is correct, but the current theorem surface does not yet prove it.
+
+## What Is Missing For Concrete External-Bound Instantiation
+
+The missing external-bound instantiation layer should be added explicitly rather than implied.
+
+Expected future files and theorems:
+
+- `RealWorldBudgetInstantiation.ec`
+- `realworld_budget_concrete_128`
+- `epsilon_ms_hash_binding_concrete_128`
+- `epsilon_ms_rom_programmability_concrete_128`
+- `epsilon_le_rej_concrete_128`
+- `epsilon_le_fs_concrete_128`
+- `qssm_realworld_obligations_concrete_128`
+- `qssm_main_theorem_realworld_concrete_128`
+
+What that file would need to do:
+
+- define the concrete component formulas
+- package them into a concrete `realworld_budget` record
+- prove or assume the component-specific inequalities required by `qssm_realworld_obligations`
+- instantiate `qssm_main_theorem_realworld_budget` with that concrete record
+
+The critical blocker is explicit:
+
+- `qssm_realworld_obligations_concrete_128` cannot be proved until the component bounds are either proved in EasyCrypt or supplied as explicit theorem premises
+- if the component reductions are external to this EasyCrypt tree, they must appear as explicit premises, not axioms
+
+In other words, the next honest concrete theorem is not a zero-premise theorem unless the component reductions themselves are formalized in-tree.
+
+## External-Bound Versus Internal Sampler Proof
+
+There are two different targets.
+
+### A. Concrete External-Bound Theorem
+
+This path proves a concrete top theorem over explicit component-bound premises.
+
+- define concrete component formulas from `lambda`, `q`, `n`, and `r`
+- state or prove the required component inequalities as explicit theorem premises
+- instantiate `qssm_main_theorem_realworld_budget` over a concrete record
+
+This path can yield a concrete theorem over externally justified operational caps without modeling weighted or non-uniform sampler internals.
+
+### B. Fully Internal Sampler Theorem
+
+This path models the weighted or non-uniform samplers themselves and proves the component failure probabilities internally.
+
+- add a weighted finite-support replay layer
+- prefer normalized per-component category weights
+- add constructive weighted distribution definitions
+- add weighted event-mass lemmas
+- replay the current lower live sampler mass proofs over that weighted layer
+
+This is the missing path for `100%` formal sampler semantics.
+
+The distinction is important:
+
+- external-bound instantiation can give a concrete theorem over explicit component-bound premises
+- internal weighted-sampler replay is what is needed for a fully internal sampler model
+
+## Recommended Next Implementation Options
+
+### Option A: Concrete External-Bound Theorem
+
+- add `RealWorldBudgetInstantiation.ec`
+- define concrete component formulas
+- define `realworld_budget_concrete_128`
+- state `qssm_main_theorem_realworld_concrete_128` with four explicit component-bound premises if those reductions remain external
+
+This is the recommended next step if the goal is a concrete theorem over externally justified operational caps.
+
+### Option B: Internal Weighted Sampler Model
+
+- add a weighted category-owner layer
+- start with an LE rejection weighted pilot
+- replay the lower live sampler proofs over weighted finite-support distributions
+
+This is the correct next step only if sampler-internal weighted semantics must be formalized.
+
+## Current Bottom Line
+
+- `qssm_main_theorem_realworld_budget` exists and is proved.
+- `qssm_main_theorem_realworld_concrete_128` does not exist.
+- The current lower actuals still collapse to `3%r / 64%r` per component.
+- Therefore the placeholder bound `2^-98` cannot currently discharge the obligations.
+- The worked arithmetic for `lambda = 128`, `q = 2^20`, `n = 2^10`, `r = 1` gives `epsilon_component = 2^-98` and `epsilon_top = 5 / 2^98 ~= 2^-95.67807190511263`.
+- That arithmetic is documentation-only today, not a proved concrete theorem.

@@ -130,6 +130,7 @@ The deeper architecture and file-map material moved to [formal/ARCHITECTURE.md](
 - [formal/DE_ALIASING_PLAN.md](formal/DE_ALIASING_PLAN.md): completion status for the current de-aliasing/live replay campaign and the remaining profile-generalization backlog
 - [formal/RELEASE_VERIFICATION.md](formal/RELEASE_VERIFICATION.md): reproducibility steps, expected checker output, and `.eco` cleanup procedure for release validation
 - [formal/SEMANTIC_GAP_ANALYSIS.md](formal/SEMANTIC_GAP_ANALYSIS.md): explanation of the public AfterRom versus canonical AfterRom semantic distinction and the budgeted bridge that now closes the parameterized route
+- [formal/SECURITY_INSTANTIATION.md](formal/SECURITY_INSTANTIATION.md): blocker map from the current obligation-conditional real-world theorem to a concrete `lambda/q/n/r` instantiation, including worked `lambda = 128` arithmetic and the split between external-bound theorems and internal weighted-sampler proofs
 - [formal/PROOF_HISTORY.md](formal/PROOF_HISTORY.md): preserved May 2026 audit log, closure notes, and long-form research history moved out of this entrypoint
 
 Release externalization docs are intentionally documentation-only. They do not add new theorem claims, do not weaken the staged/public-endpoint caveat, and do not change the frozen theorem surface.
