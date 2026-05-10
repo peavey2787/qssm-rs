@@ -144,6 +144,14 @@ The formal-doc release baseline remains:
 - no remaining localized replay seams are expected on the current uniform `3/32` profile family
 - public AfterRom remains budget-close to canonical AfterRom, not zero-equal, so the route closes through an explicit charged bridge rather than a zero bridge
 
+### Release Checkpoint Summary
+
+May 2026 release checkpoint: the EasyCrypt tree is checker-green at `135` checked theories, with `axiom_count=0` and `admit_count=0`. `qssm_main_theorem` remains unchanged on the exact-zero route, and `qssm_main_theorem_semantic_budget` remains unchanged on the demo semantic route. `qssm_main_theorem_parameterized_budget` now closes through fully live parameterized LE and MS routes while preserving the existing theorem-facing wrapper names.
+
+On the active live parameterized profile, the routed component budgets are `MS1 = 3%r / 32%r`, `MS2 = 3%r / 32%r`, `LE rejection = 3%r / 32%r`, and `LE FS = 3%r / 32%r`, so `LE combined = 6%r / 32%r` and the top parameterized budget is `15%r / 32%r`. The live route now includes the parameterized LE rejection lane, the parameterized LE FS lane, the live MS1 canonical and public-endpoint lanes, and the live MS2 staged plus public-to-canonical landing lanes. The duplicated MS2 charge remains explicit in the theorem route and is not a presentation artifact.
+
+The main caveat is unchanged: public AfterRom is budget-close to canonical AfterRom, not zero-equal, so this checkpoint does not claim a zero-cost public AfterRom landing. The exact-zero route is unchanged, the demo semantic route is unchanged, and supported parameter profiles remain limited to the current uniform finite-support contiguous-layout geometry. Arbitrary non-uniform profile generalization remains future work.
+
 ## Plan Index
 
 - [plans/G0_G1_G2_game_plan.md](plans/G0_G1_G2_game_plan.md): top-level `G0 -> G1 -> G2` game-hop composition plan
