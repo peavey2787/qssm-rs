@@ -348,7 +348,7 @@ op le_fs_param_transcript_count : int =
   1.
 
 op le_fs_param_clean_count : int =
-  29.
+  61.
 
 op le_fs_param_failure_count : int =
   le_fs_param_query_collision_count +
