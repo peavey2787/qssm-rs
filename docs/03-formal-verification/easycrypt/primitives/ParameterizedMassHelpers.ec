@@ -30,6 +30,58 @@ rewrite (drange_pred_true_mass total p Htotal_pos).
 by smt().
 qed.
 
+lemma drange_subset_true_mass (total : int) (subset : int list) :
+  0 < total =>
+  mu1 (dmap (drange 0 total) (fun slot : int => slot \in subset)) true =
+  (count (fun slot : int => slot \in subset) (range 0 total))%r / total%r.
+proof.
+move=> Htotal_pos.
+exact (drange_pred_true_mass total (fun slot : int => slot \in subset) Htotal_pos).
+qed.
+
+lemma drange_subset_true_mass_le_bound (bound total : int) (subset : int list) :
+  0 < total =>
+  count (fun slot : int => slot \in subset) (range 0 total) <= bound =>
+  mu1 (dmap (drange 0 total) (fun slot : int => slot \in subset)) true <=
+  bound%r / total%r.
+proof.
+move=> Htotal_pos Hcount_bound.
+exact (drange_pred_true_mass_le_bound bound total
+  (fun slot : int => slot \in subset) Htotal_pos Hcount_bound).
+qed.
+
+lemma drange_subset_complement_mass (total : int) (subset : int list) :
+  0 < total =>
+  mu1 (dmap (drange 0 total) (fun slot : int => slot \in subset)) false =
+  (total - count (fun slot : int => slot \in subset) (range 0 total))%r / total%r.
+proof.
+move=> Htotal_pos.
+pose d := dmap (drange 0 total) (fun slot : int => slot \in subset).
+have Hll : is_lossless d.
+  rewrite /d.
+  apply dmap_ll.
+  apply drange_ll.
+  exact Htotal_pos.
+have Hfalse :
+    mu d (fun bad : bool => ! bad) = mu1 d false.
+  apply/mu_eq=> bad /=.
+  by case: bad.
+have Htrue :
+    mu d (fun bad : bool => bad) = mu1 d true.
+  apply/mu_eq=> bad /=.
+  by case: bad.
+have Hnot :
+    mu d (fun bad : bool => ! bad) =
+    mu d predT - mu d (fun bad : bool => bad).
+  by rewrite mu_not /weight.
+rewrite -Hfalse Hnot Htrue.
+have Hw : weight d = 1%r.
+  exact (is_losslessP _ Hll).
+rewrite Hw /d.
+rewrite (drange_subset_true_mass total subset Htotal_pos).
+by smt().
+qed.
+
 lemma count_range0_lt_prefix (bound total : int) :
   0 <= bound =>
   bound <= total =>
