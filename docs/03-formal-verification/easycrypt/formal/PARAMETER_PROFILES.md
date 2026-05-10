@@ -40,7 +40,7 @@ epsilon_top_parameterized =
   epsilon_MS1 + 2 * epsilon_MS2 + epsilon_LE
 ```
 
-Under the active live profiles, that symbolic top budget evaluates to `21%r / 64%r`.
+Under the active live profiles, that symbolic top budget evaluates to `15%r / 64%r`.
 
 ## Current Checked Snapshot
 
@@ -53,9 +53,9 @@ Under the active live profiles, that symbolic top budget evaluates to `21%r / 64
 - The active parameterized MS1 profile is `collision=1`, `malformed_binding=1`, `transcript=1`, `clean=61`, `failure=3`, `total=64`, so `epsilon_ms_hash_binding_parameterized = 3%r / 64%r`.
 - The MS1 canonical failure lane now closes live at `3%r / 64%r`, and the staged public-divergence upper lane now closes live at `2%r / 64%r = 1%r / 32%r`.
 - `SourceHashBindingSemanticLiveParameterizedCore.ec` owns the live MS1 coupled-state/public-observable core, `SourceHashBindingSemanticLiveParameterizedMass.ec` owns the live MS1 canonical failure and public-divergence upper mass closure, and `MSProbabilitySurfaceParameterized.ec`, `GameAdvantageParameterized.ec`, `GameMSHopTypesParameterized.ec`, and `GameMSHopCompositionParameterized.ec` now carry the live staged/public-endpoint MS1 route.
-- The active parameterized MS2 profile is `global_digest=1`, `query_digest=1`, `transcript=1`, `clean=29`, `failure=3`, `total=32`, so `epsilon_ms_rom_programmability_parameterized = 3%r / 32%r`.
+- The active parameterized MS2 profile is `global_digest=1`, `query_digest=1`, `transcript=1`, `clean=61`, `failure=3`, `total=64`, so `epsilon_ms_rom_programmability_parameterized = 3%r / 64%r`.
 - `ComparisonPayloadSemanticLiveParameterizedCore.ec` owns the live MS2 category/coupled-state/public-AfterRom core, `ComparisonPayloadSemanticLiveParameterizedMass.ec` owns the live MS2 execution-owned failure and public-divergence/failure mass closure, and `MSProbabilitySurfaceParameterized.ec`, `GameAdvantageParameterized.ec`, `GameMSHopTypesParameterized.ec`, and `GameMSHopCompositionParameterized.ec` now carry the live staged/public-endpoint MS2 route and the budgeted public-to-canonical landing.
-- The LE rejection, LE FS, and MS1 retunings were owner-only changes. They changed no theorem surface and required no local proof repairs.
+- The LE rejection, LE FS, MS1, and MS2 retunings were owner-only changes. They changed no theorem surface and required no local proof repairs.
 - `qssm_main_theorem_parameterized_budget` remains closed with the explicit duplicated MS2 charge.
 - No remaining localized replay seams are expected on the current uniform finite-support / contiguous-layout profile family.
 
@@ -141,7 +141,7 @@ The current parameterized owner/helper layer supports the following geometry wit
 - a contiguous interval layout is supported for the MS1 public-divergence upper mass
 - larger contiguous uniform supports are structurally supported
 - those generic predicate helpers are lower helper infrastructure only; they do not add non-uniform weights, sparse support, or theorem-surface support for arbitrary profile families
-- the current frozen live family is a mixed 64-slot LE/MS1 and 32-slot MS2 uniform finite-support / contiguous-layout profile with three failure slots on each active parameterized owner
+- the current frozen live family is a uniform 64-slot finite-support / contiguous-layout profile with three failure slots on each active parameterized owner
 - non-uniform weights are not yet supported
 - sparse or non-contiguous failure layouts are not yet supported
 - reordered MS1/MS2 category branches are not safe without proof changes in the slot-mass and bridge files
@@ -154,8 +154,8 @@ The active parameterized theorem route is fully live on LE, MS1, and MS2.
 - LE rejection: `LERejectionSamplerParameterizedCore.ec` and `LERejectionSamplerMassLiveParameterized.ec` own the live parameterized rejection core and mass/sdist closure at `3%r / 64%r`.
 - LE FS: `LEFsProgrammingLiveParameterizedCore.ec` and `LEFsProgrammingLiveParameterizedMass.ec` own the live parameterized FS branch/midpoint core and bad-branch mass/sdist closure at `3%r / 64%r`.
 - MS1: `SourceHashBindingSemanticLiveParameterizedCore.ec` and `SourceHashBindingSemanticLiveParameterizedMass.ec` own the live MS1 canonical failure and staged/public-endpoint route at `3%r / 64%r` and `1%r / 32%r`.
-- MS2: `ComparisonPayloadSemanticLiveParameterizedCore.ec` and `ComparisonPayloadSemanticLiveParameterizedMass.ec` own the live MS2 staged/public-endpoint and landing route at `3%r / 32%r`.
-- The resulting top budget remains `epsilon_MS1 + 2 * epsilon_MS2 + epsilon_LE`, which evaluates to `21%r / 64%r` on the active live family.
+- MS2: `ComparisonPayloadSemanticLiveParameterizedCore.ec` and `ComparisonPayloadSemanticLiveParameterizedMass.ec` own the live MS2 staged/public-endpoint and landing route at `3%r / 64%r`.
+- The resulting top budget remains `epsilon_MS1 + 2 * epsilon_MS2 + epsilon_LE`, which evaluates to `15%r / 64%r` on the active live family.
 
 ## Profile Generalization Checklist
 

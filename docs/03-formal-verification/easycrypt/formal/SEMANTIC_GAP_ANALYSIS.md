@@ -25,7 +25,7 @@ The following facts are available on the current lower surface.
 - The public semantic AfterRom observable is only bounded against the canonical surface by a charged semantic-failure term.
 - The public-endpoint route can therefore be proved as a staged/public-endpoint route.
 - On the MS1 half, that staged/public-endpoint route is now live parameterized at `2%r / 64%r = 1%r / 32%r` rather than demo-bound.
-- On the MS2 half, both the staged public-endpoint transition and the public-to-canonical landing are now routed through a live execution-owned parameterized lane at `epsilon_ms_rom_programmability_parameterized = 3%r / 32%r`.
+- On the MS2 half, both the staged public-endpoint transition and the public-to-canonical landing are now routed through a live execution-owned parameterized lane at `epsilon_ms_rom_programmability_parameterized = 3%r / 64%r`.
 - The parameterized route can now land back in the canonical game chain by paying an explicit budgeted bridge charge.
 
 In practical theorem names, the strongest relevant current facts are:
@@ -83,7 +83,7 @@ epsilon_ms_hash_binding_parameterized
 + epsilon_le_parameterized
 ```
 
-Under the active live profiles, that charged top budget evaluates to `21%r / 64%r`.
+Under the active live profiles, that charged top budget evaluates to `15%r / 64%r`.
 
 ## Why The Blocker Is Semantic, Not Organizational
 
@@ -100,7 +100,7 @@ What remains missing is a stronger lower theorem about the actual relationship b
 
 The first honest owner boundary is still below the theorem surface if future work wants to tighten the new route.
 
-On the current tree, the live LE rejection and live LE FS `3%r / 64%r` lanes are already closed, the MS1 canonical failure plus staged/public-endpoint lanes are live parameterized at `3%r / 64%r` and `1%r / 32%r`, and the MS2 staged/public-endpoint plus landing route is live parameterized at `3%r / 32%r`. No remaining localized replay seams are expected on the current uniform finite-support / contiguous-layout profile family, so the next focused audit is the remaining MS2 tuning inside the same geometry, profile generalization, or a stronger lower fusion law rather than another localized replay pass.
+On the current tree, the live LE rejection and live LE FS `3%r / 64%r` lanes are already closed, the MS1 canonical failure plus staged/public-endpoint lanes are live parameterized at `3%r / 64%r` and `1%r / 32%r`, and the MS2 staged/public-endpoint plus landing route is live parameterized at `3%r / 64%r`. No remaining localized replay seams are expected on the current uniform finite-support / contiguous-layout profile family, so the next focused audit is freeze-route release packaging, profile generalization, or a stronger lower fusion law rather than another localized replay pass.
 
 - Start at `ms/MSProbabilitySurface.ec` or a sibling lower companion.
 - Do not start in `MainTheorem.ec`.

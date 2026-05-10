@@ -25,24 +25,24 @@ Current checker snapshot:
 - demo semantic route unchanged
 - public AfterRom still budget-close to canonical AfterRom, not zero-equal
 - duplicated MS2 charge still explicit in the canonical parameterized route
-- the current `21%r / 64%r` route is the checked post-MS1-tuning checkpoint
+- the current `15%r / 64%r` route is the checked post-MS2-tuning checkpoint
 
 Active live profile:
 
 | Component | Active counts | Closed budget |
 |---|---|---|
 | MS1 | `collision=1`, `malformed_binding=1`, `transcript=1`, `clean=61`, `failure=3`, `total=64` | `3%r / 64%r` |
-| MS2 | `global_digest=1`, `query_digest=1`, `transcript=1`, `clean=29`, `failure=3`, `total=32` | `3%r / 32%r` |
+| MS2 | `global_digest=1`, `query_digest=1`, `transcript=1`, `clean=61`, `failure=3`, `total=64` | `3%r / 64%r` |
 | LE rejection | `soft=1`, `hard=1`, `invalid=1`, `accept=61`, `failure=3`, `total=64` | `3%r / 64%r` |
 | LE FS | `query_collision=1`, `programming_collision=1`, `transcript=1`, `clean=61`, `failure=3`, `total=64` | `3%r / 64%r` |
 | LE combined | `epsilon_le_parameterized = epsilon_le_rej_parameterized + epsilon_le_fs_parameterized` | `6%r / 64%r = 3%r / 32%r` |
-| Top theorem | `epsilon_ms_hash_binding_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_le_parameterized` | `21%r / 64%r` |
+| Top theorem | `epsilon_ms_hash_binding_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_le_parameterized` | `15%r / 64%r` |
 
 The MS1 staged public-divergence upper lane now closes at `2%r / 64%r = 1%r / 32%r`.
 
 Lower helper infrastructure now includes `primitives/ParameterizedMassHelpers.ec : drange_pred_true_mass` and `primitives/ParameterizedMassHelpers.ec : drange_pred_true_mass_le_bound`. Those lemmas support generic uniform predicate counts on `drange 0 total`, but they do not by themselves expand the supported profile family beyond the current uniform finite-support / contiguous-layout geometry.
 
-The LE rejection, LE FS, and MS1 `3%r / 64%r` pilots are already landed. All three were owner-only retunings inside the current geometry, changed no theorem surface, and required no local proof repair.
+The LE rejection, LE FS, MS1, and MS2 `3%r / 64%r` pilots are already landed. All four were owner-only retunings inside the current geometry, changed no theorem surface, and required no local proof repair.
 
 ## What Can Be Tuned Today Without New Proof Infrastructure
 
@@ -88,12 +88,11 @@ epsilon_top = epsilon_MS1 + 2 * epsilon_MS2 + epsilon_LE
 
 ## Concrete Example Table
 
-Only the `Current checked baseline` row below is checker-validated today. The remaining rows are planning placeholders only.
+Only the `Current checked baseline` row below is checker-validated today. The remaining row is a planning placeholder only.
 
 | Profile sketch | `epsilon_MS1` | `epsilon_MS2` | `epsilon_LE_rej` | `epsilon_LE_fs` | `epsilon_LE` | `epsilon_top` |
 |---|---:|---:|---:|---:|---:|---|
-| Current checked baseline | `3%r / 64%r` | `3%r / 32%r` | `3%r / 64%r` | `3%r / 64%r` | `3%r / 64%r + 3%r / 64%r` | `3%r / 64%r + 2 * (3%r / 32%r) + (3%r / 64%r + 3%r / 64%r)` |
-| All-components 64 candidate | `3%r / 64%r` | `3%r / 64%r` | `3%r / 64%r` | `3%r / 64%r` | `3%r / 64%r + 3%r / 64%r` | `3%r / 64%r + 2 * (3%r / 64%r) + (3%r / 64%r + 3%r / 64%r)` |
+| Current checked baseline | `3%r / 64%r` | `3%r / 64%r` | `3%r / 64%r` | `3%r / 64%r` | `3%r / 64%r + 3%r / 64%r` | `3%r / 64%r + 2 * (3%r / 64%r) + (3%r / 64%r + 3%r / 64%r)` |
 | All-components 128 candidate | `3%r / 128%r` | `3%r / 128%r` | `3%r / 128%r` | `3%r / 128%r` | `3%r / 128%r + 3%r / 128%r` | `3%r / 128%r + 2 * (3%r / 128%r) + (3%r / 128%r + 3%r / 128%r)` |
 
 ## Stop Conditions
@@ -105,16 +104,18 @@ Only the `Current checked baseline` row below is checker-validated today. The re
 
 ## Completed And Next Pilots
 
-The first three concrete tuning pilots kept each failure count fixed at `3` and increased only one owner's clean suffix support at a time.
+The first four concrete tuning pilots kept each failure count fixed at `3` and increased only one owner's clean suffix support at a time.
 
 Completed order:
 
 1. LE rejection
 2. LE FS
 3. MS1
+4. MS2
 
-Next recommended order:
+Next recommended phase:
 
-1. MS2
+1. Freeze-route release packaging checkpoint
+2. Release packaging / tag candidate
 
 This keeps the lower replays local, preserves the frozen theorem surface, and makes any geometry break visible as soon as it appears.
