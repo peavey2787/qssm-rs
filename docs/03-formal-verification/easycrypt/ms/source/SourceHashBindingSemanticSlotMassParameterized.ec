@@ -120,45 +120,6 @@ by case (slot < ParameterizedBudgetParameters.ms1_param_collision_count)=> //=;
    smt().
 qed.
 
-lemma ms_hash_binding_public_divergence_upper_choice_mass_eq_local_upper_mass_parameterized :
-  mu1 d_ms_hash_binding_public_divergence_upper_choice_parameterized true =
-  ms_hash_binding_local_public_divergence_upper_mass_parameterized.
-proof.
-have Hmap :
-    d_ms_hash_binding_public_divergence_upper_choice_parameterized =
-    dmap d_ms_hash_binding_semantic_slot_choice_parameterized
-      (fun slot : int =>
-         ParameterizedBudgetParameters.ms1_param_collision_count <= slot /\
-         slot < ParameterizedBudgetParameters.ms1_param_failure_count).
-  rewrite /d_ms_hash_binding_public_divergence_upper_choice_parameterized.
-  apply eq_dmap_in=> slot _ /=.
-  by rewrite ms_hash_binding_public_divergence_upper_slot_parameterized_intervalE.
-rewrite Hmap.
-rewrite /d_ms_hash_binding_semantic_slot_choice_parameterized.
-have Hcollision_le_failure :
-    ParameterizedBudgetParameters.ms1_param_collision_count <=
-    ParameterizedBudgetParameters.ms1_param_failure_count.
-  by smt(ParameterizedBudgetParameters.ms1_param_failure_count_component_sum
-         ParameterizedBudgetParameters.ms1_param_malformed_binding_count_nonneg
-         ParameterizedBudgetParameters.ms1_param_transcript_count_nonneg).
-rewrite (ParameterizedMassHelpers.drange_pred_true_mass
-  ParameterizedBudgetParameters.ms1_param_total_count
-  (fun slot : int =>
-     ParameterizedBudgetParameters.ms1_param_collision_count <= slot /\
-     slot < ParameterizedBudgetParameters.ms1_param_failure_count)
-  ParameterizedBudgetParameters.ms1_param_total_count_pos).
-rewrite (ParameterizedMassHelpers.count_range0_interval
-  ParameterizedBudgetParameters.ms1_param_collision_count
-  ParameterizedBudgetParameters.ms1_param_failure_count
-  ParameterizedBudgetParameters.ms1_param_total_count
-  ParameterizedBudgetParameters.ms1_param_collision_count_nonneg
-  Hcollision_le_failure
-  ParameterizedBudgetParameters.ms1_param_failure_count_le_total_count).
-rewrite /ms_hash_binding_local_public_divergence_upper_mass_parameterized.
-rewrite /ParameterizedBudgetParameters.ms1_param_failure_count.
-by smt().
-qed.
-
 lemma ms_hash_binding_public_divergence_upper_choice_mass_eq_local_upper_mass_subset_parameterized :
   mu1 d_ms_hash_binding_public_divergence_upper_choice_parameterized true =
   ms_hash_binding_local_public_divergence_upper_mass_parameterized.
@@ -208,6 +169,13 @@ rewrite (ParameterizedMassHelpers.count_range0_interval
 rewrite /ms_hash_binding_local_public_divergence_upper_mass_parameterized.
 rewrite /ParameterizedBudgetParameters.ms1_param_failure_count.
 by smt().
+qed.
+
+lemma ms_hash_binding_public_divergence_upper_choice_mass_eq_local_upper_mass_parameterized :
+  mu1 d_ms_hash_binding_public_divergence_upper_choice_parameterized true =
+  ms_hash_binding_local_public_divergence_upper_mass_parameterized.
+proof.
+exact ms_hash_binding_public_divergence_upper_choice_mass_eq_local_upper_mass_subset_parameterized.
 qed.
 
 lemma ms_hash_binding_local_public_divergence_upper_mass_le_epsilon_ms_hash_binding_parameterized :
