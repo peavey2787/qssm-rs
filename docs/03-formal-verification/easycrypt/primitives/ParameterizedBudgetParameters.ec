@@ -16,7 +16,7 @@ op ms1_param_transcript_count : int =
   1.
 
 op ms1_param_clean_count : int =
-  29.
+  61.
 
 op ms1_param_failure_count : int =
   ms1_param_collision_count +
