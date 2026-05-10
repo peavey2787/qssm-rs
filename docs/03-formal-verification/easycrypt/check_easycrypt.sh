@@ -156,6 +156,8 @@ FILES=(
   games/GameLEBridgeParameterized.ec
   games/GameLEBridgeRealWorld.ec
   le/LERejectionConcreteReduction.ec
+  le/LEFsConcreteReduction.ec
+  le/LEConcreteReduction.ec
   games/Games.ec
   theorem/MainTheorem.ec
   theorem/MainTheoremParameterized.ec
