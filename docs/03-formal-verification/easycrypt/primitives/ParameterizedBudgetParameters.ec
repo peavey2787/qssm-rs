@@ -123,7 +123,7 @@ op ms2_param_transcript_count : int =
   1.
 
 op ms2_param_clean_count : int =
-  29.
+  61.
 
 op ms2_param_failure_count : int =
   ms2_param_global_digest_count +
