@@ -158,6 +158,8 @@ FILES=(
   le/LERejectionConcreteReduction.ec
   le/LEFsConcreteReduction.ec
   le/LEConcreteReduction.ec
+  ms/MS1ConcreteReduction.ec
+  ms/MSConcreteReduction.ec
   games/Games.ec
   theorem/MainTheorem.ec
   theorem/MainTheoremParameterized.ec
