@@ -19,9 +19,9 @@ At the current release checkpoint, the expected result is:
 - active parameterized LE rejection profile documented as `soft=1`, `hard=1`, `invalid=1`, `accept=61`, `failure=3`, `total=64`, so `epsilon_le_rej_parameterized = 3%r / 64%r`
 - active parameterized LE FS profile documented as `query_collision=1`, `programming_collision=1`, `transcript=1`, `clean=61`, `failure=3`, `total=64`, so `epsilon_le_fs_parameterized = 3%r / 64%r`
 - active parameterized LE umbrella documented as `epsilon_le_parameterized = 6%r / 64%r = 3%r / 32%r`
-- active parameterized MS1 profile documented as `collision=1`, `malformed_binding=1`, `transcript=1`, `clean=29`, `failure=3`, `total=32`, so `epsilon_ms_hash_binding_parameterized = 3%r / 32%r`
-- MS1 canonical failure lane documented as live at `3%r / 32%r`
-- MS1 public-divergence upper lane documented as live at `2%r / 32%r = 1%r / 16%r`
+- active parameterized MS1 profile documented as `collision=1`, `malformed_binding=1`, `transcript=1`, `clean=61`, `failure=3`, `total=64`, so `epsilon_ms_hash_binding_parameterized = 3%r / 64%r`
+- MS1 canonical failure lane documented as live at `3%r / 64%r`
+- MS1 public-divergence upper lane documented as live at `2%r / 64%r = 1%r / 32%r`
 - staged MS1 public-endpoint route documented as live parameterized rather than demo-bound
 - active parameterized MS2 profile documented as `global_digest=1`, `query_digest=1`, `transcript=1`, `clean=29`, `failure=3`, `total=32`, so `epsilon_ms_rom_programmability_parameterized = 3%r / 32%r`
 - staged MS2 public-endpoint route documented as live parameterized rather than demo-bound
@@ -29,7 +29,7 @@ At the current release checkpoint, the expected result is:
 - `qssm_main_theorem_le_parameterized_budget` present and documented as the LE-only intermediate theorem
 - `qssm_main_theorem_parameterized_budget` present and documented as the full canonical parameterized theorem
 - canonical parameterized top budget documented as `epsilon_ms_hash_binding_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_le_parameterized`
-- active closed-form canonical parameterized top budget documented as `3%r / 8%r`
+- active closed-form canonical parameterized top budget documented as `21%r / 64%r`
 - lower helper infrastructure documented as including `drange_pred_true_mass` and `drange_pred_true_mass_le_bound` for uniform predicate masses only, not as arbitrary-profile support
 
 ## Checker Invocation
@@ -107,17 +107,17 @@ A release-ready checkpoint must preserve all of the following.
 - semantic top unchanged at `3%r / 4%r`
 - active parameterized LE rejection and LE FS routes documented as `3%r / 64%r` while the demo LE rejection and LE FS routes remain `3%r / 16%r`
 - active parameterized LE umbrella documented as `epsilon_le_parameterized = 3%r / 32%r`
-- active parameterized MS1 profile documented as `collision=1`, `malformed_binding=1`, `transcript=1`, `clean=29`, `failure=3`, `total=32`
-- MS1 canonical failure lane documented as live at `3%r / 32%r`
-- MS1 public-divergence upper lane documented as live at `2%r / 32%r = 1%r / 16%r`
+- active parameterized MS1 profile documented as `collision=1`, `malformed_binding=1`, `transcript=1`, `clean=61`, `failure=3`, `total=64`
+- MS1 canonical failure lane documented as live at `3%r / 64%r`
+- MS1 public-divergence upper lane documented as live at `2%r / 64%r = 1%r / 32%r`
 - staged MS1 public-endpoint route documented as live parameterized rather than demo-bound
 - active parameterized MS2 profile documented as `global_digest=1`, `query_digest=1`, `transcript=1`, `clean=29`, `failure=3`, `total=32`
 - staged MS2 public-endpoint route documented as live parameterized rather than demo-bound
 - `qssm_main_theorem_le_parameterized_budget` documented as the LE-only intermediate theorem
 - `qssm_main_theorem_parameterized_budget` documented as the full canonical parameterized theorem
 - the explicit duplicated `epsilon_ms_rom_programmability_parameterized` term documented without simplification
-- active closed-form canonical parameterized top budget documented as `3%r / 8%r`
-- LE rejection and LE FS tuning documented as owner-only changes with no theorem-surface changes and no local proof repairs
+- active closed-form canonical parameterized top budget documented as `21%r / 64%r`
+- LE rejection, LE FS, and MS1 tuning documented as owner-only changes with no theorem-surface changes and no local proof repairs
 - lower helper infrastructure documented as including `drange_pred_true_mass` and `drange_pred_true_mass_le_bound` without implying non-uniform or sparse profile support
 - staged/public-endpoint MS caveat documented explicitly as a charged bridge, not a zero bridge
 - no remaining localized replay seams expected on the current uniform finite-support / contiguous-layout profile family

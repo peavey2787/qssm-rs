@@ -14,7 +14,7 @@ The proof surface is frozen at the May 2026 release checkpoint.
 - `qssm_main_theorem_le_parameterized_budget` exists and is closed as the LE-only intermediate theorem.
 - `qssm_main_theorem_parameterized_budget` exists and is closed as the full canonical parameterized theorem.
 - The full parameterized top budget is `epsilon_ms_hash_binding_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_ms_rom_programmability_parameterized + epsilon_le_parameterized`.
-- Under the active live profiles, that full parameterized top budget closes at `3%r / 8%r`.
+- Under the active live profiles, that full parameterized top budget closes at `21%r / 64%r`.
 - The lower MS public-endpoint distinction remains real: public AfterRom is budget-close to canonical AfterRom, not zero-equal, so the route closes through a charged bridge.
 
 ## Public Theorem Surface
@@ -133,13 +133,13 @@ The full canonical parameterized route is now complete and honest about the extr
 | Live MS2 coupled-state/public core | `ms/comparison/ComparisonPayloadSemanticLiveParameterizedCore.ec` | `d_ms_rom_semantic_coupled_state_parameterized`, `d_ms_rom_semantic_failure_state_choice_parameterized`, `d_ms_after_rom_public_semantic_observable_v2_live_parameterized` |
 | Live MS2 mass closure | `ms/comparison/ComparisonPayloadSemanticLiveParameterizedMass.ec` | `A_MS2_rom_programming_execution_owned_live_parameterized_bound`, `ms_rom_execution_owned_parameterized_failure_probability_eq_local_mass`, `ms_rom_public_observable_divergence_mass_le_execution_owned_live_parameterized_failure` |
 | Parameterized MS2 bridge delegation | `ms/comparison/ComparisonPayloadSemanticBridgeParameterized.ec` | `A_MS2_rom_programming_execution_owned_parameterized_bound` |
-| Parameterized MS1 bridge + surface | `ms/source/SourceHashBindingSemanticBridgeParameterized.ec`, `ms/MSProbabilitySurfaceParameterized.ec` | preserved canonical/staged theorem names delegated to the live MS1 lane at `epsilon_ms_hash_binding_parameterized = 3%r / 32%r` and staged upper mass `1%r / 16%r` |
+| Parameterized MS1 bridge + surface | `ms/source/SourceHashBindingSemanticBridgeParameterized.ec`, `ms/MSProbabilitySurfaceParameterized.ec` | preserved canonical/staged theorem names delegated to the live MS1 lane at `epsilon_ms_hash_binding_parameterized = 3%r / 64%r` and staged upper mass `1%r / 32%r` |
 | Parameterized MS2 probability surface | `ms/MSProbabilitySurfaceParameterized.ec` | `A_MS2_rom_programming_parameterized_public_endpoint_transition_bound` and `A_MS_public_after_rom_to_canonical_after_rom_parameterized_transition_bound`, both now routed through the live MS2 lane |
 | Game-layer landing | `games/GameAdvantageParameterized.ec`, `games/GameMSHopTypesParameterized.ec`, `games/GameMSHopCompositionParameterized.ec` | live MS1 staged/public-endpoint route plus live MS2 staged/landing route with explicit duplicated MS2 charge |
 | Parameterized LE bridge | `games/GameLEBridgeParameterized.ec` | `A_G1_to_G2_le_semantic_parameterized_budget_transition_bound` |
 | Top theorem | `theorem/MainTheoremParameterized.ec` | `qssm_main_theorem_parameterized_budget` |
 
-The active live MS1 profile on this route is `collision=1`, `malformed_binding=1`, `transcript=1`, `clean=29`, `failure=3`, `total=32`, so the canonical failure lane closes at `3%r / 32%r` and the staged public-divergence upper lane closes at `2%r / 32%r = 1%r / 16%r`.
+The active live MS1 profile on this route is `collision=1`, `malformed_binding=1`, `transcript=1`, `clean=61`, `failure=3`, `total=64`, so the canonical failure lane closes at `3%r / 64%r` and the staged public-divergence upper lane closes at `2%r / 64%r = 1%r / 32%r`.
 
 The closed top-level budget is:
 
@@ -158,7 +158,7 @@ The MS parameterized lane still factors through a staged public-endpoint route, 
 |---|---|---|
 | Parameterized owners | `primitives/ParameterizedBudgetParameters.ec` | `epsilon_ms_hash_binding_parameterized`, `epsilon_ms_rom_programmability_parameterized` |
 | Live MS1 public-endpoint core | `ms/source/SourceHashBindingSemanticLiveParameterizedCore.ec` | `d_ms_hash_binding_public_semantic_observable_v2_parameterized`, `d_ms_hash_binding_public_divergence_upper_pair_choice_parameterized` |
-| Live MS1 staged mass closure | `ms/source/SourceHashBindingSemanticLiveParameterizedMass.ec` | live staged/public-divergence upper closure at `1%r / 16%r` |
+| Live MS1 staged mass closure | `ms/source/SourceHashBindingSemanticLiveParameterizedMass.ec` | live staged/public-divergence upper closure at `1%r / 32%r` |
 | Live MS2 public-endpoint core | `ms/comparison/ComparisonPayloadSemanticLiveParameterizedCore.ec` | `d_ms_after_rom_public_semantic_observable_v2_live_parameterized` |
 | Live MS2 staged/landing mass closure | `ms/comparison/ComparisonPayloadSemanticLiveParameterizedMass.ec` | live execution-owned failure closure at `3%r / 32%r` plus public-divergence/failure comparison |
 | Parameterized bridge companions | `ms/source/SourceHashBindingSemanticBridgeParameterized.ec`, `ms/comparison/ComparisonPayloadSemanticBridgeParameterized.ec` | live MS1 and live MS2 bridge delegation under preserved theorem-facing names |
