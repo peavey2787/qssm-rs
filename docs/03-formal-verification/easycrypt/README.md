@@ -165,6 +165,8 @@ The weighted finite-support replay audit concluded that weighted replay is only 
 
 The main caveat is unchanged: public AfterRom is budget-close to canonical AfterRom, not zero-equal, so this checkpoint does not claim a zero-cost public AfterRom landing. The exact-zero route is unchanged, the demo semantic route is unchanged, the frozen concrete parameterized route remains unchanged at `15%r / 64%r`, and supported concrete parameter profiles remain limited to the current uniform finite-support contiguous-layout geometry. Arbitrary non-uniform profile generalization and weighted finite-support replay remain future work.
 
+The frozen release note for the concrete all-reductions `lambda = 128` checkpoint is [../../../CONCRETE_128_REDUCTION_FREEZE.md](../../../CONCRETE_128_REDUCTION_FREEZE.md).
+
 ## Plan Index
 
 - [plans/G0_G1_G2_game_plan.md](plans/G0_G1_G2_game_plan.md): top-level `G0 -> G1 -> G2` game-hop composition plan
