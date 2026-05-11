@@ -45,6 +45,35 @@
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
+## Formal Route Coverage Note
+
+The three-term ZK bound shown above is the exact-zero theorem skeleton for:
+- `qssm_main_theorem`
+
+It is not the full statement for the live charged companion routes:
+- `qssm_main_theorem_parameterized_budget`
+- `qssm_main_theorem_realworld_budget`
+- `qssm_main_theorem_realworld_concrete_128`
+- `qssm_main_theorem_realworld_concrete_128_with_all_reductions`
+
+For those charged routes:
+- public AfterRom remains budget-close to canonical AfterRom, not zero-equal
+- the duplicate MS2 charge remains explicit
+- the theorem-facing additive form is `epsilon_top = epsilon_MS1 + epsilon_MS2 + epsilon_MS2 + epsilon_LE`
+
+The concrete all-reductions sibling route and its closed-form companion exist as:
+- `qssm_main_theorem_realworld_concrete_128_with_all_reductions`
+- `qssm_main_theorem_realworld_concrete_128_with_all_reductions_5_over_2_98`
+
+Current concrete route status:
+- component epsilon = `1 / 2^98`
+- top epsilon = `5 / 2^98`
+- effective bit level ≈ `95.67807190511263`
+- LE rejection, LE FS, MS1, and MS2 each enter through explicit external reduction obligations
+- those obligations are theorem premises, not axioms
+- the current theorem surface does not model weighted or non-uniform sampler internals
+- the frozen toy `3%r / 64%r` lower masses do not instantiate `1 / 2^98`, and no theorem claims the toy actuals are `<= 2^-98`
+
 ## Assumption → Mechanism → Protection
 
 | Assumption | Mechanism | What It Protects | Breaks If... |
