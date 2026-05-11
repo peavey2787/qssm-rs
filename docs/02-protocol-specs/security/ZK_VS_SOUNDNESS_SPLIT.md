@@ -77,7 +77,7 @@ Reduction-based: any soundness-breaking adversary implies either a hash collisio
 ### Concrete Soundness Numbers (from reduction_lattice.rs and reduction_ms.rs)
 
 Coverage boundary:
-- these numeric soundness bounds are not currently checked by the EasyCrypt tree under `docs/03-formal-verification/easycrypt/`
+- these numeric soundness bounds are not currently checked by the EasyCrypt tree under `formal-verification/easycrypt/`
 - they are analysis-layer statements backed by Rust reductions, tests, and security documentation
 - they should not be read as machine-checked EasyCrypt theorem outputs on the current tree
 

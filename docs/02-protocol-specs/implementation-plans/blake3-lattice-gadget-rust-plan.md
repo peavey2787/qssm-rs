@@ -6,18 +6,18 @@
 
 ### Documentation map
 
-* [README](../README.md) — Project home
-* [Architecture overview](./architecture-overview.md)
-* [MSSQ — Egalitarian rollup](./mssq-rollup.md)
-* [QSSM-LE — Engine A](./qssm-le-engine-a.md)
-* [QSSM-MS — Engine B](./qssm-ms-engine-b.md)
-* [BLAKE3–lattice gadget spec](./blake3-lattice-gadget-spec.md)
+* [README](../../../README.md) — Project home
+* [Architecture overview](../../01-architecture/architecture-overview.md)
+* MSSQ — Egalitarian rollup
+* [QSSM-LE — Engine A](../qssm-le-engine-a.md)
+* [QSSM-MS — Engine B](../qssm-ms-engine-b.md)
+* [BLAKE3–lattice gadget spec](../blake3-lattice-gadget-spec.md)
 
 ---
 
 # BLAKE3–Lattice Gadget — Rust implementation plan
 
-This document is the **normative implementation plan** for [`blake3-lattice-gadget-spec.md`](./blake3-lattice-gadget-spec.md). **Math is law:** there is no “primitives first, decomposition later” shortcut—**bit decomposition and degree‑2 algebra are mandatory from the first line of `bits.rs`.**
+This document is the **normative implementation plan** for [`blake3-lattice-gadget-spec.md`](../blake3-lattice-gadget-spec.md). **Math is law:** there is no “primitives first, decomposition later” shortcut—**bit decomposition and degree‑2 algebra are mandatory from the first line of `bits.rs`.**
 
 ---
 
@@ -177,7 +177,7 @@ flowchart LR
 
 - **`prover_json`**: private wire counting for sovereign + Merkle compress witnesses; value hooks for golden / tooling.
 - **`examples/l2_handshake.rs`**: Merkle parent witness, **`EntropyProvider`** (Phase 8), **`SovereignWitness::bind`**, **`Blake3Gadget::export_r1cs`**, writes **`prover_package.json`** (**`nist_beacon_included`**), **`sovereign_witness.json`**, **`merkle_parent_witness.json`**, **`r1cs_merkle_parent.manifest.txt`** (large stack on Windows worker thread).
-- **Deployment manifest:** [`l2-kaspa-core-deployment-manifest.md`](./l2-kaspa-core-deployment-manifest.md) lists Engine B/A field map and artifact paths.
+- **Deployment manifest:** historical deployment manifest note removed from the current tree.
 
 **Exit criteria:** example + tests green; package JSON schema stable for Engine A consumption.
 
@@ -346,20 +346,20 @@ Let **`D = SovereignDigest`** be **`[u8; 32]`** (**256** bits).
 
 | File | Responsibility |
 |------|----------------|
-| [`crates/qssm-gadget/Cargo.toml`](crates/qssm-gadget/Cargo.toml) | Crate manifest; `qssm-utils`, `ureq`, `thiserror`; feature **`lattice-bridge`** → optional **`qssm-le`**; `blake3` dev for vectors. |
-| [`crates/qssm-gadget/src/lib.rs`](crates/qssm-gadget/src/lib.rs) | `bits`, `merkle`, `binding`, `blake3_native`, **`entropy`**, **`r1cs`**, **`poly_ops`**, **`lattice_bridge`**, `error`; re‑exports **`ConstraintSystem`**, **`MockProver`**, **`Blake3Gadget`**, **`ProverPackageBuilder`**, **`verify_limb_binding_json`**. |
-| [`crates/qssm-gadget/src/bits.rs`](crates/qssm-gadget/src/bits.rs) | Degree‑2 XOR, **`FullAdder`**, ripple + **`XorWitness` / `RippleCarryWitness`** from **day one**; LE only. |
-| [`crates/qssm-gadget/src/merkle.rs`](crates/qssm-gadget/src/merkle.rs) | **Phase 0** LE path ↔ orientation; **`recompute_root`**. |
-| [`crates/qssm-gadget/src/binding.rs`](crates/qssm-gadget/src/binding.rs) | **Phase 3+8**: **`hash_domain(DOMAIN_SOVEREIGN_LIMB_V2, [root‖rollup‖metadata_v2])`**, LE **30‑bit** limb, **`SovereignWitness`** (**`nist_included`**, **`sovereign_entropy`**). |
-| [`crates/qssm-gadget/src/entropy.rs`](crates/qssm-gadget/src/entropy.rs) | **Phase 8**: **`EntropyProvider`**, **`fetch_nist_pulse`**, **`generate_sovereign_entropy`**, **500 ms** default timeout. |
-| [`crates/qssm-gadget/src/blake3_native.rs`](crates/qssm-gadget/src/blake3_native.rs) | G‑function / quarter‑round: **`XorWitness`**, **`RippleCarryWitness`**, **`bit_wire_rotate`**, **`BitRotateWitness`**, chained **`QuarterRoundWitness`** (no native `u32` mix on witness path). |
-| [`crates/qssm-gadget/src/blake3_compress.rs`](crates/qssm-gadget/src/blake3_compress.rs) | **Phase 5**: **`MSG_SCHEDULE`**, **`CompressionWitness`** (**56 × `G`**), **`hash_merkle_parent_witness`**, **`compress_native`** oracle. |
-| [`crates/qssm-gadget/src/r1cs.rs`](crates/qssm-gadget/src/r1cs.rs) | **Phase 4–5**: **`ConstraintSystem`**, **`MockProver`**, **`Blake3Gadget::synthesize_g`**, **`synthesize_compress`**, **`synthesize_merkle_parent_hash`**. |
-| [`crates/qssm-gadget/src/lattice_bridge.rs`](crates/qssm-gadget/src/lattice_bridge.rs) | **Phase 7**: **`BRIDGE_Q`**, **`verify_limb_binding_json`** (+ **`nist_beacon_included`** vs **`public.nist_included`**), **`verify_handshake_with_le`** (feature **`lattice-bridge`**). |
-| [`crates/qssm-gadget/src/error.rs`](crates/qssm-gadget/src/error.rs) | **`GadgetError`** variants. |
-| [`crates/qssm-gadget/examples/l2_handshake.rs`](crates/qssm-gadget/examples/l2_handshake.rs) | **Phase 6+8** demo via **`poly_ops::ProverPackageBuilder`** + **`L2MerkleSovereignPipe`** (no manual package `json!`); Phase 8 NIST up/down simulation + production **`EntropyProvider::default()`**; **`verify_limb_binding_json`**; optional **`verify_handshake_with_le`** with **`--features lattice-bridge`**. |
-| [`crates/qssm-gadget/src/circuit/poly_ops.rs`](crates/qssm-gadget/src/circuit/poly_ops.rs) | **Poly‑Ops (historical layout):** context/degree rails, reservoir, transcript map, builder, **`OpPipe<A,B>`**, **`LatticePolyOp`**, **`EntropyInjectionOp`**, **`EngineABindingOp`**. **Current tree:** operators live under `src/circuit/operators/`; active MS bridge is **`MsPredicateOnlyV2BridgeOp`** (MS v2), not **`MsGhostMirrorOp`**. |
-| [`crates/qssm-gadget/tests/`](crates/qssm-gadget/tests/) | MS + digest golden + **`full_merkle_parent_parity`** + **`l2_polyops_package`** (golden **`engine_a_public`** vs direct bind). **Legacy** `ms_ghost_mirror_polyop` / **`ms-engine-b`** narrative is **obsolete** — see **`unit_tests/ms_v2_bridge_tests.rs`** for active-surface guards. |
+| [`truth-engine/qssm-gadget/Cargo.toml`](../../../truth-engine/qssm-gadget/Cargo.toml) | Crate manifest; `qssm-utils`, `ureq`, `thiserror`; feature **`lattice-bridge`** → optional **`qssm-le`**; `blake3` dev for vectors. |
+| [`truth-engine/qssm-gadget/src/lib.rs`](../../../truth-engine/qssm-gadget/src/lib.rs) | `primitives`, `merkle`, `circuit`, `lattice`, `error`; re‑exports the current gadget entrypoints. |
+| [`truth-engine/qssm-gadget/src/primitives/bits.rs`](../../../truth-engine/qssm-gadget/src/primitives/bits.rs) | Degree‑2 XOR, **`FullAdder`**, ripple + **`XorWitness` / `RippleCarryWitness`** from **day one**; LE only. |
+| [`truth-engine/qssm-gadget/src/merkle.rs`](../../../truth-engine/qssm-gadget/src/merkle.rs) | **Phase 0** LE path ↔ orientation; **`recompute_root`**. |
+| [`truth-engine/qssm-gadget/src/circuit/binding.rs`](../../../truth-engine/qssm-gadget/src/circuit/binding.rs) | Sovereign binding path and public digest binding logic in the current tree. |
+| [`truth-engine/qssm-gadget/src/primitives/entropy.rs`](../../../truth-engine/qssm-gadget/src/primitives/entropy.rs) | Entropy helpers and provider logic in the current tree. |
+| [`truth-engine/qssm-gadget/src/primitives/blake3_native.rs`](../../../truth-engine/qssm-gadget/src/primitives/blake3_native.rs) | G‑function / quarter‑round witness helpers. |
+| [`truth-engine/qssm-gadget/src/primitives/blake3_compress.rs`](../../../truth-engine/qssm-gadget/src/primitives/blake3_compress.rs) | Compression witness path and native compression oracle. |
+| [`truth-engine/qssm-gadget/src/circuit/r1cs.rs`](../../../truth-engine/qssm-gadget/src/circuit/r1cs.rs) | Constraint system and synthesis entrypoints in the current tree. |
+| [`truth-engine/qssm-gadget/src/lattice/lattice_bridge.rs`](../../../truth-engine/qssm-gadget/src/lattice/lattice_bridge.rs) | Lattice handshake bridge logic in the current tree. |
+| [`truth-engine/qssm-gadget/src/error.rs`](../../../truth-engine/qssm-gadget/src/error.rs) | **`GadgetError`** variants. |
+| `truth-engine/qssm-gadget/examples/l2_handshake.rs` | Historical example path removed from the current tree. |
+| [`truth-engine/qssm-gadget/src/circuit/lattice_polyop.rs`](../../../truth-engine/qssm-gadget/src/circuit/lattice_polyop.rs) | Current poly-op / lattice composition surface. |
+| [`truth-engine/qssm-gadget/unit_tests/`](../../../truth-engine/qssm-gadget/unit_tests) | Current unit-test surface for active gadget paths. |
 
 ---
 
@@ -374,7 +374,7 @@ Let **`D = SovereignDigest`** be **`[u8; 32]`** (**256** bits).
 
 ## Documentation sync
 
-- Align [`blake3-lattice-gadget-spec.md`](./blake3-lattice-gadget-spec.md) §5.2 with **§5** here (Sovereign Digest before limb).
+- Align [`blake3-lattice-gadget-spec.md`](../blake3-lattice-gadget-spec.md) §5.2 with **§5** here (Sovereign Digest before limb).
 - This file is the **implementation** law; the spec is **design** normative.
 
 ---
@@ -385,9 +385,9 @@ Let **`D = SovereignDigest`** be **`[u8; 32]`** (**256** bits).
 
 | Piece | Location / role |
 |------|------------------|
-| **`LE_FS_PUBLIC_BINDING_LAYOUT_VERSION`** | [`crates/qssm-utils/src/hashing.rs`](../../crates/qssm-utils/src/hashing.rs) — **bump** when `qssm-le` [`public_binding_fs_bytes`](../../crates/qssm-le/src/protocol/commit.rs) or `fs_challenge_bytes` **order** changes; re-exported from **`qssm-le`** and asserted against **`TRANSCRIPT_MAP_LAYOUT_VERSION`** in **`poly_ops`**. |
+| **`LE_FS_PUBLIC_BINDING_LAYOUT_VERSION`** | [`truth-engine/qssm-utils/src/hashing.rs`](../../../truth-engine/qssm-utils/src/hashing.rs) — **bump** when `qssm-le` [`public_binding_fs_bytes`](../../../truth-engine/qssm-le/src/protocol/commit.rs) or `fs_challenge_bytes` **order** changes; re-exported from **`qssm-le`** and asserted against **`TRANSCRIPT_MAP_LAYOUT_VERSION`** in **`poly_ops`**. |
 | **`PolyOpContext` / `DegreeExceeded`** | Tracks XOR **and**-gate multiplicative depth; errors include **`VarId`**s + segment label so authors can insert a **fresh witness segment** after a violation. |
-| **`PolyOpTracingCs`** | Wraps any **`ConstraintSystem`** and records depth on **`enforce_xor`**. Optional **auto‑refresh**: when both XOR AND inputs have depth **≥ 1**, inserts **`enforce_equal`** copy per normative [**gadget spec §3.4**](../02-protocol-specs/blake3-lattice-gadget-spec.md) (deepest operand, else **left**). |
+| **`PolyOpTracingCs`** | Wraps any **`ConstraintSystem`** and records depth on **`enforce_xor`**. Optional **auto‑refresh**: when both XOR AND inputs have depth **≥ 1**, inserts **`enforce_equal`** copy per normative [**gadget spec §3.4**](../blake3-lattice-gadget-spec.md) (deepest operand, else **left**). |
 | **`refresh_boolean_wire_copy` / `CopyRefreshMeta`** | Sound R1CS copy (new private wire + **`equal`**); **`refresh_metadata`** + witness **`r1cs_refresh_private_wires`** in package / Merkle JSON (**Index‑Append**); **`L2BuildOptions::auto_refresh_merkle_xor`**; **15%** default **high degree pressure** warning (`refresh_count` / R1CS lines). |
 | **`BindingReservoir` / `BindingPhase`** | Phased nominations; within a phase, **`BTreeMap<BindingLabel, …>`** gives deterministic **`Ord`** order. |
 | **`TranscriptMap`** | **`ENGINE_A_PUBLIC_KEYS_IN_ORDER`** + **`EngineAPublicJson`** custom **`Serialize`** (canonical **`message_limb_u30`** then **`digest_coeff_vector_u4`**); **`serde_json`** **`preserve_order`** is enabled for **`qssm-gadget`** so merged JSON objects keep key order. |
@@ -396,7 +396,7 @@ Let **`D = SovereignDigest`** be **`[u8; 32]`** (**256** bits).
 | **`SovereignLimbV2Params::device_entropy_link`** | Optional **32**‑byte digest (e.g. BLAKE3 of device raw bytes). Normative mix into the sovereign floor: **`effective_entropy = sovereign_entropy XOR link`** (via **`effective_sovereign_entropy`**) **before** **`SovereignWitness::bind`** so the value in **`ProofMetadata_v2`** matches digest binding. |
 | **`qssm_utils::validate_entropy_distribution`** | Byte histogram χ² vs uniform (**df = 255**), critical ≈ **340** (**p ≈ 0.001**), plus minimum **distinct** byte count; sub‑256‑byte buffers **skip** (no false reject). Wired as **`PolyOpError::WeakEntropy`** from **`EntropyInjectionOp`** when enabled; optional **`L2BuildOptions::reject_weak_entropy_sample`**. |
 | **`MsPredicateOnlyV2BridgeOp` + `EngineABindingOp`** | Bridge calls **`verify_predicate_only_v2`**; seam hashes use **`ms_v2_*`** observables and domains **`QSSM-SEAM-MS-V2-COMMIT-v1`** / **`OPEN`** / **`BINDING`**. Legacy GhostMirror cleartext verification is not part of the current workspace operator path. |
-| **Black‑box + golden tests** | [`crates/qssm-gadget/tests/l2_polyops_package.rs`](../../crates/qssm-gadget/tests/l2_polyops_package.rs) (large stack thread); compares **`engine_a_public`** to direct **`SovereignWitness::bind`** (same floor bytes when **`device_entropy_link`** is **`None`**). |
+| **Black‑box + golden tests** | [`truth-engine/qssm-gadget/src/circuit/poly_ops_tests.rs`](../../../truth-engine/qssm-gadget/src/circuit/poly_ops_tests.rs) (large stack thread); compares **`engine_a_public`** to direct **`SovereignWitness::bind`** on the active circuit path. |
 
 **`l2_handshake` example:** uses only **`ProverPackageBuilder`** + pipe (no hand-built package JSON).
 

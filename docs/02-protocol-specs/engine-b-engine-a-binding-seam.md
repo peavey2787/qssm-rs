@@ -109,9 +109,9 @@ Reject the package if any of these hold:
 
 Normative implementation:
 
-- [`truth-engine/qssm-gadget/src/circuit/operators/ms_predicate_v2_bridge.rs`](../../../truth-engine/qssm-gadget/src/circuit/operators/ms_predicate_v2_bridge.rs) — `MsPredicateOnlyV2BridgeOp` (`verify_predicate_only_v2`).
-- [`truth-engine/qssm-gadget/src/circuit/operators/engine_a_binding.rs`](../../../truth-engine/qssm-gadget/src/circuit/operators/engine_a_binding.rs) — `EngineABindingOp` commit-then-open over `ms_v2_*` fields.
-- [`truth-engine/qssm-gadget/src/circuit/handshake.rs`](../../../truth-engine/qssm-gadget/src/circuit/handshake.rs) — transcript map version, `EngineAPublicJson`.
+- [`truth-engine/qssm-gadget/src/circuit/operators/ms_predicate_v2_bridge.rs`](../../truth-engine/qssm-gadget/src/circuit/operators/ms_predicate_v2_bridge.rs) — `MsPredicateOnlyV2BridgeOp` (`verify_predicate_only_v2`).
+- [`truth-engine/qssm-gadget/src/circuit/operators/engine_a_binding.rs`](../../truth-engine/qssm-gadget/src/circuit/operators/engine_a_binding.rs) — `EngineABindingOp` commit-then-open over `ms_v2_*` fields.
+- [`truth-engine/qssm-gadget/src/circuit/handshake.rs`](../../truth-engine/qssm-gadget/src/circuit/handshake.rs) — transcript map version, `EngineAPublicJson`.
 
 **Note:** Packaged offline verification and gadget seam binding are both on MS v2 predicate-only proof objects in the current workspace.
 
