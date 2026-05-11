@@ -7,6 +7,12 @@
 
 The proof crate mixes ZK and soundness in adjacent modules. This document explicitly separates them.
 
+Formal coverage note:
+- EasyCrypt currently proves the ZK/composition theorem surfaces only.
+- The ZK theorem statement in this file matches the current EasyCrypt theorem family.
+- The soundness theorem statement and concrete soundness numbers in this file are security-analysis scope, not current EasyCrypt theorem claims.
+- Soundness remains outside the current EasyCrypt theorem surface unless a separate EasyCrypt soundness theorem family is added later.
+
 ---
 
 ## ZERO-KNOWLEDGE THEOREM
@@ -70,6 +76,11 @@ Reduction-based: any soundness-breaking adversary implies either a hash collisio
 
 ### Concrete Soundness Numbers (from reduction_lattice.rs and reduction_ms.rs)
 
+Coverage boundary:
+- these numeric soundness bounds are not currently checked by the EasyCrypt tree under `docs/03-formal-verification/easycrypt/`
+- they are analysis-layer statements backed by Rust reductions, tests, and security documentation
+- they should not be read as machine-checked EasyCrypt theorem outputs on the current tree
+
 **MS soundness:**
 ```
 epsilon_ms_snd ≤ 256 × (Q_H² / 2^{257} + 2^{-256})
@@ -119,6 +130,11 @@ Soundness needs module-SIS hardness   →  standard-model soundness is lattice-b
 ```
 
 These are **independent assumption families**. ZK and soundness rest on different pillars.
+
+EasyCrypt scope summary:
+- current EasyCrypt coverage ends at the ZK/composition theorem route and its documented companions
+- current EasyCrypt coverage does not include a separate soundness theorem family
+- if soundness is later brought into EasyCrypt scope, it should be added as a separate theorem family rather than merged into the current ZK theorem claims
 
 ---
 

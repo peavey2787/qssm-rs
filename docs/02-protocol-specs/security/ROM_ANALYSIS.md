@@ -26,6 +26,12 @@ Challenge mapping:
 
 This is the announcement-only contract tested in integration tests.
 
+Formal coverage boundary:
+- the theorem route relies on this announcement-only query discipline
+- EasyCrypt models the announcement-only and programmed public-digest surface abstractly
+- EasyCrypt does not currently prove that the Rust MS query-digest functions implement this contract byte-for-byte
+- if this property is to become formally covered, it needs a separate refinement proof or explicit Rust conformance tests
+
 ## LE Programmed Query Surface (Explicit)
 
 Programmed LE challenge digest corresponds to the same transcript bytes used in verification FS recomputation:
@@ -36,6 +42,10 @@ Programmed LE challenge digest corresponds to the same transcript bytes used in 
 - public binding bytes
 - commitment bytes
 - `t` bytes
+
+Formal coverage boundary:
+- EasyCrypt models the LE programmed-query consequence abstractly at the theorem layer
+- EasyCrypt does not currently prove a byte-for-byte refinement from these Rust digest inputs to the abstract LE observable surface
 
 ## Failure Characterization Without ROM
 

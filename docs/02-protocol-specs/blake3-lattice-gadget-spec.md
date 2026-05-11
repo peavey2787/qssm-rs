@@ -11,6 +11,13 @@ Current bridge path note:
 - The active bridge binds the canonical MS v2 predicate-only path.
 - Legacy GhostMirror verification material is removed from active seam binding.
 
+## Formal Conformance Boundary
+
+- Exact seam digest domains, digest preimage order, public-binding serialization, transcript-map layout version locks, and LE FS public-binding layout version locks are Rust-authoritative conformance points.
+- EasyCrypt currently assumes abstract public-binding and seam surfaces together with theorem-level composition consequences.
+- No current EasyCrypt theorem checks byte layout, version-lock equality, or seam digest preimage order on this bridge surface.
+- Future EasyCrypt coverage of these details would require a dedicated bridge/refinement theorem or equivalent conformance layer.
+
 ## Normative Bridge Interfaces
 
 ### MS Verification Adapter

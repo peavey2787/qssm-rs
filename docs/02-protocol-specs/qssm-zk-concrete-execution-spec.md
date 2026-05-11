@@ -16,6 +16,14 @@ API boundary note:
 
 This document does not restate game-based theorem abstraction; see `qssm-zk-theorem-spec.md`.
 
+## Formal Conformance Boundary
+
+- Exact domain strings, seed derivation order, byte order, serialization order, digest preimage order, and bridge/layout sync values are Rust-authoritative conformance points for the current implementation.
+- EasyCrypt currently models abstract transcript observables and theorem-level consequences only.
+- EasyCrypt does not currently prove a byte-for-byte refinement from the Rust transcript, digest, and layout surfaces described here to those abstract observables.
+- The theorem route also relies on announcement-only MS query discipline, but the current EasyCrypt tree does not prove that the Rust query-digest functions implement that discipline byte-for-byte.
+- Any future EasyCrypt coverage of these details requires a separate refinement layer or explicit conformance proof over the Rust-authoritative surfaces.
+
 ## Canonical Domains and Labels
 
 ### ZK composition domains (`qssm-proofs`)

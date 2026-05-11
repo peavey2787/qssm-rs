@@ -78,6 +78,13 @@ No constants are duplicated here beyond descriptive values; code values come fro
 
 These inputs are announcement-only by construction for query digests.
 
+## Formal Conformance Boundary
+
+- The theorem route relies on this announcement-only MS query discipline.
+- EasyCrypt currently models the announcement-only and programmed public-digest surface abstractly.
+- EasyCrypt does not currently prove that the Rust `bitness_query_digest` and `comparison_query_digest` functions implement that discipline byte-for-byte.
+- If this property is to become formally covered at the implementation level, it needs a separate refinement proof or an explicit Rust conformance test suite.
+
 ## Security Model Notes (Code-Accurate)
 
 - `verify_predicate_only_v2_with_programming` validates simulator output against programmed query/challenge pairs.

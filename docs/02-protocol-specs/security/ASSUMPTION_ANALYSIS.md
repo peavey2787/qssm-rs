@@ -80,6 +80,13 @@ Practical floor remains controlled by LE FS entropy and Set B constraints:
 
 MS hash-binding and MS-ROM terms stay lower-order under normal query budgets.
 
+## Formal Coverage Boundary
+
+- LE constants, challenge-expansion details, prover attempt bounds, and numeric floors mentioned here are spec/security-analysis facts and executable validation targets, not current EasyCrypt embedded constants.
+- EasyCrypt currently proves symbolic and predicate-level consequences over named budget owners and LE predicates.
+- Concrete constant conformance would require Rust tests and audits, or a separate EasyCrypt refinement/model layer.
+- Soundness floor references in this file are security-analysis scope and are not current EasyCrypt theorem outputs.
+
 ## Parameter-Condition Obligations
 
 Set B verification relies on executable numeric checks, including:

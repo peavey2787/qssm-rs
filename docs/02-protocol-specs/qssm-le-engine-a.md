@@ -24,6 +24,14 @@ Current Set B values:
 
 No duplicate constants should be introduced in docs or dependent crates.
 
+## Formal Conformance Boundary
+
+- Set B constants, challenge expansion details, prover attempt bounds, byte order, coefficient serialization, and public-binding / Fiat-Shamir input order are Rust-authoritative conformance points.
+- EasyCrypt currently proves symbolic and predicate-level LE consequences such as rejection, programmed Fiat-Shamir, and theorem-level HVZK composition.
+- EasyCrypt does not currently embed these exact Rust constants or prove a byte-for-byte refinement from the Rust transcript, digest, and layout surfaces to the abstract LE observables.
+- Numeric floor statements in this file and linked security docs are spec/security-analysis facts, not current EasyCrypt theorem outputs.
+- Concrete constant conformance currently relies on Rust tests and audits, or would require a separate EasyCrypt refinement/model layer for machine-checked coverage.
+
 ## Public/Secret Types
 
 ### Public Input

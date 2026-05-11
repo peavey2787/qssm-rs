@@ -67,6 +67,13 @@ Implementations MUST use unique domain tags for seam material. **Current gadget 
 
 Historical tags `QSSM-SEAM-COMMIT-v1` / `OPEN` / `BINDING` referred to the **removed** cleartext GhostMirror seam field layout and MUST NOT be reused for the v2 seam without a version bump and migration plan.
 
+## 4.1 Formal Conformance Boundary
+
+- Seam digest domains, public-binding serialization, transcript-map layout version, and LE FS public-binding layout version are Rust-authoritative conformance points.
+- EasyCrypt currently assumes abstract public-binding and seam surfaces and theorem-level composition consequences only.
+- No current EasyCrypt theorem checks byte layout, version-lock equality, or digest preimage order for this seam contract.
+- A future EasyCrypt bridge/refinement theorem would be required if these exact layout and digest claims are intended to become machine-checked formal coverage.
+
 ## 5. Required input/output contract (protocol-level)
 
 Seam input set (public fields carried by `EngineABindingInput`):

@@ -45,6 +45,11 @@
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
+Coverage boundary:
+- EasyCrypt currently proves the ZK/composition theorem surfaces and their documented companions only.
+- The soundness layer and concrete soundness floors shown in this document are security-analysis scope, not current EasyCrypt theorem claims.
+- Soundness remains outside the current EasyCrypt theorem surface unless a separate EasyCrypt soundness theorem family is added later.
+
 ## Formal Route Coverage Note
 
 The three-term ZK bound shown above is the exact-zero theorem skeleton for:
@@ -74,6 +79,11 @@ Current concrete route status:
 - the current theorem surface does not model weighted or non-uniform sampler internals
 - the frozen toy `3%r / 64%r` lower masses do not instantiate `1 / 2^98`, and no theorem claims the toy actuals are `<= 2^-98`
 
+Refinement boundary:
+- exact domain strings, seed schedules, query-digest functions, byte order, serialization order, seam digest preimage order, and layout/version-lock equality remain Rust-authoritative conformance points
+- EasyCrypt currently models abstract observables and theorem-level consequences rather than a byte-for-byte refinement from Rust surfaces
+- LE constants, challenge expansion details, attempt bounds, and numeric floor statements in this document are Rust/spec/security-analysis facts, not current EasyCrypt embedded constants
+
 ## Assumption → Mechanism → Protection
 
 | Assumption | Mechanism | What It Protects | Breaks If... |
@@ -94,6 +104,8 @@ Current concrete route status:
 | ZK | LE FS challenge space | 132.2 | c_poly_size × log2(2·c_poly_span+1) |
 | Soundness | MS collision bound | 121 | 256 nonces × Blake3 birthday |
 | Combined | Soundness floor | 121 | MS collision resistance |
+
+These floor summaries are system/security-analysis summaries. They should not be read as current EasyCrypt machine-checked outputs for the deployed Rust constants.
 
 ## What Is Actually Doing the Security Work
 
