@@ -25,10 +25,10 @@ The live companion theorem surfaces also include:
 - `qssm_main_theorem_semantic_budget`
 - `qssm_main_theorem_parameterized_budget`
 - `qssm_main_theorem_realworld_budget`
-- `qssm_main_theorem_realworld_concrete_128`
-- `qssm_main_theorem_realworld_concrete_128_with_all_reductions`
+- `qssm_main_theorem_realworld_concrete_256`
+- `qssm_main_theorem_realworld_concrete_256_with_all_reductions`
 
-On the parameterized, abstract real-world, and concrete 128 companion routes:
+On the parameterized, abstract real-world, and concrete 256 companion routes:
 - public AfterRom remains budget-close to canonical AfterRom, not zero-equal
 - the theorem route therefore pays a charged public-AfterRom-to-canonical-AfterRom landing
 - the top additive structure keeps an explicit duplicate MS2 term
@@ -39,20 +39,20 @@ epsilon_top = epsilon_MS1 + epsilon_MS2 + epsilon_MS2 + epsilon_LE
 
 The duplicate MS2 charge must not be simplified away unless a future theorem proves a zero-cost public-AfterRom-to-canonical-AfterRom landing.
 
-## Concrete 128 Companion Route Status
+## Concrete 256 Companion Route Status
 
 The EasyCrypt tree carries the original concrete external-bound pair:
-- `qssm_main_theorem_realworld_concrete_128`
-- `qssm_main_theorem_realworld_concrete_128_5_over_2_98`
+- `qssm_main_theorem_realworld_concrete_256`
+- `qssm_main_theorem_realworld_concrete_256_5_over_2_226`
 
 It also carries the fully reduction-facing sibling pair:
-- `qssm_main_theorem_realworld_concrete_128_with_all_reductions`
-- `qssm_main_theorem_realworld_concrete_128_with_all_reductions_5_over_2_98`
+- `qssm_main_theorem_realworld_concrete_256_with_all_reductions`
+- `qssm_main_theorem_realworld_concrete_256_with_all_reductions_5_over_2_226`
 
 Current concrete arithmetic:
-- component epsilon = `1 / 2^98`
-- top epsilon = `5 / 2^98`
-- effective bit level ≈ `95.67807190511263`
+- component epsilon = `1 / 2^226`
+- top epsilon = `5 / 2^226`
+- effective bit level ≈ `223.67807190511263`
 
 Premise status:
 - LE rejection, LE FS, MS1, and MS2 each enter through explicit external reduction obligations
@@ -61,8 +61,8 @@ Premise status:
 - these theorem surfaces do not prove weighted or non-uniform sampler internals
 
 Caveat:
-- the frozen toy `3%r / 64%r` lower masses do not instantiate `1 / 2^98`
-- no theorem claims the toy actuals are `<= 2^-98`
+- the frozen toy `3%r / 64%r` lower masses do not instantiate `1 / 2^226`
+- no theorem claims the toy actuals are `<= 2^-226`
 
 ## Compression Interpretation
 

@@ -31,11 +31,11 @@ Current top theorem surfaces also include:
 - `qssm_main_theorem_semantic_budget`
 - `qssm_main_theorem_parameterized_budget`
 - `qssm_main_theorem_realworld_budget`
-- `qssm_main_theorem_realworld_concrete_128`
-- `qssm_main_theorem_realworld_concrete_128_with_all_reductions`
+- `qssm_main_theorem_realworld_concrete_256`
+- `qssm_main_theorem_realworld_concrete_256_with_all_reductions`
 
 Live-route caveat:
-- the parameterized, abstract real-world, and concrete 128 routes do not get a zero-cost identification from public AfterRom to canonical AfterRom
+- the parameterized, abstract real-world, and concrete 256 routes do not get a zero-cost identification from public AfterRom to canonical AfterRom
 - public AfterRom remains budget-close to canonical AfterRom, not zero-equal
 - those routes therefore pay a charged public-AfterRom-to-canonical-AfterRom landing and preserve an explicit duplicate MS2 charge
 

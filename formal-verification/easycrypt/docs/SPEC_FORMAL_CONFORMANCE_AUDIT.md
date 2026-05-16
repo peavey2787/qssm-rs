@@ -18,9 +18,9 @@ Audit totals:
 Main conclusions:
 
 - The exact-zero theorem story is aligned. The protocol theorem spec in `qssm-zk-theorem-spec.md` matches `theorem/MainTheorem.ec` for the exact-zero `G0 -> G1 -> G2` route and the exact MS-3a / MS-3b / MS-3c simulation lemmas.
-- The EasyCrypt tree is broader than the current theorem spec. The formal model now has additional theorem surfaces for the demo semantic route, the LE-only parameterized route, the full canonical parameterized route, the abstract real-world upper-bound route, and the concrete 128 / all-reductions route.
+- The EasyCrypt tree is broader than the current theorem spec. The formal model now has additional theorem surfaces for the demo semantic route, the LE-only parameterized route, the full canonical parameterized route, the abstract real-world upper-bound route, and the concrete 256 / all-reductions route.
 - The initial theorem-surface drift blocker is now addressed in the protocol docs. `qssm-zk-theorem-spec.md` and `security/ASSUMPTION_ANALYSIS.md` now distinguish the exact-zero theorem skeleton from the charged parameterized, real-world, and concrete companion routes, preserve the explicit duplicated MS2 charge, and state that public AfterRom remains budget-close to canonical AfterRom rather than zero-equal.
-- The initial concrete-128 blocker is now addressed in the protocol docs. `security/ASSUMPTION_ANALYSIS.md` and `security/SECURITY_MODEL_MAP.md` now state the `1 / 2^98` component epsilon, the `5 / 2^98` closed form, the explicit LE rejection / LE FS / MS1 / MS2 reduction-facing premises, the non-axiom status, the `3%r / 64%r` toy-mass caveat, and the lack of weighted/non-uniform sampler modeling.
+- The initial concrete-256 blocker is now addressed in the protocol docs. `security/ASSUMPTION_ANALYSIS.md` and `security/SECURITY_MODEL_MAP.md` now state the `1 / 2^226` component epsilon, the `5 / 2^226` closed form, the explicit LE rejection / LE FS / MS1 / MS2 reduction-facing premises, the non-axiom status, the `3%r / 64%r` toy-mass caveat, and the lack of weighted/non-uniform sampler modeling.
 - The previously high-severity documentation gaps are now addressed by explicit protocol-side scope notes. Soundness scope, byte/layout/domain boundaries, concrete LE constant/floor boundaries, announcement-only MS query-digest boundaries, and seam/version-lock boundaries are now documented as either current EasyCrypt coverage or explicit Rust-authoritative out-of-scope surfaces.
 - Remaining gaps are now medium-severity refinement/model gaps rather than protocol-doc misstatements. Soundness, byte-level refinement, concrete constant embedding, announcement-only digest linkage, and seam/layout refinement all remain optional future EasyCrypt work rather than current protocol-spec inaccuracies.
 
@@ -33,7 +33,7 @@ Recommended next phase:
 
 - Follow-up docs patch after the initial audit updated `docs/02-protocol-specs/qssm-zk-theorem-spec.md`, `docs/02-protocol-specs/security/ASSUMPTION_ANALYSIS.md`, and `docs/02-protocol-specs/security/SECURITY_MODEL_MAP.md`.
 - The exact-zero theorem spec is now documented separately from the charged live routes.
-- The concrete 128 route obligations, closed forms, and toy-mass caveats are now documented in the protocol-spec tree.
+- The concrete 256 route obligations, closed forms, and toy-mass caveats are now documented in the protocol-spec tree.
 - Soundness scope is now explicitly documented as outside the current EasyCrypt theorem family.
 - Byte, layout, domain, announcement-only, and seam/version-lock boundaries are now explicitly documented as Rust-authoritative conformance points rather than current EasyCrypt refinement claims.
 
@@ -75,7 +75,7 @@ This section inventories the key EasyCrypt owners and theorem surfaces that matt
 | `formal-verification/easycrypt/primitives/ParameterizedBudgetParameters.ec` | Parameterized owner layer | `epsilon_ms_hash_binding_parameterized`, `epsilon_ms_rom_programmability_parameterized`, `epsilon_le_rej_parameterized`, `epsilon_le_fs_parameterized`, `epsilon_le_parameterized` | Parameterized |
 | `formal-verification/easycrypt/primitives/RealWorldBudgetParameters.ec` | Abstract real-world budget record | `realworld_budget`, `epsilon_ms_hash_binding_realworld`, `epsilon_ms_rom_programmability_realworld`, `epsilon_le_rej_realworld`, `epsilon_le_fs_realworld`, `epsilon_le_realworld`, `epsilon_top_realworld` | Abstract real-world |
 | `formal-verification/easycrypt/primitives/RealWorldBudgetObligations.ec` | Explicit budget-premise layer | `le_realworld_obligations`, `ms_realworld_obligations`, `qssm_realworld_obligations` | Abstract real-world |
-| `formal-verification/easycrypt/RealWorldBudgetInstantiation.ec` | Concrete instantiation layer | `lambda_concrete_128`, `realworld_budget_concrete_128`, `qssm_main_theorem_realworld_concrete_128`, `qssm_main_theorem_realworld_concrete_128_with_all_reductions` | Concrete 128 / all-reductions |
+| `formal-verification/easycrypt/RealWorldBudgetInstantiation.ec` | Concrete instantiation layer | `lambda_concrete_256`, `realworld_budget_concrete_256`, `qssm_main_theorem_realworld_concrete_256`, `qssm_main_theorem_realworld_concrete_256_with_all_reductions` | Concrete 256 / all-reductions |
 
 ### 3.2 LE Rejection, FS, and HVZK Surfaces
 
@@ -85,12 +85,12 @@ This section inventories the key EasyCrypt owners and theorem surfaces that matt
 | `formal-verification/easycrypt/le/LERejectionSamplerMass.ec` | Demo semantic rejection mass closure | rejection shadow failure probability equalities | Demo semantic |
 | `formal-verification/easycrypt/le/LERejection.ec` | Theorem-facing rejection bridge | `le_rejection_distribution_defined`, `le_rejection_acceptance_probability_bounded`, `le_rejection_output_shape_preserved` | Exact-zero + demo semantic |
 | `formal-verification/easycrypt/le/LERejectionParameterized.ec` | Parameterized rejection theorem wrapper | `A_LE_rejection_sampler_semantic_sdist_parameterized_bound` | Parameterized |
-| `formal-verification/easycrypt/le/LERejectionConcreteReduction.ec` | External reduction obligation owner | `le_rejection_concrete_reduction_obligation` | Concrete 128 / reductions |
+| `formal-verification/easycrypt/le/LERejectionConcreteReduction.ec` | External reduction obligation owner | `le_rejection_concrete_reduction_obligation` | Concrete 256 / reductions |
 | `formal-verification/easycrypt/le/LEFsProgrammingSurface.ec` | Lower FS semantic shadow surface | semantic branch/state/image operators | LE lower semantics |
 | `formal-verification/easycrypt/le/LEFsProgrammingFailureProbability.ec` | Demo semantic FS bad-branch owner | `le_fs_shadow_local_bad_branch_mass` | Demo semantic |
 | `formal-verification/easycrypt/le/LEFsProgramming.ec` | Theorem-facing FS bridge | `le_fs_query_surface_defined`, `le_fs_programming_hiding_bound` | Exact-zero + demo semantic |
 | `formal-verification/easycrypt/le/LEFsProgrammingParameterized.ec` | Parameterized FS theorem wrapper | parameterized FS programming bounds | Parameterized |
-| `formal-verification/easycrypt/le/LEFsConcreteReduction.ec` | External reduction obligation owner | `le_fs_concrete_reduction_obligation` | Concrete 128 / reductions |
+| `formal-verification/easycrypt/le/LEFsConcreteReduction.ec` | External reduction obligation owner | `le_fs_concrete_reduction_obligation` | Concrete 256 / reductions |
 | `formal-verification/easycrypt/le/LEStatisticalDistance.ec` | LE additive composition | LE rejection + FS additive closure | Exact-zero + demo semantic |
 | `formal-verification/easycrypt/le/LEStatisticalDistanceParameterized.ec` | LE parameterized additive composition | `A_LE_semantic_view_advantage_bound_from_parameterized_budget` | Parameterized |
 | `formal-verification/easycrypt/le/LEStatisticalDistanceRealWorld.ec` | LE real-world additive wrapper | real-world LE transition bound | Abstract real-world |
@@ -152,8 +152,8 @@ Route summary:
 - LE-only parameterized route: `qssm_main_theorem_le_parameterized_budget`
 - Full canonical parameterized route: `qssm_main_theorem_parameterized_budget`
 - Abstract real-world upper-bound route: `qssm_main_theorem_realworld_budget`
-- Concrete 128 component-bound route: `qssm_main_theorem_realworld_concrete_128`
-- Concrete 128 all-reductions route: `qssm_main_theorem_realworld_concrete_128_with_all_reductions`
+- Concrete 256 component-bound route: `qssm_main_theorem_realworld_concrete_256`
+- Concrete 256 all-reductions route: `qssm_main_theorem_realworld_concrete_256_with_all_reductions`
 
 ## 4. Spec-to-Formal Mapping Table
 
@@ -183,7 +183,7 @@ Route summary:
 | `blake3-lattice-gadget-spec.md` seam commitment/open/binding digests | Exact domains and preimage order | No direct EasyCrypt owner | Addressed by docs clarification | The protocol docs now explicitly state that concrete seam hashing remains Rust-authoritative rather than current EasyCrypt coverage |
 | `blake3-lattice-gadget-spec.md` transcript-map layout sync | `TRANSCRIPT_MAP_LAYOUT_VERSION` and `LE_FS_PUBLIC_BINDING_LAYOUT_VERSION` must match | No direct EasyCrypt owner | Addressed by docs clarification | The protocol docs now explicitly state that version-lock equality is a Rust compile-time/test-time conformance point rather than a current EasyCrypt theorem |
 | `security/ASSUMPTION_ANALYSIS.md` additive ZK theorem summary | A1/A2/A4 additive theorem summary | `theorem/MainTheorem.ec`, `primitives/BudgetParameters.ec` | Exact match | Accurate for the exact-zero theorem surface |
-| `security/ASSUMPTION_ANALYSIS.md` theorem surface and concrete-route status | Charged live routes, duplicate MS2 charge, explicit concrete 128 premises, and toy-mass caveat | `theorem/MainTheoremParameterized.ec`, `theorem/MainTheoremRealWorld.ec`, `RealWorldBudgetInstantiation.ec`, `docs/FORMAL_THEOREM_MAP.md` | Addressed by follow-up docs patch | The protocol security docs now state the public-AfterRom caveat, the duplicate MS2 charge, the concrete `1 / 2^98` / `5 / 2^98` route, and the explicit premise status |
+| `security/ASSUMPTION_ANALYSIS.md` theorem surface and concrete-route status | Charged live routes, duplicate MS2 charge, explicit concrete 256 premises, and toy-mass caveat | `theorem/MainTheoremParameterized.ec`, `theorem/MainTheoremRealWorld.ec`, `RealWorldBudgetInstantiation.ec`, `docs/FORMAL_THEOREM_MAP.md` | Addressed by follow-up docs patch | The protocol security docs now state the public-AfterRom caveat, the duplicate MS2 charge, the concrete `1 / 2^226` / `5 / 2^226` route, and the explicit premise status |
 | `security/ASSUMPTION_ANALYSIS.md` 132.2-bit floor and concrete LE validation references | Numeric floor and external validation story | `docs/FORMAL_THEOREM_MAP.md`, no direct theorem in EasyCrypt | Formal model weaker than spec | EasyCrypt does not derive those concrete numeric floors internally |
 | `security/ROM_ANALYSIS.md` ROM-critical MS and LE query surfaces | Announcement-only MS and programmed LE surfaces are ROM-critical | `ms/Comparison.ec`, `ms/MSProbabilitySurface.ec`, `le/LEFsProgramming.ec` | Modeled abstraction | Correct at the abstraction level, not at the concrete hash-function level |
 | `security/ZK_VS_SOUNDNESS_SPLIT.md` ZK theorem | ZK bound in ROM | `theorem/MainTheorem.ec` and companion routes | Exact match | ZK half is aligned |
@@ -199,7 +199,7 @@ Route summary:
 | Severity | Discrepancy | Spec Reference | Formal Reference | Notes | Recommended Fix Bucket |
 |---|---|---|---|---|---|
 | Resolved | The protocol theorem spec previously presented a single three-term theorem story, even though the live parameterized / real-world / concrete theorem routes require an explicit public-AfterRom to canonical-AfterRom landing and therefore a duplicated MS2 charge | `qssm-zk-theorem-spec.md`, `security/ASSUMPTION_ANALYSIS.md` | `docs/FORMAL_THEOREM_MAP.md`, `theorem/MainTheoremParameterized.ec`, `theorem/MainTheoremRealWorld.ec`, `primitives/RealWorldBudgetParameters.ec` | Addressed in the follow-up docs patch: the protocol docs now distinguish the exact-zero theorem from the charged live routes and preserve the duplicate MS2/public-AfterRom caveat | Addressed |
-| Resolved | The concrete 128 / all-reductions EasyCrypt route previously lacked protocol-spec documentation for its explicit external obligations and the live-mass caveat | `security/ASSUMPTION_ANALYSIS.md`, `security/SECURITY_MODEL_MAP.md` | `RealWorldBudgetInstantiation.ec`, `docs/FORMAL_THEOREM_MAP.md` | Addressed in the follow-up docs patch: the protocol docs now state the explicit LE rejection / LE FS / MS1 / MS2 premises, the `1 / 2^98` / `5 / 2^98` arithmetic, and the `3%r / 64%r` caveat | Addressed |
+| Resolved | The concrete 256 / all-reductions EasyCrypt route previously lacked protocol-spec documentation for its explicit external obligations and the live-mass caveat | `security/ASSUMPTION_ANALYSIS.md`, `security/SECURITY_MODEL_MAP.md` | `RealWorldBudgetInstantiation.ec`, `docs/FORMAL_THEOREM_MAP.md` | Addressed in the follow-up docs patch: the protocol docs now state the explicit LE rejection / LE FS / MS1 / MS2 premises, the `1 / 2^226` / `5 / 2^226` arithmetic, and the `3%r / 64%r` caveat | Addressed |
 | Medium | Soundness remains outside the current EasyCrypt theorem scope by design on the audited tree | `security/ZK_VS_SOUNDNESS_SPLIT.md`, `security/SECURITY_MODEL_MAP.md` | No soundness theorem files under `formal-verification/easycrypt/`; only ZK/composition surfaces are present | The docs now make this boundary explicit; residual theorem work remains only if a separate EasyCrypt soundness family is desired | Docs clarification + optional future theorem work |
 | Medium | Exact FS domain strings, seed schedules, digest preimage order, and byte-level execution details remain Rust-authoritative and are not currently covered by a byte-for-byte EasyCrypt refinement layer | `qssm-zk-concrete-execution-spec.md`, `qssm-le-engine-a.md`, `blake3-lattice-gadget-spec.md` | EasyCrypt abstracts these surfaces; no concrete byte-refinement theorem exists | The docs now make this boundary explicit; residual model work remains only if implementation-level refinement is desired | Docs clarification + optional refinement work |
 | Medium | Concrete LE Set B constants, challenge-expansion details, attempt bounds, and numeric security floors are not embedded as current EasyCrypt constants or numeric theorem outputs | `qssm-le-engine-a.md`, `security/ASSUMPTION_ANALYSIS.md`, `security/SECURITY_MODEL_MAP.md` | `le/*.ec` surfaces are symbolic / predicate-based; `docs/FORMAL_THEOREM_MAP.md` is explanatory rather than a concrete-constant proof | The docs now make this boundary explicit; residual work remains only if constant-level machine-checked refinement is desired | Docs clarification + optional refinement work |
@@ -216,7 +216,7 @@ Route summary:
 ### Resolved / Addressed By Follow-Up Docs Patch
 
 1. `qssm-zk-theorem-spec.md` and `security/ASSUMPTION_ANALYSIS.md` now distinguish `qssm_main_theorem` from the charged parameterized / real-world / concrete theorem routes, preserve the explicit duplicate MS2 charge, and state that public AfterRom remains budget-close to canonical AfterRom rather than zero-equal.
-2. `security/ASSUMPTION_ANALYSIS.md` and `security/SECURITY_MODEL_MAP.md` now state the concrete-128 theorem surfaces, the `1 / 2^98` component epsilon, the `5 / 2^98` closed form, the `95.67807190511263` bit equivalent, the explicit external LE rejection / LE FS / MS1 / MS2 premises, the non-axiom status, and the `3%r / 64%r` toy-mass caveat.
+2. `security/ASSUMPTION_ANALYSIS.md` and `security/SECURITY_MODEL_MAP.md` now state the concrete-256 theorem surfaces, the `1 / 2^226` component epsilon, the `5 / 2^226` closed form, the `223.67807190511263` bit equivalent, the explicit external LE rejection / LE FS / MS1 / MS2 premises, the non-axiom status, and the `3%r / 64%r` toy-mass caveat.
 3. The protocol security docs now state that the abstract real-world theorem route packages externally supplied obligations only and does not model weighted or non-uniform sampler internals.
 4. `security/ZK_VS_SOUNDNESS_SPLIT.md` and `security/SECURITY_MODEL_MAP.md` now explicitly state that EasyCrypt currently proves the ZK/composition theorem surfaces only, and that soundness claims and soundness numbers remain security-analysis scope on the current tree.
 5. `qssm-zk-concrete-execution-spec.md`, `qssm-le-engine-a.md`, and `blake3-lattice-gadget-spec.md` now explicitly mark byte-level domains, seed schedules, serialization order, and layout/version-lock surfaces as Rust-authoritative conformance points rather than current EasyCrypt refinement claims.
@@ -268,7 +268,7 @@ Notes on specific claims mentioned during this audit:
 ### 9.1 Completed In This Follow-Up Docs Patch
 
 - Added an explicit note to `docs/02-protocol-specs/qssm-zk-theorem-spec.md` that the three-term bound describes the exact-zero theorem skeleton only, and documented the charged parameterized / real-world / concrete theorem routes together with the duplicate MS2/public-AfterRom caveat.
-- Added explicit notes to `docs/02-protocol-specs/security/ASSUMPTION_ANALYSIS.md` and `docs/02-protocol-specs/security/SECURITY_MODEL_MAP.md` covering the concrete-128 route, the `1 / 2^98` component epsilon, the `5 / 2^98` closed form, the explicit external obligations, the non-axiom status, the toy `3%r / 64%r` caveat, and the weighted/non-uniform sampler limitation.
+- Added explicit notes to `docs/02-protocol-specs/security/ASSUMPTION_ANALYSIS.md` and `docs/02-protocol-specs/security/SECURITY_MODEL_MAP.md` covering the concrete-256 route, the `1 / 2^226` component epsilon, the `5 / 2^226` closed form, the explicit external obligations, the non-axiom status, the toy `3%r / 64%r` caveat, and the weighted/non-uniform sampler limitation.
 - Added explicit notes to `docs/02-protocol-specs/security/ZK_VS_SOUNDNESS_SPLIT.md` and `docs/02-protocol-specs/security/SECURITY_MODEL_MAP.md` that EasyCrypt currently proves the ZK/composition theorem surfaces only, and that soundness claims and soundness numbers remain security-analysis scope on the current tree.
 - Added explicit Rust-authoritative refinement-boundary notes to `docs/02-protocol-specs/qssm-zk-concrete-execution-spec.md`, `docs/02-protocol-specs/qssm-le-engine-a.md`, `docs/02-protocol-specs/qssm-ms-engine-b.md`, `docs/02-protocol-specs/security/ROM_ANALYSIS.md`, `docs/02-protocol-specs/blake3-lattice-gadget-spec.md`, and `docs/02-protocol-specs/engine-b-engine-a-binding-seam.md` for byte layouts, domains, announcement-only digest discipline, seam digests, and version-lock equality.
 
@@ -286,7 +286,7 @@ Notes on specific claims mentioned during this audit:
 ### 9.4 Theorem Changes
 
 - Do not hide or rename away the duplicated MS2 charge unless a stronger lower theorem actually proves a tighter public-AfterRom to canonical-AfterRom relationship.
-- Do not restate the concrete-128 route as unconditional unless the four explicit reduction obligations are actually discharged in-scope.
+- Do not restate the concrete-256 route as unconditional unless the four explicit reduction obligations are actually discharged in-scope.
 - If soundness is meant to become part of the EasyCrypt theorem surface, add a separate soundness theorem family rather than blending soundness prose into the current ZK theorem claims.
 
 ### 9.5 Implementation / Performance Claims Outside EasyCrypt Scope

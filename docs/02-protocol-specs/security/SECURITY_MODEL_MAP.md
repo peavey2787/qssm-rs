@@ -58,8 +58,8 @@ The three-term ZK bound shown above is the exact-zero theorem skeleton for:
 It is not the full statement for the live charged companion routes:
 - `qssm_main_theorem_parameterized_budget`
 - `qssm_main_theorem_realworld_budget`
-- `qssm_main_theorem_realworld_concrete_128`
-- `qssm_main_theorem_realworld_concrete_128_with_all_reductions`
+- `qssm_main_theorem_realworld_concrete_256`
+- `qssm_main_theorem_realworld_concrete_256_with_all_reductions`
 
 For those charged routes:
 - public AfterRom remains budget-close to canonical AfterRom, not zero-equal
@@ -67,17 +67,17 @@ For those charged routes:
 - the theorem-facing additive form is `epsilon_top = epsilon_MS1 + epsilon_MS2 + epsilon_MS2 + epsilon_LE`
 
 The concrete all-reductions sibling route and its closed-form companion exist as:
-- `qssm_main_theorem_realworld_concrete_128_with_all_reductions`
-- `qssm_main_theorem_realworld_concrete_128_with_all_reductions_5_over_2_98`
+- `qssm_main_theorem_realworld_concrete_256_with_all_reductions`
+- `qssm_main_theorem_realworld_concrete_256_with_all_reductions_5_over_2_226`
 
 Current concrete route status:
-- component epsilon = `1 / 2^98`
-- top epsilon = `5 / 2^98`
-- effective bit level ≈ `95.67807190511263`
+- component epsilon = `1 / 2^226`
+- top epsilon = `5 / 2^226`
+- effective bit level ≈ `223.67807190511263`
 - LE rejection, LE FS, MS1, and MS2 each enter through explicit external reduction obligations
 - those obligations are theorem premises, not axioms
 - the current theorem surface does not model weighted or non-uniform sampler internals
-- the frozen toy `3%r / 64%r` lower masses do not instantiate `1 / 2^98`, and no theorem claims the toy actuals are `<= 2^-98`
+- the frozen toy `3%r / 64%r` lower masses do not instantiate `1 / 2^226`, and no theorem claims the toy actuals are `<= 2^-226`
 
 Refinement boundary:
 - exact domain strings, seed schedules, query-digest functions, byte order, serialization order, seam digest preimage order, and layout/version-lock equality remain Rust-authoritative conformance points

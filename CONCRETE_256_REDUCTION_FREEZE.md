@@ -1,20 +1,20 @@
-# Concrete 128 All-Reductions Freeze
+# Concrete 256 All-Reductions Freeze
 
-This note freezes the May 2026 EasyCrypt checkpoint for the concrete `lambda = 128` all-reductions theorem route. The repeated concrete composition is intentionally left in place for this release because factoring it now would risk obscuring the explicitly duplicated MS2 charge while adding little proof value after the theorem already closes cleanly.
+This note freezes the May 2026 EasyCrypt checkpoint for the concrete `lambda = 256` all-reductions theorem route. The repeated concrete composition is intentionally left in place for this release because factoring it now would risk obscuring the explicitly duplicated MS2 charge while adding little proof value after the theorem already closes cleanly.
 
 ## Checkpoint Summary
 
-- `qssm_main_theorem_realworld_concrete_128_with_all_reductions` closes.
-- `qssm_main_theorem_realworld_concrete_128_with_all_reductions_5_over_2_98` closes.
+- `qssm_main_theorem_realworld_concrete_256_with_all_reductions` closes.
+- `qssm_main_theorem_realworld_concrete_256_with_all_reductions_5_over_2_226` closes.
 - checker snapshot: `OK: checked 149 theories`
 - `axiom_count=0`
 - `admit_count=0`
 
 ## Bound Summary
 
-- component epsilon: `1 / 2^98`
-- top epsilon: `5 / 2^98`
-- equivalent bit level: approximately `95.67807190511263`
+- component epsilon: `1 / 2^226`
+- top epsilon: `5 / 2^226`
+- equivalent bit level: approximately `223.67807190511263`
 
 ## Reduction-Facing Premises
 
@@ -30,7 +30,7 @@ This note freezes the May 2026 EasyCrypt checkpoint for the concrete `lambda = 1
 - the duplicate MS2 charge remains explicit
 - public AfterRom remains budget-close to canonical AfterRom, not zero-equal
 - the original concrete theorem pair remains unchanged
-- no theorem claims the frozen toy component actuals are `<= 2^-98`
+- no theorem claims the frozen toy component actuals are `<= 2^-226`
 
 ## Freeze Decision
 
