@@ -1,6 +1,6 @@
 # QSSM Formal Verification Summary
 
-QSSM is an EasyCrypt formalization of the QSSM theorem stack, covering the exact-zero abstraction route, the semantic-budget companion route, the frozen parameterized route, and a concrete real-world `lambda = 128` companion route with explicit external reduction obligations. This page is the release-facing entrypoint for experienced formal methods engineers and cryptographers; the detailed architecture, assumptions, audit notes, and route-by-route references now live under [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/ASSUMPTIONS.md](docs/ASSUMPTIONS.md), [docs/FORMAL_THEOREM_MAP.md](docs/FORMAL_THEOREM_MAP.md), and [docs/SPEC_FORMAL_CONFORMANCE_AUDIT.md](docs/SPEC_FORMAL_CONFORMANCE_AUDIT.md).
+QSSM is an EasyCrypt formalization of the QSSM theorem stack, covering the exact-zero abstraction route, the semantic-budget companion route, the frozen parameterized route, and a concrete real-world `lambda = 256` companion route with explicit external reduction obligations. This page is the release-facing entrypoint for experienced formal methods engineers and cryptographers; the detailed architecture, assumptions, audit notes, and route-by-route references now live under [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/ASSUMPTIONS.md](docs/ASSUMPTIONS.md), [docs/FORMAL_THEOREM_MAP.md](docs/FORMAL_THEOREM_MAP.md), and [docs/SPEC_FORMAL_CONFORMANCE_AUDIT.md](docs/SPEC_FORMAL_CONFORMANCE_AUDIT.md).
 
 ## Formal Verification Status
 
@@ -15,8 +15,8 @@ QSSM is an EasyCrypt formalization of the QSSM theorem stack, covering the exact
 - [theorem/MainTheorem.ec](theorem/MainTheorem.ec): `qssm_main_theorem` for the exact-zero abstraction route
 - [theorem/MainTheorem.ec](theorem/MainTheorem.ec): `qssm_main_theorem_semantic_budget` for the semantic-budget companion route
 - [theorem/MainTheoremParameterized.ec](theorem/MainTheoremParameterized.ec): `qssm_main_theorem_parameterized_budget = 15%r / 64%r`
-- [RealWorldBudgetInstantiation.ec](RealWorldBudgetInstantiation.ec): `qssm_main_theorem_realworld_concrete_128_with_all_reductions`
-- [RealWorldBudgetInstantiation.ec](RealWorldBudgetInstantiation.ec): `qssm_main_theorem_realworld_concrete_128_with_all_reductions_5_over_2_98`
+- [RealWorldBudgetInstantiation.ec](RealWorldBudgetInstantiation.ec): `qssm_main_theorem_realworld_concrete_256_with_all_reductions`
+- [RealWorldBudgetInstantiation.ec](RealWorldBudgetInstantiation.ec): `qssm_main_theorem_realworld_concrete_256_with_all_reductions_5_over_2_226`
 
 ## Formal Verification Summary
 
@@ -24,7 +24,7 @@ QSSM is an EasyCrypt formalization of the QSSM theorem stack, covering the exact
 - [docs/ASSUMPTIONS.md](docs/ASSUMPTIONS.md): theorem assumptions and modeling boundaries
 - [docs/FORMAL_THEOREM_MAP.md](docs/FORMAL_THEOREM_MAP.md): theorem inventory, route map, and charged-route caveats
 - [docs/SPEC_FORMAL_CONFORMANCE_AUDIT.md](docs/SPEC_FORMAL_CONFORMANCE_AUDIT.md): protocol-spec versus EasyCrypt conformance audit
-- [../../CONCRETE_128_REDUCTION_FREEZE.md](../../CONCRETE_128_REDUCTION_FREEZE.md): stable, audit-ready release boundary for the concrete all-reductions checkpoint
+- [../../CONCRETE_256_REDUCTION_FREEZE.md](../../CONCRETE_256_REDUCTION_FREEZE.md): stable, audit-ready release boundary for the current concrete all-reductions checkpoint
 
 ## Reproducibility
 
@@ -35,9 +35,9 @@ cd formal-verification/easycrypt
 
 The checker runs the EasyCrypt files in dependency order and reproduces the current `149`-theory, `0`-axiom, `0`-admit baseline.
 
-## Concrete `lambda = 128` Theorem Summary
+## Concrete `lambda = 256` Theorem Summary
 
-The concrete all-reductions theorem route closes in [RealWorldBudgetInstantiation.ec](RealWorldBudgetInstantiation.ec) with component epsilon `1 / 2^98`, top epsilon `5 / 2^98`, and effective security of approximately `95.67807190511263` bits. It is reduction-facing on LE rejection, LE FS, MS1, and MS2; the duplicate MS2 charge remains explicit; and public AfterRom remains budget-close to canonical AfterRom rather than zero-equal. Full theorem-route details and caveats live in [docs/FORMAL_THEOREM_MAP.md](docs/FORMAL_THEOREM_MAP.md).
+The concrete all-reductions theorem route closes in [RealWorldBudgetInstantiation.ec](RealWorldBudgetInstantiation.ec) with component epsilon `1 / 2^226`, top epsilon `5 / 2^226`, and effective security of approximately `223.67807190511263` bits. It is reduction-facing on LE rejection, LE FS, MS1, and MS2; the duplicate MS2 charge remains explicit; and public AfterRom remains budget-close to canonical AfterRom rather than zero-equal. Full theorem-route details and caveats live in [docs/FORMAL_THEOREM_MAP.md](docs/FORMAL_THEOREM_MAP.md).
 
 Reduction-facing premises:
 

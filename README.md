@@ -95,7 +95,7 @@ QSSM’s EasyCrypt model is fully machine‑checked:
 - **0 admits**
 - **fully reproducible** via `check_easycrypt.sh`
 
-The formal model covers the exact‑zero abstraction route, the semantic‑budget companion route, the frozen parameterized route, and a **concrete λ = 128 theorem** with a proved top bound of **5 / 2⁹⁸** (~95.68 bits), including all reduction‑facing obligations.
+The formal model covers the exact‑zero abstraction route, the semantic‑budget companion route, the frozen parameterized route, and a **concrete λ = 256 theorem** with a proved top bound of **5 / 2^226** (~223.68 bits), including all reduction‑facing obligations.
 
 Full details, theorem surfaces, and reproducibility steps:
 [Formal Verification Summary](formal-verification/easycrypt/README.md)
